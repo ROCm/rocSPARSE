@@ -342,6 +342,6 @@ rocsparse_status rocsparse::csritilu0x_preprocess_impl(rocsparse_handle     hand
         size_t               buffer_size_,                                  \
         void* __restrict__ buffer_)
 
-INSTANTIATE(template, int32_t, int32_t);
-INSTANTIATE(impl, int32_t, int32_t);
+INSTANTIATE(template, rocsparse_int, rocsparse_int);
+INSTANTIATE(impl, rocsparse_int, rocsparse_int);
 #undef INSTANTIATE

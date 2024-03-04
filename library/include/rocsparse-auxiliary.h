@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1831,7 +1831,7 @@ rocsparse_status rocsparse_spmat_set_values(rocsparse_spmat_descr descr, void* v
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_spmat_get_strided_batch(rocsparse_const_spmat_descr descr,
-                                                   int*                        batch_count);
+                                                   rocsparse_int*              batch_count);
 
 /*! \ingroup aux_module
  *  \brief Set the strided batch count in the sparse matrix descriptor
@@ -1846,7 +1846,8 @@ rocsparse_status rocsparse_spmat_get_strided_batch(rocsparse_const_spmat_descr d
  *  \retval rocsparse_status_invalid_size if \p batch_count is invalid.
  */
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_spmat_set_strided_batch(rocsparse_spmat_descr descr, int batch_count);
+rocsparse_status rocsparse_spmat_set_strided_batch(rocsparse_spmat_descr descr,
+                                                   rocsparse_int         batch_count);
 
 /*! \ingroup aux_module
  *  \brief Set the batch count and batch stride in the sparse COO matrix descriptor
@@ -1864,7 +1865,7 @@ rocsparse_status rocsparse_spmat_set_strided_batch(rocsparse_spmat_descr descr, 
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_coo_set_strided_batch(rocsparse_spmat_descr descr,
-                                                 int                   batch_count,
+                                                 rocsparse_int         batch_count,
                                                  int64_t               batch_stride);
 
 /*! \ingroup aux_module
@@ -1885,7 +1886,7 @@ rocsparse_status rocsparse_coo_set_strided_batch(rocsparse_spmat_descr descr,
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csr_set_strided_batch(rocsparse_spmat_descr descr,
-                                                 int                   batch_count,
+                                                 rocsparse_int         batch_count,
                                                  int64_t               offsets_batch_stride,
                                                  int64_t               columns_values_batch_stride);
 
@@ -1907,7 +1908,7 @@ rocsparse_status rocsparse_csr_set_strided_batch(rocsparse_spmat_descr descr,
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csc_set_strided_batch(rocsparse_spmat_descr descr,
-                                                 int                   batch_count,
+                                                 rocsparse_int         batch_count,
                                                  int64_t               offsets_batch_stride,
                                                  int64_t               rows_values_batch_stride);
 
@@ -2239,7 +2240,7 @@ rocsparse_status rocsparse_dnmat_set_values(rocsparse_dnmat_descr descr, void* v
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dnmat_get_strided_batch(rocsparse_const_dnmat_descr descr,
-                                                   int*                        batch_count,
+                                                   rocsparse_int*              batch_count,
                                                    int64_t*                    batch_stride);
 
 /*! \ingroup aux_module
@@ -2258,7 +2259,7 @@ rocsparse_status rocsparse_dnmat_get_strided_batch(rocsparse_const_dnmat_descr d
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dnmat_set_strided_batch(rocsparse_dnmat_descr descr,
-                                                   int                   batch_count,
+                                                   rocsparse_int         batch_count,
                                                    int64_t               batch_stride);
 
 /*! \ingroup aux_module

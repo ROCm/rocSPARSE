@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -192,8 +192,8 @@ void testing_csx2dense(const Arguments& arg, FUNC1& csx2dense, FUNC2& dense2csx)
                               hipMemcpyDeviceToHost));
 
     device_vector<rocsparse_int> d_csx_row_col_ptr(DIMDIR + 1);
-    device_vector<T>             d_csx_val(std::max(nnz, 1));
-    device_vector<rocsparse_int> d_csx_col_row_ind(std::max(nnz, 1));
+    device_vector<T>             d_csx_val(std::max(nnz, static_cast<rocsparse_int>(1)));
+    device_vector<rocsparse_int> d_csx_col_row_ind(std::max(nnz, static_cast<rocsparse_int>(1)));
     if(!d_csx_row_col_ptr || !d_csx_val || !d_csx_col_row_ind)
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
@@ -201,8 +201,8 @@ void testing_csx2dense(const Arguments& arg, FUNC1& csx2dense, FUNC2& dense2csx)
     }
 
     host_vector<rocsparse_int> cpu_csx_row_col_ptr(DIMDIR + 1);
-    host_vector<T>             cpu_csx_val(std::max(nnz, 1));
-    host_vector<rocsparse_int> cpu_csx_col_row_ind(std::max(nnz, 1));
+    host_vector<T>             cpu_csx_val(std::max(nnz, static_cast<rocsparse_int>(1)));
+    host_vector<rocsparse_int> cpu_csx_col_row_ind(std::max(nnz, static_cast<rocsparse_int>(1)));
     if(!cpu_csx_row_col_ptr || !cpu_csx_val || !cpu_csx_col_row_ind)
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
@@ -226,8 +226,10 @@ void testing_csx2dense(const Arguments& arg, FUNC1& csx2dense, FUNC2& dense2csx)
     //
     // Copy on host.
     //
-    CHECK_HIP_ERROR(
-        hipMemcpy(cpu_csx_val, d_csx_val, sizeof(T) * std::max(nnz, 1), hipMemcpyDeviceToHost));
+    CHECK_HIP_ERROR(hipMemcpy(cpu_csx_val,
+                              d_csx_val,
+                              sizeof(T) * std::max(nnz, static_cast<rocsparse_int>(1)),
+                              hipMemcpyDeviceToHost));
 
     CHECK_HIP_ERROR(hipMemcpy(cpu_csx_row_col_ptr,
                               d_csx_row_col_ptr,
@@ -236,7 +238,7 @@ void testing_csx2dense(const Arguments& arg, FUNC1& csx2dense, FUNC2& dense2csx)
 
     CHECK_HIP_ERROR(hipMemcpy(cpu_csx_col_row_ind,
                               d_csx_col_row_ind,
-                              sizeof(rocsparse_int) * std::max(nnz, 1),
+                              sizeof(rocsparse_int) * std::max(nnz, static_cast<rocsparse_int>(1)),
                               hipMemcpyDeviceToHost));
 
     if(arg.unit_check)

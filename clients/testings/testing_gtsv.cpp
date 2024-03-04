@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -80,7 +80,7 @@ void testing_gtsv(const Arguments& arg)
 #define PARAMS_BUFFER_SIZE handle, m, n, ddl, dd, ddu, dB, ldb, &buffer_size
 #define PARAMS_SOLVE handle, m, n, ddl, dd, ddu, dB, ldb, dbuffer
 
-    if(ldb < std::max(1, m))
+    if(ldb < std::max(static_cast<rocsparse_int>(1), m))
     {
         return;
     }

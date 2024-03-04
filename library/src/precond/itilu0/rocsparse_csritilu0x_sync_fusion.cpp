@@ -856,7 +856,7 @@ struct rocsparse::csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             const I nmaxiter      = nmaxiter_[0];
             void*   buffer        = buffer_;
             J       s_local_niter = 32;
-            const I mean          = std::max(nnz_ / m_, 1);
+            const I mean          = std::max(nnz_ / m_, static_cast<I>(1));
 
             //
             //
@@ -1170,10 +1170,10 @@ struct rocsparse::csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
     template struct rocsparse::csritilu0x_driver_t< \
         rocsparse_itilu0_alg_sync_split_fusion>::compute<T, I, J>
 
-INSTANTIATE(float, int32_t, int32_t);
-INSTANTIATE(double, int32_t, int32_t);
-INSTANTIATE(rocsparse_float_complex, int32_t, int32_t);
-INSTANTIATE(rocsparse_double_complex, int32_t, int32_t);
+INSTANTIATE(float, rocsparse_int, rocsparse_int);
+INSTANTIATE(double, rocsparse_int, rocsparse_int);
+INSTANTIATE(rocsparse_float_complex, rocsparse_int, rocsparse_int);
+INSTANTIATE(rocsparse_double_complex, rocsparse_int, rocsparse_int);
 
 #undef INSTANTIATE
 
@@ -1183,7 +1183,7 @@ INSTANTIATE(rocsparse_double_complex, int32_t, int32_t);
     template struct rocsparse::csritilu0x_driver_t<                \
         rocsparse_itilu0_alg_sync_split_fusion>::buffer_size<I, J>
 
-INSTANTIATE(int32_t, int32_t);
+INSTANTIATE(rocsparse_int, rocsparse_int);
 
 #undef INSTANTIATE
 
@@ -1191,7 +1191,7 @@ INSTANTIATE(int32_t, int32_t);
     template struct rocsparse::csritilu0x_driver_t< \
         rocsparse_itilu0_alg_sync_split_fusion>::history<T, J>
 
-INSTANTIATE(float, int32_t);
-INSTANTIATE(double, int32_t);
+INSTANTIATE(float, rocsparse_int);
+INSTANTIATE(double, rocsparse_int);
 
 #undef INSTANTIATE

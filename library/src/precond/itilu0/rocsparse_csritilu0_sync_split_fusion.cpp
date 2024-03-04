@@ -385,7 +385,7 @@ struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
     {
         static rocsparse_status run(rocsparse_handle     handle_,
                                     rocsparse_itilu0_alg alg_,
-                                    J                    options_,
+                                    rocsparse_int        options_,
                                     J*                   nsweeps_,
                                     floating_data_t<T>   tol_,
                                     J                    m_,
@@ -487,10 +487,10 @@ struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
     template struct rocsparse::csritilu0_driver_t< \
         rocsparse_itilu0_alg_sync_split_fusion>::compute<T, I, J>
 
-INSTANTIATE(float, int32_t, int32_t);
-INSTANTIATE(double, int32_t, int32_t);
-INSTANTIATE(rocsparse_float_complex, int32_t, int32_t);
-INSTANTIATE(rocsparse_double_complex, int32_t, int32_t);
+INSTANTIATE(float, rocsparse_int, rocsparse_int);
+INSTANTIATE(double, rocsparse_int, rocsparse_int);
+INSTANTIATE(rocsparse_float_complex, rocsparse_int, rocsparse_int);
+INSTANTIATE(rocsparse_double_complex, rocsparse_int, rocsparse_int);
 
 #undef INSTANTIATE
 
@@ -498,8 +498,8 @@ INSTANTIATE(rocsparse_double_complex, int32_t, int32_t);
     template struct rocsparse::csritilu0_driver_t< \
         rocsparse_itilu0_alg_sync_split_fusion>::history<T, J>
 
-INSTANTIATE(float, int32_t);
-INSTANTIATE(double, int32_t);
+INSTANTIATE(float, rocsparse_int);
+INSTANTIATE(double, rocsparse_int);
 
 #undef INSTANTIATE
 

@@ -6995,7 +6995,7 @@ void host_prune_dense2csr_by_percentage(rocsparse_int               m,
     rocsparse_int nnz_A = m * n;
     rocsparse_int pos   = std::ceil(nnz_A * (percentage / 100)) - 1;
     pos                 = std::min(pos, nnz_A - 1);
-    pos                 = std::max(pos, 0);
+    pos                 = std::max(pos, static_cast<rocsparse_int>(0));
 
     std::vector<T> sorted_A(m * n);
     for(rocsparse_int i = 0; i < n; i++)
@@ -8097,7 +8097,7 @@ void host_prune_csr_to_csr_by_percentage(rocsparse_int                     M,
 {
     rocsparse_int pos = std::ceil(nnz_A * (percentage / 100)) - 1;
     pos               = std::min(pos, nnz_A - 1);
-    pos               = std::max(pos, 0);
+    pos               = std::max(pos, static_cast<rocsparse_int>(0));
 
     std::vector<T> sorted_A(nnz_A);
 

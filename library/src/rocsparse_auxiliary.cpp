@@ -3434,7 +3434,7 @@ catch(...)
  * \brief rocsparse_spmat_get_strided_batch gets the sparse matrix batch count.
  *******************************************************************************/
 rocsparse_status rocsparse_spmat_get_strided_batch(rocsparse_const_spmat_descr descr,
-                                                   int*                        batch_count)
+                                                   rocsparse_int*              batch_count)
 try
 {
     ROCSPARSE_CHECKARG_POINTER(0, descr);
@@ -3453,7 +3453,8 @@ catch(...)
 /********************************************************************************
  * \brief rocsparse_spmat_set_strided_batch sets the sparse matrix batch count.
  *******************************************************************************/
-rocsparse_status rocsparse_spmat_set_strided_batch(rocsparse_spmat_descr descr, int batch_count)
+rocsparse_status rocsparse_spmat_set_strided_batch(rocsparse_spmat_descr descr,
+                                                   rocsparse_int         batch_count)
 try
 {
     ROCSPARSE_CHECKARG_POINTER(0, descr);
@@ -3474,7 +3475,7 @@ catch(...)
  * and batch stride.
  *******************************************************************************/
 rocsparse_status rocsparse_coo_set_strided_batch(rocsparse_spmat_descr descr,
-                                                 int                   batch_count,
+                                                 rocsparse_int         batch_count,
                                                  int64_t               batch_stride)
 try
 {
@@ -3498,7 +3499,7 @@ catch(...)
  * and batch stride.
  *******************************************************************************/
 rocsparse_status rocsparse_csr_set_strided_batch(rocsparse_spmat_descr descr,
-                                                 int                   batch_count,
+                                                 rocsparse_int         batch_count,
                                                  int64_t               offsets_batch_stride,
                                                  int64_t               columns_values_batch_stride)
 try
@@ -3529,7 +3530,7 @@ catch(...)
  * and batch stride.
  *******************************************************************************/
 rocsparse_status rocsparse_csc_set_strided_batch(rocsparse_spmat_descr descr,
-                                                 int                   batch_count,
+                                                 rocsparse_int         batch_count,
                                                  int64_t               offsets_batch_stride,
                                                  int64_t               rows_values_batch_stride)
 try
@@ -4114,7 +4115,7 @@ catch(...)
  * and batch stride.
  *******************************************************************************/
 rocsparse_status rocsparse_dnmat_get_strided_batch(rocsparse_const_dnmat_descr descr,
-                                                   int*                        batch_count,
+                                                   rocsparse_int*              batch_count,
                                                    int64_t*                    batch_stride)
 try
 {
@@ -4138,7 +4139,7 @@ catch(...)
  * and batch stride.
  *******************************************************************************/
 rocsparse_status rocsparse_dnmat_set_strided_batch(rocsparse_dnmat_descr descr,
-                                                   int                   batch_count,
+                                                   rocsparse_int         batch_count,
                                                    int64_t               batch_stride)
 try
 {

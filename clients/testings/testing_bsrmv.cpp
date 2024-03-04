@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -212,8 +212,8 @@ void testing_bsrmv(const Arguments& arg)
     }
     else
     {
-        int32_t block_row_dim = arg.row_block_dimA;
-        int32_t block_col_dim = arg.col_block_dimA;
+        rocsparse_int block_row_dim = arg.row_block_dimA;
+        rocsparse_int block_col_dim = arg.col_block_dimA;
         matrix_factory.init_gebsr(hA, M, N, block_row_dim, block_col_dim, base);
         dA(hA);
     }

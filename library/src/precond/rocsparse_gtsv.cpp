@@ -56,7 +56,8 @@ rocsparse_status rocsparse::gtsv_buffer_size_template(rocsparse_handle handle,
     ROCSPARSE_CHECKARG(1, m, (m <= 1), rocsparse_status_invalid_size);
     ROCSPARSE_CHECKARG_SIZE(2, n);
     ROCSPARSE_CHECKARG_SIZE(7, ldb);
-    ROCSPARSE_CHECKARG(7, ldb, ldb < std::max(1, m), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG(
+        7, ldb, ldb < std::max(static_cast<rocsparse_int>(1), m), rocsparse_status_invalid_size);
 
     ROCSPARSE_CHECKARG_ARRAY(3, n, dl);
     ROCSPARSE_CHECKARG_ARRAY(4, n, d);
@@ -518,7 +519,8 @@ rocsparse_status rocsparse::gtsv_template(rocsparse_handle handle,
     ROCSPARSE_CHECKARG_SIZE(1, m);
     ROCSPARSE_CHECKARG(1, m, (m <= 1), rocsparse_status_invalid_size);
     ROCSPARSE_CHECKARG_SIZE(2, n);
-    ROCSPARSE_CHECKARG(7, ldb, (ldb < std::max(1, m)), rocsparse_status_invalid_size);
+    ROCSPARSE_CHECKARG(
+        7, ldb, (ldb < std::max(static_cast<rocsparse_int>(1), m)), rocsparse_status_invalid_size);
 
     ROCSPARSE_CHECKARG_ARRAY(3, n, dl);
     ROCSPARSE_CHECKARG_ARRAY(4, n, d);

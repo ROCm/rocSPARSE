@@ -209,7 +209,7 @@ rocsparse_status
     const rocsparse_int nnz_A = m * n;
     rocsparse_int       pos   = std::ceil(nnz_A * (percentage / 100)) - 1;
     pos                       = std::min(pos, nnz_A - 1);
-    pos                       = std::max(pos, 0);
+    pos                       = std::max(pos, static_cast<rocsparse_int>(0));
 
     T* output = reinterpret_cast<T*>(temp_buffer);
 

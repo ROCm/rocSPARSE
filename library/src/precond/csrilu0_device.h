@@ -103,7 +103,8 @@ namespace rocsparse
                     // key is already inserted, done
                     break;
                 }
-                else if(rocsparse::atomic_cas(&table[hash], -1, key) == -1)
+                else if(rocsparse::atomic_cas(&table[hash], static_cast<rocsparse_int>(-1), key)
+                        == static_cast<rocsparse_int>(-1))
                 {
                     // inserted key into the table, done
                     data[hash] = j;

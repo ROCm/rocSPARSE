@@ -289,7 +289,10 @@ namespace rocsparse
                            rocsparse_status_not_implemented);
         ROCSPARSE_CHECKARG_ARRAY(7, k, alpha);
         ROCSPARSE_CHECKARG_ARRAY(8, k, A);
-        ROCSPARSE_CHECKARG(9, lda, (lda < std::max(1, m)), rocsparse_status_invalid_size);
+        ROCSPARSE_CHECKARG(9,
+                           lda,
+                           (lda < std::max(static_cast<rocsparse_int>(1), m)),
+                           rocsparse_status_invalid_size);
 
         ROCSPARSE_CHECKARG_ARRAY(11, nnz, csr_val);
         ROCSPARSE_CHECKARG_ARRAY(12, m, csr_row_ptr);
@@ -297,7 +300,10 @@ namespace rocsparse
         ROCSPARSE_CHECKARG_POINTER(14, beta);
         ROCSPARSE_CHECKARG_POINTER(15, C);
 
-        ROCSPARSE_CHECKARG(16, ldc, (ldc < std::max(1, m)), rocsparse_status_invalid_size);
+        ROCSPARSE_CHECKARG(16,
+                           ldc,
+                           (ldc < std::max(static_cast<rocsparse_int>(1), m)),
+                           rocsparse_status_invalid_size);
 
         return rocsparse_status_continue;
     }

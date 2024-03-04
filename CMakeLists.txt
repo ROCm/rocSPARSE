@@ -74,6 +74,7 @@ option(BUILD_VERBOSE "Output additional build information" OFF)
 option(BUILD_CODE_COVERAGE "Build rocSPARSE with code coverage enabled" OFF)
 option(BUILD_ADDRESS_SANITIZER "Build rocSPARSE with address sanitizer enabled" OFF)
 option(BUILD_MEMSTAT "Build rocSPARSE with memory statistics enabled" OFF)
+option(BUILD_ROCSPARSE_ILP64 "Build rocSPARSE with rocsparse_int equal to int64_t" OFF)
 option(BUILD_COMPRESSED_DBG "Enable compressed debug symbols" ON)
 option(BUILD_WITH_ROCBLAS "Enable building rocSPARSE with rocBLAS" ON)
 

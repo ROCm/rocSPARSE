@@ -234,6 +234,6 @@ rocsparse_status rocsparse::csritilu0x_buffer_size_impl(rocsparse_handle     han
         rocsparse_datatype   datatype_,                                      \
         size_t* __restrict__ buffer_size_)
 
-INSTANTIATE(template, int32_t, int32_t);
-INSTANTIATE(impl, int32_t, int32_t);
+INSTANTIATE(template, rocsparse_int, rocsparse_int);
+INSTANTIATE(impl, rocsparse_int, rocsparse_int);
 #undef INSTANTIATE
