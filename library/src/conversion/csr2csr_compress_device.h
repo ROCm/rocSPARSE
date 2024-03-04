@@ -24,22 +24,23 @@
 
 #pragma once
 
+#include <assert.h>
 #include <limits>
 
 #include "common.h"
 
 namespace rocsparse
 {
-    template <rocsparse_int BLOCK_SIZE, rocsparse_int WF_SIZE, rocsparse_int LOOPS, typename T>
-    ROCSPARSE_KERNEL(BLOCK_SIZE)
+    template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, unsigned int LOOPS, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
     void csr2csr_compress_fill_warp_start_device(rocsparse_int nnz_A,
                                                  const T* __restrict__ csr_val_A,
-                                                 int* __restrict__ warp_start,
+                                                 uint32_t* __restrict__ warp_start,
                                                  T tol)
     {
         rocsparse_int tid = hipThreadIdx_x;
         rocsparse_int bid = hipBlockIdx_x;
-        rocsparse_int gid = tid + LOOPS * BLOCK_SIZE * bid;
+        rocsparse_int gid = tid + LOOPS * BLOCKSIZE * bid;
 
         rocsparse_int wid = tid / WF_SIZE;
 
@@ -48,31 +49,37 @@ namespace rocsparse
             warp_start[0] = 0;
         }
 
-        for(rocsparse_int i = 0; i < LOOPS; i++)
+        for(unsigned int i = 0; i < LOOPS; i++)
         {
-            T value
-                = (gid < nnz_A) ? rocsparse::nontemporal_load(csr_val_A + gid) : static_cast<T>(0);
+            if(gid < nnz_A)
+            {
+                const T value = rocsparse::nontemporal_load(csr_val_A + gid);
 
-            // Check if value in matrix will be kept
-            bool predicate = rocsparse::abs(value) > rocsparse::real(tol)
-                                     && rocsparse::abs(value) > std::numeric_limits<float>::min()
-                                 ? true
-                                 : false;
+                // Check if value in matrix will be kept
+                const bool predicate
+                    = (rocsparse::abs(value) > rocsparse::real(tol)
+                       && rocsparse::abs(value) > std::numeric_limits<float>::min());
 
-            const uint64_t wavefront_mask = __ballot(predicate);
+                // Inactive threads in warp set their lane to zero in mask
+                const uint64_t wavefront_mask = __ballot(predicate);
 
-            // Get the number of retained matrix entries in this warp
-            const uint64_t count_nnzs = __popcll(wavefront_mask);
+                // Get the number of retained matrix entries in this warp
+                const uint32_t count_nnzs = __popcll(wavefront_mask);
 
-            warp_start[LOOPS * (BLOCK_SIZE / WF_SIZE) * bid + (BLOCK_SIZE / WF_SIZE) * i + wid + 1]
-                = static_cast<int>(count_nnzs);
+                const int warp_index
+                    = (LOOPS * (BLOCKSIZE / WF_SIZE) * bid + (BLOCKSIZE / WF_SIZE) * i + wid);
 
-            gid += BLOCK_SIZE;
+                assert(warp_index < ((nnz_A - 1) / WF_SIZE + 1) && "Warp index out of bounds");
+
+                warp_start[warp_index + 1] = count_nnzs;
+            }
+
+            gid += BLOCKSIZE;
         }
     }
 
-    template <rocsparse_int BLOCK_SIZE, rocsparse_int WF_SIZE, rocsparse_int LOOPS, typename T>
-    ROCSPARSE_KERNEL(BLOCK_SIZE)
+    template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, unsigned int LOOPS, typename T>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
     void csr2csr_compress_use_warp_start_device(rocsparse_int        nnz_A,
                                                 rocsparse_index_base idx_base_A,
                                                 const T* __restrict__ csr_val_A,
@@ -80,57 +87,62 @@ namespace rocsparse
                                                 rocsparse_index_base idx_base_C,
                                                 T* __restrict__ csr_val_C,
                                                 rocsparse_int* __restrict__ csr_col_ind_C,
-                                                int* __restrict__ warp_start,
+                                                const uint32_t* __restrict__ warp_start,
                                                 T tol)
     {
         rocsparse_int tid = hipThreadIdx_x;
         rocsparse_int bid = hipBlockIdx_x;
-        rocsparse_int gid = tid + LOOPS * BLOCK_SIZE * bid;
+        rocsparse_int gid = tid + LOOPS * BLOCKSIZE * bid;
 
         rocsparse_int lid = tid & (WF_SIZE - 1);
         rocsparse_int wid = tid / WF_SIZE;
 
         const uint64_t filter_mask = (0xffffffffffffffff >> (63 - lid));
 
-        for(rocsparse_int i = 0; i < LOOPS; i++)
+        for(unsigned int i = 0; i < LOOPS; i++)
         {
-            int start = warp_start[LOOPS * (BLOCK_SIZE / WF_SIZE) * bid + (BLOCK_SIZE / WF_SIZE) * i
-                                   + wid];
-
-            T value
-                = (gid < nnz_A) ? rocsparse::nontemporal_load(csr_val_A + gid) : static_cast<T>(0);
-
-            // Check if value in matrix will be kept
-            bool predicate = rocsparse::abs(value) > rocsparse::real(tol)
-                                     && rocsparse::abs(value) > std::numeric_limits<float>::min()
-                                 ? true
-                                 : false;
-
-            const uint64_t wavefront_mask = __ballot(predicate);
-
-            // Get the number of retained matrix entries in this warp
-            const uint64_t count_previous_nnzs = __popcll(wavefront_mask & filter_mask);
-
-            // If we are keeping the matrix entry, insert it into the compressed CSR matrix
-            if(predicate)
+            if(gid < nnz_A)
             {
-                csr_val_C[start + count_previous_nnzs - 1] = value;
-                csr_col_ind_C[start + count_previous_nnzs - 1]
-                    = csr_col_ind_A[gid] - idx_base_A + idx_base_C;
+                const T value = rocsparse::nontemporal_load(csr_val_A + gid);
+
+                // Check if value in matrix will be kept
+                const bool predicate
+                    = (rocsparse::abs(value) > rocsparse::real(tol)
+                       && rocsparse::abs(value) > std::numeric_limits<float>::min());
+
+                // Inactive threads in warp set their lane to zero in mask
+                const uint64_t wavefront_mask = __ballot(predicate);
+
+                // Get the number of retained matrix entries in this warp
+                const uint32_t count_previous_nnzs = __popcll(wavefront_mask & filter_mask);
+
+                // If we are keeping the matrix entry, insert it into the compressed CSR matrix
+                if(predicate)
+                {
+                    assert(count_previous_nnzs > 0
+                           && "When predicate is true, non-zero count cannot be zero.");
+
+                    const uint32_t start = warp_start[LOOPS * (BLOCKSIZE / WF_SIZE) * bid
+                                                      + (BLOCKSIZE / WF_SIZE) * i + wid];
+
+                    csr_val_C[start + count_previous_nnzs - 1] = value;
+                    csr_col_ind_C[start + count_previous_nnzs - 1]
+                        = csr_col_ind_A[gid] - idx_base_A + idx_base_C;
+                }
             }
 
-            gid += BLOCK_SIZE;
+            gid += BLOCKSIZE;
         }
     }
 
-    template <rocsparse_int BLOCK_SIZE>
-    ROCSPARSE_KERNEL(BLOCK_SIZE)
+    template <unsigned int BLOCKSIZE>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
     void fill_row_ptr_device(rocsparse_int        m,
                              rocsparse_index_base idx_base_C,
                              const rocsparse_int* __restrict__ nnz_per_row,
                              rocsparse_int* __restrict__ csr_row_ptr_C)
     {
-        rocsparse_int tid = hipThreadIdx_x + hipBlockIdx_x * BLOCK_SIZE;
+        rocsparse_int tid = hipThreadIdx_x + hipBlockIdx_x * BLOCKSIZE;
 
         if(tid >= m)
         {
@@ -145,10 +157,10 @@ namespace rocsparse
         }
     }
 
-    template <rocsparse_int BLOCK_SIZE,
-              rocsparse_int SEGMENTS_PER_BLOCK,
-              rocsparse_int SEGMENT_SIZE,
-              rocsparse_int WF_SIZE,
+    template <unsigned int BLOCKSIZE,
+              unsigned int SEGMENTS_PER_BLOCK,
+              unsigned int SEGMENT_SIZE,
+              unsigned int WF_SIZE,
               typename T>
     ROCSPARSE_DEVICE_ILF void
         csr2csr_compress_device(rocsparse_int        m,
@@ -188,11 +200,11 @@ namespace rocsparse
                 const T value = csr_val_A[i];
 
                 // Check if value in matrix will be kept
-                const bool predicate
+                const int predicate
                     = rocsparse::abs(value) > rocsparse::real(tol)
                               && rocsparse::abs(value) > std::numeric_limits<float>::min()
-                          ? true
-                          : false;
+                          ? 1
+                          : 0;
 
                 // Ballot operates on an entire warp (32 or 64 threads). Therefore the computed
                 // wavefront_mask may contain information for multiple rows if the segment size is
