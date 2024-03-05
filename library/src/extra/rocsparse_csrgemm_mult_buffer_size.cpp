@@ -103,19 +103,19 @@ rocsparse_status rocsparse::csrgemm_mult_buffer_size_core(rocsparse_handle      
     // rocprim::reduce
     RETURN_IF_HIP_ERROR(rocprim::reduce(
         nullptr, rocprim_size, csr_row_ptr_A, &nnz_A, 0, m, rocprim::maximum<I>(), stream));
-    rocprim_max = std::max(rocprim_max, rocprim_size);
+    rocprim_max = rocsparse::max(rocprim_max, rocprim_size);
 
     // rocprim exclusive scan
     RETURN_IF_HIP_ERROR(rocprim::exclusive_scan(
         nullptr, rocprim_size, csr_row_ptr_A, &nnz_A, 0, m + 1, rocprim::plus<I>(), stream));
-    rocprim_max = std::max(rocprim_max, rocprim_size);
+    rocprim_max = rocsparse::max(rocprim_max, rocprim_size);
 
     // rocprim::radix_sort_pairs
     rocprim::double_buffer<I> buf1(&nnz_A, &nnz_B);
     rocprim::double_buffer<J> buf2(&n, &k);
     RETURN_IF_HIP_ERROR(
         rocprim::radix_sort_pairs(nullptr, rocprim_size, buf1, buf2, m, 0, 3, stream));
-    rocprim_max = std::max(rocprim_max, rocprim_size);
+    rocprim_max = rocsparse::max(rocprim_max, rocprim_size);
 
     *buffer_size = ((rocprim_max - 1) / 256 + 1) * 256;
 

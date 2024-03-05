@@ -207,9 +207,10 @@ rocsparse_status
     ROCSPARSE_CHECKARG_POINTER(10, temp_buffer);
 
     const rocsparse_int nnz_A = m * n;
-    rocsparse_int       pos   = std::ceil(nnz_A * (percentage / 100)) - 1;
-    pos                       = std::min(pos, nnz_A - 1);
-    pos                       = std::max(pos, static_cast<rocsparse_int>(0));
+
+    rocsparse_int pos = rocsparse::ceil(nnz_A * (percentage / 100)) - 1;
+    pos               = rocsparse::min(pos, nnz_A - 1);
+    pos               = rocsparse::max(pos, static_cast<rocsparse_int>(0));
 
     T* output = reinterpret_cast<T*>(temp_buffer);
 
@@ -238,7 +239,7 @@ rocsparse_status
                                                 handle->stream));
 
     size_t temp_storage_size_bytes
-        = std::max(temp_storage_size_bytes_sort, temp_storage_size_bytes_scan);
+        = rocsparse::max(temp_storage_size_bytes_sort, temp_storage_size_bytes_scan);
 
     // Device buffer should be sufficient for rocprim in most cases
     bool  temp_alloc       = false;

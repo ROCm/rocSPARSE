@@ -944,7 +944,7 @@ void memstat::flush_report(bool finalize)
                           (first) ? std::ios_base::out : std::ios_base::app);
         this->flush_report(out, finalize);
         out.close();
-        this->m_next_flush_report += std::min(m_data.size(), size_t(128));
+        this->m_next_flush_report += rocsparse::min(m_data.size(), size_t(128));
         this->m_data.clear();
     }
 }

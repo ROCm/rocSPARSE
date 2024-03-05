@@ -202,8 +202,8 @@ namespace rocsparse
             // This is csr-vector case;
             if((i - last_i == 1) && sum > static_cast<I>(BLOCK_SIZE))
             {
-                I numWGReq = static_cast<I>(
-                    std::ceil(static_cast<double>(row_length) / (BLOCK_MULTIPLIER * BLOCK_SIZE)));
+                I numWGReq = static_cast<I>(rocsparse::ceil(static_cast<double>(row_length)
+                                                            / (BLOCK_MULTIPLIER * BLOCK_SIZE)));
 
                 // Check to ensure #workgroups can fit in 32 bits, if not
                 // then the last workgroup will do all the remaining work

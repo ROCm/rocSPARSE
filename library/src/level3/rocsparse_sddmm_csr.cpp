@@ -386,7 +386,7 @@ struct rocsparse::rocsparse_sddmm_st<rocsparse_format_csr, rocsparse_sddmm_alg_d
         C_col_data,                                                                         \
         C_base)
 
-        const I avg_nnz = std::max(static_cast<I>(1), nnz / m);
+        const I avg_nnz = rocsparse::max(static_cast<I>(1), nnz / m);
 
         if(avg_nnz > 32 && handle->wavefront_size == 64)
         {

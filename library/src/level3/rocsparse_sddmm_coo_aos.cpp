@@ -352,8 +352,8 @@ struct rocsparse::rocsparse_sddmm_st<rocsparse_format_coo_aos, rocsparse_sddmm_a
         // Sample dense C
         static constexpr int NB = 512;
 
-        const int64_t num_blocks_x
-            = std::min(((nnz - 1) / NB + 1), static_cast<I>(handle->properties.maxGridSize[0]));
+        const int64_t num_blocks_x = rocsparse::min(
+            ((nnz - 1) / NB + 1), static_cast<I>(handle->properties.maxGridSize[0]));
         const dim3 blocks(num_blocks_x);
         const dim3 threads(NB);
 

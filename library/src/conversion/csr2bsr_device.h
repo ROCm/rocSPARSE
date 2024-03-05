@@ -109,7 +109,7 @@ namespace rocsparse
                 else
                 {
                     index_k       = k;
-                    min_block_col = min(min_block_col, block_col);
+                    min_block_col = rocsparse::min(min_block_col, block_col);
                     break;
                 }
             }
@@ -229,7 +229,7 @@ namespace rocsparse
                 else
                 {
                     index_k       = k;
-                    min_block_col = min(min_block_col, block_col);
+                    min_block_col = rocsparse::min(min_block_col, block_col);
                     break;
                 }
             }

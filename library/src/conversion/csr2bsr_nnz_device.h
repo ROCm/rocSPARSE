@@ -84,7 +84,7 @@ namespace rocsparse
             __threadfence_block();
 
             // Initialize the beginning of the next chunk
-            I min_block_col = nb;
+            J min_block_col = nb;
 
             I index_k = row_end;
 
@@ -99,7 +99,7 @@ namespace rocsparse
                 else
                 {
                     index_k       = k;
-                    min_block_col = min(min_block_col, block_col);
+                    min_block_col = rocsparse::min(min_block_col, block_col);
                     break;
                 }
             }
@@ -193,7 +193,7 @@ namespace rocsparse
                 else
                 {
                     index_k       = k;
-                    min_block_col = min(min_block_col, block_col);
+                    min_block_col = rocsparse::min(min_block_col, block_col);
                     break;
                 }
             }

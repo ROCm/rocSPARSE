@@ -110,10 +110,10 @@ rocsparse_status rocsparse::coo2dense_aos_template(rocsparse_handle          han
                                        order);
 
 #define COO2DENSE_DIM 512
-    const int64_t num_blocks_x = std::min(((nnz - 1) / COO2DENSE_DIM + 1),
-                                          static_cast<int64_t>(handle->properties.maxGridSize[0]));
-    dim3          blocks(num_blocks_x);
-    dim3          threads(COO2DENSE_DIM);
+    const int64_t num_blocks_x = rocsparse::min(
+        ((nnz - 1) / COO2DENSE_DIM + 1), static_cast<int64_t>(handle->properties.maxGridSize[0]));
+    dim3 blocks(num_blocks_x);
+    dim3 threads(COO2DENSE_DIM);
 
     RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::coo2dense_aos_kernel<COO2DENSE_DIM>),
                                        blocks,

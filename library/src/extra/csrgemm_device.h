@@ -302,7 +302,7 @@ namespace rocsparse
         for(; row < m; row += hipGridDim_x * BLOCKSIZE)
         {
             // Determine local maximum
-            local_max = max(local_max, csr_row_ptr[row + 1] - csr_row_ptr[row]);
+            local_max = rocsparse::max(local_max, J(csr_row_ptr[row + 1] - csr_row_ptr[row]));
         }
 
         // Shared memory for block reduction
@@ -758,7 +758,7 @@ namespace rocsparse
                             next_k = k;
 
                             // Store the first column index of B that exceeds the current chunk
-                            min_col = min(min_col, col_B);
+                            min_col = rocsparse::min(min_col, col_B);
                             break;
                         }
                     }
@@ -795,7 +795,7 @@ namespace rocsparse
                     else if(col_D >= chunk_end)
                     {
                         // Store the first column index of D that exceeds the current chunk
-                        min_col = min(min_col, col_D);
+                        min_col = rocsparse::min(min_col, col_D);
                         break;
                     }
 
@@ -1346,7 +1346,7 @@ namespace rocsparse
                             next_k = k;
 
                             // Store the first column index of B that exceeds the current chunk
-                            min_col = min(min_col, col_B);
+                            min_col = rocsparse::min(min_col, col_B);
                             break;
                         }
                     }
@@ -1386,7 +1386,7 @@ namespace rocsparse
                     else if(col_D >= chunk_end)
                     {
                         // Store the first column index of D that exceeds the current chunk
-                        min_col = min(min_col, col_D);
+                        min_col = rocsparse::min(min_col, col_D);
                         break;
                     }
 

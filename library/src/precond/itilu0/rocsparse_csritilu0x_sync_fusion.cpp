@@ -154,7 +154,7 @@ namespace rocsparse
                                                     tmp = std::abs(lval0_[lshift + h] - s);
                                                     if(!std::isinf(tmp) && !std::isnan(tmp))
                                                     {
-                                                        nrminf = std::max(nrminf, tmp);
+                                                        nrminf = rocsparse::max(nrminf, tmp);
                                                     }
                                                 }
                                                 break;
@@ -173,7 +173,7 @@ namespace rocsparse
                                                     tmp = std::abs(uval0_[ushift + h] - s);
                                                     if(!std::isinf(tmp) && !std::isnan(tmp))
                                                     {
-                                                        nrminf = std::max(nrminf, tmp);
+                                                        nrminf = rocsparse::max(nrminf, tmp);
                                                     }
                                                 }
                                                 break;
@@ -188,7 +188,7 @@ namespace rocsparse
                                             tmp = std::abs(dval0_[col] - s);
                                             if(!std::isinf(tmp) && !std::isnan(tmp))
                                             {
-                                                nrminf = std::max(nrminf, tmp);
+                                                nrminf = rocsparse::max(nrminf, tmp);
                                             }
                                         }
                                     }
@@ -230,7 +230,7 @@ namespace rocsparse
                                         tmp = std::abs(val_[k] - sum_residual);
                                         if(!std::isinf(tmp) && !std::isnan(tmp))
                                         {
-                                            nrminf_residual = std::max(nrminf_residual, tmp);
+                                            nrminf_residual = rocsparse::max(nrminf_residual, tmp);
                                         }
                                     }
                                 }
@@ -856,7 +856,7 @@ struct rocsparse::csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             const I nmaxiter      = nmaxiter_[0];
             void*   buffer        = buffer_;
             J       s_local_niter = 32;
-            const I mean          = std::max(nnz_ / m_, static_cast<I>(1));
+            const I mean          = rocsparse::max(nnz_ / m_, static_cast<I>(1));
 
             //
             //
@@ -1067,7 +1067,7 @@ struct rocsparse::csritilu0x_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
 
                         if(compute_nrm_residual && compute_nrm_corr)
                         {
-                            nrm_indicator = std::max(nrm_residual, nrm_corr);
+                            nrm_indicator = rocsparse::max(nrm_residual, nrm_corr);
                         }
                         else if(compute_nrm_corr)
                         {

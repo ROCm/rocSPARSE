@@ -1346,7 +1346,7 @@ namespace rocsparse
                                 next_k = k;
 
                                 // Store the first column index of B that exceeds the current chunk
-                                min_col = min(min_col, col_B);
+                                min_col = rocsparse::min(min_col, col_B);
                                 break;
                             }
                         }
@@ -1398,7 +1398,7 @@ namespace rocsparse
                     else if(col_D >= chunk_end)
                     {
                         // Store the first column index of D that exceeds the current chunk
-                        min_col = min(min_col, col_D);
+                        min_col = rocsparse::min(min_col, col_D);
                         break;
                     }
                 }
@@ -1645,7 +1645,7 @@ namespace rocsparse
                             next_k = k;
 
                             // Store the first column index of B that exceeds the current chunk
-                            min_col = min(min_col, col_B);
+                            min_col = rocsparse::min(min_col, col_B);
                             break;
                         }
                     }
@@ -1705,13 +1705,13 @@ namespace rocsparse
                     else if(col_D >= chunk_end)
                     {
                         // Store the first column index of D that exceeds the current chunk
-                        min_col = min(min_col, col_D);
+                        min_col = rocsparse::min(min_col, col_D);
                         break;
                     }
                 }
             }
 
-            next_chunk = min(next_chunk, min_col);
+            next_chunk = rocsparse::min(next_chunk, min_col);
 
             // Wait for all threads to finish
             __syncthreads();

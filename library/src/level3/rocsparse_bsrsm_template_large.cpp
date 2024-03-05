@@ -264,7 +264,7 @@ namespace rocsparse
         else
         {
             // Select tuned kernel
-            unsigned int nbsr = std::max(4U, fnp2(block_dim));
+            unsigned int nbsr = rocsparse::max(4U, fnp2(block_dim));
 
             while(nbsr > wfSize)
             {

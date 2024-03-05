@@ -193,7 +193,7 @@ rocsparse_status rocsparse::csrmv_analysis_lrb_template_dispatch(rocsparse_handl
         unsigned int num_wgs_per_row = (bin_max_row_len - 1) / (BLOCK_MULTIPLIER * block_size) + 1;
         unsigned int grid_size       = info->csrmv_info->lrb.nRowsBins[j] * num_wgs_per_row;
 
-        max_required_grid = std::max(grid_size, max_required_grid);
+        max_required_grid = rocsparse::max(grid_size, max_required_grid);
     }
 
     if(max_required_grid != 0)
@@ -480,7 +480,8 @@ rocsparse_status rocsparse::csrmv_lrb_template_dispatch(rocsparse_handle        
                 // Dynamic LDS allocation
                 if(lds_size < CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS * sizeof(T))
                 {
-                    unsigned int grid_size = ceil((float)info->lrb.nRowsBins[j] / block_size);
+                    unsigned int grid_size
+                        = rocsparse::ceil((float)info->lrb.nRowsBins[j] / block_size);
 
                     RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_lrb_short_rows_kernel),
                                                        grid_size,
@@ -505,7 +506,8 @@ rocsparse_status rocsparse::csrmv_lrb_template_dispatch(rocsparse_handle        
                 else
                 {
                     unsigned int rows_per_wg = CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS >> j;
-                    unsigned int grid_size   = ceil((float)info->lrb.nRowsBins[j] / rows_per_wg);
+                    unsigned int grid_size
+                        = rocsparse::ceil((float)info->lrb.nRowsBins[j] / rows_per_wg);
 
                     RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_lrb_short_rows_2_kernel),
                                                        grid_size,
@@ -536,7 +538,7 @@ rocsparse_status rocsparse::csrmv_lrb_template_dispatch(rocsparse_handle        
             {
                 // Max WG size == 1024 on gfx90a.
                 // min() permits using LRB-Vector for arbitrary bins (not just bins 0-10).
-                unsigned int block_size = min(1 << j, 1024);
+                unsigned int block_size = rocsparse::min(1 << j, 1024);
 
                 if(block_size <= 256) // One warp per row
                 {

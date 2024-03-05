@@ -416,8 +416,8 @@ namespace rocsparse
         {
             const I vecStart
                 = (I)wg * (I)BLOCK_MULTIPLIER * BLOCKSIZE + csr_row_ptr[row] - idx_base;
-            const I vecEnd
-                = min(csr_row_ptr[row + 1] - idx_base, vecStart + BLOCK_MULTIPLIER * BLOCKSIZE);
+            const I vecEnd = rocsparse::min(csr_row_ptr[row + 1] - idx_base,
+                                            vecStart + BLOCK_MULTIPLIER * BLOCKSIZE);
             // In CSR-LongRows, we have more than one workgroup calculating this row.
             // The output values for those types of rows are stored using atomic_add, because
             // more than one parallel workgroup's value makes up the final answer.
@@ -517,7 +517,8 @@ namespace rocsparse
         {
             const I row_len = csr_row_ptr[i + 1] - csr_row_ptr[i];
 
-            const unsigned int target_bin = (row_len != 0) ? (unsigned int)ceil(log2f(row_len)) : 0;
+            const unsigned int target_bin
+                = (row_len != 0) ? (unsigned int)rocsparse::ceil(log2f(row_len)) : 0;
 
             rows_binoffsets_scratch[i] = rocsparse::atomic_add(&n_rows_bins[target_bin], (J)1);
         }
@@ -569,7 +570,8 @@ namespace rocsparse
         {
             const I row_len = csr_row_ptr[i + 1] - csr_row_ptr[i];
 
-            const unsigned int target_bin = (row_len != 0) ? (unsigned int)ceil(log2f(row_len)) : 0;
+            const unsigned int target_bin
+                = (row_len != 0) ? (unsigned int)rocsparse::ceil(log2f(row_len)) : 0;
 
             rows_bins[n_rows_bins[target_bin] + rows_binoffsets_scratch[i]] = i;
         }
@@ -608,8 +610,9 @@ namespace rocsparse
         const J bin_num_rows = n_rows_bins[bin_id + 1] - bin_start;
 
         const unsigned int wg_row_start = gid * BLOCKSIZE;
-        const unsigned int wg_row_end   = min(wg_row_start + BLOCKSIZE, bin_num_rows);
-        const unsigned int wg_num_rows  = wg_row_end - wg_row_start;
+        const unsigned int wg_row_end
+            = rocsparse::min(wg_row_start + BLOCKSIZE, uint32_t(bin_num_rows));
+        const unsigned int wg_num_rows = wg_row_end - wg_row_start;
 
         // Load a block of row data using all threads in the WG.
         for(unsigned int base_idx = 0; base_idx < (BLOCKSIZE << bin_id); base_idx += BLOCKSIZE)
@@ -699,8 +702,9 @@ namespace rocsparse
         const J            bin_num_rows = n_rows_bins[bin_id + 1] - bin_start;
         const unsigned int rows_per_wg  = CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS >> bin_id;
         const unsigned int wg_row_start = gid * rows_per_wg;
-        const unsigned int wg_row_end   = min(wg_row_start + rows_per_wg, bin_num_rows);
-        const unsigned int wg_num_rows  = wg_row_end - wg_row_start;
+        const unsigned int wg_row_end
+            = rocsparse::min(wg_row_start + rows_per_wg, uint32_t(bin_num_rows));
+        const unsigned int wg_num_rows = wg_row_end - wg_row_start;
 
         // Load a block of row data using all threads in the WG.
         for(unsigned int base_idx = 0; base_idx < CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS;
@@ -944,8 +948,8 @@ namespace rocsparse
 
         // Each workgroup computes exactly one row.
         const I vecStart = (I)wg * (I)BLOCK_MULTIPLIER * BLOCKSIZE + csr_row_ptr[row] - idx_base;
-        const I vecEnd
-            = min(csr_row_ptr[row + 1] - idx_base, vecStart + BLOCK_MULTIPLIER * BLOCKSIZE);
+        const I vecEnd   = rocsparse::min(csr_row_ptr[row + 1] - idx_base,
+                                        vecStart + I(BLOCK_MULTIPLIER * BLOCKSIZE));
 
         T temp_sum = static_cast<T>(0);
 

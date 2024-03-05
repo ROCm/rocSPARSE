@@ -433,7 +433,7 @@ public:
             const I nmaxiter = nmaxiter_[0];
 
             void*   buffer = buffer_;
-            const I mean   = std::max(nnz_ / m_, static_cast<I>(1));
+            const I mean   = rocsparse::max(nnz_ / m_, static_cast<I>(1));
 
             //
             // Initialize the convergence info.

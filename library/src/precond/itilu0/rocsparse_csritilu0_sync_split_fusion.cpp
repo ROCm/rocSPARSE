@@ -169,7 +169,7 @@ struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             //
             // buffer csritilu0x
             //
-            buffer_size += std::max(buffer_size_csxsldu, buffer_size_csritilu0x);
+            buffer_size += rocsparse::max(buffer_size_csxsldu, buffer_size_csritilu0x);
             *buffer_size_ = buffer_size;
             return rocsparse_status_success;
         }

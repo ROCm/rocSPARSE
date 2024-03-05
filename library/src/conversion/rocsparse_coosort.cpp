@@ -79,17 +79,17 @@ rocsparse_status rocsparse::coosort_buffer_size_template(rocsparse_handle handle
     rocprim::double_buffer<J> dummy(ptr, ptr);
 
     RETURN_IF_HIP_ERROR(rocprim::run_length_encode(nullptr, size, ptr, nnz, ptr, ptr, ptr, stream));
-    *buffer_size = std::max(size, *buffer_size);
+    *buffer_size = rocsparse::max(size, *buffer_size);
     RETURN_IF_HIP_ERROR(
         rocprim::exclusive_scan(nullptr, size, ptr, ptr, 0, m + 1, rocprim::plus<J>(), stream));
-    *buffer_size = std::max(size, *buffer_size);
+    *buffer_size = rocsparse::max(size, *buffer_size);
     RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(nullptr, size, dummy, dummy, nnz, 0, 32, stream));
-    *buffer_size = std::max(size, *buffer_size);
+    *buffer_size = rocsparse::max(size, *buffer_size);
     rocprim::double_buffer<J> rpdummy(ptr, ptr);
 
     RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs(
         nullptr, size, rpdummy, rpdummy, nnz, m, ptr, ptr + 1, 0, 32, stream));
-    *buffer_size = std::max(size, *buffer_size);
+    *buffer_size = rocsparse::max(size, *buffer_size);
     *buffer_size = ((*buffer_size - 1) / 256 + 1) * 256;
 
     // rocPRIM does not support in-place sorting, so we need additional buffer
@@ -102,7 +102,7 @@ rocsparse_status rocsparse::coosort_buffer_size_template(rocsparse_handle handle
     // perm buffer
     *buffer_size += ((sizeof(J) * nnz - 1) / 256 + 1) * 256;
     // segment buffer
-    *buffer_size += ((sizeof(J) * std::max(m, n)) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(J) * rocsparse::max(m, n)) / 256 + 1) * 256;
 
     return rocsparse_status_success;
 }
@@ -239,7 +239,7 @@ rocsparse_status rocsparse::coosort_by_row_template(rocsparse_handle handle,
     ptr += ((sizeof(J) * nnz - 1) / 256 + 1) * 256;
 
     J* work4 = reinterpret_cast<J*>(ptr);
-    ptr += ((sizeof(J) * std::max(m, n)) / 256 + 1) * 256;
+    ptr += ((sizeof(J) * rocsparse::max(m, n)) / 256 + 1) * 256;
 
     // Temporary rocprim buffer
     size_t size        = 0;

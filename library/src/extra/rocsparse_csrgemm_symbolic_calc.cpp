@@ -148,7 +148,7 @@ namespace rocsparse
                             next_k = k;
 
                             // Store the first column index of B that exceeds the current chunk
-                            min_col = min(min_col, col_B);
+                            min_col = rocsparse::min(min_col, col_B);
                             break;
                         }
                     }
@@ -188,7 +188,7 @@ namespace rocsparse
                     else if(col_D >= chunk_end)
                     {
                         // Store the first column index of D that exceeds the current chunk
-                        min_col = min(min_col, col_D);
+                        min_col = rocsparse::min(min_col, col_D);
                         break;
                     }
 
@@ -499,7 +499,7 @@ namespace rocsparse
         for(; row < m; row += hipGridDim_x * BLOCKSIZE)
         {
             // Determine local maximum
-            local_max = max(local_max, csr_row_ptr[row + 1] - csr_row_ptr[row]);
+            local_max = rocsparse::max(local_max, J(csr_row_ptr[row + 1] - csr_row_ptr[row]));
         }
 
         // Shared memory for block reduction
@@ -1054,7 +1054,7 @@ namespace rocsparse
             dim3(CSRGEMM_DIM),
             0,
             handle->stream,
-            std::max(k, n),
+            rocsparse::max(k, n),
             group_offset,
             perm,
             csr_row_ptr_A,
@@ -1314,7 +1314,7 @@ rocsparse_status rocsparse::csrgemm_symbolic_calc_template(rocsparse_handle     
             0,
             stream,
             h_group_size[0],
-            std::max(k, n),
+            rocsparse::max(k, n),
             &d_group_offset[0],
             d_perm,
             csr_row_ptr_A,
@@ -1353,7 +1353,7 @@ rocsparse_status rocsparse::csrgemm_symbolic_calc_template(rocsparse_handle     
             0,
             stream,
             h_group_size[1],
-            std::max(k, n),
+            rocsparse::max(k, n),
             &d_group_offset[1],
             d_perm,
             csr_row_ptr_A,
@@ -1390,7 +1390,7 @@ rocsparse_status rocsparse::csrgemm_symbolic_calc_template(rocsparse_handle     
             dim3(CSRGEMM_DIM),
             0,
             stream,
-            std::max(k, n),
+            rocsparse::max(k, n),
             &d_group_offset[2],
             d_perm,
             csr_row_ptr_A,
@@ -1427,7 +1427,7 @@ rocsparse_status rocsparse::csrgemm_symbolic_calc_template(rocsparse_handle     
             dim3(CSRGEMM_DIM),
             0,
             stream,
-            std::max(k, n),
+            rocsparse::max(k, n),
             &d_group_offset[3],
             d_perm,
             csr_row_ptr_A,
@@ -1464,7 +1464,7 @@ rocsparse_status rocsparse::csrgemm_symbolic_calc_template(rocsparse_handle     
             dim3(CSRGEMM_DIM),
             0,
             stream,
-            std::max(k, n),
+            rocsparse::max(k, n),
             &d_group_offset[4],
             d_perm,
             csr_row_ptr_A,
@@ -1501,7 +1501,7 @@ rocsparse_status rocsparse::csrgemm_symbolic_calc_template(rocsparse_handle     
             dim3(CSRGEMM_DIM),
             0,
             stream,
-            std::max(k, n),
+            rocsparse::max(k, n),
             &d_group_offset[5],
             d_perm,
             csr_row_ptr_A,
