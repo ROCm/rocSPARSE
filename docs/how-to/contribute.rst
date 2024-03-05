@@ -19,7 +19,7 @@ Pull-request guidelines
 * Do not break existing test cases
 * New functionality will only be merged with new unit tests.
 
-  * New unit tests should integrate within the existing `googletest framework <https://github.com/google/googletest/blob/master/googletest/docs/primer.md>`_.
+  * New unit tests should integrate within the existing `googletest framework <https://github.com/google/googletest/blob/main/docs/primer.md>`_.
   * Tests must have good code coverage.
   * Code must also have benchmark tests, and performance must approach the compute bound limit or memory bound limit.
 
