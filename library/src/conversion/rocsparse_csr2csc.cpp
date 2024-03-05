@@ -427,8 +427,8 @@ rocsparse_status rocsparse::csr2csc_buffer_size_core(rocsparse_handle handle,
     // rocPRIM does not support in-place sorting, so we need additional buffer
     // for all temporary arrays
     *buffer_size += ((sizeof(J) * nnz - 1) / 256 + 1) * 256;
-    *buffer_size += ((std::max(sizeof(I), sizeof(J)) * nnz - 1) / 256 + 1) * 256;
-    *buffer_size += ((std::max(sizeof(I), sizeof(J)) * nnz - 1) / 256 + 1) * 256;
+    *buffer_size += ((rocsparse::max(sizeof(I), sizeof(J)) * nnz - 1) / 256 + 1) * 256;
+    *buffer_size += ((rocsparse::max(sizeof(I), sizeof(J)) * nnz - 1) / 256 + 1) * 256;
 
     return rocsparse_status_success;
 }

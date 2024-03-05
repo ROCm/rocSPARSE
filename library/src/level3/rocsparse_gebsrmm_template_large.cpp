@@ -171,7 +171,7 @@ namespace rocsparse
         // where the block max size is the maximum block dimension.
         //
         const enum_large_config config
-            = rocsparse::get_large_config(std::max(row_block_dim, col_block_dim), n);
+            = rocsparse::get_large_config(rocsparse::max(row_block_dim, col_block_dim), n);
         switch(config)
         {
 #define DEFINE_CASE(i, j, k)       \

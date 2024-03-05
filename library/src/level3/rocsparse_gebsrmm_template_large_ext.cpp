@@ -161,7 +161,7 @@ namespace rocsparse
         // Select which tuned kernel to apply.
         //
         const enum_large_config_ext config
-            = rocsparse::get_large_config_ext(std::max(row_block_dim, col_block_dim), n);
+            = rocsparse::get_large_config_ext(rocsparse::max(row_block_dim, col_block_dim), n);
         switch(config)
         {
 #define DEFINE_CASE(i, j, k, l)       \

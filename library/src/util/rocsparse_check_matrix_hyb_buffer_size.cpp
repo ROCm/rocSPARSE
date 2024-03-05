@@ -276,6 +276,6 @@ rocsparse_status rocsparse_check_matrix_hyb_buffer_size(rocsparse_handle        
                                                                   storage,
                                                                   &coo_buffer_size));
 
-    *buffer_size = std::max(ell_buffer_size, coo_buffer_size);
+    *buffer_size = rocsparse::max(ell_buffer_size, coo_buffer_size);
     return rocsparse_status_success;
 }

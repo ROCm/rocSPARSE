@@ -25,6 +25,7 @@
 #pragma once
 
 #include "argdescr.h"
+#include "common.h"
 #include "message.h"
 #include <iostream>
 
@@ -198,7 +199,7 @@ inline void dprint(I size_, const T* v, const char* name_ = nullptr, I short_siz
 {
     T* p = new T[size_];
     hipMemcpy(p, v, sizeof(T) * size_, hipMemcpyDeviceToHost);
-    for(I i = 0; i < std::min(size_, short_size_); ++i)
+    for(I i = 0; i < rocsparse::min(size_, short_size_); ++i)
     {
         std::cout << "" << ((name_) ? name_ : "a") << "[" << i << "]" << p[i] << std::endl;
     }

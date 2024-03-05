@@ -425,8 +425,10 @@ namespace rocsparse
         {
         case rocsparse_operation_none:
         {
-            ROCSPARSE_CHECKARG(
-                18, ldc, (ldc < std::max(s_one, mb * block_dim)), rocsparse_status_invalid_size);
+            ROCSPARSE_CHECKARG(18,
+                               ldc,
+                               (ldc < rocsparse::max(s_one, mb * block_dim)),
+                               rocsparse_status_invalid_size);
 
             // Check leading dimension of B
             switch(trans_B)
@@ -435,7 +437,7 @@ namespace rocsparse
             {
                 ROCSPARSE_CHECKARG(15,
                                    ldb,
-                                   (ldb < std::max(s_one, kb * block_dim)),
+                                   (ldb < rocsparse::max(s_one, kb * block_dim)),
                                    rocsparse_status_invalid_size);
                 break;
             }
@@ -443,7 +445,7 @@ namespace rocsparse
             case rocsparse_operation_conjugate_transpose:
             {
                 ROCSPARSE_CHECKARG(
-                    15, ldb, (ldb < std::max(s_one, n)), rocsparse_status_invalid_size);
+                    15, ldb, (ldb < rocsparse::max(s_one, n)), rocsparse_status_invalid_size);
                 break;
             }
             }
@@ -453,8 +455,10 @@ namespace rocsparse
         case rocsparse_operation_transpose:
         case rocsparse_operation_conjugate_transpose:
         {
-            ROCSPARSE_CHECKARG(
-                18, ldc, (ldc < std::max(s_one, kb * block_dim)), rocsparse_status_invalid_size);
+            ROCSPARSE_CHECKARG(18,
+                               ldc,
+                               (ldc < rocsparse::max(s_one, kb * block_dim)),
+                               rocsparse_status_invalid_size);
 
             switch(trans_B)
             {
@@ -462,7 +466,7 @@ namespace rocsparse
             {
                 ROCSPARSE_CHECKARG(15,
                                    ldb,
-                                   (ldb < std::max(s_one, mb * block_dim)),
+                                   (ldb < rocsparse::max(s_one, mb * block_dim)),
                                    rocsparse_status_invalid_size);
                 break;
             }
@@ -470,7 +474,7 @@ namespace rocsparse
             case rocsparse_operation_conjugate_transpose:
             {
                 ROCSPARSE_CHECKARG(
-                    15, ldb, (ldb < std::max(s_one, n)), rocsparse_status_invalid_size);
+                    15, ldb, (ldb < rocsparse::max(s_one, n)), rocsparse_status_invalid_size);
                 break;
             }
             }

@@ -1034,8 +1034,8 @@ try
 
     RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
-    singular_pivot = std::min(((zero_pivot == -1) ? max_int : zero_pivot),
-                              ((singular_pivot == -1) ? max_int : singular_pivot));
+    singular_pivot = rocsparse::min(((zero_pivot == -1) ? max_int : zero_pivot),
+                                    ((singular_pivot == -1) ? max_int : singular_pivot));
 
     if(singular_pivot == max_int)
     {

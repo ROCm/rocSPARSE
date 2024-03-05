@@ -340,7 +340,7 @@ rocsparse_status rocsparse::csrmv_stream_template_dispatch(rocsparse_handle    h
             rocsparse_int max_blocks = 1024;
             rocsparse_int min_blocks = (m - 1) / CSRMVT_DIM + 1;
 
-            dim3 csrmvt_blocks(std::min(min_blocks, max_blocks));
+            dim3 csrmvt_blocks(rocsparse::min(min_blocks, max_blocks));
             dim3 csrmvt_threads(CSRMVT_DIM);
 
             if(nnz_per_row < 4)
@@ -400,7 +400,7 @@ rocsparse_status rocsparse::csrmv_stream_template_dispatch(rocsparse_handle    h
         rocsparse_int max_blocks = 1024;
         rocsparse_int min_blocks = (m - 1) / CSRMV_SYMM_DIM + 1;
 
-        dim3 csrmvt_blocks(std::min(min_blocks, max_blocks));
+        dim3 csrmvt_blocks(rocsparse::min(min_blocks, max_blocks));
         dim3 csrmvt_threads(CSRMV_SYMM_DIM);
 
         if(nnz_per_row < 4)

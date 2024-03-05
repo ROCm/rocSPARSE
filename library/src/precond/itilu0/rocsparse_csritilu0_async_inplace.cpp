@@ -468,7 +468,9 @@ namespace rocsparse
         {
             hipStream_t stream         = handle_->stream;
             const bool  use_coo_format = (options_ & rocsparse_itilu0_option_coo_format) > 0;
-            const I     mean           = std::max(nnz_ / m_, static_cast<I>(1));
+
+            const I mean = rocsparse::max(nnz_ / m_, static_cast<I>(1));
+
             if(!use_coo_format)
             {
                 for(J iter = 0; iter < nmaxiter_; ++iter)
@@ -568,8 +570,9 @@ namespace rocsparse
 
             const I nmaxiter = nmaxiter_[0];
 
-            void*   buffer = buffer_;
-            const I mean   = std::max(nnz_ / m_, static_cast<I>(1));
+            void* buffer = buffer_;
+
+            const I mean = rocsparse::max(nnz_ / m_, static_cast<I>(1));
 
             //
             // Initialize the convergence info.

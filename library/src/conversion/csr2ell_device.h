@@ -43,7 +43,7 @@ namespace rocsparse
 
         for(unsigned int idx = gid; idx < m; idx += hipGridDim_x * BLOCKSIZE)
         {
-            sdata[tid] = max(sdata[tid], csr_row_ptr[idx + 1] - csr_row_ptr[idx]);
+            sdata[tid] = rocsparse::max(sdata[tid], J(csr_row_ptr[idx + 1] - csr_row_ptr[idx]));
         }
 
         __syncthreads();
@@ -68,7 +68,7 @@ namespace rocsparse
 
         for(unsigned int i = tid; i < m; i += BLOCKSIZE)
         {
-            sdata[tid] = max(sdata[tid], workspace[i]);
+            sdata[tid] = rocsparse::max(sdata[tid], workspace[i]);
         }
 
         __syncthreads();

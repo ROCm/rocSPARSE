@@ -96,13 +96,32 @@ template <>
 __device__ __forceinline__ rocsparse_double_complex fma(rocsparse_double_complex p, rocsparse_double_complex q, rocsparse_double_complex r) { return std::fma(p, q, r); }
 
 
-__device__ __forceinline__ float abs(float x) { return x < 0.0f ? -x : x; }
-__device__ __forceinline__ double abs(double x) { return x < 0.0 ? -x : x; }
-__device__ __forceinline__ float abs(rocsparse_float_complex x) { return std::abs(x); }
-__device__ __forceinline__ double abs(rocsparse_double_complex x) { return std::abs(x); }
+  __device__ __forceinline__ float abs(float x) { return x < 0.0f ? -x : x; }
+  __device__ __forceinline__ double abs(double x) { return x < 0.0 ? -x : x; }
+  __device__ __forceinline__ float abs(rocsparse_float_complex x) { return std::abs(x); }
+  __device__ __forceinline__ double abs(rocsparse_double_complex x) { return std::abs(x); }
 
-__device__ __forceinline__ float sqrt(float val) { return std::sqrt(val); }
-__device__ __forceinline__ double sqrt(double val) { return std::sqrt(val); }
+  __device__ __host__ __forceinline__ float ceil(float x) { return std::ceilf(x); }
+  __device__ __host__ __forceinline__ double ceil(double x) { return std::ceil(x); }
+
+  __device__ __host__ __forceinline__ float max(float x, float y) { return std::max(x, y); }
+  __device__ __host__ __forceinline__ double max(double x, double y) { return std::max(x, y); }
+  __device__ __host__ __forceinline__ int32_t max(int32_t x, int32_t y) { return std::max(x, y); }
+  __device__ __host__ __forceinline__ int64_t max(int64_t x, int64_t y) { return std::max(x, y); }
+  __device__ __host__ __forceinline__ uint32_t max(uint32_t x, uint32_t y) { return std::max(x, y); }
+  __device__ __host__ __forceinline__ uint64_t max(uint64_t x, uint64_t y) { return std::max(x, y); }
+
+  __device__ __host__ __forceinline__ float min(float x, float y) { return std::min(x, y); }
+  __device__ __host__ __forceinline__ double min(double x, double y) { return std::min(x, y); }
+  __device__ __host__ __forceinline__ int32_t min(int32_t x, int32_t y) { return std::min(x, y); }
+  __device__ __host__ __forceinline__ int64_t min(int64_t x, int64_t y) { return std::min(x, y); }
+  __device__ __host__ __forceinline__ uint32_t min(uint32_t x, uint32_t y) { return std::min(x, y); }
+  __device__ __host__ __forceinline__ uint64_t min(uint64_t x, uint64_t y) { return std::min(x, y); }
+
+
+  __device__ __forceinline__ float sqrt(float val) { return std::sqrt(val); }
+  __device__ __forceinline__ double sqrt(double val) { return std::sqrt(val); }
+
 __device__ __forceinline__ rocsparse_float_complex sqrt(rocsparse_float_complex val)
 {
     float x = std::real(val);
@@ -302,32 +321,32 @@ __device__ __forceinline__ void blockreduce_sum(int i, T* data)
 template <unsigned int BLOCKSIZE, typename T>
 __device__ __forceinline__ void blockreduce_max(int i, T* data)
 {
-    if(BLOCKSIZE > 512) { if(i < 512 && i + 512 < BLOCKSIZE) { data[i] = max(data[i], data[i + 512]); } __syncthreads(); }
-    if(BLOCKSIZE > 256) { if(i < 256 && i + 256 < BLOCKSIZE) { data[i] = max(data[i], data[i + 256]); } __syncthreads(); }
-    if(BLOCKSIZE > 128) { if(i < 128 && i + 128 < BLOCKSIZE) { data[i] = max(data[i], data[i + 128]); } __syncthreads(); }
-    if(BLOCKSIZE >  64) { if(i <  64 && i +  64 < BLOCKSIZE) { data[i] = max(data[i], data[i +  64]); } __syncthreads(); }
-    if(BLOCKSIZE >  32) { if(i <  32 && i +  32 < BLOCKSIZE) { data[i] = max(data[i], data[i +  32]); } __syncthreads(); }
-    if(BLOCKSIZE >  16) { if(i <  16 && i +  16 < BLOCKSIZE) { data[i] = max(data[i], data[i +  16]); } __syncthreads(); }
-    if(BLOCKSIZE >   8) { if(i <   8 && i +   8 < BLOCKSIZE) { data[i] = max(data[i], data[i +   8]); } __syncthreads(); }
-    if(BLOCKSIZE >   4) { if(i <   4 && i +   4 < BLOCKSIZE) { data[i] = max(data[i], data[i +   4]); } __syncthreads(); }
-    if(BLOCKSIZE >   2) { if(i <   2 && i +   2 < BLOCKSIZE) { data[i] = max(data[i], data[i +   2]); } __syncthreads(); }
-    if(BLOCKSIZE >   1) { if(i <   1 && i +   1 < BLOCKSIZE) { data[i] = max(data[i], data[i +   1]); } __syncthreads(); }
+    if(BLOCKSIZE > 512) { if(i < 512 && i + 512 < BLOCKSIZE) { data[i] = rocsparse::max(data[i], data[i + 512]); } __syncthreads(); }
+    if(BLOCKSIZE > 256) { if(i < 256 && i + 256 < BLOCKSIZE) { data[i] = rocsparse::max(data[i], data[i + 256]); } __syncthreads(); }
+    if(BLOCKSIZE > 128) { if(i < 128 && i + 128 < BLOCKSIZE) { data[i] = rocsparse::max(data[i], data[i + 128]); } __syncthreads(); }
+    if(BLOCKSIZE >  64) { if(i <  64 && i +  64 < BLOCKSIZE) { data[i] = rocsparse::max(data[i], data[i +  64]); } __syncthreads(); }
+    if(BLOCKSIZE >  32) { if(i <  32 && i +  32 < BLOCKSIZE) { data[i] = rocsparse::max(data[i], data[i +  32]); } __syncthreads(); }
+    if(BLOCKSIZE >  16) { if(i <  16 && i +  16 < BLOCKSIZE) { data[i] = rocsparse::max(data[i], data[i +  16]); } __syncthreads(); }
+    if(BLOCKSIZE >   8) { if(i <   8 && i +   8 < BLOCKSIZE) { data[i] = rocsparse::max(data[i], data[i +   8]); } __syncthreads(); }
+    if(BLOCKSIZE >   4) { if(i <   4 && i +   4 < BLOCKSIZE) { data[i] = rocsparse::max(data[i], data[i +   4]); } __syncthreads(); }
+    if(BLOCKSIZE >   2) { if(i <   2 && i +   2 < BLOCKSIZE) { data[i] = rocsparse::max(data[i], data[i +   2]); } __syncthreads(); }
+    if(BLOCKSIZE >   1) { if(i <   1 && i +   1 < BLOCKSIZE) { data[i] = rocsparse::max(data[i], data[i +   1]); } __syncthreads(); }
 }
 
 // Block reduce kernel computing blockwide minimum entry
 template <unsigned int BLOCKSIZE, typename T>
 __device__ __forceinline__ void blockreduce_min(int i, T* data)
 {
-    if(BLOCKSIZE > 512) { if(i < 512 && i + 512 < BLOCKSIZE) { data[i] = min(data[i], data[i + 512]); } __syncthreads(); }
-    if(BLOCKSIZE > 256) { if(i < 256 && i + 256 < BLOCKSIZE) { data[i] = min(data[i], data[i + 256]); } __syncthreads(); }
-    if(BLOCKSIZE > 128) { if(i < 128 && i + 128 < BLOCKSIZE) { data[i] = min(data[i], data[i + 128]); } __syncthreads(); }
-    if(BLOCKSIZE >  64) { if(i <  64 && i +  64 < BLOCKSIZE) { data[i] = min(data[i], data[i +  64]); } __syncthreads(); }
-    if(BLOCKSIZE >  32) { if(i <  32 && i +  32 < BLOCKSIZE) { data[i] = min(data[i], data[i +  32]); } __syncthreads(); }
-    if(BLOCKSIZE >  16) { if(i <  16 && i +  16 < BLOCKSIZE) { data[i] = min(data[i], data[i +  16]); } __syncthreads(); }
-    if(BLOCKSIZE >   8) { if(i <   8 && i +   8 < BLOCKSIZE) { data[i] = min(data[i], data[i +   8]); } __syncthreads(); }
-    if(BLOCKSIZE >   4) { if(i <   4 && i +   4 < BLOCKSIZE) { data[i] = min(data[i], data[i +   4]); } __syncthreads(); }
-    if(BLOCKSIZE >   2) { if(i <   2 && i +   2 < BLOCKSIZE) { data[i] = min(data[i], data[i +   2]); } __syncthreads(); }
-    if(BLOCKSIZE >   1) { if(i <   1 && i +   1 < BLOCKSIZE) { data[i] = min(data[i], data[i +   1]); } __syncthreads(); }
+    if(BLOCKSIZE > 512) { if(i < 512 && i + 512 < BLOCKSIZE) { data[i] = rocsparse::min(data[i], data[i + 512]); } __syncthreads(); }
+    if(BLOCKSIZE > 256) { if(i < 256 && i + 256 < BLOCKSIZE) { data[i] = rocsparse::min(data[i], data[i + 256]); } __syncthreads(); }
+    if(BLOCKSIZE > 128) { if(i < 128 && i + 128 < BLOCKSIZE) { data[i] = rocsparse::min(data[i], data[i + 128]); } __syncthreads(); }
+    if(BLOCKSIZE >  64) { if(i <  64 && i +  64 < BLOCKSIZE) { data[i] = rocsparse::min(data[i], data[i +  64]); } __syncthreads(); }
+    if(BLOCKSIZE >  32) { if(i <  32 && i +  32 < BLOCKSIZE) { data[i] = rocsparse::min(data[i], data[i +  32]); } __syncthreads(); }
+    if(BLOCKSIZE >  16) { if(i <  16 && i +  16 < BLOCKSIZE) { data[i] = rocsparse::min(data[i], data[i +  16]); } __syncthreads(); }
+    if(BLOCKSIZE >   8) { if(i <   8 && i +   8 < BLOCKSIZE) { data[i] = rocsparse::min(data[i], data[i +   8]); } __syncthreads(); }
+    if(BLOCKSIZE >   4) { if(i <   4 && i +   4 < BLOCKSIZE) { data[i] = rocsparse::min(data[i], data[i +   4]); } __syncthreads(); }
+    if(BLOCKSIZE >   2) { if(i <   2 && i +   2 < BLOCKSIZE) { data[i] = rocsparse::min(data[i], data[i +   2]); } __syncthreads(); }
+    if(BLOCKSIZE >   1) { if(i <   1 && i +   1 < BLOCKSIZE) { data[i] = rocsparse::min(data[i], data[i +   1]); } __syncthreads(); }
 }
 
 
@@ -349,37 +368,37 @@ static __device__ __forceinline__ void wfreduce_max(float* maximum)
     if(WFSIZE > 1)
     {
         upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x111, 0xf, 0xf, false);
-        temp_max.val     = max(temp_max.val, upper_max.val);
+        temp_max.val     = rocsparse::max(temp_max.val, upper_max.val);
     }
 
     if(WFSIZE > 2)
     {
         upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x112, 0xf, 0xf, false);
-        temp_max.val     = max(temp_max.val, upper_max.val);
+        temp_max.val     = rocsparse::max(temp_max.val, upper_max.val);
     }
 
     if(WFSIZE > 4)
     {
         upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x114, 0xf, 0xe, false);
-        temp_max.val     = max(temp_max.val, upper_max.val);
+        temp_max.val     = rocsparse::max(temp_max.val, upper_max.val);
     }
 
     if(WFSIZE > 8)
     {
         upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x118, 0xf, 0xc, false);
-        temp_max.val     = max(temp_max.val, upper_max.val);
+        temp_max.val     = rocsparse::max(temp_max.val, upper_max.val);
     }
 
     if(WFSIZE > 16)
     {
         upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x142, 0xa, 0xf, false);
-        temp_max.val     = max(temp_max.val, upper_max.val);
+        temp_max.val     = rocsparse::max(temp_max.val, upper_max.val);
     }
 
     if(WFSIZE > 32)
     {
         upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x143, 0xc, 0xf, false);
-        temp_max.val     = max(temp_max.val, upper_max.val);
+        temp_max.val     = rocsparse::max(temp_max.val, upper_max.val);
     }
 
     *maximum = temp_max.val;
@@ -403,42 +422,42 @@ static __device__ __forceinline__ void wfreduce_max(double* maximum)
     {
         upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x111, 0xf, 0xf, false);
         upper_max.b32[1] = __hip_move_dpp(temp_max.b32[1], 0x111, 0xf, 0xf, false);
-        temp_max.i64     = max(temp_max.i64, upper_max.i64);
+        temp_max.i64     = rocsparse::max(temp_max.i64, upper_max.i64);
     }
 
     if(WFSIZE > 2)
     {
         upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x112, 0xf, 0xf, false);
         upper_max.b32[1] = __hip_move_dpp(temp_max.b32[1], 0x112, 0xf, 0xf, false);
-        temp_max.i64     = max(temp_max.i64, upper_max.i64);
+        temp_max.i64     = rocsparse::max(temp_max.i64, upper_max.i64);
     }
 
     if(WFSIZE > 4)
     {
         upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x114, 0xf, 0xe, false);
         upper_max.b32[1] = __hip_move_dpp(temp_max.b32[1], 0x114, 0xf, 0xe, false);
-        temp_max.i64     = max(temp_max.i64, upper_max.i64);
+        temp_max.i64     = rocsparse::max(temp_max.i64, upper_max.i64);
     }
 
     if(WFSIZE > 8)
     {
         upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x118, 0xf, 0xc, false);
         upper_max.b32[1] = __hip_move_dpp(temp_max.b32[1], 0x118, 0xf, 0xc, false);
-        temp_max.i64     = max(temp_max.i64, upper_max.i64);
+        temp_max.i64     = rocsparse::max(temp_max.i64, upper_max.i64);
     }
 
     if(WFSIZE > 16)
     {
         upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x142, 0xa, 0xf, false);
         upper_max.b32[1] = __hip_move_dpp(temp_max.b32[1], 0x142, 0xa, 0xf, false);
-        temp_max.i64     = max(temp_max.i64, upper_max.i64);
+        temp_max.i64     = rocsparse::max(temp_max.i64, upper_max.i64);
     }
 
     if(WFSIZE > 32)
     {
         upper_max.b32[0] = __hip_move_dpp(temp_max.b32[0], 0x143, 0xc, 0xf, false);
         upper_max.b32[1] = __hip_move_dpp(temp_max.b32[1], 0x143, 0xc, 0xf, false);
-        temp_max.i64     = max(temp_max.i64, upper_max.i64);
+        temp_max.i64     = rocsparse::max(temp_max.i64, upper_max.i64);
     }
 
     *maximum = temp_max.i64;
@@ -448,12 +467,12 @@ static __device__ __forceinline__ void wfreduce_max(double* maximum)
 template <unsigned int WFSIZE>
 __device__ __forceinline__ void wfreduce_max(int* maximum)
 {
-    if(WFSIZE >  1) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x111, 0xf, 0xf, 0));
-    if(WFSIZE >  2) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x112, 0xf, 0xf, 0));
-    if(WFSIZE >  4) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x114, 0xf, 0xe, 0));
-    if(WFSIZE >  8) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x118, 0xf, 0xc, 0));
-    if(WFSIZE > 16) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x142, 0xa, 0xf, 0));
-    if(WFSIZE > 32) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x143, 0xc, 0xf, 0));
+    if(WFSIZE >  1) *maximum = rocsparse::max(*maximum, __hip_move_dpp(*maximum, 0x111, 0xf, 0xf, 0));
+    if(WFSIZE >  2) *maximum = rocsparse::max(*maximum, __hip_move_dpp(*maximum, 0x112, 0xf, 0xf, 0));
+    if(WFSIZE >  4) *maximum = rocsparse::max(*maximum, __hip_move_dpp(*maximum, 0x114, 0xf, 0xe, 0));
+    if(WFSIZE >  8) *maximum = rocsparse::max(*maximum, __hip_move_dpp(*maximum, 0x118, 0xf, 0xc, 0));
+    if(WFSIZE > 16) *maximum = rocsparse::max(*maximum, __hip_move_dpp(*maximum, 0x142, 0xa, 0xf, 0));
+    if(WFSIZE > 32) *maximum = rocsparse::max(*maximum, __hip_move_dpp(*maximum, 0x143, 0xc, 0xf, 0));
 }
 
 template <unsigned int WFSIZE>
@@ -518,12 +537,12 @@ __device__ __forceinline__ void wfreduce_max(int64_t* maximum)
 template <unsigned int WFSIZE>
 __device__ __forceinline__ void wfreduce_min(int* minimum)
 {
-    if(WFSIZE >  1) *minimum = min(*minimum, __hip_move_dpp(*minimum, 0x111, 0xf, 0xf, 0));
-    if(WFSIZE >  2) *minimum = min(*minimum, __hip_move_dpp(*minimum, 0x112, 0xf, 0xf, 0));
-    if(WFSIZE >  4) *minimum = min(*minimum, __hip_move_dpp(*minimum, 0x114, 0xf, 0xe, 0));
-    if(WFSIZE >  8) *minimum = min(*minimum, __hip_move_dpp(*minimum, 0x118, 0xf, 0xc, 0));
-    if(WFSIZE > 16) *minimum = min(*minimum, __hip_move_dpp(*minimum, 0x142, 0xa, 0xf, 0));
-    if(WFSIZE > 32) *minimum = min(*minimum, __hip_move_dpp(*minimum, 0x143, 0xc, 0xf, 0));
+    if(WFSIZE >  1) *minimum = rocsparse::min(*minimum, __hip_move_dpp(*minimum, 0x111, 0xf, 0xf, 0));
+    if(WFSIZE >  2) *minimum = rocsparse::min(*minimum, __hip_move_dpp(*minimum, 0x112, 0xf, 0xf, 0));
+    if(WFSIZE >  4) *minimum = rocsparse::min(*minimum, __hip_move_dpp(*minimum, 0x114, 0xf, 0xe, 0));
+    if(WFSIZE >  8) *minimum = rocsparse::min(*minimum, __hip_move_dpp(*minimum, 0x118, 0xf, 0xc, 0));
+    if(WFSIZE > 16) *minimum = rocsparse::min(*minimum, __hip_move_dpp(*minimum, 0x142, 0xa, 0xf, 0));
+    if(WFSIZE > 32) *minimum = rocsparse::min(*minimum, __hip_move_dpp(*minimum, 0x143, 0xc, 0xf, 0));
 }
 
 template <unsigned int WFSIZE>
@@ -543,42 +562,42 @@ __device__ __forceinline__ void wfreduce_min(int64_t* minimum)
     {
         upper_min.b32[0] = __hip_move_dpp(temp_min.b32[0], 0x111, 0xf, 0xf, false);
         upper_min.b32[1] = __hip_move_dpp(temp_min.b32[1], 0x111, 0xf, 0xf, false);
-        temp_min.i64 = min(temp_min.i64, upper_min.i64);
+        temp_min.i64 = rocsparse::min(temp_min.i64, upper_min.i64);
     }
 
     if(WFSIZE > 2)
     {
         upper_min.b32[0] = __hip_move_dpp(temp_min.b32[0], 0x112, 0xf, 0xf, false);
         upper_min.b32[1] = __hip_move_dpp(temp_min.b32[1], 0x112, 0xf, 0xf, false);
-        temp_min.i64 = min(temp_min.i64, upper_min.i64);
+        temp_min.i64 = rocsparse::min(temp_min.i64, upper_min.i64);
     }
 
     if(WFSIZE > 4)
     {
         upper_min.b32[0] = __hip_move_dpp(temp_min.b32[0], 0x114, 0xf, 0xe, false);
         upper_min.b32[1] = __hip_move_dpp(temp_min.b32[1], 0x114, 0xf, 0xe, false);
-        temp_min.i64 = min(temp_min.i64, upper_min.i64);
+        temp_min.i64 = rocsparse::min(temp_min.i64, upper_min.i64);
     }
 
     if(WFSIZE > 8)
     {
         upper_min.b32[0] = __hip_move_dpp(temp_min.b32[0], 0x118, 0xf, 0xc, false);
         upper_min.b32[1] = __hip_move_dpp(temp_min.b32[1], 0x118, 0xf, 0xc, false);
-        temp_min.i64 = min(temp_min.i64, upper_min.i64);
+        temp_min.i64 = rocsparse::min(temp_min.i64, upper_min.i64);
     }
 
     if(WFSIZE > 16)
     {
         upper_min.b32[0] = __hip_move_dpp(temp_min.b32[0], 0x142, 0xa, 0xf, false);
         upper_min.b32[1] = __hip_move_dpp(temp_min.b32[1], 0x142, 0xa, 0xf, false);
-        temp_min.i64 = min(temp_min.i64, upper_min.i64);
+        temp_min.i64 = rocsparse::min(temp_min.i64, upper_min.i64);
     }
 
     if(WFSIZE > 32)
     {
         upper_min.b32[0] = __hip_move_dpp(temp_min.b32[0], 0x143, 0xc, 0xf, false);
         upper_min.b32[1] = __hip_move_dpp(temp_min.b32[1], 0x143, 0xc, 0xf, false);
-        temp_min.i64 = min(temp_min.i64, upper_min.i64);
+        temp_min.i64 = rocsparse::min(temp_min.i64, upper_min.i64);
     }
 
     *minimum = temp_min.i64;
@@ -777,7 +796,7 @@ static __device__ __forceinline__ void wfreduce_max(double* maximum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
     {
-        *maximum = max(*maximum, __shfl_xor(*maximum, i));
+        *maximum = rocsparse::max(*maximum, __shfl_xor(*maximum, i));
     }
 }
 template <unsigned int WFSIZE>
@@ -785,7 +804,7 @@ static __device__ __forceinline__ void wfreduce_max(float* maximum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
     {
-        *maximum = max(*maximum, __shfl_xor(*maximum, i));
+        *maximum = rocsparse::max(*maximum, __shfl_xor(*maximum, i));
     }
 }
 
@@ -794,7 +813,7 @@ __device__ __forceinline__ void wfreduce_max(int* maximum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
     {
-        *maximum = max(*maximum, __shfl_xor(*maximum, i));
+        *maximum = rocsparse::max(*maximum, __shfl_xor(*maximum, i));
     }
 }
 
@@ -812,7 +831,7 @@ __device__ __forceinline__ void wfreduce_min(int* minimum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
     {
-        *minimum = min(*minimum, __shfl_xor(*minimum, i));
+        *minimum = rocsparse::min(*minimum, __shfl_xor(*minimum, i));
     }
 }
 
@@ -821,7 +840,7 @@ __device__ __forceinline__ void wfreduce_min(int64_t* minimum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
     {
-        *minimum = min(*minimum, __shfl_xor(*minimum, i));
+        *minimum = rocsparse::min(*minimum, __shfl_xor(*minimum, i));
     }
 }
 

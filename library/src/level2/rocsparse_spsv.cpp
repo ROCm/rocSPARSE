@@ -60,7 +60,7 @@ namespace rocsparse
                                                           mat->info,
                                                           buffer_size));
 
-                *buffer_size = std::max(static_cast<size_t>(4), *buffer_size);
+                *buffer_size = rocsparse::max(static_cast<size_t>(4), *buffer_size);
                 return rocsparse_status_success;
             }
             else if(mat->format == rocsparse_format_coo)
@@ -77,7 +77,7 @@ namespace rocsparse
                                                           mat->info,
                                                           buffer_size));
 
-                *buffer_size = std::max(static_cast<size_t>(4), *buffer_size);
+                *buffer_size = rocsparse::max(static_cast<size_t>(4), *buffer_size);
                 return rocsparse_status_success;
             }
             else

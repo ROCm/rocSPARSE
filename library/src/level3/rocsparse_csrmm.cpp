@@ -586,7 +586,7 @@ namespace rocsparse
             ROCSPARSE_CHECKARG(
                 16,
                 ldc,
-                (ldc < std::max(s_one, ((order_C == rocsparse_order_column) ? m : n))),
+                (ldc < rocsparse::max(s_one, ((order_C == rocsparse_order_column) ? m : n))),
                 rocsparse_status_invalid_size);
 
             // Check leading dimension of B
@@ -597,7 +597,7 @@ namespace rocsparse
                 ROCSPARSE_CHECKARG(
                     13,
                     ldb,
-                    (ldb < std::max(s_one, ((order_B == rocsparse_order_column) ? k : n))),
+                    (ldb < rocsparse::max(s_one, ((order_B == rocsparse_order_column) ? k : n))),
                     rocsparse_status_invalid_size);
 
                 break;
@@ -609,7 +609,7 @@ namespace rocsparse
                 ROCSPARSE_CHECKARG(
                     13,
                     ldb,
-                    (ldb < std::max(s_one, ((order_B == rocsparse_order_column) ? n : k))),
+                    (ldb < rocsparse::max(s_one, ((order_B == rocsparse_order_column) ? n : k))),
                     rocsparse_status_invalid_size);
                 break;
             }
@@ -622,7 +622,7 @@ namespace rocsparse
             ROCSPARSE_CHECKARG(
                 16,
                 ldc,
-                (ldc < std::max(s_one, ((order_C == rocsparse_order_column) ? k : n))),
+                (ldc < rocsparse::max(s_one, ((order_C == rocsparse_order_column) ? k : n))),
                 rocsparse_status_invalid_size);
 
             switch(trans_B)
@@ -632,7 +632,7 @@ namespace rocsparse
                 ROCSPARSE_CHECKARG(
                     13,
                     ldb,
-                    (ldb < std::max(s_one, ((order_B == rocsparse_order_column) ? m : n))),
+                    (ldb < rocsparse::max(s_one, ((order_B == rocsparse_order_column) ? m : n))),
                     rocsparse_status_invalid_size);
                 break;
             }
@@ -642,7 +642,7 @@ namespace rocsparse
                 ROCSPARSE_CHECKARG(
                     13,
                     ldb,
-                    (ldb < std::max(s_one, ((order_B == rocsparse_order_column) ? n : m))),
+                    (ldb < rocsparse::max(s_one, ((order_B == rocsparse_order_column) ? n : m))),
                     rocsparse_status_invalid_size);
                 break;
             }

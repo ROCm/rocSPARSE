@@ -629,7 +629,7 @@ namespace rocsparse
                             next_k = k;
 
                             // Store the first column index of B that exceeds the current chunk
-                            min_col = min(min_col, col_B);
+                            min_col = rocsparse::min(min_col, col_B);
                             break;
                         }
                     }
@@ -669,7 +669,7 @@ namespace rocsparse
                     else if(col_D >= chunk_end)
                     {
                         // Store the first column index of D that exceeds the current chunk
-                        min_col = min(min_col, col_D);
+                        min_col = rocsparse::min(min_col, col_D);
                         break;
                     }
 
@@ -1074,7 +1074,7 @@ namespace rocsparse
             dim3(CSRGEMM_DIM),
             0,
             handle->stream,
-            std::max(k, n),
+            rocsparse::max(k, n),
             group_offset,
             perm,
             alpha_device_host,
@@ -1203,7 +1203,7 @@ rocsparse_status rocsparse::csrgemm_numeric_calc_template(rocsparse_handle    ha
             0,
             stream,
             h_group_size[0],
-            std::max(k, n),
+            rocsparse::max(k, n),
             &d_group_offset[0],
             d_perm,
             alpha_device_host,
@@ -1247,7 +1247,7 @@ rocsparse_status rocsparse::csrgemm_numeric_calc_template(rocsparse_handle    ha
             0,
             stream,
             h_group_size[1],
-            std::max(k, n),
+            rocsparse::max(k, n),
             &d_group_offset[1],
             d_perm,
             alpha_device_host,
@@ -1290,7 +1290,7 @@ rocsparse_status rocsparse::csrgemm_numeric_calc_template(rocsparse_handle    ha
             dim3(CSRGEMM_DIM),
             0,
             stream,
-            std::max(k, n),
+            rocsparse::max(k, n),
             &d_group_offset[2],
             d_perm,
             alpha_device_host,
@@ -1334,7 +1334,7 @@ rocsparse_status rocsparse::csrgemm_numeric_calc_template(rocsparse_handle    ha
             dim3(CSRGEMM_DIM),
             0,
             stream,
-            std::max(k, n),
+            rocsparse::max(k, n),
             &d_group_offset[3],
             d_perm,
             alpha_device_host,
@@ -1378,7 +1378,7 @@ rocsparse_status rocsparse::csrgemm_numeric_calc_template(rocsparse_handle    ha
             dim3(CSRGEMM_DIM),
             0,
             stream,
-            std::max(k, n),
+            rocsparse::max(k, n),
             &d_group_offset[4],
             d_perm,
             alpha_device_host,
@@ -1422,7 +1422,7 @@ rocsparse_status rocsparse::csrgemm_numeric_calc_template(rocsparse_handle    ha
             dim3(CSRGEMM_DIM),
             0,
             stream,
-            std::max(k, n),
+            rocsparse::max(k, n),
             &d_group_offset[5],
             d_perm,
             alpha_device_host,

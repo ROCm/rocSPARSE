@@ -246,7 +246,7 @@ namespace rocsparse
                             rocsparse_int* __restrict__ pivot)
     {
         // From Bunch-Kaufman pivoting criteria
-        const double kappa = 0.5 * (rocsparse::sqrt(5.0) - 1.0);
+        const double kappa = double(0.5) * (rocsparse::sqrt(double(5.0)) - double(1.0));
 
         rocsparse_int tidx = hipThreadIdx_x;
         rocsparse_int bidx = hipBlockIdx_x;
@@ -275,11 +275,11 @@ namespace rocsparse
 
             // decide whether we should use 1x1 or 2x2 pivoting using Bunch-Kaufman
             // pivoting criteria
-            double sigma = 0;
-            sigma        = max(rocsparse::abs(ak_1), rocsparse::abs(ak_2));
-            sigma        = max(rocsparse::abs(bk_1), sigma);
-            sigma        = max(rocsparse::abs(ck), sigma);
-            sigma        = max(rocsparse::abs(ck_1), sigma);
+            double sigma = double(0);
+            sigma = rocsparse::max(double(rocsparse::abs(ak_1)), double(rocsparse::abs(ak_2)));
+            sigma = rocsparse::max(double(rocsparse::abs(bk_1)), sigma);
+            sigma = rocsparse::max(double(rocsparse::abs(ck)), sigma);
+            sigma = rocsparse::max(double(rocsparse::abs(ck_1)), sigma);
 
             // 1x1 pivoting
             if(rocsparse::abs(bk) * sigma >= kappa * rocsparse::abs(ak_1 * ck)

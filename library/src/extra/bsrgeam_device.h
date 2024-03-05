@@ -90,7 +90,7 @@ namespace rocsparse
             = (row_begin_B < row_end_B) ? bsr_col_ind_B[row_begin_B] - idx_base_B : nb;
 
         // Begin of the current row chunk
-        rocsparse_int chunk_begin = min(col_A, col_B);
+        rocsparse_int chunk_begin = rocsparse::min(col_A, col_B);
 
         // Initialize the index for column access into A and B
         row_begin_A += lid;
@@ -162,7 +162,7 @@ namespace rocsparse
                 else
                 {
                     // Store the first column index of A that exceeds the current chunk
-                    min_col = min(min_col, col);
+                    min_col = rocsparse::min(min_col, col);
                     break;
                 }
             }
@@ -220,7 +220,7 @@ namespace rocsparse
                 else
                 {
                     // Store the first column index of B that exceeds the current chunk
-                    min_col = min(min_col, col);
+                    min_col = rocsparse::min(min_col, col);
                     break;
                 }
             }
@@ -284,7 +284,7 @@ namespace rocsparse
             // result
             for(unsigned int i = WFSIZE >> 1; i > 0; i >>= 1)
             {
-                min_col = min(min_col, __shfl_xor(min_col, i));
+                min_col = rocsparse::min(min_col, __shfl_xor(min_col, i));
             }
 
             // Each thread sets the new chunk beginning
@@ -359,7 +359,7 @@ namespace rocsparse
             = (row_begin_B < row_end_B) ? bsr_col_ind_B[row_begin_B] - idx_base_B : nb;
 
         // Begin of the current row chunk
-        rocsparse_int chunk_begin = min(col_A, col_B);
+        rocsparse_int chunk_begin = rocsparse::min(col_A, col_B);
 
         sdone[wid] = (row < mb) ? 0 : 1;
 
@@ -416,7 +416,7 @@ namespace rocsparse
                 else
                 {
                     // Store the first column index of A that exceeds the current chunk
-                    min_col = min(min_col, col);
+                    min_col = rocsparse::min(min_col, col);
                     break;
                 }
             }
@@ -461,7 +461,7 @@ namespace rocsparse
                 else
                 {
                     // Store the first column index of B that exceeds the current chunk
-                    min_col = min(min_col, col);
+                    min_col = rocsparse::min(min_col, col);
                     break;
                 }
             }
@@ -572,7 +572,7 @@ namespace rocsparse
             = (row_begin_B < row_end_B) ? bsr_col_ind_B[row_begin_B] - idx_base_B : nb;
 
         // Begin of the current row chunk
-        rocsparse_int chunk_begin = min(col_A, col_B);
+        rocsparse_int chunk_begin = rocsparse::min(col_A, col_B);
 
         // Initialize the index for column access into A and B
         row_begin_A += wid;
@@ -629,7 +629,7 @@ namespace rocsparse
                 else
                 {
                     // Store the first column index of A that exceeds the current chunk
-                    min_col = min(min_col, col);
+                    min_col = rocsparse::min(min_col, col);
                     break;
                 }
             }
@@ -674,7 +674,7 @@ namespace rocsparse
                 else
                 {
                     // Store the first column index of B that exceeds the current chunk
-                    min_col = min(min_col, col);
+                    min_col = rocsparse::min(min_col, col);
                     break;
                 }
             }
@@ -857,7 +857,7 @@ namespace rocsparse
             = (row_begin_B < row_end_B) ? bsr_col_ind_B[row_begin_B] - idx_base_B : nb;
 
         // Begin of the current row chunk
-        rocsparse_int chunk_begin = min(col_A, col_B);
+        rocsparse_int chunk_begin = rocsparse::min(col_A, col_B);
 
         // Loop over the chunks until the end of both rows (A and B) has been reached (which
         // is the number of total columns nb)
@@ -912,7 +912,7 @@ namespace rocsparse
                 else
                 {
                     // Store the first column index of A that exceeds the current chunk
-                    min_col = min(min_col, col);
+                    min_col = rocsparse::min(min_col, col);
                     break;
                 }
             }
@@ -958,7 +958,7 @@ namespace rocsparse
                 else
                 {
                     // Store the first column index of B that exceeds the current chunk
-                    min_col = min(min_col, col);
+                    min_col = rocsparse::min(min_col, col);
                     break;
                 }
             }

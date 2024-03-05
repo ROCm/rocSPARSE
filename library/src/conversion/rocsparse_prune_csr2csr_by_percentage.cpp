@@ -218,7 +218,7 @@ namespace rocsparse
         //	ROCSPARSE_CHECKARG_ARRAY(12,nnz_C, csr_col_ind_C);
         //      }
 
-        *buffer_size = std::max(sizeof(T) * 2 * nnz_A, size_t(512));
+        *buffer_size = rocsparse::max(sizeof(T) * 2 * nnz_A, size_t(512));
         return rocsparse_status_success;
     }
 }
@@ -316,9 +316,9 @@ rocsparse_status
     ROCSPARSE_CHECKARG_POINTER(11, nnz_total_dev_host_ptr);
     ROCSPARSE_CHECKARG_POINTER(14, temp_buffer);
 
-    rocsparse_int pos = std::ceil(nnz_A * (percentage / 100)) - 1;
-    pos               = std::min(pos, nnz_A - 1);
-    pos               = std::max(pos, static_cast<rocsparse_int>(0));
+    rocsparse_int pos = rocsparse::ceil(nnz_A * (percentage / 100)) - 1;
+    pos               = rocsparse::min(pos, nnz_A - 1);
+    pos               = rocsparse::max(pos, static_cast<rocsparse_int>(0));
 
     T* output = reinterpret_cast<T*>(temp_buffer);
 
@@ -356,7 +356,7 @@ rocsparse_status
                                                 handle->stream));
 
     const size_t temp_storage_size_bytes
-        = std::max(temp_storage_size_bytes_sort, temp_storage_size_bytes_scan);
+        = rocsparse::max(temp_storage_size_bytes_sort, temp_storage_size_bytes_scan);
 
     // Device buffer should be sufficient for rocprim in most cases
     bool  temp_alloc       = false;

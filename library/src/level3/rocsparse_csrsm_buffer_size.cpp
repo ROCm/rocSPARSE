@@ -122,7 +122,7 @@ rocsparse_status rocsparse::csrsm_buffer_size_core(rocsparse_handle          han
 
         // rocPRIM does not support in-place sorting, so we need an additional buffer
         transpose_size += ((sizeof(J) * nnz - 1) / 256 + 1) * 256;
-        transpose_size += ((std::max(sizeof(I), sizeof(T)) * nnz - 1) / 256 + 1) * 256;
+        transpose_size += ((rocsparse::max(sizeof(I), sizeof(T)) * nnz - 1) / 256 + 1) * 256;
 
         *buffer_size += transpose_size;
     }

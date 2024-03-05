@@ -3885,12 +3885,14 @@ try
     {
     case rocsparse_order_row:
     {
-        ROCSPARSE_CHECKARG(3, ld, (ld < std::max(int64_t(1), cols)), rocsparse_status_invalid_size);
+        ROCSPARSE_CHECKARG(
+            3, ld, (ld < rocsparse::max(int64_t(1), cols)), rocsparse_status_invalid_size);
         break;
     }
     case rocsparse_order_column:
     {
-        ROCSPARSE_CHECKARG(3, ld, (ld < std::max(int64_t(1), rows)), rocsparse_status_invalid_size);
+        ROCSPARSE_CHECKARG(
+            3, ld, (ld < rocsparse::max(int64_t(1), rows)), rocsparse_status_invalid_size);
         break;
     }
     }
@@ -3937,12 +3939,14 @@ try
     {
     case rocsparse_order_row:
     {
-        ROCSPARSE_CHECKARG(3, ld, (ld < std::max(int64_t(1), cols)), rocsparse_status_invalid_size);
+        ROCSPARSE_CHECKARG(
+            3, ld, (ld < rocsparse::max(int64_t(1), cols)), rocsparse_status_invalid_size);
         break;
     }
     case rocsparse_order_column:
     {
-        ROCSPARSE_CHECKARG(3, ld, (ld < std::max(int64_t(1), rows)), rocsparse_status_invalid_size);
+        ROCSPARSE_CHECKARG(
+            3, ld, (ld < rocsparse::max(int64_t(1), rows)), rocsparse_status_invalid_size);
         break;
     }
     }
