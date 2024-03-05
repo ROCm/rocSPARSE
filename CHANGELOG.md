@@ -3,7 +3,7 @@
 Documentation for rocSPARSE is available at
 [https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/](https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/).
 
-## rocSPARSE 3.1.1 for ROCm 6.1.0
+## rocSPARSE 3.1.2 for ROCm 6.1.0
 
 ### Additions
 
@@ -15,6 +15,7 @@ Documentation for rocSPARSE is available at
 
 * Triangular solve with multiple rhs (SpSM, csrsm, ...) now calls SpSV, csrsv, etcetera when nrhs equals 1
 * Improved user manual section *Installation and Building for Linux and Windows*
+* Improved SpMV in CSR format on MI300
 
 ## rocSPARSE 3.0.2 for ROCm 6.0.0
 
