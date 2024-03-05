@@ -279,23 +279,23 @@ Commonly Shared Device-Code
 
 The following table lists multiple device functions that are shared among several rocSPARSE functions.
 
-================================= ===========
-Device function                   Description
-================================= ===========
-``rocsparse_clz()``               Computes the leftmost significant bit position for int and int64 types.
-``rocsparse_one()``               Returns a pointer to ``1`` for the specified precision.
-``rocsparse_ldg()``               Wrapper to ``__ldg()`` for int, int64, single, double real and complex types.
-``rocsparse_nontemporal_load()``  Non-temporal memory load access for int, int64, single, double real and complex types.
-``rocsparse_nontemporal_store()`` Non-temporal memory store access for int, int64, single, double real and complex types.
-``rocsparse_mul24()``             Multiply 24-bit integer values.
-``rocsparse_mad24()``             Multiply 24-bit integers and add a 32-bit value.
-``rocsparse_blockreduce_sum()``   Block-wide reduction sum for int, int64, single, double real and complex types.
-``rocsparse_blockreduce_max()``   Block-wide reduction max for int, int64, single, double real and complex types.
-``rocsparse_blockreduce_min()``   Block-wide reduction min for int, int64, single, double real and complex types.
-``rocsparse_wfreduce_max()``      DPP based wavefront reduction max for int type.
-``rocsparse_wfreduce_min()``      DPP based wavefront reduction min for int and int64 types.
-``rocsparse_wfreduce_sum()``      DPP based wavefront reduction sum for int, int64, single, double real and complex types.
-================================= ===========
+================================== ===========
+Device function                    Description
+================================== ===========
+``rocsparse::clz()``               Computes the leftmost significant bit position for int and int64 types.
+``rocsparse::one()``               Returns a pointer to ``1`` for the specified precision.
+``rocsparse::ldg()``               Wrapper to ``__ldg()`` for int, int64, single, double real and complex types.
+``rocsparse::nontemporal_load()``  Non-temporal memory load access for int, int64, single, double real and complex types.
+``rocsparse::nontemporal_store()`` Non-temporal memory store access for int, int64, single, double real and complex types.
+``rocsparse::mul24()``             Multiply 24-bit integer values.
+``rocsparse::mad24()``             Multiply 24-bit integers and add a 32-bit value.
+``rocsparse::blockreduce_sum()``   Block-wide reduction sum for int, int64, single, double real and complex types.
+``rocsparse::blockreduce_max()``   Block-wide reduction max for int, int64, single, double real and complex types.
+``rocsparse::blockreduce_min()``   Block-wide reduction min for int, int64, single, double real and complex types.
+``rocsparse::wfreduce_max()``      DPP based wavefront reduction max for int type.
+``rocsparse::wfreduce_min()``      DPP based wavefront reduction min for int and int64 types.
+``rocsparse::wfreduce_sum()``      DPP based wavefront reduction sum for int, int64, single, double real and complex types.
+================================== ===========
 
 .. _rocsparse_macros:
 
