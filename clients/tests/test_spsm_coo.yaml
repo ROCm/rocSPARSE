@@ -264,7 +264,7 @@ Tests:
   precision: *single_double_precisions
   K: [875]
   ld_multiplier_B: [1]
-  ld_multiplier_C: [2]
+  ld_multiplier_C: [1]
   alpha_alphai: *alpha_range_checkin
   transA: [rocsparse_operation_transpose]
   transB: [rocsparse_operation_none]
