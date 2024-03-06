@@ -29,7 +29,7 @@
 namespace rocsparse
 {
     // y = a * x + y kernel for sparse x and dense y
-    template <unsigned int BLOCKSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename T>
     ROCSPARSE_DEVICE_ILF void axpyi_device(
         I nnz, T alpha, const T* x_val, const I* x_ind, T* y, rocsparse_index_base idx_base)
     {

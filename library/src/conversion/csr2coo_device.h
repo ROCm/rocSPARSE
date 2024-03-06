@@ -29,7 +29,7 @@
 namespace rocsparse
 {
     // CSR to COO matrix conversion kernel
-    template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, uint32_t WF_SIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csr2coo_kernel(J                    m,
                         const I*             csr_row_ptr_begin,

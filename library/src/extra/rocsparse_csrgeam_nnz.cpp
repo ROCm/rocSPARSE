@@ -31,7 +31,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE>
+    template <uint32_t BLOCKSIZE>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrgeam_index_base(rocsparse_int* nnz)
     {
@@ -41,7 +41,7 @@ namespace rocsparse
     // Compute non-zero entries per row, where each row is processed by a wavefront.
     // Splitting row into several chunks such that we can use shared memory to store whether
     // a column index is populated or not.
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrgeam_nnz_multipass_device(rocsparse_int m,
                                       rocsparse_int n,
@@ -166,7 +166,7 @@ namespace rocsparse
             // Gather wavefront-wide minimum for the next chunks starting column index
             // Using shfl_xor here so that each thread in the wavefront obtains the final
             // result
-            for(unsigned int i = WFSIZE >> 1; i > 0; i >>= 1)
+            for(uint32_t i = WFSIZE >> 1; i > 0; i >>= 1)
             {
                 min_col = rocsparse::min(min_col, __shfl_xor(min_col, i));
             }

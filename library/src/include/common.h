@@ -52,7 +52,7 @@ namespace rocsparse
 #define GEBSR_IND_C(j, bi, bj) (row_block_dim * col_block_dim * (j) + (bi) + (bj) * row_block_dim)
 
 // find next power of 2
-__device__ __host__ __forceinline__ unsigned int fnp2(unsigned int x)
+__device__ __host__ __forceinline__ uint32_t fnp2(uint32_t x)
 {
     x--;
     x |= x >> 1;
@@ -236,20 +236,20 @@ __device__ __forceinline__ T atomic_cas(T * ptr, T cmp, T val)
 template <>
 __device__ __forceinline__ int64_t atomic_min<int64_t>(int64_t * ptr, int64_t val)
 {
-  return atomicMin((unsigned long long*)ptr, (unsigned long long)val);
+  return atomicMin((uint64_t*)ptr, (uint64_t)val);
 }
 
 template <>
 __device__ __forceinline__ int64_t atomic_max<int64_t>(int64_t * ptr, int64_t val)
 {
-  return atomicMax((unsigned long long*)ptr, val);
+  return atomicMax((uint64_t*)ptr, val);
 }
 
 
 template <>
 __device__ __forceinline__ int64_t atomic_add<int64_t>(int64_t * ptr, int64_t val)
 {
-  return atomicAdd((unsigned long long*)ptr, val);
+  return atomicAdd((uint64_t*)ptr, val);
 }
 
 template <>
@@ -269,7 +269,7 @@ __device__ __forceinline__ rocsparse_double_complex atomic_add(rocsparse_double_
 template <>
 __device__ __forceinline__ int64_t atomic_cas(int64_t* ptr, int64_t cmp, int64_t val)
 {
-  return atomicCAS((unsigned long long*)ptr, cmp, val);
+  return atomicCAS((uint64_t*)ptr, cmp, val);
 }
 
 __device__ __forceinline__ bool is_inf(float val){ return (val == std::numeric_limits<float>::infinity()); }
@@ -302,7 +302,7 @@ __device__ __forceinline__ T conj_val(T val, bool conj)
 
 
 // Block reduce kernel computing block sum
-template <unsigned int BLOCKSIZE, typename T>
+template <uint32_t BLOCKSIZE, typename T>
 __device__ __forceinline__ void blockreduce_sum(int i, T* data)
 {
     if(BLOCKSIZE > 512) { if(i < 512 && i + 512 < BLOCKSIZE) { data[i] = data[i] + data[i + 512]; } __syncthreads(); }
@@ -318,7 +318,7 @@ __device__ __forceinline__ void blockreduce_sum(int i, T* data)
 }
 
 // Block reduce kernel computing blockwide maximum entry
-template <unsigned int BLOCKSIZE, typename T>
+template <uint32_t BLOCKSIZE, typename T>
 __device__ __forceinline__ void blockreduce_max(int i, T* data)
 {
     if(BLOCKSIZE > 512) { if(i < 512 && i + 512 < BLOCKSIZE) { data[i] = rocsparse::max(data[i], data[i + 512]); } __syncthreads(); }
@@ -334,7 +334,7 @@ __device__ __forceinline__ void blockreduce_max(int i, T* data)
 }
 
 // Block reduce kernel computing blockwide minimum entry
-template <unsigned int BLOCKSIZE, typename T>
+template <uint32_t BLOCKSIZE, typename T>
 __device__ __forceinline__ void blockreduce_min(int i, T* data)
 {
     if(BLOCKSIZE > 512) { if(i < 512 && i + 512 < BLOCKSIZE) { data[i] = rocsparse::min(data[i], data[i + 512]); } __syncthreads(); }
@@ -352,7 +352,7 @@ __device__ __forceinline__ void blockreduce_min(int i, T* data)
 
 #if ROCSPARSE_USE_MOVE_DPP
 
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 static __device__ __forceinline__ void wfreduce_max(float* maximum)
 {
     typedef union flt_b32
@@ -405,7 +405,7 @@ static __device__ __forceinline__ void wfreduce_max(float* maximum)
 }
 
 // DPP-based wavefront reduction maximum
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 static __device__ __forceinline__ void wfreduce_max(double* maximum)
 {
     typedef union i64_b32
@@ -464,7 +464,7 @@ static __device__ __forceinline__ void wfreduce_max(double* maximum)
 }
 
 // DPP-based wavefront reduction maximum
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 __device__ __forceinline__ void wfreduce_max(int* maximum)
 {
     if(WFSIZE >  1) *maximum = rocsparse::max(*maximum, __hip_move_dpp(*maximum, 0x111, 0xf, 0xf, 0));
@@ -475,7 +475,7 @@ __device__ __forceinline__ void wfreduce_max(int* maximum)
     if(WFSIZE > 32) *maximum = rocsparse::max(*maximum, __hip_move_dpp(*maximum, 0x143, 0xc, 0xf, 0));
 }
 
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 __device__ __forceinline__ void wfreduce_max(int64_t* maximum)
 {
     typedef union i64_b32
@@ -534,7 +534,7 @@ __device__ __forceinline__ void wfreduce_max(int64_t* maximum)
 }
 
 // DPP-based wavefront reduction minimum
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 __device__ __forceinline__ void wfreduce_min(int* minimum)
 {
     if(WFSIZE >  1) *minimum = rocsparse::min(*minimum, __hip_move_dpp(*minimum, 0x111, 0xf, 0xf, 0));
@@ -545,7 +545,7 @@ __device__ __forceinline__ void wfreduce_min(int* minimum)
     if(WFSIZE > 32) *minimum = rocsparse::min(*minimum, __hip_move_dpp(*minimum, 0x143, 0xc, 0xf, 0));
 }
 
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 __device__ __forceinline__ void wfreduce_min(int64_t* minimum)
 {
     typedef union i64_b32
@@ -603,7 +603,7 @@ __device__ __forceinline__ void wfreduce_min(int64_t* minimum)
     *minimum = temp_min.i64;
 }
 
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 __device__ __forceinline__ int32_t wfreduce_sum(int32_t sum)
 {
     if(WFSIZE >  1) sum += __hip_move_dpp(sum, 0x111, 0xf, 0xf, 0);
@@ -616,7 +616,7 @@ __device__ __forceinline__ int32_t wfreduce_sum(int32_t sum)
     return sum;
 }
 
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 __device__ __forceinline__ int64_t wfreduce_sum(int64_t sum)
 {
     typedef union i64_b32
@@ -676,7 +676,7 @@ __device__ __forceinline__ int64_t wfreduce_sum(int64_t sum)
 }
 
 // DPP-based float wavefront reduction sum
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 __device__ __forceinline__ float wfreduce_sum(float sum)
 {
     typedef union flt_b32
@@ -730,7 +730,7 @@ __device__ __forceinline__ float wfreduce_sum(float sum)
 }
 
 // DPP-based double wavefront reduction
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 __device__ __forceinline__ double wfreduce_sum(double sum)
 {
     typedef union dbl_b32
@@ -791,7 +791,7 @@ __device__ __forceinline__ double wfreduce_sum(double sum)
 #else /* ROCSPARSE_USE_MOVE_DPP */
 
 
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 static __device__ __forceinline__ void wfreduce_max(double* maximum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
@@ -799,7 +799,7 @@ static __device__ __forceinline__ void wfreduce_max(double* maximum)
         *maximum = rocsparse::max(*maximum, __shfl_xor(*maximum, i));
     }
 }
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 static __device__ __forceinline__ void wfreduce_max(float* maximum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
@@ -808,7 +808,7 @@ static __device__ __forceinline__ void wfreduce_max(float* maximum)
     }
 }
 
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 __device__ __forceinline__ void wfreduce_max(int* maximum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
@@ -817,7 +817,7 @@ __device__ __forceinline__ void wfreduce_max(int* maximum)
     }
 }
 
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 __device__ __forceinline__ void wfreduce_max(int64_t* maximum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
@@ -826,7 +826,7 @@ __device__ __forceinline__ void wfreduce_max(int64_t* maximum)
     }
 }
 
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 __device__ __forceinline__ void wfreduce_min(int* minimum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
@@ -835,7 +835,7 @@ __device__ __forceinline__ void wfreduce_min(int* minimum)
     }
 }
 
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 __device__ __forceinline__ void wfreduce_min(int64_t* minimum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
@@ -844,7 +844,7 @@ __device__ __forceinline__ void wfreduce_min(int64_t* minimum)
     }
 }
 
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 __device__ __forceinline__ int32_t wfreduce_sum(int32_t sum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
@@ -854,7 +854,7 @@ __device__ __forceinline__ int32_t wfreduce_sum(int32_t sum)
     return sum;
 }
 
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 __device__ __forceinline__ int64_t wfreduce_sum(int64_t sum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
@@ -864,7 +864,7 @@ __device__ __forceinline__ int64_t wfreduce_sum(int64_t sum)
     return sum;
 }
 
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 __device__ __forceinline__ float wfreduce_sum(float sum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
@@ -875,7 +875,7 @@ __device__ __forceinline__ float wfreduce_sum(float sum)
     return sum;
 }
 
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 __device__ __forceinline__ double wfreduce_sum(double sum)
 {
     for(int i = WFSIZE >> 1; i > 0; i >>= 1)
@@ -888,7 +888,7 @@ __device__ __forceinline__ double wfreduce_sum(double sum)
 #endif /* ROCSPARSE_USE_MOVE_DPP */
 
 // DPP-based complex float wavefront reduction sum
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 __device__ __forceinline__ rocsparse_float_complex wfreduce_sum(rocsparse_float_complex sum)
 {
     return rocsparse_float_complex(rocsparse::wfreduce_sum<WFSIZE>(std::real(sum)),
@@ -896,7 +896,7 @@ __device__ __forceinline__ rocsparse_float_complex wfreduce_sum(rocsparse_float_
 }
 
 // DPP-based complex double wavefront reduction
-template <unsigned int WFSIZE>
+template <uint32_t WFSIZE>
 __device__ __forceinline__ rocsparse_double_complex wfreduce_sum(rocsparse_double_complex sum)
 {
     return rocsparse_double_complex(rocsparse::wfreduce_sum<WFSIZE>(std::real(sum)),
@@ -905,7 +905,7 @@ __device__ __forceinline__ rocsparse_double_complex wfreduce_sum(rocsparse_doubl
     // clang-format on
 
     // Perform dense matrix transposition
-    template <unsigned int DIMX, unsigned int DIMY, typename I, typename T>
+    template <uint32_t DIMX, uint32_t DIMY, typename I, typename T>
     __device__ void dense_transpose_device(
         I m, I n, T alpha, const T* __restrict__ A, int64_t lda, T* __restrict__ B, int64_t ldb)
     {
@@ -923,7 +923,7 @@ __device__ __forceinline__ rocsparse_double_complex wfreduce_sum(rocsparse_doubl
 
             I col_A = j + wid;
 
-            for(unsigned int k = 0; k < DIMX; k += DIMY)
+            for(uint32_t k = 0; k < DIMX; k += DIMY)
             {
                 if(row_A < m && col_A + k < n)
                 {
@@ -935,7 +935,7 @@ __device__ __forceinline__ rocsparse_double_complex wfreduce_sum(rocsparse_doubl
 
             I col_B = j + lid;
 
-            for(unsigned int k = 0; k < DIMX; k += DIMY)
+            for(uint32_t k = 0; k < DIMX; k += DIMY)
             {
                 if(col_B < n && row_B + k < m)
                 {
@@ -946,7 +946,7 @@ __device__ __forceinline__ rocsparse_double_complex wfreduce_sum(rocsparse_doubl
     }
 
     // Perform dense matrix back transposition
-    template <unsigned int DIMX, unsigned int DIMY, typename I, typename T>
+    template <uint32_t DIMX, uint32_t DIMY, typename I, typename T>
     ROCSPARSE_KERNEL(DIMX* DIMY)
     void dense_transpose_back(
         I m, I n, const T* __restrict__ A, int64_t lda, T* __restrict__ B, int64_t ldb)
@@ -965,7 +965,7 @@ __device__ __forceinline__ rocsparse_double_complex wfreduce_sum(rocsparse_doubl
 
             I col_A = j + lid;
 
-            for(unsigned int k = 0; k < DIMX; k += DIMY)
+            for(uint32_t k = 0; k < DIMX; k += DIMY)
             {
                 if(col_A < n && row_A + k < m)
                 {
@@ -977,7 +977,7 @@ __device__ __forceinline__ rocsparse_double_complex wfreduce_sum(rocsparse_doubl
 
             I col_B = j + wid;
 
-            for(unsigned int k = 0; k < DIMX; k += DIMY)
+            for(uint32_t k = 0; k < DIMX; k += DIMY)
             {
                 if(row_B < m && col_B + k < n)
                 {
@@ -988,7 +988,7 @@ __device__ __forceinline__ rocsparse_double_complex wfreduce_sum(rocsparse_doubl
     }
 
     // BSR gather functionality to permute the BSR values array
-    template <unsigned int WFSIZE, unsigned int DIMY, unsigned int BSRDIM, typename I, typename T>
+    template <uint32_t WFSIZE, uint32_t DIMY, uint32_t BSRDIM, typename I, typename T>
     ROCSPARSE_KERNEL(WFSIZE* DIMY)
     void bsr_gather(rocsparse_direction dir,
                     I                   nnzb,
@@ -1024,7 +1024,7 @@ __device__ __forceinline__ rocsparse_double_complex wfreduce_sum(rocsparse_doubl
     }
 
     // Set array to be filled with value
-    template <unsigned int BLOCKSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void set_array_to_value(I m, T* __restrict__ array, T value)
     {
@@ -1039,7 +1039,7 @@ __device__ __forceinline__ rocsparse_double_complex wfreduce_sum(rocsparse_doubl
     }
 
     // Scale array by value
-    template <unsigned int BLOCKSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void scale_array(I m, T* __restrict__ array, T value)
     {
@@ -1053,7 +1053,7 @@ __device__ __forceinline__ rocsparse_double_complex wfreduce_sum(rocsparse_doubl
         array[idx] *= value;
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void scale_array(I m, T* __restrict__ array, const T* value)
     {
@@ -1071,7 +1071,7 @@ __device__ __forceinline__ rocsparse_double_complex wfreduce_sum(rocsparse_doubl
     }
 
     // Scale 2d array by value
-    template <unsigned int BLOCKSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void scale_array_2d(
         I m, I n, int64_t ld, int64_t stride, T* __restrict__ array, T value, rocsparse_order order)
@@ -1097,7 +1097,7 @@ __device__ __forceinline__ rocsparse_double_complex wfreduce_sum(rocsparse_doubl
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void scale_array_2d(I       m,
                         I       n,
@@ -1129,7 +1129,7 @@ __device__ __forceinline__ rocsparse_double_complex wfreduce_sum(rocsparse_doubl
     }
 
     // conjugate values in array
-    template <unsigned int BLOCKSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void conjugate(I m, T* __restrict__ array)
     {
@@ -1143,7 +1143,7 @@ __device__ __forceinline__ rocsparse_double_complex wfreduce_sum(rocsparse_doubl
         array[idx] = rocsparse::conj(array[idx]);
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csr_max_nnz_per_row(J m, const I* __restrict__ csr_row_ptr, J* __restrict__ max_nnz)
     {
@@ -1171,7 +1171,7 @@ __device__ __forceinline__ rocsparse_double_complex wfreduce_sum(rocsparse_doubl
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void memset2d_kernel(I m, I n, T value, T* __restrict__ data, int64_t ld, rocsparse_order order)
     {
@@ -1191,13 +1191,13 @@ __device__ __forceinline__ rocsparse_double_complex wfreduce_sum(rocsparse_doubl
     template <bool SLEEP>
     __device__ __forceinline__ int spin_loop(int* __restrict__ done, int scope)
     {
-        int          local_done    = __hip_atomic_load(done, __ATOMIC_RELAXED, scope);
-        unsigned int times_through = 0;
+        int      local_done    = __hip_atomic_load(done, __ATOMIC_RELAXED, scope);
+        uint32_t times_through = 0;
         while(!local_done)
         {
             if(SLEEP)
             {
-                for(unsigned int i = 0; i < times_through; ++i)
+                for(uint32_t i = 0; i < times_through; ++i)
                 {
                     __builtin_amdgcn_s_sleep(1);
                 }

@@ -34,7 +34,7 @@ namespace rocsparse
     //
     // Kernel to copy array of integers with mix precisions
     //
-    template <unsigned int BLOCKSIZE, typename TARGET, typename SOURCE>
+    template <uint32_t BLOCKSIZE, typename TARGET, typename SOURCE>
     __launch_bounds__(BLOCKSIZE) __global__
         static void copy_iarray_mix_safe(const size_t  nitems_,
                                          TARGET*       target_,
@@ -85,7 +85,7 @@ namespace rocsparse
         const SOURCE* source_ = (const SOURCE*)source__;
         const TARGET* target_ = (const TARGET*)target__;
 
-        static constexpr unsigned int BLOCKSIZE = 1024;
+        static constexpr uint32_t BLOCKSIZE = 1024;
 
         size_t* dnum_out_of_range_values = (size_t*)handle_->buffer;
         RETURN_IF_HIP_ERROR(
@@ -172,7 +172,7 @@ namespace rocsparse
     template <typename TARGET, typename SOURCE, class FILTER = void>
     struct copy_farray_mix_safe_kernel_t
     {
-        template <unsigned int BLOCKSIZE>
+        template <uint32_t BLOCKSIZE>
         __launch_bounds__(BLOCKSIZE) __global__
             static void run(const size_t             nitems_,
                             TARGET*                  target_,
@@ -191,7 +191,7 @@ namespace rocsparse
                           (std::is_same<TARGET, rocsparse_double_complex>{}
                            && std::is_same<SOURCE, rocsparse_float_complex>{}))>>
     {
-        template <unsigned int BLOCKSIZE>
+        template <uint32_t BLOCKSIZE>
         __launch_bounds__(BLOCKSIZE) __global__
             static void run(const size_t             nitems_,
                             TARGET*                  target_,
@@ -215,7 +215,7 @@ namespace rocsparse
         using SOURCE = float;
         using TARGET = rocsparse_float_complex;
 
-        template <unsigned int BLOCKSIZE>
+        template <uint32_t BLOCKSIZE>
         __launch_bounds__(BLOCKSIZE) __global__
             static void run(const size_t             nitems_,
                             TARGET*                  target_,
@@ -240,7 +240,7 @@ namespace rocsparse
         using SOURCE = double;
         using TARGET = rocsparse_float_complex;
 
-        template <unsigned int BLOCKSIZE>
+        template <uint32_t BLOCKSIZE>
         __launch_bounds__(BLOCKSIZE) __global__
             static void run(const size_t             nitems_,
                             TARGET*                  target_,
@@ -282,7 +282,7 @@ namespace rocsparse
         using SOURCE = rocsparse_double_complex;
         using TARGET = rocsparse_float_complex;
 
-        template <unsigned int BLOCKSIZE>
+        template <uint32_t BLOCKSIZE>
         __launch_bounds__(BLOCKSIZE) __global__
             static void run(const size_t             nitems_,
                             TARGET*                  target_,
@@ -327,7 +327,7 @@ namespace rocsparse
         using SOURCE = rocsparse_float_complex;
         using TARGET = rocsparse_double_complex;
 
-        template <unsigned int BLOCKSIZE>
+        template <uint32_t BLOCKSIZE>
         __launch_bounds__(BLOCKSIZE) __global__
             static void run(size_t                   nitems_,
                             TARGET*                  target_,
@@ -349,7 +349,7 @@ namespace rocsparse
     {
         using TARGET = float;
         using SOURCE = double;
-        template <unsigned int BLOCKSIZE>
+        template <uint32_t BLOCKSIZE>
         __launch_bounds__(BLOCKSIZE) __global__
             static void run(size_t                   nitems_,
                             TARGET*                  target_,
@@ -387,11 +387,11 @@ namespace rocsparse
                                                             const void*      source__,
                                                             double*          host_error)
     {
-        const SOURCE*                 source_   = (const SOURCE*)source__;
-        const TARGET*                 target_   = (const TARGET*)target__;
-        static constexpr unsigned int BLOCKSIZE = 1024;
-        floating_data_t<SOURCE>*      derr      = (floating_data_t<SOURCE>*)handle_->buffer;
-        floating_data_t<SOURCE>       herr;
+        const SOURCE*             source_   = (const SOURCE*)source__;
+        const TARGET*             target_   = (const TARGET*)target__;
+        static constexpr uint32_t BLOCKSIZE = 1024;
+        floating_data_t<SOURCE>*  derr      = (floating_data_t<SOURCE>*)handle_->buffer;
+        floating_data_t<SOURCE>   herr;
         RETURN_IF_HIP_ERROR(
             hipMemsetAsync(derr, 0, sizeof(floating_data_t<SOURCE>), handle_->stream));
         RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(

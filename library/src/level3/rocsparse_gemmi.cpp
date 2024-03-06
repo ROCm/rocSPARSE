@@ -28,7 +28,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename T, typename U>
+    template <uint32_t BLOCKSIZE, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gemmi_scale_kernel(rocsparse_int size, U alpha_device_host, T* __restrict__ data)
     {
@@ -36,7 +36,7 @@ namespace rocsparse
         rocsparse::gemmi_scale_kernel<BLOCKSIZE>(size, alpha, data);
     }
 
-    template <unsigned int BLOCKSIZE, typename T, typename U>
+    template <uint32_t BLOCKSIZE, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gemmit_kernel(rocsparse_int m,
                        U             alpha_device_host,

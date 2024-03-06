@@ -35,9 +35,9 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              bool         SLEEP,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              bool     SLEEP,
               typename I,
               typename J,
               typename T,
@@ -77,7 +77,7 @@ namespace rocsparse
                                                           diag_type);
     }
 
-    template <unsigned int DIM_X, unsigned int DIM_Y, typename I, typename T>
+    template <uint32_t DIM_X, uint32_t DIM_Y, typename I, typename T>
     ROCSPARSE_KERNEL(DIM_X* DIM_Y)
     void csrsm_transpose(
         I m, I n, const T* __restrict__ A, int64_t lda, T* __restrict__ B, int64_t ldb)
@@ -524,7 +524,7 @@ namespace rocsparse
         return rocsparse_status_success;
     }
 
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     __launch_bounds__(BLOCKSIZE) __global__
         static void csrsm_solve_copy_y_to_B(const int64_t m, T* B, const int64_t ldb, const T* y)
     {
@@ -589,7 +589,7 @@ rocsparse_status rocsparse::csrsm_solve_core(rocsparse_handle          handle,
         }
         else
         {
-            static constexpr unsigned int BLOCKSIZE = 1024;
+            static constexpr uint32_t BLOCKSIZE = 1024;
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrsm_solve_copy_y_to_B<BLOCKSIZE, T>),
                                                dim3((m - 1) / BLOCKSIZE + 1),
                                                dim3(BLOCKSIZE),

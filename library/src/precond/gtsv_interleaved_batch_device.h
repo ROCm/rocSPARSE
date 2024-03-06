@@ -39,7 +39,7 @@ namespace rocsparse
     // [ 0  0  0  0  0  a6 b6 c6]
     // [ 0  0  0  0  0  0  a7 b7]
 
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_interleaved_batch_thomas_kernel(rocsparse_int m,
                                               rocsparse_int batch_count,
@@ -87,7 +87,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_interleaved_batch_lu_kernel(rocsparse_int m,
                                           rocsparse_int batch_count,
@@ -192,7 +192,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_interleaved_batch_qr_kernel(rocsparse_int m,
                                           rocsparse_int batch_count,

@@ -26,7 +26,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, rocsparse_direction DIR, typename I, typename J>
+    template <uint32_t BLOCKSIZE, rocsparse_direction DIR, typename I, typename J>
     ROCSPARSE_DEVICE_ILF void sbsrxmvn_5x5_device(J     mb,
                                                   float alpha,
                                                   J     size_of_mask,
@@ -105,7 +105,7 @@ namespace rocsparse
     }
 
     // BSRXMV kernel for BSR block dimension of 5
-    template <unsigned int BLOCKSIZE,
+    template <uint32_t BLOCKSIZE,
               typename T,
               typename I,
               typename J,
@@ -133,7 +133,7 @@ namespace rocsparse
         J lid = hipThreadIdx_x % BSRDIM;
 
         // Number of BSR blocks processed at the same time
-        const unsigned int NBLOCKS = BLOCKSIZE / (BSRDIM * BSRDIM);
+        const uint32_t NBLOCKS = BLOCKSIZE / (BSRDIM * BSRDIM);
 
         // Offset into x vector
         J idx = (dir == rocsparse_direction_column) ? ((hipThreadIdx_x / BSRDIM) % BSRDIM) : lid;
@@ -239,7 +239,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
+    template <uint32_t BLOCKSIZE,
               typename T,
               typename I,
               typename J,
@@ -282,7 +282,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, rocsparse_direction DIR, typename I, typename J, typename U>
+    template <uint32_t BLOCKSIZE, rocsparse_direction DIR, typename I, typename J, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void sbsrxmvn_5x5_kernel(J mb,
                              U alpha_device_host,

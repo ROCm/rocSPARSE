@@ -26,7 +26,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, rocsparse_direction DIR, typename I, typename J>
+    template <uint32_t BLOCKSIZE, rocsparse_direction DIR, typename I, typename J>
     ROCSPARSE_DEVICE_ILF void sbsrxmvn_8x8_device(J     mb,
                                                   float alpha,
                                                   J     size_of_mask,
@@ -103,7 +103,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, rocsparse_direction DIR, typename I, typename J, typename U>
+    template <uint32_t BLOCKSIZE, rocsparse_direction DIR, typename I, typename J, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void sbsrxmvn_8x8_kernel(J mb,
                              U alpha_device_host,
@@ -138,7 +138,7 @@ namespace rocsparse
     }
 
     // BSRXMV kernel for BSR block dimension of 8
-    template <unsigned int BLOCKSIZE,
+    template <uint32_t BLOCKSIZE,
               typename T,
               typename I,
               typename J,
@@ -170,7 +170,7 @@ namespace rocsparse
         J idx = (dir == rocsparse_direction_column) ? ((hipThreadIdx_x / BSRDIM) % BSRDIM) : lid;
 
         // Number of BSR blocks processed at the same time
-        const unsigned int NBLOCKS = BLOCKSIZE / SQBSRDIM;
+        const uint32_t NBLOCKS = BLOCKSIZE / SQBSRDIM;
 
         // Each thread block processes a single BSR row
         J row = hipBlockIdx_x;
@@ -265,7 +265,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
+    template <uint32_t BLOCKSIZE,
               typename T,
               typename I,
               typename J,

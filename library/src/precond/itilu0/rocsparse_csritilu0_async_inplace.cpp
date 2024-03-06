@@ -188,11 +188,11 @@ namespace rocsparse
                           floating_data_t<T>*       nrm_,
                           const floating_data_t<T>* nrm0_)
     {
-        static constexpr unsigned int nid = BLOCKSIZE / WFSIZE;
-        const J                       lid = hipThreadIdx_x & (WFSIZE - 1);
-        const J                       wid = hipThreadIdx_x / WFSIZE;
-        floating_data_t<T>            nrm = static_cast<floating_data_t<T>>(0);
-        const J                       i0  = BLOCKSIZE * hipBlockIdx_x + wid;
+        static constexpr uint32_t nid = BLOCKSIZE / WFSIZE;
+        const J                   lid = hipThreadIdx_x & (WFSIZE - 1);
+        const J                   wid = hipThreadIdx_x / WFSIZE;
+        floating_data_t<T>        nrm = static_cast<floating_data_t<T>>(0);
+        const J                   i0  = BLOCKSIZE * hipBlockIdx_x + wid;
         __shared__ floating_data_t<T> nrms[BLOCKSIZE / WFSIZE];
         if(i0 < m_)
         {
@@ -256,9 +256,9 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              bool         RESIDUAL,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              bool     RESIDUAL,
               typename T,
               typename I,
               typename J,
@@ -274,12 +274,7 @@ namespace rocsparse
             p...);
     }
 
-    template <unsigned int BLOCKSIZE,
-              bool         RESIDUAL,
-              typename T,
-              typename I,
-              typename J,
-              typename... P>
+    template <uint32_t BLOCKSIZE, bool RESIDUAL, typename T, typename I, typename J, typename... P>
     static void kernel_calculate_dispatch(
         J m_, J mean_nnz_per_row_, int wavefront_size, hipStream_t stream_, P... p)
     {
@@ -403,9 +398,9 @@ namespace rocsparse
             }
         }
     }
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              bool         RESIDUAL,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              bool     RESIDUAL,
               typename T,
               typename I,
               typename J,
@@ -422,12 +417,7 @@ namespace rocsparse
             p...);
     }
 
-    template <unsigned int BLOCKSIZE,
-              bool         RESIDUAL,
-              typename T,
-              typename I,
-              typename J,
-              typename... P>
+    template <uint32_t BLOCKSIZE, bool RESIDUAL, typename T, typename I, typename J, typename... P>
     static inline void
         kernel_calculate_coo_dispatch(J nnz_, int wavefront_size, hipStream_t stream_, P... p)
     {
@@ -442,7 +432,7 @@ namespace rocsparse
                 blocks, threads, stream_, p...);
     }
 
-    template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename T, typename I, typename J>
     struct compute_iter
     {
         static rocsparse_status light_run(rocsparse_handle handle_,
@@ -894,7 +884,7 @@ namespace rocsparse
     //
     // Calculate the array lptr_end.
     //
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void kernel_compute_lptr_end(J m_,
                                  const I* __restrict__ ptr_begin_,
@@ -920,7 +910,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J, typename... P>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, typename I, typename J, typename... P>
     static void
         kernel_compute_lptr_end_launch(dim3& blocks_, dim3& threads_, hipStream_t stream_, P... p)
     {
@@ -933,7 +923,7 @@ namespace rocsparse
             p...);
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename J, typename... P>
+    template <uint32_t BLOCKSIZE, typename I, typename J, typename... P>
     static void kernel_compute_lptr_end_dispatch(J           target_size_,
                                                  int         wavefront_size,
                                                  hipStream_t stream_,
@@ -953,7 +943,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void kernel_compute_coo(J m_,
                             const I* __restrict__ ptr_begin_,
@@ -981,7 +971,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J, typename... P>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, typename I, typename J, typename... P>
     static void
         kernel_compute_coo_launch(dim3& blocks_, dim3& threads_, hipStream_t stream_, P... p)
     {
@@ -993,7 +983,7 @@ namespace rocsparse
                                           p...);
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename J, typename... P>
+    template <uint32_t BLOCKSIZE, typename I, typename J, typename... P>
     static void
         kernel_compute_coo_dispatch(J target_size_, int wavefront_size, hipStream_t stream_, P... p)
     {
@@ -1014,7 +1004,7 @@ namespace rocsparse
     //
     // Calculate the array ucsr_ptr.
     //
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void kernel_initialize_ucsr_ptr(J m_,
                                     const I* __restrict__ ptr_begin_,
@@ -1036,7 +1026,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J, typename... P>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, typename I, typename J, typename... P>
     static void kernel_initialize_ucsr_ptr_launch(dim3&       blocks_,
                                                   dim3&       threads_,
                                                   hipStream_t stream_,
@@ -1051,7 +1041,7 @@ namespace rocsparse
             p...);
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename J, typename... P>
+    template <uint32_t BLOCKSIZE, typename I, typename J, typename... P>
     static void kernel_initialize_ucsr_ptr_dispatch(J           target_size_,
                                                     int         wavefront_size,
                                                     hipStream_t stream_,
@@ -1071,7 +1061,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void kernel_compute_unnz(J m_,
                              const I* __restrict__ ptr_begin_,
@@ -1122,7 +1112,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J, typename... P>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, typename I, typename J, typename... P>
     static void
         kernel_compute_unnz_launch(dim3& blocks_, dim3& threads_, hipStream_t stream_, P... p)
     {
@@ -1134,7 +1124,7 @@ namespace rocsparse
                                           p...);
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename J, typename... P>
+    template <uint32_t BLOCKSIZE, typename I, typename J, typename... P>
     static void kernel_compute_unnz_dispatch(J           target_size_,
                                              int         wavefront_size,
                                              hipStream_t stream_,
@@ -1158,7 +1148,7 @@ namespace rocsparse
 template <>
 struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
 {
-    static constexpr unsigned int BLOCKSIZE = 1024;
+    static constexpr uint32_t BLOCKSIZE = 1024;
 
     template <typename T, typename J>
     struct history

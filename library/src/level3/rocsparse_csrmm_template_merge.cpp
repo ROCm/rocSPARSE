@@ -32,9 +32,9 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              bool     TRANSB,
               typename I,
               typename J,
               typename A,
@@ -98,9 +98,9 @@ namespace rocsparse
                                                                          idx_base);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              bool     TRANSB,
               typename I,
               typename J,
               typename A,
@@ -163,10 +163,10 @@ namespace rocsparse
                                                                               idx_base);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              unsigned int LOOPS,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t LOOPS,
+              bool     TRANSB,
               typename T,
               typename I,
               typename J,
@@ -217,9 +217,9 @@ namespace rocsparse
                                                                                    idx_base);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              bool     TRANSB,
               typename T,
               typename I,
               typename J,
@@ -269,7 +269,7 @@ namespace rocsparse
                                                                               idx_base);
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename C, typename U>
+    template <uint32_t BLOCKSIZE, typename I, typename C, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrmmnn_merge_scale(
         I m, I n, U beta_device_host, C* __restrict__ data, int64_t ld, rocsparse_order order)
@@ -426,9 +426,9 @@ namespace rocsparse
         order_C,                                                                   \
         descr->base);
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              bool     TRANSB,
               typename T,
               typename I,
               typename J,
@@ -597,9 +597,9 @@ namespace rocsparse
         order_C,                                                                      \
         descr->base);
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              bool     TRANSB,
               typename T,
               typename I,
               typename J,

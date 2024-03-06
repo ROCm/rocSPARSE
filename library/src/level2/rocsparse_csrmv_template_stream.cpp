@@ -102,8 +102,8 @@ namespace rocsparse
                                        y,                                                    \
                                        descr->base)
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
               typename I,
               typename J,
               typename A,
@@ -141,7 +141,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename J, typename Y, typename U>
+    template <uint32_t BLOCKSIZE, typename J, typename Y, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrmvt_scale_kernel(J size, U scalar_device_host, Y* __restrict__ data)
     {
@@ -149,8 +149,8 @@ namespace rocsparse
         rocsparse::csrmvt_scale_device(size, scalar, data);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
               typename I,
               typename J,
               typename A,
@@ -185,8 +185,8 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
               typename I,
               typename J,
               typename A,
@@ -224,8 +224,8 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
               typename I,
               typename J,
               typename A,

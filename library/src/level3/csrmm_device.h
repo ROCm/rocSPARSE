@@ -28,8 +28,8 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
               typename T,
               typename I,
               typename J,
@@ -105,7 +105,7 @@ namespace rocsparse
 
             if(col < N)
             {
-                for(unsigned int i = 0; i < WF_SIZE; ++i)
+                for(uint32_t i = 0; i < WF_SIZE; ++i)
                 {
                     sum = rocsparse::fma<T>(
                         shared_val[wid][i],
@@ -145,9 +145,9 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              unsigned int LOOPS,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t LOOPS,
               typename T,
               typename I,
               typename J,
@@ -207,7 +207,7 @@ namespace rocsparse
 
             T sum[LOOPS];
 
-            for(unsigned int p = 0; p < LOOPS; p++)
+            for(uint32_t p = 0; p < LOOPS; p++)
             {
                 sum[p] = static_cast<T>(0);
             }
@@ -237,12 +237,12 @@ namespace rocsparse
 
                 __threadfence_block();
 
-                for(unsigned int i = 0; i < WF_SIZE; ++i)
+                for(uint32_t i = 0; i < WF_SIZE; ++i)
                 {
                     const int64_t sc = ldb * shared_col[wid][i];
                     const T       sv = shared_val[wid][i];
 
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         sum[p] = rocsparse::fma<T>(
                             sv,
@@ -258,7 +258,7 @@ namespace rocsparse
             {
                 if(order_C == rocsparse_order_column)
                 {
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         dense_C[row + (col + p * WF_SIZE) * ldc + batch_stride_C * batch]
                             = alpha * sum[p];
@@ -266,7 +266,7 @@ namespace rocsparse
                 }
                 else
                 {
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         dense_C[row * ldc + col + p * WF_SIZE + batch_stride_C * batch]
                             = alpha * sum[p];
@@ -277,7 +277,7 @@ namespace rocsparse
             {
                 if(order_C == rocsparse_order_column)
                 {
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         dense_C[row + (col + p * WF_SIZE) * ldc + batch_stride_C * batch]
                             = rocsparse::fma<T>(
@@ -288,7 +288,7 @@ namespace rocsparse
                 }
                 else
                 {
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         dense_C[row * ldc + col + p * WF_SIZE + batch_stride_C * batch]
                             = rocsparse::fma<T>(
@@ -301,8 +301,8 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
               typename T,
               typename I,
               typename J,
@@ -389,7 +389,7 @@ namespace rocsparse
 
                 if(col < ncol)
                 {
-                    for(unsigned int i = 0; i < WF_SIZE; ++i)
+                    for(uint32_t i = 0; i < WF_SIZE; ++i)
                     {
                         sum = rocsparse::fma<T>(
                             shared_val[wid][i],
@@ -461,8 +461,8 @@ namespace rocsparse
     // See Y. Tao et al., "Atomic reduction based sparse matrix-transpose vector multiplication on GPUs,"
     // 2014 20th IEEE International Conference on Parallel and Distributed Systems (ICPADS), 2014, pp. 987-992,
     // doi: 10.1109/PADSW.2014.7097920.
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
               typename T,
               typename I,
               typename J,
@@ -547,8 +547,8 @@ namespace rocsparse
     // See Y. Tao et al., "Atomic reduction based sparse matrix-transpose vector multiplication on GPUs,"
     // 2014 20th IEEE International Conference on Parallel and Distributed Systems (ICPADS), 2014, pp. 987-992,
     // doi: 10.1109/PADSW.2014.7097920.
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
               typename T,
               typename I,
               typename J,

@@ -27,7 +27,7 @@
 namespace rocsparse
 {
     // BSRXMV kernel for BSR block dimension of 16
-    template <unsigned int BLOCKSIZE,
+    template <uint32_t BLOCKSIZE,
               typename T,
               typename I,
               typename J,
@@ -150,7 +150,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
+    template <uint32_t BLOCKSIZE,
               typename T,
               typename I,
               typename J,

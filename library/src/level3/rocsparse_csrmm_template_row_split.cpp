@@ -28,9 +28,9 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              unsigned int LOOPS,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t LOOPS,
               typename I,
               typename J,
               typename A,
@@ -85,9 +85,9 @@ namespace rocsparse
                                                                        idx_base);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              unsigned int LOOPS,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t LOOPS,
               typename I,
               typename J,
               typename A,
@@ -144,8 +144,8 @@ namespace rocsparse
                                                                             idx_base);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
               typename I,
               typename J,
               typename A,

@@ -28,7 +28,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename I, typename J, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename J, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csr2csc_permute_kernel(I nnz,
                                 const J* __restrict__ in1,

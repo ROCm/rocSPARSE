@@ -28,7 +28,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, unsigned int NCOLS, bool SLEEP, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t NCOLS, bool SLEEP, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void bsrsm_upper_large_kernel(rocsparse_int        mb,
                                   rocsparse_int        nrhs,
@@ -45,7 +45,7 @@ namespace rocsparse
                                   rocsparse_diag_type  diag_type,
                                   rocsparse_direction  dir)
     {
-        static constexpr unsigned int WFSIZE = BLOCKSIZE / NCOLS;
+        static constexpr uint32_t WFSIZE = BLOCKSIZE / NCOLS;
 
         const int lid = threadIdx.x & (WFSIZE - 1);
 
@@ -175,7 +175,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int NCOLS, bool SLEEP, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t NCOLS, bool SLEEP, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void bsrsm_lower_large_kernel(rocsparse_int        mb,
                                   rocsparse_int        nrhs,
@@ -192,7 +192,7 @@ namespace rocsparse
                                   rocsparse_diag_type  diag_type,
                                   rocsparse_direction  dir)
     {
-        static constexpr unsigned int WFSIZE = BLOCKSIZE / NCOLS;
+        static constexpr uint32_t WFSIZE = BLOCKSIZE / NCOLS;
 
         const int lid = threadIdx.x & (WFSIZE - 1);
 

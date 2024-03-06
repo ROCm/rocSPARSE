@@ -60,9 +60,9 @@ namespace rocsparse
         floating_data_t<T> nrm = 0;
         __shared__ floating_data_t<T> sdata[BLOCKSIZE / WFSIZE];
 
-        static constexpr unsigned int nid = BLOCKSIZE / WFSIZE;
-        const J                       lid = hipThreadIdx_x & (WFSIZE - 1);
-        const J                       wid = hipThreadIdx_x / WFSIZE;
+        static constexpr uint32_t nid = BLOCKSIZE / WFSIZE;
+        const J                   lid = hipThreadIdx_x & (WFSIZE - 1);
+        const J                   wid = hipThreadIdx_x / WFSIZE;
 
         const J row0 = BLOCKSIZE * hipBlockIdx_x + wid;
         if(row0 < m_)
@@ -186,8 +186,8 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
               typename T,
               typename I,
               typename J,
@@ -203,7 +203,7 @@ namespace rocsparse
             p...);
     }
 
-    template <unsigned int BLOCKSIZE, typename T, typename I, typename J, typename... P>
+    template <uint32_t BLOCKSIZE, typename T, typename I, typename J, typename... P>
     static void kernel_correction_dispatch(
         J m_, J mean_nnz_per_row_, int wavefront_size, hipStream_t stream_, P... p)
     {

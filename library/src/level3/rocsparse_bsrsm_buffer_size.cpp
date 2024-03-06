@@ -143,7 +143,7 @@ rocsparse_status rocsparse::bsrsm_buffer_size_core(rocsparse_handle          han
     *buffer_size = 256;
 
     // 16 columns per block seem to work very well
-    static constexpr unsigned int ncol = 16;
+    static constexpr uint32_t ncol = 16;
 
     const int narrays = (nrhs - 1) / ncol + 1;
 

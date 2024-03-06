@@ -28,12 +28,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE,
-              unsigned int LOOPS,
-              typename I,
-              typename X,
-              typename Y,
-              typename T>
+    template <uint32_t BLOCKSIZE, uint32_t LOOPS, typename I, typename X, typename Y, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void doti_kernel_part1(I                    nnz,
                            const X*             x_val,
@@ -52,7 +47,7 @@ namespace rocsparse
         while(stride < nnz)
         {
 #pragma unroll
-            for(unsigned int i = 0; i < LOOPS; i++)
+            for(uint32_t i = 0; i < LOOPS; i++)
             {
                 dot = rocsparse::fma<T>(
                     y[x_ind[idx + i * BLOCKSIZE] - idx_base], x_val[idx + i * BLOCKSIZE], dot);
@@ -82,7 +77,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void doti_kernel_part2(T* workspace, T* result)
     {

@@ -27,8 +27,8 @@
 namespace rocsparse
 {
     // BSRXMV kernel for BSR block dimension of 2
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
               typename T,
               typename I,
               typename J,
@@ -87,8 +87,8 @@ namespace rocsparse
         T sum0 = static_cast<T>(0);
         T sum1 = static_cast<T>(0);
 
-        static constexpr unsigned int VALOFFSET    = BSRDIM * BSRDIM * WFSIZE;
-        static constexpr size_t       longSQBSRDIM = BSRDIM * BSRDIM;
+        static constexpr uint32_t VALOFFSET    = BSRDIM * BSRDIM * WFSIZE;
+        static constexpr size_t   longSQBSRDIM = BSRDIM * BSRDIM;
 
         // Loop over all BSR blocks in the current row where each lane
         // processes a BSR block
@@ -153,8 +153,8 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
               typename T,
               typename I,
               typename J,

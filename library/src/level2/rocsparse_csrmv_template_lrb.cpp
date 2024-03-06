@@ -121,8 +121,8 @@ rocsparse_status rocsparse::csrmv_analysis_lrb_template_dispatch(rocsparse_handl
     // Optionally, sort bins (adds preprocessing cost, but often substantially reduces SpMV consumer-kernel time)
     /*if(true)
     {
-        unsigned int startbit = 0;
-        unsigned int endbit   = rocsparse::clz(m);
+        uint32_t startbit = 0;
+        uint32_t endbit   = rocsparse::clz(m);
 
         bool   temp_alloc;
         void*  temp_storage_ptr   = nullptr;
@@ -185,13 +185,13 @@ rocsparse_status rocsparse::csrmv_analysis_lrb_template_dispatch(rocsparse_handl
 
     // Longrows synchronization flags: these will be allocated below, during the preprocessing, based
     // on Longrows bin sizes. We use a different array per kernel launch in order to permit use of >1 stream.
-    unsigned int max_required_grid = 0;
+    uint32_t max_required_grid = 0;
     for(int j = LR_THRESHOLD; j < 32; j++)
     {
-        unsigned int block_size      = WG_SIZE;
-        unsigned int bin_max_row_len = (1 << j);
-        unsigned int num_wgs_per_row = (bin_max_row_len - 1) / (BLOCK_MULTIPLIER * block_size) + 1;
-        unsigned int grid_size       = info->csrmv_info->lrb.nRowsBins[j] * num_wgs_per_row;
+        uint32_t block_size      = WG_SIZE;
+        uint32_t bin_max_row_len = (1 << j);
+        uint32_t num_wgs_per_row = (bin_max_row_len - 1) / (BLOCK_MULTIPLIER * block_size) + 1;
+        uint32_t grid_size       = info->csrmv_info->lrb.nRowsBins[j] * num_wgs_per_row;
 
         max_required_grid = rocsparse::max(grid_size, max_required_grid);
     }
@@ -200,10 +200,9 @@ rocsparse_status rocsparse::csrmv_analysis_lrb_template_dispatch(rocsparse_handl
     {
         info->csrmv_info->lrb.size = max_required_grid;
 
-        RETURN_IF_HIP_ERROR(
-            rocsparse_hipMallocAsync((void**)&info->csrmv_info->lrb.wg_flags,
-                                     sizeof(unsigned int) * info->csrmv_info->lrb.size,
-                                     stream));
+        RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync((void**)&info->csrmv_info->lrb.wg_flags,
+                                                     sizeof(uint32_t) * info->csrmv_info->lrb.size,
+                                                     stream));
     }
 
     // Store some pointers to verify correct execution
@@ -296,8 +295,8 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
               typename I,
               typename J,
               typename A,
@@ -341,7 +340,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
+    template <uint32_t BLOCKSIZE,
               typename I,
               typename J,
               typename A,
@@ -387,7 +386,7 @@ namespace rocsparse
     ROCSPARSE_KERNEL(WG_SIZE)
     void csrmvn_lrb_long_rows_kernel(bool conj,
                                      I    nnz,
-                                     unsigned int* __restrict__ wg_flags,
+                                     uint32_t* __restrict__ wg_flags,
                                      J* __restrict__ rows_bins,
                                      J* __restrict__ n_rows_bins,
                                      const uint32_t bin_id,
@@ -474,13 +473,13 @@ rocsparse_status rocsparse::csrmv_lrb_template_dispatch(rocsparse_handle        
         {
             if(info->lrb.nRowsBins[j] != 0)
             {
-                unsigned int block_size = WG_SIZE;
-                unsigned int lds_size   = (block_size << j) * sizeof(T);
+                uint32_t block_size = WG_SIZE;
+                uint32_t lds_size   = (block_size << j) * sizeof(T);
 
                 // Dynamic LDS allocation
                 if(lds_size < CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS * sizeof(T))
                 {
-                    unsigned int grid_size
+                    uint32_t grid_size
                         = rocsparse::ceil((float)info->lrb.nRowsBins[j] / block_size);
 
                     RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_lrb_short_rows_kernel),
@@ -505,8 +504,8 @@ rocsparse_status rocsparse::csrmv_lrb_template_dispatch(rocsparse_handle        
                 // Static LDS allocation, for when dynamic would grow too large
                 else
                 {
-                    unsigned int rows_per_wg = CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS >> j;
-                    unsigned int grid_size
+                    uint32_t rows_per_wg = CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS >> j;
+                    uint32_t grid_size
                         = rocsparse::ceil((float)info->lrb.nRowsBins[j] / rows_per_wg);
 
                     RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_lrb_short_rows_2_kernel),
@@ -538,12 +537,12 @@ rocsparse_status rocsparse::csrmv_lrb_template_dispatch(rocsparse_handle        
             {
                 // Max WG size == 1024 on gfx90a.
                 // min() permits using LRB-Vector for arbitrary bins (not just bins 0-10).
-                unsigned int block_size = rocsparse::min(1 << j, 1024);
+                uint32_t block_size = rocsparse::min(1 << j, 1024);
 
                 if(block_size <= 256) // One warp per row
                 {
-                    unsigned int wf_size   = handle->wavefront_size;
-                    unsigned int grid_size = (info->lrb.nRowsBins[j] - 1) / (256 / wf_size) + 1;
+                    uint32_t wf_size   = handle->wavefront_size;
+                    uint32_t grid_size = (info->lrb.nRowsBins[j] - 1) / (256 / wf_size) + 1;
 
                     if(handle->wavefront_size == 32)
                     {
@@ -594,7 +593,7 @@ rocsparse_status rocsparse::csrmv_lrb_template_dispatch(rocsparse_handle        
                 }
                 else // One block per row
                 {
-                    unsigned int grid_size = info->lrb.nRowsBins[j]; // One WG per row
+                    uint32_t grid_size = info->lrb.nRowsBins[j]; // One WG per row
 
                     RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_lrb_medium_rows_kernel<WG_SIZE>),
                                                        grid_size,
@@ -624,13 +623,13 @@ rocsparse_status rocsparse::csrmv_lrb_template_dispatch(rocsparse_handle        
             if(info->lrb.nRowsBins[j] != 0)
             {
                 RETURN_IF_HIP_ERROR(hipMemsetAsync(
-                    info->lrb.wg_flags, 0, sizeof(unsigned int) * info->lrb.size, stream));
+                    info->lrb.wg_flags, 0, sizeof(uint32_t) * info->lrb.size, stream));
 
-                unsigned int block_size      = WG_SIZE;
-                unsigned int bin_max_row_len = (1 << j);
-                unsigned int num_wgs_per_row
+                uint32_t block_size      = WG_SIZE;
+                uint32_t bin_max_row_len = (1 << j);
+                uint32_t num_wgs_per_row
                     = (bin_max_row_len - 1) / (BLOCK_MULTIPLIER * block_size) + 1;
-                unsigned int grid_size = info->lrb.nRowsBins[j] * num_wgs_per_row;
+                uint32_t grid_size = info->lrb.nRowsBins[j] * num_wgs_per_row;
 
                 RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_lrb_long_rows_kernel),
                                                    grid_size,

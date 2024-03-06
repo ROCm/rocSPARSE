@@ -38,7 +38,7 @@ namespace rocsparse
     }
 
     // Shift CSR offsets
-    template <unsigned int BLOCKSIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void shift_offsets_kernel(J size, const I* __restrict__ in, I* __restrict__ out)
     {
@@ -52,7 +52,7 @@ namespace rocsparse
         out[gid] = in[gid] - in[0];
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void check_row_ptr_array(J m,
                              const I* __restrict__ csr_row_ptr,
@@ -79,7 +79,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename T, typename I, typename J>
+    template <uint32_t BLOCKSIZE, uint32_t WF_SIZE, typename T, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void check_matrix_csr_device(J m,
                                  J n,

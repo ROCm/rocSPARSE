@@ -28,24 +28,24 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, unsigned int GROUPS, typename I>
+    template <uint32_t BLOCKSIZE, uint32_t GROUPS, typename I>
     ROCSPARSE_DEVICE_ILF void bsrgemm_group_reduce(int tid, I* __restrict__ data)
     {
         // clang-format off
-    if(BLOCKSIZE > 512 && tid < 512) for(unsigned int i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid + 512) * GROUPS + i]; __syncthreads();
-    if(BLOCKSIZE > 256 && tid < 256) for(unsigned int i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid + 256) * GROUPS + i]; __syncthreads();
-    if(BLOCKSIZE > 128 && tid < 128) for(unsigned int i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid + 128) * GROUPS + i]; __syncthreads();
-    if(BLOCKSIZE >  64 && tid <  64) for(unsigned int i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid +  64) * GROUPS + i]; __syncthreads();
-    if(BLOCKSIZE >  32 && tid <  32) for(unsigned int i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid +  32) * GROUPS + i]; __syncthreads();
-    if(BLOCKSIZE >  16 && tid <  16) for(unsigned int i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid +  16) * GROUPS + i]; __syncthreads();
-    if(BLOCKSIZE >   8 && tid <   8) for(unsigned int i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid +   8) * GROUPS + i]; __syncthreads();
-    if(BLOCKSIZE >   4 && tid <   4) for(unsigned int i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid +   4) * GROUPS + i]; __syncthreads();
-    if(BLOCKSIZE >   2 && tid <   2) for(unsigned int i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid +   2) * GROUPS + i]; __syncthreads();
-    if(BLOCKSIZE >   1 && tid <   1) for(unsigned int i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid +   1) * GROUPS + i]; __syncthreads();
+    if(BLOCKSIZE > 512 && tid < 512) for(uint32_t i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid + 512) * GROUPS + i]; __syncthreads();
+    if(BLOCKSIZE > 256 && tid < 256) for(uint32_t i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid + 256) * GROUPS + i]; __syncthreads();
+    if(BLOCKSIZE > 128 && tid < 128) for(uint32_t i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid + 128) * GROUPS + i]; __syncthreads();
+    if(BLOCKSIZE >  64 && tid <  64) for(uint32_t i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid +  64) * GROUPS + i]; __syncthreads();
+    if(BLOCKSIZE >  32 && tid <  32) for(uint32_t i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid +  32) * GROUPS + i]; __syncthreads();
+    if(BLOCKSIZE >  16 && tid <  16) for(uint32_t i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid +  16) * GROUPS + i]; __syncthreads();
+    if(BLOCKSIZE >   8 && tid <   8) for(uint32_t i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid +   8) * GROUPS + i]; __syncthreads();
+    if(BLOCKSIZE >   4 && tid <   4) for(uint32_t i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid +   4) * GROUPS + i]; __syncthreads();
+    if(BLOCKSIZE >   2 && tid <   2) for(uint32_t i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid +   2) * GROUPS + i]; __syncthreads();
+    if(BLOCKSIZE >   1 && tid <   1) for(uint32_t i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid +   1) * GROUPS + i]; __syncthreads();
         // clang-format on
     }
 
-    template <unsigned int BLOCKDIM, unsigned int NNZB, typename T>
+    template <uint32_t BLOCKDIM, uint32_t NNZB, typename T>
     ROCSPARSE_DEVICE_ILF constexpr bool exceeds_shared_memory()
     {
         if(BLOCKDIM == 2)
@@ -59,9 +59,9 @@ namespace rocsparse
     }
 
     // Need to pass BLOCKDIM here and adjust number of groups based on block dim???
-    template <unsigned int BLOCKSIZE,
-              unsigned int GROUPS,
-              unsigned int BLOCKDIM,
+    template <uint32_t BLOCKSIZE,
+              uint32_t GROUPS,
+              uint32_t BLOCKDIM,
               typename T,
               typename I,
               typename J>
@@ -77,7 +77,7 @@ namespace rocsparse
         __shared__ J sdata[BLOCKSIZE * GROUPS];
 
         // Initialize shared memory
-        for(unsigned int i = 0; i < GROUPS; ++i)
+        for(uint32_t i = 0; i < GROUPS; ++i)
         {
             sdata[hipThreadIdx_x * GROUPS + i] = 0;
         }
@@ -114,7 +114,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int GROUPS, typename I>
+    template <uint32_t BLOCKSIZE, uint32_t GROUPS, typename I>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void bsrgemm_group_reduce_part3(I* __restrict__ group_size)
     {
@@ -122,7 +122,7 @@ namespace rocsparse
         __shared__ I sdata[BLOCKSIZE * GROUPS];
 
         // Copy global data to shared memory
-        for(unsigned int i = hipThreadIdx_x; i < BLOCKSIZE * GROUPS; i += BLOCKSIZE)
+        for(uint32_t i = hipThreadIdx_x; i < BLOCKSIZE * GROUPS; i += BLOCKSIZE)
         {
             sdata[i] = group_size[i];
         }
@@ -141,7 +141,7 @@ namespace rocsparse
     }
 
     // Copy an array
-    template <unsigned int BLOCKSIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void bsrgemm_copy(I size,
                       const J* __restrict__ in,
@@ -160,7 +160,7 @@ namespace rocsparse
     }
 
     // Copy and scale an array
-    template <unsigned int BLOCKSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename T>
     ROCSPARSE_DEVICE_ILF void bsrgemm_copy_scale_device(I size, T beta, const T* in, T* out)
     {
         I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
@@ -174,11 +174,7 @@ namespace rocsparse
     }
 
     // Hash operation to insert pair into hash table
-    template <unsigned int HASHVAL,
-              unsigned int HASHSIZE,
-              unsigned int BLOCKDIM,
-              typename I,
-              typename T>
+    template <uint32_t HASHVAL, uint32_t HASHSIZE, uint32_t BLOCKDIM, typename I, typename T>
     ROCSPARSE_DEVICE_ILF void insert_pair_rxc(
         I key, T val, int row, int col, I* __restrict__ table, T* __restrict__ data, I empty)
     {
@@ -214,10 +210,10 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int HASHSIZE,
-              unsigned int HASHVAL,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              uint32_t HASHSIZE,
+              uint32_t HASHVAL,
               typename I,
               typename J,
               typename T>
@@ -265,12 +261,12 @@ namespace rocsparse
         T* data  = &sdata[wid * 4 * HASHSIZE];
 
         // Initialize hash table
-        for(unsigned int i = lid; i < HASHSIZE; i += WFSIZE)
+        for(uint32_t i = lid; i < HASHSIZE; i += WFSIZE)
         {
             table[i] = nkb;
         }
 
-        for(unsigned int i = lid; i < 4 * HASHSIZE; i += WFSIZE)
+        for(uint32_t i = lid; i < 4 * HASHSIZE; i += WFSIZE)
         {
             data[i] = static_cast<T>(0);
         }
@@ -424,7 +420,7 @@ namespace rocsparse
         I row_begin_C = bsr_row_ptr_C[row] - idx_base_C;
 
         // Loop over hash table
-        for(unsigned int i = lid; i < HASHSIZE; i += WFSIZE)
+        for(uint32_t i = lid; i < HASHSIZE; i += WFSIZE)
         {
             // Get column from hash table to fill it into C
             J col_C = table[i];
@@ -439,7 +435,7 @@ namespace rocsparse
             I idx_C = row_begin_C;
 
             // Initialize index into hash table
-            unsigned int hash_idx = 0;
+            uint32_t hash_idx = 0;
 
             // Loop through hash table to find the (sorted) index into C for the
             // current column index
@@ -478,10 +474,10 @@ namespace rocsparse
     }
 
     // Compute column entries and accumulate values, where each row is processed by a single block
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int HASHSIZE,
-              unsigned int HASHVAL,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              uint32_t HASHSIZE,
+              uint32_t HASHVAL,
               typename I,
               typename J,
               typename T>
@@ -522,12 +518,12 @@ namespace rocsparse
         __shared__ T data[4 * HASHSIZE];
 
         // Initialize hash table
-        for(unsigned int i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
+        for(uint32_t i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
         {
             table[i] = nkb;
         }
 
-        for(unsigned int i = hipThreadIdx_x; i < 4 * HASHSIZE; i += BLOCKSIZE)
+        for(uint32_t i = hipThreadIdx_x; i < 4 * HASHSIZE; i += BLOCKSIZE)
         {
             data[i] = static_cast<T>(0);
         }
@@ -675,7 +671,7 @@ namespace rocsparse
         I row_begin_C = bsr_row_ptr_C[row] - idx_base_C;
 
         // Loop over hash table
-        for(unsigned int i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
+        for(uint32_t i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
         {
             // Get column from hash table to fill it into C
             J col_C = table[i];
@@ -690,7 +686,7 @@ namespace rocsparse
             I idx_C = row_begin_C;
 
             // Initialize index into hash table
-            unsigned int hash_idx = 0;
+            uint32_t hash_idx = 0;
 
             // Loop through hash table to find the (sorted) index into C for the
             // current column index
@@ -727,11 +723,11 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int HASHSIZE,
-              unsigned int HASHVAL,
-              unsigned int BLOCKDIM,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              uint32_t HASHSIZE,
+              uint32_t HASHVAL,
+              uint32_t BLOCKDIM,
               typename I,
               typename J,
               typename T>
@@ -787,12 +783,12 @@ namespace rocsparse
         T* data  = &sdata[wid * BLOCKDIM * BLOCKDIM * HASHSIZE];
 
         // Initialize hash table
-        for(unsigned int i = lid; i < HASHSIZE; i += WFSIZE)
+        for(uint32_t i = lid; i < HASHSIZE; i += WFSIZE)
         {
             table[i] = nkb;
         }
 
-        for(unsigned int i = lid; i < BLOCKDIM * BLOCKDIM * HASHSIZE; i += WFSIZE)
+        for(uint32_t i = lid; i < BLOCKDIM * BLOCKDIM * HASHSIZE; i += WFSIZE)
         {
             data[i] = static_cast<T>(0);
         }
@@ -901,7 +897,7 @@ namespace rocsparse
         I row_begin_C = bsr_row_ptr_C[row] - idx_base_C;
 
         // Loop over hash table
-        for(unsigned int i = swid; i < HASHSIZE; i += WFSIZE / (BLOCKDIM * BLOCKDIM))
+        for(uint32_t i = swid; i < HASHSIZE; i += WFSIZE / (BLOCKDIM * BLOCKDIM))
         {
             // Get column from hash table to fill it into C
             J col_C = table[i];
@@ -916,7 +912,7 @@ namespace rocsparse
             I idx_C = row_begin_C;
 
             // Initialize index into hash table
-            unsigned int hash_idx = 0;
+            uint32_t hash_idx = 0;
 
             // Loop through hash table to find the (sorted) index into C for the
             // current column index
@@ -953,10 +949,10 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int HASHSIZE,
-              unsigned int HASHVAL,
-              unsigned int BLOCKDIM,
+    template <uint32_t BLOCKSIZE,
+              uint32_t HASHSIZE,
+              uint32_t HASHVAL,
+              uint32_t BLOCKDIM,
               typename I,
               typename J,
               typename T>
@@ -1003,12 +999,12 @@ namespace rocsparse
         __shared__ T data[BLOCKDIM * BLOCKDIM * HASHSIZE];
 
         // Initialize hash table
-        for(unsigned int i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
+        for(uint32_t i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
         {
             table[i] = nkb;
         }
 
-        for(unsigned int i = hipThreadIdx_x; i < BLOCKDIM * BLOCKDIM * HASHSIZE; i += BLOCKSIZE)
+        for(uint32_t i = hipThreadIdx_x; i < BLOCKDIM * BLOCKDIM * HASHSIZE; i += BLOCKSIZE)
         {
             data[i] = static_cast<T>(0);
         }
@@ -1110,7 +1106,7 @@ namespace rocsparse
         I row_begin_C = bsr_row_ptr_C[row] - idx_base_C;
 
         // Loop over hash table
-        for(unsigned int i = wid; i < HASHSIZE; i += (BLOCKSIZE / (BLOCKDIM * BLOCKDIM)))
+        for(uint32_t i = wid; i < HASHSIZE; i += (BLOCKSIZE / (BLOCKDIM * BLOCKDIM)))
         {
             // Get column from hash table to fill it into C
             J col_C = table[i];
@@ -1125,7 +1121,7 @@ namespace rocsparse
             I idx_C = row_begin_C;
 
             // Initialize index into hash table
-            unsigned int hash_idx = 0;
+            uint32_t hash_idx = 0;
 
             // Loop through hash table to find the (sorted) index into C for the
             // current column index
@@ -1161,9 +1157,9 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int CHUNKSIZE,
-              unsigned int BLOCKDIM,
+    template <uint32_t BLOCKSIZE,
+              uint32_t CHUNKSIZE,
+              uint32_t BLOCKDIM,
               typename I,
               typename J,
               typename T>
@@ -1229,13 +1225,12 @@ namespace rocsparse
         while(chunk_begin < nb)
         {
             // Initialize row nnz table and accumulator
-            for(unsigned int i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
+            for(uint32_t i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
             {
                 table[i] = 0;
             }
 
-            for(unsigned int i = hipThreadIdx_x; i < BLOCKDIM * BLOCKDIM * CHUNKSIZE;
-                i += BLOCKSIZE)
+            for(uint32_t i = hipThreadIdx_x; i < BLOCKDIM * BLOCKDIM * CHUNKSIZE; i += BLOCKSIZE)
             {
                 data[i] = static_cast<T>(0);
             }
@@ -1420,7 +1415,7 @@ namespace rocsparse
             __syncthreads();
 
             // Segmented wavefront reduction
-            for(unsigned int j = 1; j < CHUNKSIZE; j <<= 1)
+            for(uint32_t j = 1; j < CHUNKSIZE; j <<= 1)
             {
                 if(tid >= j)
                 {
@@ -1446,7 +1441,7 @@ namespace rocsparse
 
             __syncthreads();
 
-            for(unsigned int i = wid; i < CHUNKSIZE; i += (BLOCKSIZE / (BLOCKDIM * BLOCKDIM)))
+            for(uint32_t i = wid; i < CHUNKSIZE; i += (BLOCKSIZE / (BLOCKDIM * BLOCKDIM)))
             {
                 if(table[i])
                 {
@@ -1483,9 +1478,9 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int CHUNKSIZE,
-              unsigned int BLOCKDIM,
+    template <uint32_t BLOCKSIZE,
+              uint32_t CHUNKSIZE,
+              uint32_t BLOCKDIM,
               typename I,
               typename J,
               typename T>
@@ -1545,13 +1540,12 @@ namespace rocsparse
         while(chunk_begin < nb)
         {
             // Initialize row nnz table and accumulator
-            for(unsigned int i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
+            for(uint32_t i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
             {
                 table[i] = 0;
             }
 
-            for(unsigned int i = hipThreadIdx_x; i < BLOCKDIM * BLOCKDIM * CHUNKSIZE;
-                i += BLOCKSIZE)
+            for(uint32_t i = hipThreadIdx_x; i < BLOCKDIM * BLOCKDIM * CHUNKSIZE; i += BLOCKSIZE)
             {
                 data[i] = static_cast<T>(0);
             }
@@ -1595,7 +1589,7 @@ namespace rocsparse
                             table[col_B - chunk_begin] = 1;
 
                             // Accumulate the intermediate products
-                            for(unsigned int i = 0; i < BLOCKDIM; i += BLOCKSIZE / BLOCKDIM)
+                            for(uint32_t i = 0; i < BLOCKDIM; i += BLOCKSIZE / BLOCKDIM)
                             {
                                 if((i + lid) < block_dim && wid < block_dim)
                                 {
@@ -1673,7 +1667,7 @@ namespace rocsparse
                         table[col_D - chunk_begin] = 1;
 
                         // Accumulate the entry of D
-                        for(unsigned int i = 0; i < BLOCKDIM; i += BLOCKSIZE / BLOCKDIM)
+                        for(uint32_t i = 0; i < BLOCKDIM; i += BLOCKSIZE / BLOCKDIM)
                         {
                             if((i + lid) < block_dim && wid < block_dim)
                             {
@@ -1727,7 +1721,7 @@ namespace rocsparse
 
                     bsr_col_ind_C[idx] = j + chunk_begin + idx_base_C;
 
-                    for(unsigned int i = 0; i < BLOCKDIM; i += BLOCKSIZE / BLOCKDIM)
+                    for(uint32_t i = 0; i < BLOCKDIM; i += BLOCKSIZE / BLOCKDIM)
                     {
                         if((i + lid) < block_dim && wid < block_dim)
                         {

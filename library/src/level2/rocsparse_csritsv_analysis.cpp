@@ -30,7 +30,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void kernel_count_missing_diagonal(J m,
                                        const I* __restrict__ ptr_diag_,
@@ -53,7 +53,7 @@ namespace rocsparse
         }
     }
 
-    template <rocsparse_fill_mode FILL_MODE, unsigned int BLOCKSIZE, typename I, typename J>
+    template <rocsparse_fill_mode FILL_MODE, uint32_t BLOCKSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void kernel_count_missing_diagonal2(J m,
                                         const I* __restrict__ ptr_,
@@ -76,7 +76,7 @@ namespace rocsparse
         }
     }
 
-    template <rocsparse_fill_mode FILL_MODE, unsigned int BLOCKSIZE, typename I, typename J>
+    template <rocsparse_fill_mode FILL_MODE, uint32_t BLOCKSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void kernel_count_diagonal_triangular(J m,
                                           const I* __restrict__ ptr_,
@@ -96,7 +96,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void kernel_ptr_end_unit(J m,
                              const I* __restrict__ ptr_,
@@ -119,7 +119,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void kernel_ptr_end_non_unit(J m,
                                  const I* __restrict__ ptr_,
@@ -127,7 +127,7 @@ namespace rocsparse
                                  I* __restrict__ ptr_end,
                                  rocsparse_index_base base)
     {
-        unsigned int tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
+        uint32_t tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
         if(tid < m)
         {
             ptr_end[tid] = ptr_[tid + 1];
@@ -184,7 +184,7 @@ namespace rocsparse
             }
         }
 
-        static constexpr unsigned int BLOCKSIZE = 1024;
+        static constexpr uint32_t BLOCKSIZE = 1024;
         switch(descr->type)
         {
         case rocsparse_matrix_type_general:

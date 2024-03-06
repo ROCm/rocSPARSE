@@ -38,7 +38,7 @@
 
 namespace rocsparse
 {
-    __attribute__((unused)) static unsigned int flp2(unsigned int x)
+    __attribute__((unused)) static uint32_t flp2(uint32_t x)
     {
         x |= (x >> 1);
         x |= (x >> 2);
@@ -59,7 +59,7 @@ namespace rocsparse
     // workgroup size of 256 and 4 rows, you could have 64 threads
     // working on each row. If you have 5 rows, only 32 threads could
     // reliably work on each row because our reduction assumes power-of-2.
-    static unsigned long long numThreadsForReduction(unsigned long long num_rows)
+    static uint64_t numThreadsForReduction(uint64_t num_rows)
     {
 #if defined(__INTEL_COMPILER)
         return WG_SIZE >> (_bit_scan_reverse(num_rows - 1) + 1);
@@ -68,7 +68,7 @@ namespace rocsparse
            && ((__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) > 30202)
         return (WG_SIZE >> (8 * sizeof(int) - __builtin_clz(num_rows - 1)));
 #elif defined(_MSC_VER) && (_MSC_VER >= 1400)
-        unsigned long long bit_returned;
+        uint64_t bit_returned;
         _BitScanReverse(&bit_returned, (num_rows - 1));
         return WG_SIZE >> (bit_returned + 1);
 #else
@@ -345,9 +345,9 @@ rocsparse_status
         (I*)NULL, (J*)NULL, info->csrmv_info->adaptive.size, hptr.data(), m, false);
 
     // Create row blocks, workgroup flag, and workgroup data structures
-    std::vector<I>            row_blocks(info->csrmv_info->adaptive.size, 0);
-    std::vector<unsigned int> wg_flags(info->csrmv_info->adaptive.size, 0);
-    std::vector<J>            wg_ids(info->csrmv_info->adaptive.size, 0);
+    std::vector<I>        row_blocks(info->csrmv_info->adaptive.size, 0);
+    std::vector<uint32_t> wg_flags(info->csrmv_info->adaptive.size, 0);
+    std::vector<J>        wg_ids(info->csrmv_info->adaptive.size, 0);
 
     ComputeRowBlocks<I, J>(
         row_blocks.data(), wg_ids.data(), info->csrmv_info->adaptive.size, hptr.data(), m, true);
@@ -366,7 +366,7 @@ rocsparse_status
                                                      handle->stream));
         RETURN_IF_HIP_ERROR(
             rocsparse_hipMallocAsync((void**)&info->csrmv_info->adaptive.wg_flags,
-                                     sizeof(unsigned int) * info->csrmv_info->adaptive.size,
+                                     sizeof(uint32_t) * info->csrmv_info->adaptive.size,
                                      handle->stream));
         RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync((void**)&info->csrmv_info->adaptive.wg_ids,
                                                      sizeof(J) * info->csrmv_info->adaptive.size,
@@ -380,7 +380,7 @@ rocsparse_status
                                            stream));
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->csrmv_info->adaptive.wg_flags,
                                            wg_flags.data(),
-                                           sizeof(unsigned int) * info->csrmv_info->adaptive.size,
+                                           sizeof(uint32_t) * info->csrmv_info->adaptive.size,
                                            hipMemcpyHostToDevice,
                                            stream));
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->csrmv_info->adaptive.wg_ids,
@@ -415,7 +415,7 @@ namespace rocsparse
     void csrmvn_adaptive_kernel(bool conj,
                                 I    nnz,
                                 const I* __restrict__ row_blocks,
-                                unsigned int* __restrict__ wg_flags,
+                                uint32_t* __restrict__ wg_flags,
                                 const J* __restrict__ wg_ids,
                                 U alpha_device_host,
                                 const I* __restrict__ csr_row_ptr,

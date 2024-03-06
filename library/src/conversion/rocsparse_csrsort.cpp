@@ -131,9 +131,9 @@ try
     // Stream
     hipStream_t stream = handle->stream;
 
-    unsigned int startbit = 0;
-    unsigned int endbit   = rocsparse::clz(n);
-    size_t       size;
+    uint32_t startbit = 0;
+    uint32_t endbit   = rocsparse::clz(n);
+    size_t   size;
 
     if(perm != nullptr)
     {

@@ -27,8 +27,8 @@
 namespace rocsparse
 {
     // General BSRXMV that works for any BSR block dimensions
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
               typename T,
               typename I,
               typename J,
@@ -122,8 +122,8 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
               typename T,
               typename I,
               typename J,

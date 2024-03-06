@@ -28,10 +28,10 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              unsigned int LOOPS,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t LOOPS,
+              bool     TRANSB,
               typename T,
               typename I,
               typename A,
@@ -96,7 +96,7 @@ namespace rocsparse
 
             row_ind = row;
 
-            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            for(uint32_t i = 0; i < WF_SIZE; ++i)
             {
                 T v = rocsparse::shfl(val, i, WF_SIZE);
                 I c = rocsparse::shfl(col, i, WF_SIZE);
@@ -117,12 +117,12 @@ namespace rocsparse
 
             // Transpose
             __syncthreads();
-            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            for(uint32_t i = 0; i < WF_SIZE; ++i)
             {
                 shared_val[BLOCKSIZE * lid + WF_SIZE * wid + i] = valB[i];
             }
             __syncthreads();
-            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            for(uint32_t i = 0; i < WF_SIZE; ++i)
             {
                 valB[i] = shared_val[BLOCKSIZE * i + tid];
             }
@@ -135,7 +135,7 @@ namespace rocsparse
                 const I prevrow = shared_row[BLOCKSIZE - 1];
                 if(row_ind == prevrow)
                 {
-                    for(unsigned int i = 0; i < WF_SIZE; ++i)
+                    for(uint32_t i = 0; i < WF_SIZE; ++i)
                     {
                         valB[i] += shared_val_prev[i];
                     }
@@ -144,7 +144,7 @@ namespace rocsparse
                 {
                     if(order_C == rocsparse_order_column)
                     {
-                        for(unsigned int i = 0; i < WF_SIZE; ++i)
+                        for(uint32_t i = 0; i < WF_SIZE; ++i)
                         {
                             dense_C[prevrow + ldc * (colB + i) + batch_stride_C * batch]
                                 += shared_val_prev[i];
@@ -152,7 +152,7 @@ namespace rocsparse
                     }
                     else
                     {
-                        for(unsigned int i = 0; i < WF_SIZE; ++i)
+                        for(uint32_t i = 0; i < WF_SIZE; ++i)
                         {
                             dense_C[(colB + i) + ldc * prevrow + batch_stride_C * batch]
                                 += shared_val_prev[i];
@@ -163,27 +163,27 @@ namespace rocsparse
 
             __syncthreads();
             shared_row[tid] = row_ind;
-            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            for(uint32_t i = 0; i < WF_SIZE; ++i)
             {
                 shared_val[BLOCKSIZE * i + tid] = valB[i];
             }
             __syncthreads();
 
             // segmented reduction
-            for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
+            for(uint32_t j = 1; j < BLOCKSIZE; j <<= 1)
             {
                 if(tid >= j)
                 {
                     if(row_ind == shared_row[tid - j])
                     {
-                        for(unsigned int i = 0; i < WF_SIZE; ++i)
+                        for(uint32_t i = 0; i < WF_SIZE; ++i)
                         {
                             valB[i] = valB[i] + shared_val[BLOCKSIZE * i + tid - j];
                         }
                     }
                 }
                 __syncthreads();
-                for(unsigned int i = 0; i < WF_SIZE; ++i)
+                for(uint32_t i = 0; i < WF_SIZE; ++i)
                 {
                     shared_val[BLOCKSIZE * i + tid] = valB[i];
                 }
@@ -201,14 +201,14 @@ namespace rocsparse
                 {
                     if(order_C == rocsparse_order_column)
                     {
-                        for(unsigned int i = 0; i < WF_SIZE; ++i)
+                        for(uint32_t i = 0; i < WF_SIZE; ++i)
                         {
                             dense_C[row_ind + ldc * (colB + i) + batch_stride_C * batch] += valB[i];
                         }
                     }
                     else
                     {
-                        for(unsigned int i = 0; i < WF_SIZE; ++i)
+                        for(uint32_t i = 0; i < WF_SIZE; ++i)
                         {
                             dense_C[(colB + i) + ldc * row_ind + batch_stride_C * batch] += valB[i];
                         }
@@ -220,7 +220,7 @@ namespace rocsparse
         if(tid == BLOCKSIZE - 1)
         {
             row_block_red[bid + hipGridDim_x * batch] = row_ind;
-            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            for(uint32_t i = 0; i < WF_SIZE; ++i)
             {
                 val_block_red[hipGridDim_x * (colB + i) + bid + (hipGridDim_x * N) * batch]
                     = valB[i];
@@ -228,10 +228,10 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              unsigned int LOOPS,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t LOOPS,
+              bool     TRANSB,
               typename T,
               typename I,
               typename A,
@@ -299,7 +299,7 @@ namespace rocsparse
 
             row_ind = row;
 
-            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            for(uint32_t i = 0; i < WF_SIZE; ++i)
             {
 
                 const T v = rocsparse::shfl(val, i, WF_SIZE);
@@ -329,12 +329,12 @@ namespace rocsparse
 
             // Transpose
             __syncthreads();
-            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            for(uint32_t i = 0; i < WF_SIZE; ++i)
             {
                 shared_val[BLOCKSIZE * lid + WF_SIZE * wid + i] = valB[i];
             }
             __syncthreads();
-            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            for(uint32_t i = 0; i < WF_SIZE; ++i)
             {
                 valB[i] = shared_val[BLOCKSIZE * i + tid];
             }
@@ -347,7 +347,7 @@ namespace rocsparse
                 const I prevrow = shared_row[BLOCKSIZE - 1];
                 if(row_ind == prevrow)
                 {
-                    for(unsigned int i = 0; i < WF_SIZE; ++i)
+                    for(uint32_t i = 0; i < WF_SIZE; ++i)
                     {
                         valB[i] += shared_val_prev[i];
                     }
@@ -356,7 +356,7 @@ namespace rocsparse
                 {
                     if(order_C == rocsparse_order_column)
                     {
-                        for(unsigned int i = 0; i < WF_SIZE; ++i)
+                        for(uint32_t i = 0; i < WF_SIZE; ++i)
                         {
                             if((colB + i) < N)
                             {
@@ -367,7 +367,7 @@ namespace rocsparse
                     }
                     else
                     {
-                        for(unsigned int i = 0; i < WF_SIZE; ++i)
+                        for(uint32_t i = 0; i < WF_SIZE; ++i)
                         {
                             if((colB + i) < N)
                             {
@@ -381,27 +381,27 @@ namespace rocsparse
 
             __syncthreads();
             shared_row[tid] = row_ind;
-            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            for(uint32_t i = 0; i < WF_SIZE; ++i)
             {
                 shared_val[BLOCKSIZE * i + tid] = valB[i];
             }
             __syncthreads();
 
             // segmented reduction
-            for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
+            for(uint32_t j = 1; j < BLOCKSIZE; j <<= 1)
             {
                 if(tid >= j)
                 {
                     if(row_ind == shared_row[tid - j])
                     {
-                        for(unsigned int i = 0; i < WF_SIZE; ++i)
+                        for(uint32_t i = 0; i < WF_SIZE; ++i)
                         {
                             valB[i] = valB[i] + shared_val[BLOCKSIZE * i + tid - j];
                         }
                     }
                 }
                 __syncthreads();
-                for(unsigned int i = 0; i < WF_SIZE; ++i)
+                for(uint32_t i = 0; i < WF_SIZE; ++i)
                 {
                     shared_val[BLOCKSIZE * i + tid] = valB[i];
                 }
@@ -419,7 +419,7 @@ namespace rocsparse
                 {
                     if(order_C == rocsparse_order_column)
                     {
-                        for(unsigned int i = 0; i < WF_SIZE; ++i)
+                        for(uint32_t i = 0; i < WF_SIZE; ++i)
                         {
                             if((colB + i) < N)
                             {
@@ -430,7 +430,7 @@ namespace rocsparse
                     }
                     else
                     {
-                        for(unsigned int i = 0; i < WF_SIZE; ++i)
+                        for(uint32_t i = 0; i < WF_SIZE; ++i)
                         {
                             if((colB + i) < N)
                             {
@@ -446,7 +446,7 @@ namespace rocsparse
         if(tid == BLOCKSIZE - 1)
         {
             row_block_red[bid + hipGridDim_x * batch] = row_ind;
-            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            for(uint32_t i = 0; i < WF_SIZE; ++i)
             {
                 if((colB + i) < N)
                 {
@@ -458,13 +458,13 @@ namespace rocsparse
     }
 
     // Segmented block reduction kernel
-    template <unsigned int BLOCKSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename T>
     ROCSPARSE_DEVICE_ILF void segmented_blockreduce(const I* rows, T* vals)
     {
         const int tid = hipThreadIdx_x;
 
 #pragma unroll
-        for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
+        for(uint32_t j = 1; j < BLOCKSIZE; j <<= 1)
         {
 
             const T val
@@ -479,7 +479,7 @@ namespace rocsparse
     }
 
     // Do the final block reduction of the block reduction buffers back into global memory
-    template <unsigned int BLOCKSIZE, typename T, typename I, typename C>
+    template <uint32_t BLOCKSIZE, typename T, typename I, typename C>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void coommnn_general_block_reduce(I n,
                                       I nblocks,
@@ -535,10 +535,10 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              unsigned int LOOPS,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t LOOPS,
+              bool     TRANSB,
               typename T,
               typename I,
               typename A,
@@ -597,10 +597,10 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              unsigned int LOOPS,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t LOOPS,
+              bool     TRANSB,
               typename T,
               typename I,
               typename A,

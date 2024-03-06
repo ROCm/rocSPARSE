@@ -766,8 +766,8 @@ namespace rocsparse
                             rocsparse_int* __restrict__ zero_pivot,
                             rocsparse_index_base idx_base)
     {
-        constexpr static unsigned int DIMX = BLOCKSIZE / BSRDIM;
-        constexpr static unsigned int DIMY = BSRDIM;
+        constexpr static uint32_t DIMX = BLOCKSIZE / BSRDIM;
+        constexpr static uint32_t DIMY = BSRDIM;
 
         rocsparse_int tidx = hipThreadIdx_x;
         rocsparse_int tidy = hipThreadIdx_y;
@@ -1128,8 +1128,8 @@ namespace rocsparse
                              rocsparse_int* __restrict__ zero_pivot,
                              rocsparse_index_base idx_base)
     {
-        constexpr static unsigned int DIMX = BLOCKSIZE / BSRDIM;
-        constexpr static unsigned int DIMY = BSRDIM;
+        constexpr static uint32_t DIMX = BLOCKSIZE / BSRDIM;
+        constexpr static uint32_t DIMY = BSRDIM;
 
         rocsparse_int tidx = hipThreadIdx_x;
         rocsparse_int tidy = hipThreadIdx_y;
@@ -1468,7 +1468,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, bool SLEEP, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void bsric0_binsearch_kernel(rocsparse_direction direction,
                                  rocsparse_int       mb,

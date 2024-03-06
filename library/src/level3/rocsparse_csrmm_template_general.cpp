@@ -27,7 +27,7 @@
 #include "csrmm_device.h"
 namespace rocsparse
 {
-    template <unsigned int DIM_X, unsigned int DIM_Y, typename I, typename T, typename U>
+    template <uint32_t DIM_X, uint32_t DIM_Y, typename I, typename T, typename U>
     ROCSPARSE_KERNEL(DIM_X* DIM_Y)
     void csrmm_scale(I m,
                      I n,
@@ -45,8 +45,8 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
               typename I,
               typename J,
               typename A,
@@ -107,9 +107,9 @@ namespace rocsparse
                                                               idx_base);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              unsigned int LOOPS,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t LOOPS,
               typename I,
               typename J,
               typename A,
@@ -175,8 +175,8 @@ namespace rocsparse
             idx_base);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
               typename I,
               typename J,
               typename A,
@@ -242,8 +242,8 @@ namespace rocsparse
             idx_base);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
               typename I,
               typename J,
               typename A,
@@ -304,8 +304,8 @@ namespace rocsparse
                                                               idx_base);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
               typename I,
               typename J,
               typename A,

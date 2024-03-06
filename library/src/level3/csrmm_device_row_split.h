@@ -31,9 +31,9 @@ namespace rocsparse
     // See Yang C., Bulu? A., Owens J.D. (2018) Design Principles for Sparse Matrix Multiplication on the GPU.
     // In: Aldinucci M., Padovani L., Torquati M. (eds) Euro-Par 2018: Parallel Processing. Euro-Par 2018.
     // Lecture Notes in Computer Science, vol 11014. Springer, Cham. https://doi.org/10.1007/978-3-319-96983-1_48
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              unsigned int LOOPS,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t LOOPS,
               typename T,
               typename I,
               typename J,
@@ -80,7 +80,7 @@ namespace rocsparse
             const J col = csr_col_ind[j] - idx_base;
             const T val = conj_val(csr_val[j], conj_A);
 
-            for(unsigned int p = 0; p < LOOPS; p++)
+            for(uint32_t p = 0; p < LOOPS; p++)
             {
                 sum[p] = rocsparse::fma<T>(
                     val,
@@ -89,7 +89,7 @@ namespace rocsparse
             }
         }
 
-        for(unsigned int p = 0; p < LOOPS; p++)
+        for(uint32_t p = 0; p < LOOPS; p++)
         {
             sum[p] = rocsparse::wfreduce_sum<WF_SIZE>(sum[p]);
         }
@@ -100,14 +100,14 @@ namespace rocsparse
             {
                 if(order_C == rocsparse_order_column)
                 {
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         dense_C[row + (colB + p) * ldc] = alpha * sum[p];
                     }
                 }
                 else
                 {
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         dense_C[row * ldc + (colB + p)] = alpha * sum[p];
                     }
@@ -117,7 +117,7 @@ namespace rocsparse
             {
                 if(order_C == rocsparse_order_column)
                 {
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         dense_C[row + (colB + p) * ldc] = rocsparse::fma<T>(
                             beta, dense_C[row + (colB + p) * ldc], alpha * sum[p]);
@@ -125,7 +125,7 @@ namespace rocsparse
                 }
                 else
                 {
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         dense_C[row * ldc + (colB + p)] = rocsparse::fma<T>(
                             beta, dense_C[row * ldc + (colB + p)], alpha * sum[p]);
@@ -138,9 +138,9 @@ namespace rocsparse
     // See Yang C., Bulu? A., Owens J.D. (2018) Design Principles for Sparse Matrix Multiplication on the GPU.
     // In: Aldinucci M., Padovani L., Torquati M. (eds) Euro-Par 2018: Parallel Processing. Euro-Par 2018.
     // Lecture Notes in Computer Science, vol 11014. Springer, Cham. https://doi.org/10.1007/978-3-319-96983-1_48
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              unsigned int LOOPS,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t LOOPS,
               typename T,
               typename I,
               typename J,
@@ -186,7 +186,7 @@ namespace rocsparse
         {
             const J colB = l + lid;
 
-            for(unsigned int p = 0; p < LOOPS; p++)
+            for(uint32_t p = 0; p < LOOPS; p++)
             {
                 sum[p] = static_cast<T>(0);
             }
@@ -204,12 +204,12 @@ namespace rocsparse
                                   ? conj_val(rocsparse::nontemporal_load(csr_val + k), conj_A)
                                   : static_cast<T>(0);
 
-                for(unsigned int i = 0; i < WF_SIZE; ++i)
+                for(uint32_t i = 0; i < WF_SIZE; ++i)
                 {
                     const T       v = rocsparse::shfl(val, i, WF_SIZE);
                     const int64_t c = __shfl(col, i, WF_SIZE);
 
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         sum[p] = rocsparse::fma<T>(
                             v,
@@ -223,14 +223,14 @@ namespace rocsparse
             {
                 if(order_C == rocsparse_order_column)
                 {
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         dense_C[row + (colB + p * WF_SIZE) * ldc] = alpha * sum[p];
                     }
                 }
                 else
                 {
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         dense_C[row * ldc + colB + p * WF_SIZE] = alpha * sum[p];
                     }
@@ -240,7 +240,7 @@ namespace rocsparse
             {
                 if(order_C == rocsparse_order_column)
                 {
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         dense_C[row + (colB + p * WF_SIZE) * ldc] = rocsparse::fma<T>(
                             beta, dense_C[row + (colB + p * WF_SIZE) * ldc], alpha * sum[p]);
@@ -248,7 +248,7 @@ namespace rocsparse
                 }
                 else
                 {
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         dense_C[row * ldc + colB + p * WF_SIZE] = rocsparse::fma<T>(
                             beta, dense_C[row * ldc + colB + p * WF_SIZE], alpha * sum[p]);
@@ -261,8 +261,8 @@ namespace rocsparse
     // See Yang C., Bulu? A., Owens J.D. (2018) Design Principles for Sparse Matrix Multiplication on the GPU.
     // In: Aldinucci M., Padovani L., Torquati M. (eds) Euro-Par 2018: Parallel Processing. Euro-Par 2018.
     // Lecture Notes in Computer Science, vol 11014. Springer, Cham. https://doi.org/10.1007/978-3-319-96983-1_48
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
               typename T,
               typename I,
               typename J,
@@ -319,7 +319,7 @@ namespace rocsparse
                                   ? conj_val(rocsparse::nontemporal_load(csr_val + k), conj_A)
                                   : static_cast<T>(0);
 
-                for(unsigned int i = 0; i < WF_SIZE; ++i)
+                for(uint32_t i = 0; i < WF_SIZE; ++i)
                 {
                     const T       v = rocsparse::shfl(val, i, WF_SIZE);
                     const int64_t c = __shfl(col, i, WF_SIZE);

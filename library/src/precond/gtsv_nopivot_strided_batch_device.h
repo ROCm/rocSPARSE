@@ -43,7 +43,7 @@ namespace rocsparse
     // [ 0  0  0  0  0  0  a7 b7]
 
     // Cyclic reduction algorithm using shared memory
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_nopivot_strided_batch_cr_pow2_shared_kernel(rocsparse_int m,
                                                           rocsparse_int batch_count,
@@ -155,7 +155,7 @@ namespace rocsparse
     }
 
     // Parallel cyclic reduction algorithm using shared memory
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_nopivot_strided_batch_pcr_pow2_shared_kernel(rocsparse_int m,
                                                            rocsparse_int batch_count,
@@ -235,7 +235,7 @@ namespace rocsparse
     }
 
     // Combined Parallel cyclic reduction and cyclic reduction algorithm using shared memory
-    template <unsigned int BLOCKSIZE, unsigned int PCR_SIZE, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t PCR_SIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_nopivot_strided_batch_crpcr_pow2_shared_kernel(rocsparse_int m,
                                                              rocsparse_int batch_count,
@@ -417,7 +417,7 @@ namespace rocsparse
     }
 
     // Parallel cyclic reduction algorithm
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_nopivot_strided_batch_pcr_shared_kernel(rocsparse_int m,
                                                       rocsparse_int batch_count,
@@ -510,7 +510,7 @@ namespace rocsparse
 
     // Parallel cyclic reduction algorithm using global memory for partitioning large matrices into
     // multiple small ones that can be solved in parallel in stage 2
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_nopivot_strided_batch_pcr_pow2_stage1_kernel(rocsparse_int stride,
                                                            rocsparse_int m,
@@ -583,7 +583,7 @@ namespace rocsparse
 
     // Cyclic reduction algorithm using shared memory to solve multiple small matrices produced from
     // stage 1 above in parallel
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_nopivot_strided_batch_cr_pow2_stage2_kernel(rocsparse_int m,
                                                           rocsparse_int batch_count,
@@ -715,7 +715,7 @@ namespace rocsparse
 
     // Parallel cyclic reduction algorithm using global memory for partitioning large matrices into
     // multiple small ones that can be solved in parallel in stage 2
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_nopivot_strided_batch_pcr_stage1_kernel(rocsparse_int stride,
                                                       rocsparse_int m,
@@ -773,7 +773,7 @@ namespace rocsparse
 
     // Parallel cyclic reduction algorithm using shared memory to solve multiple small matrices produced from
     // stage 1 above in parallel
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_nopivot_strided_batch_pcr_stage2_kernel(rocsparse_int m,
                                                       rocsparse_int batch_count,

@@ -88,7 +88,7 @@ namespace rocsparse
                                       y,                                                         \
                                       base);
 
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename T, typename U>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gebsrmvn_general_kernel(rocsparse_int       mb,
                                  rocsparse_direction dir,
@@ -124,11 +124,7 @@ namespace rocsparse
                                                               idx_base);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int ROWBSRDIM,
-              unsigned int COLBSRDIM,
-              typename T,
-              typename U>
+    template <uint32_t BLOCKSIZE, uint32_t ROWBSRDIM, uint32_t COLBSRDIM, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gebsrmvn_mxn_kernel(rocsparse_int       mb,
                              rocsparse_direction dir,
@@ -155,11 +151,7 @@ namespace rocsparse
             mb, dir, alpha, bsr_row_ptr, bsr_col_ind, bsr_val, x, beta, y, idx_base);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int ROWBSRDIM,
-              unsigned int COLBSRDIM,
-              typename T,
-              typename U>
+    template <uint32_t BLOCKSIZE, uint32_t ROWBSRDIM, uint32_t COLBSRDIM, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gebsrmvn_mxn_16_kernel(rocsparse_int       mb,
                                 rocsparse_direction dir,

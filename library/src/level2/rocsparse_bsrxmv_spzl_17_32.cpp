@@ -27,7 +27,7 @@
 namespace rocsparse
 {
     // BSRXMV kernel for BSR block dimension of 17 to 32
-    template <unsigned int BSRDIM,
+    template <uint32_t BSRDIM,
               typename T,
               typename I,
               typename J,
@@ -155,7 +155,7 @@ namespace rocsparse
     }
 
     // Kernels for BSR block dimensions of 17 to 32
-    template <unsigned int BSRDIM,
+    template <uint32_t BSRDIM,
               typename T,
               typename I,
               typename J,

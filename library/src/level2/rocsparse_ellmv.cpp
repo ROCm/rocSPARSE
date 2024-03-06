@@ -31,7 +31,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename U>
+    template <uint32_t BLOCKSIZE, typename I, typename A, typename X, typename Y, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void ellmvn_kernel(I m,
                        I n,
@@ -53,7 +53,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename U>
+    template <uint32_t BLOCKSIZE, typename I, typename A, typename X, typename Y, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void ellmvt_kernel(rocsparse_operation trans,
                        I                   m,
@@ -74,7 +74,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename Y, typename U>
+    template <uint32_t BLOCKSIZE, typename I, typename Y, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void ellmvt_scale_kernel(I size, U scalar_device_host, Y* __restrict__ data)
     {

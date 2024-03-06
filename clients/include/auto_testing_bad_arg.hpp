@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -112,8 +112,7 @@ inline void auto_testing_bad_arg_print(T& t, Ts&... ts)
     auto_testing_bad_arg_print(ts...);
 }
 
-static constexpr unsigned int
-    stringargs_count(const char* str, unsigned int pos = 0, unsigned int count = 0)
+static constexpr uint32_t stringargs_count(const char* str, uint32_t pos = 0, uint32_t count = 0)
 {
     if(str[pos] == '\0')
     {
@@ -126,7 +125,7 @@ static constexpr unsigned int
     }
 }
 
-static constexpr unsigned int stringargs_trim(const char* str, unsigned int pos)
+static constexpr uint32_t stringargs_trim(const char* str, uint32_t pos)
 {
     if(str[pos] == '\0' || str[pos] == ' ' || str[pos] == '\t' || str[pos] == ',')
     {
@@ -138,8 +137,8 @@ static constexpr unsigned int stringargs_trim(const char* str, unsigned int pos)
     }
 }
 
-constexpr unsigned int
-    stringargs_to_lst(char str[], unsigned int pos, const char* strlst[], unsigned int strlst_pos)
+constexpr uint32_t
+    stringargs_to_lst(char str[], uint32_t pos, const char* strlst[], uint32_t strlst_pos)
 {
     if(str[pos] == '\0')
     {
@@ -161,10 +160,10 @@ constexpr unsigned int
     }
 }
 
-#define LIST_ARG_STRINGS(...)                                                          \
-    char                          stringargs[] = #__VA_ARGS__;                         \
-    static constexpr unsigned int stringargs_c = stringargs_count(#__VA_ARGS__, 0, 0); \
-    const char*                   stringargs_lst[stringargs_c];                        \
+#define LIST_ARG_STRINGS(...)                                                      \
+    char                      stringargs[] = #__VA_ARGS__;                         \
+    static constexpr uint32_t stringargs_c = stringargs_count(#__VA_ARGS__, 0, 0); \
+    const char*               stringargs_lst[stringargs_c];                        \
     stringargs_to_lst(stringargs, 0, stringargs_lst, 0)
 
 struct rocsparse_local_argdescr
@@ -191,10 +190,12 @@ public:
     {
         return this->argdescr;
     }
-    operator void* const &() const
-    {
-        return this->argdescr;
-    }
+    // clang-format off
+  operator void* const &() const
+  {
+    return this->argdescr;
+  }
+    // clang-format on
 };
 
 template <typename F, typename... Ts>

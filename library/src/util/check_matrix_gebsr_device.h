@@ -38,7 +38,7 @@ namespace rocsparse
     }
 
     // Shift GEBSR offsets
-    template <unsigned int BLOCKSIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void shift_offsets_kernel(J size, const I* __restrict__ in, I* __restrict__ out)
     {
@@ -52,7 +52,7 @@ namespace rocsparse
         out[gid] = in[gid] - in[0];
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void check_row_ptr_array(J mb,
                              const I* __restrict__ bsr_row_ptr,
@@ -79,7 +79,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename T, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void check_matrix_gebsr_device(rocsparse_direction dir,
                                    J                   mb,

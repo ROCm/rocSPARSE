@@ -26,7 +26,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename J = rocsparse_int>
+    template <uint32_t BLOCKSIZE, typename J = rocsparse_int>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrcolor_kernel_count_colors(J size,
                                       const J* __restrict__ colors,
@@ -57,7 +57,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename J = rocsparse_int>
+    template <uint32_t BLOCKSIZE, typename J = rocsparse_int>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrcolor_kernel_count_colors_finalize(J* __restrict__ workspace)
     {
@@ -73,7 +73,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename J = rocsparse_int>
+    template <uint32_t BLOCKSIZE, typename J = rocsparse_int>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrcolor_kernel_count_uncolored(J size,
                                          const J* __restrict__ colors,
@@ -103,7 +103,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename J = rocsparse_int>
+    template <uint32_t BLOCKSIZE, typename J = rocsparse_int>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrcolor_kernel_count_uncolored_finalize(J* __restrict__ workspace)
     {
@@ -130,7 +130,7 @@ namespace rocsparse
         return h;
     }
 
-    template <unsigned int BLOCKSIZE, typename I = rocsparse_int, typename J = rocsparse_int>
+    template <uint32_t BLOCKSIZE, typename I = rocsparse_int, typename J = rocsparse_int>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrcolor_kernel_jpl(J m,
                              J color,

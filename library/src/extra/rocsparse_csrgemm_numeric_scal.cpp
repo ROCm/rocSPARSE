@@ -35,7 +35,7 @@
 namespace rocsparse
 {
     // Copy an array
-    template <unsigned int BLOCKSIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrgemm_numeric_copy(I size,
                               const J* __restrict__ in,
@@ -54,7 +54,7 @@ namespace rocsparse
     }
 
     // Copy and scale an array
-    template <unsigned int BLOCKSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename T>
     ROCSPARSE_DEVICE_ILF void
         csrgemm_numeric_copy_scale_device(I size, T alpha, const T* in, T* out)
     {
@@ -81,7 +81,7 @@ namespace rocsparse
         return (xp) ? *xp : static_cast<T>(0);
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+    template <uint32_t BLOCKSIZE, typename I, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrgemm_numeric_copy_scale_kernel(I size,
                                            U alpha_device_host,

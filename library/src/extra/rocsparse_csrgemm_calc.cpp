@@ -34,10 +34,10 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int HASHSIZE,
-              unsigned int HASHVAL,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              uint32_t HASHSIZE,
+              uint32_t HASHVAL,
               typename I,
               typename J,
               typename T,
@@ -97,10 +97,10 @@ namespace rocsparse
             add);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int HASHSIZE,
-              unsigned int HASHVAL,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              uint32_t HASHSIZE,
+              uint32_t HASHVAL,
               typename I,
               typename J,
               typename T,
@@ -158,9 +158,9 @@ namespace rocsparse
             add);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int CHUNKSIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              uint32_t CHUNKSIZE,
               typename I,
               typename J,
               typename T,

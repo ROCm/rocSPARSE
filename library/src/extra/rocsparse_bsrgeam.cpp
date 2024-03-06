@@ -31,11 +31,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE,
-              unsigned int BLOCKDIM,
-              unsigned int WFSIZE,
-              typename T,
-              typename U>
+    template <uint32_t BLOCKSIZE, uint32_t BLOCKDIM, uint32_t WFSIZE, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void bsrgeam_wf_per_row_multipass_2_3_kernel(rocsparse_direction dir,
                                                  rocsparse_int       mb,
@@ -79,7 +75,7 @@ namespace rocsparse
             idx_base_C);
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T, typename U>
+    template <uint32_t BLOCKSIZE, uint32_t BLOCKDIM, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void bsrgeam_wf_per_row_multipass_kernel(rocsparse_direction dir,
                                              rocsparse_int       mb,
@@ -122,7 +118,7 @@ namespace rocsparse
                                                                             idx_base_C);
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T, typename U>
+    template <uint32_t BLOCKSIZE, uint32_t BLOCKDIM, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void bsrgeam_block_per_row_multipass_kernel(rocsparse_direction dir,
                                                 rocsparse_int       mb,
@@ -165,7 +161,7 @@ namespace rocsparse
                                                                                idx_base_C);
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T, typename U>
+    template <uint32_t BLOCKSIZE, uint32_t BLOCKDIM, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void bsrgeam_block_per_row_multipass_kernel2(rocsparse_direction dir,
                                                  rocsparse_int       mb,

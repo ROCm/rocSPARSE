@@ -29,7 +29,7 @@
 namespace rocsparse
 {
     // ELL SpMV for general, non-transposed matrices
-    template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
     ROCSPARSE_DEVICE_ILF void ellmvn_device(I                    m,
                                             I                    n,
                                             I                    ell_width,
@@ -91,7 +91,7 @@ namespace rocsparse
     }
 
     // ELL SpMV for general, (conjugate) transposed matrices
-    template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
     ROCSPARSE_DEVICE_ILF void ellmvt_device(rocsparse_operation  trans,
                                             I                    m,
                                             I                    n,

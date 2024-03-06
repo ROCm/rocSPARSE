@@ -29,7 +29,7 @@
 namespace rocsparse
 {
     // Create identity permutation
-    template <unsigned int BLOCKSIZE, typename I>
+    template <uint32_t BLOCKSIZE, typename I>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void identity_kernel(I n, I* p)
     {

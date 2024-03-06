@@ -160,7 +160,7 @@ void host_bsrmv(rocsparse_direction  dir,
         return;
     }
 
-    unsigned int WFSIZE;
+    uint32_t WFSIZE;
 
     if(bsr_dim == 2)
     {
@@ -215,7 +215,7 @@ void host_bsrmv(rocsparse_direction  dir,
 
             for(I j = row_begin; j < row_end; j += WFSIZE)
             {
-                for(unsigned int k = 0; k < WFSIZE; ++k)
+                for(uint32_t k = 0; k < WFSIZE; ++k)
                 {
                     if(j + k < row_end)
                     {
@@ -263,9 +263,9 @@ void host_bsrmv(rocsparse_direction  dir,
                 }
             }
 
-            for(unsigned int j = 1; j < WFSIZE; j <<= 1)
+            for(uint32_t j = 1; j < WFSIZE; j <<= 1)
             {
-                for(unsigned int k = 0; k < WFSIZE - j; ++k)
+                for(uint32_t k = 0; k < WFSIZE - j; ++k)
                 {
                     sum0[k] += sum0[k + j];
                     sum1[k] += sum1[k + j];
@@ -299,7 +299,7 @@ void host_bsrmv(rocsparse_direction  dir,
 
                     for(J bj = 0; bj < bsr_dim; bj += WFSIZE)
                     {
-                        for(unsigned int k = 0; k < WFSIZE; ++k)
+                        for(uint32_t k = 0; k < WFSIZE; ++k)
                         {
                             if(bj + k < bsr_dim)
                             {
@@ -324,9 +324,9 @@ void host_bsrmv(rocsparse_direction  dir,
                     }
                 }
 
-                for(unsigned int j = 1; j < WFSIZE; j <<= 1)
+                for(uint32_t j = 1; j < WFSIZE; j <<= 1)
                 {
-                    for(unsigned int k = 0; k < WFSIZE - j; ++k)
+                    for(uint32_t k = 0; k < WFSIZE - j; ++k)
                     {
                         sum[k] += sum[k + j];
                     }
@@ -532,9 +532,9 @@ void host_bsrxmv(rocsparse_direction  dir,
                 }
             }
 
-            for(unsigned int j = 1; j < WFSIZE; j <<= 1)
+            for(uint32_t j = 1; j < WFSIZE; j <<= 1)
             {
-                for(unsigned int k = 0; k < WFSIZE - j; ++k)
+                for(uint32_t k = 0; k < WFSIZE - j; ++k)
                 {
                     sum0[k] += sum0[k + j];
                     sum1[k] += sum1[k + j];
@@ -564,7 +564,7 @@ void host_bsrxmv(rocsparse_direction  dir,
 
                     for(rocsparse_int bj = 0; bj < bsr_dim; bj += WFSIZE)
                     {
-                        for(unsigned int k = 0; k < WFSIZE; ++k)
+                        for(uint32_t k = 0; k < WFSIZE; ++k)
                         {
                             if(bj + k < bsr_dim)
                             {
@@ -587,9 +587,9 @@ void host_bsrxmv(rocsparse_direction  dir,
                     }
                 }
 
-                for(unsigned int j = 1; j < WFSIZE; j <<= 1)
+                for(uint32_t j = 1; j < WFSIZE; j <<= 1)
                 {
-                    for(unsigned int k = 0; k < WFSIZE - j; ++k)
+                    for(uint32_t k = 0; k < WFSIZE - j; ++k)
                     {
                         sum[k] += sum[k + j];
                     }
@@ -749,9 +749,9 @@ void host_gebsrmv(rocsparse_direction  dir,
                 }
             }
 
-            for(unsigned int j = 1; j < WFSIZE; j <<= 1)
+            for(uint32_t j = 1; j < WFSIZE; j <<= 1)
             {
-                for(unsigned int k = 0; k < WFSIZE - j; ++k)
+                for(uint32_t k = 0; k < WFSIZE - j; ++k)
                 {
                     sum0[k] += sum0[k + j];
                     sum1[k] += sum1[k + j];
@@ -822,9 +822,9 @@ void host_gebsrmv(rocsparse_direction  dir,
                 }
             }
 
-            for(unsigned int j = 1; j < WFSIZE; j <<= 1)
+            for(uint32_t j = 1; j < WFSIZE; j <<= 1)
             {
-                for(unsigned int k = 0; k < WFSIZE - j; ++k)
+                for(uint32_t k = 0; k < WFSIZE - j; ++k)
                 {
                     sum0[k] += sum0[k + j];
                     sum1[k] += sum1[k + j];
@@ -908,9 +908,9 @@ void host_gebsrmv(rocsparse_direction  dir,
                 }
             }
 
-            for(unsigned int j = 1; j < WFSIZE; j <<= 1)
+            for(uint32_t j = 1; j < WFSIZE; j <<= 1)
             {
-                for(unsigned int k = 0; k < WFSIZE - j; ++k)
+                for(uint32_t k = 0; k < WFSIZE - j; ++k)
                 {
                     sum0[k] += sum0[k + j];
                     sum1[k] += sum1[k + j];
@@ -950,7 +950,7 @@ void host_gebsrmv(rocsparse_direction  dir,
 
                     for(rocsparse_int bj = 0; bj < col_block_dim; bj += WFSIZE)
                     {
-                        for(unsigned int k = 0; k < WFSIZE; ++k)
+                        for(uint32_t k = 0; k < WFSIZE; ++k)
                         {
                             if(bj + k < col_block_dim)
                             {
@@ -973,9 +973,9 @@ void host_gebsrmv(rocsparse_direction  dir,
                     }
                 }
 
-                for(unsigned int j = 1; j < WFSIZE; j <<= 1)
+                for(uint32_t j = 1; j < WFSIZE; j <<= 1)
                 {
-                    for(unsigned int k = 0; k < WFSIZE - j; ++k)
+                    for(uint32_t k = 0; k < WFSIZE - j; ++k)
                     {
                         sum[k] += sum[k + j];
                     }
@@ -1930,7 +1930,7 @@ static void host_csr_lsolve(J                    M,
 
         for(I l = row_begin; l < row_end; l += prop.warpSize)
         {
-            for(unsigned int k = 0; k < prop.warpSize; ++k)
+            for(uint32_t k = 0; k < prop.warpSize; ++k)
             {
                 I j = l + k;
 
@@ -1977,9 +1977,9 @@ static void host_csr_lsolve(J                    M,
             }
         }
 
-        for(unsigned int j = 1; j < prop.warpSize; j <<= 1)
+        for(uint32_t j = 1; j < prop.warpSize; j <<= 1)
         {
-            for(unsigned int k = 0; k < prop.warpSize - j; ++k)
+            for(uint32_t k = 0; k < prop.warpSize - j; ++k)
             {
                 temp[k] += temp[k + j];
             }
@@ -2040,7 +2040,7 @@ static void host_csr_usolve(J                    M,
 
         for(I l = row_end - 1; l >= row_begin; l -= prop.warpSize)
         {
-            for(unsigned int k = 0; k < prop.warpSize; ++k)
+            for(uint32_t k = 0; k < prop.warpSize; ++k)
             {
                 I j = l - k;
 
@@ -2083,9 +2083,9 @@ static void host_csr_usolve(J                    M,
             }
         }
 
-        for(unsigned int j = 1; j < prop.warpSize; j <<= 1)
+        for(uint32_t j = 1; j < prop.warpSize; j <<= 1)
         {
-            for(unsigned int k = 0; k < prop.warpSize - j; ++k)
+            for(uint32_t k = 0; k < prop.warpSize - j; ++k)
             {
                 temp[k] += temp[k + j];
             }

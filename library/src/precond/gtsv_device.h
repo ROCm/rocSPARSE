@@ -140,7 +140,7 @@ namespace rocsparse
 // |0   w22 0   1||v14'|   |1|
     // clang-format on
 
-    template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t BLOCKDIM, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_transpose_and_pad_array_shared_kernel(rocsparse_int m,
                                                     rocsparse_int m_pad,
@@ -179,7 +179,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t BLOCKDIM, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_transpose_and_pad_array_kernel(rocsparse_int m,
                                              rocsparse_int m_pad,
@@ -208,7 +208,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t BLOCKDIM, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_transpose_back_array_kernel(rocsparse_int m,
                                           rocsparse_int m_pad,
@@ -232,7 +232,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t BLOCKDIM, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_LBM_wv_kernel(rocsparse_int m_pad,
                             rocsparse_int n,
@@ -380,7 +380,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, unsigned int COLS, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t BLOCKDIM, uint32_t COLS, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_LBM_rhs_kernel(rocsparse_int m_pad,
                              rocsparse_int n,
@@ -909,7 +909,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t BLOCKDIM, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_spike_block_level_kernel(rocsparse_int m_pad,
                                        rocsparse_int n,
@@ -1018,7 +1018,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_solve_spike_grid_level_kernel(rocsparse_int m_pad,
                                             rocsparse_int n,
@@ -1113,7 +1113,7 @@ namespace rocsparse
         rhs_scratch[tidx + BLOCKSIZE + 2 * BLOCKSIZE * bidy] = srhs[tidx + BLOCKSIZE];
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t BLOCKDIM, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_solve_spike_propagate_kernel(rocsparse_int m_pad,
                                            rocsparse_int n,
@@ -1194,7 +1194,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t BLOCKDIM, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gtsv_spike_backward_substitution_kernel(rocsparse_int m_pad,
                                                  rocsparse_int n,

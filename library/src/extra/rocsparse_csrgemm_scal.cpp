@@ -56,7 +56,7 @@ rocsparse_status rocsparse::csrgemm_scal_quickreturn(rocsparse_handle          h
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+    template <uint32_t BLOCKSIZE, typename I, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrgemm_copy_scale(I size,
                             U alpha_device_host,

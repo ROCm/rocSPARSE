@@ -27,7 +27,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, unsigned int ROW_BLOCKDIM, rocsparse_int WFSIZE>
+    template <uint32_t BLOCKSIZE, uint32_t ROW_BLOCKDIM, rocsparse_int WFSIZE>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csr2gebsr_nnz_wavefront_per_row_multipass_kernel(
         rocsparse_int        m,
@@ -128,7 +128,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int ROW_BLOCKDIM>
+    template <uint32_t BLOCKSIZE, uint32_t ROW_BLOCKDIM>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csr2gebsr_nnz_block_per_row_multipass_kernel(rocsparse_int        m,
                                                       rocsparse_int        n,
@@ -374,7 +374,7 @@ namespace rocsparse
         {
             // Initialize row nnz table and accumulator
             table[wid] = 0;
-            for(unsigned int i = c; i < COL_BLOCKDIM; i += WFSIZE / ROW_BLOCKDIM)
+            for(uint32_t i = c; i < COL_BLOCKDIM; i += WFSIZE / ROW_BLOCKDIM)
             {
                 data[ROW_BLOCKDIM * COL_BLOCKDIM * wid + COL_BLOCKDIM * r + i] = static_cast<T>(0);
             }
@@ -417,7 +417,7 @@ namespace rocsparse
             {
                 bsr_col_ind[block_row_begin] = chunk_begin + bsr_base;
 
-                for(unsigned int i = 0; i < COL_BLOCKDIM; i += WFSIZE / ROW_BLOCKDIM)
+                for(uint32_t i = 0; i < COL_BLOCKDIM; i += WFSIZE / ROW_BLOCKDIM)
                 {
                     if(r < row_block_dim && (c + i) < col_block_dim)
                     {
@@ -452,10 +452,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int ROW_BLOCKDIM,
-              unsigned int COL_BLOCKDIM,
-              typename T>
+    template <uint32_t BLOCKSIZE, uint32_t ROW_BLOCKDIM, uint32_t COL_BLOCKDIM, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csr2gebsr_block_per_row_multipass_kernel(rocsparse_direction        dir,
                                                   rocsparse_int              m,
@@ -504,7 +501,7 @@ namespace rocsparse
         while(chunk_begin < nb)
         {
             table = 0;
-            for(unsigned int i = 0; i < COL_BLOCKDIM; i += BLOCKSIZE / ROW_BLOCKDIM)
+            for(uint32_t i = 0; i < COL_BLOCKDIM; i += BLOCKSIZE / ROW_BLOCKDIM)
             {
                 data[COL_BLOCKDIM * wid + i + lid] = static_cast<T>(0);
             }
@@ -545,7 +542,7 @@ namespace rocsparse
             {
                 bsr_col_ind[block_row_begin] = chunk_begin + bsr_base;
 
-                for(unsigned int i = 0; i < COL_BLOCKDIM; i += BLOCKSIZE / ROW_BLOCKDIM)
+                for(uint32_t i = 0; i < COL_BLOCKDIM; i += BLOCKSIZE / ROW_BLOCKDIM)
                 {
                     if((i + lid) < col_block_dim && wid < row_block_dim)
                     {
@@ -726,7 +723,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE>
+    template <uint32_t BLOCKSIZE>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csr2gebsr_nnz_kernel_bm1(rocsparse_int        m,
                                   rocsparse_index_base csr_base,
@@ -813,7 +810,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE>
+    template <uint32_t BLOCKSIZE>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csr2gebsr_nnz_compute_nnz_total_kernel(rocsparse_int mb,
                                                 const rocsparse_int* __restrict__ bsr_row_ptr,

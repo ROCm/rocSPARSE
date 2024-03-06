@@ -30,7 +30,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE>
+    template <uint32_t BLOCKSIZE>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void hyb2csr_nnz_kernel(rocsparse_int        m,
                             rocsparse_int        n,
@@ -77,7 +77,7 @@ namespace rocsparse
         row_nnz[row] = nnz;
     }
 
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void hyb2csr_fill_kernel(rocsparse_int        m,
                              rocsparse_int        n,

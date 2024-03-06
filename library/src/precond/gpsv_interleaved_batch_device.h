@@ -28,7 +28,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gpsv_strided_gather(rocsparse_int m,
                              rocsparse_int batch_count,
@@ -52,7 +52,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gpsv_interleaved_batch_householder_qr_kernel(rocsparse_int m,
                                                       rocsparse_int batch_count,
@@ -189,7 +189,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gpsv_interleaved_batch_givens_qr_kernel(rocsparse_int m,
                                                  rocsparse_int batch_count,

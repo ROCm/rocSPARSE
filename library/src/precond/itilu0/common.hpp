@@ -28,14 +28,14 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename T, typename I>
+    template <uint32_t BLOCKSIZE, typename T, typename I>
     void set_identity_array(rocsparse_handle handle_, I size_, T* x_);
-    template <unsigned int BLOCKSIZE, typename T, typename I>
+    template <uint32_t BLOCKSIZE, typename T, typename I>
     void get_permuted_array(rocsparse_handle handle_, I size_, const T* a_, T* x_, const I* perm_);
-    template <unsigned int BLOCKSIZE, typename T, typename I>
+    template <uint32_t BLOCKSIZE, typename T, typename I>
     void set_permuted_array(rocsparse_handle handle_, I size_, T* a_, const T* x_, const I* perm_);
 
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     rocsparse_status nrminf(rocsparse_handle          handle_,
                             size_t                    nitems_,
                             const T*                  x_,
@@ -43,7 +43,7 @@ namespace rocsparse
                             const floating_data_t<T>* nrm0_,
                             bool                      MX);
 
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     rocsparse_status nrminf_diff(rocsparse_handle          handle_,
                                  size_t                    nitems_,
                                  const T*                  x_,

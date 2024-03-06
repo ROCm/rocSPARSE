@@ -34,7 +34,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename T, typename I>
+    template <uint32_t BLOCKSIZE, typename T, typename I>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void kernel_get_permuted_array(I size_, const T* a_, T* x_, const I* perm_)
     {
@@ -48,7 +48,7 @@ namespace rocsparse
     //
     //
     //
-    template <unsigned int BLOCKSIZE, typename T, typename I>
+    template <uint32_t BLOCKSIZE, typename T, typename I>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void kernel_set_identity_array(I size_, T* x_)
     {
@@ -62,7 +62,7 @@ namespace rocsparse
     //
     //
     //
-    template <unsigned int BLOCKSIZE, typename T, typename I>
+    template <uint32_t BLOCKSIZE, typename T, typename I>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void kernel_set_permuted_array(I size_, T* a_, const T* x_, const I* perm_)
     {
@@ -73,7 +73,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void kernel_nrminf(size_t nitems_,
                        const T* __restrict__ x_,
@@ -111,7 +111,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void kernel_nrminf_diff(size_t nitems_,
                             const T* __restrict__ x_,
@@ -119,8 +119,8 @@ namespace rocsparse
                             floating_data_t<T>* __restrict__ nrm_,
                             const floating_data_t<T>* __restrict__ nrm0_)
     {
-        const unsigned int tid = hipThreadIdx_x;
-        const unsigned int gid = tid + BLOCKSIZE * hipBlockIdx_x;
+        const uint32_t tid = hipThreadIdx_x;
+        const uint32_t gid = tid + BLOCKSIZE * hipBlockIdx_x;
 
         __shared__ floating_data_t<T> shared[BLOCKSIZE];
 
@@ -144,7 +144,7 @@ namespace rocsparse
     }
 }
 
-template <unsigned int BLOCKSIZE, typename T, typename I>
+template <uint32_t BLOCKSIZE, typename T, typename I>
 void rocsparse::get_permuted_array(
     rocsparse_handle handle_, I size_, const T* a_, T* x_, const I* perm_)
 {
@@ -161,7 +161,7 @@ void rocsparse::get_permuted_array(
                                       perm_);
 }
 
-template <unsigned int BLOCKSIZE, typename T, typename I>
+template <uint32_t BLOCKSIZE, typename T, typename I>
 void rocsparse::set_identity_array(rocsparse_handle handle_, I size_, T* x_)
 {
     dim3 blocks((size_ - 1) / BLOCKSIZE + 1);
@@ -176,7 +176,7 @@ void rocsparse::set_identity_array(rocsparse_handle handle_, I size_, T* x_)
                                       x_);
 }
 
-template <unsigned int BLOCKSIZE, typename T, typename I>
+template <uint32_t BLOCKSIZE, typename T, typename I>
 void rocsparse::set_permuted_array(
     rocsparse_handle handle_, I size_, T* a_, const T* x_, const I* perm_)
 {
@@ -193,7 +193,7 @@ void rocsparse::set_permuted_array(
                                       perm_);
 }
 
-template <unsigned int BLOCKSIZE, typename T>
+template <uint32_t BLOCKSIZE, typename T>
 rocsparse_status rocsparse::nrminf(rocsparse_handle          handle_,
                                    size_t                    nitems_,
                                    const T*                  x_,
@@ -225,7 +225,7 @@ rocsparse_status rocsparse::nrminf(rocsparse_handle          handle_,
     return rocsparse_status_success;
 }
 
-template <unsigned int BLOCKSIZE, typename T>
+template <uint32_t BLOCKSIZE, typename T>
 rocsparse_status rocsparse::nrminf_diff(rocsparse_handle          handle_,
                                         size_t                    nitems_,
                                         const T*                  x_,

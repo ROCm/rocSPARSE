@@ -28,11 +28,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int HASH,
-              typename T,
-              typename U>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, uint32_t HASH, typename T, typename U>
     ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
                                                   const rocsparse_int* __restrict__ csr_row_ptr,
                                                   const rocsparse_int* __restrict__ csr_col_ind,
@@ -59,7 +55,7 @@ namespace rocsparse
         rocsparse_int* data  = &sdata[wid * WFSIZE * HASH];
 
         // Initialize hash table with -1
-        for(unsigned int j = lid; j < WFSIZE * HASH; j += WFSIZE)
+        for(uint32_t j = lid; j < WFSIZE * HASH; j += WFSIZE)
         {
             table[j] = -1;
         }
@@ -96,7 +92,7 @@ namespace rocsparse
 
             // Hash operation
 #pragma unroll 4
-            for(unsigned int h = 0; h < WFSIZE * HASH; ++h)
+            for(uint32_t h = 0; h < WFSIZE * HASH; ++h)
             {
                 if(table[hash] == key)
                 {
@@ -171,7 +167,7 @@ namespace rocsparse
 
                 // Hash operation
 #pragma unroll 4
-                for(unsigned int h = 0; h < WFSIZE * HASH; ++h)
+                for(uint32_t h = 0; h < WFSIZE * HASH; ++h)
                 {
                     if(table[hash] == -1)
                     {
@@ -249,7 +245,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, bool SLEEP, typename T, typename U>
     ROCSPARSE_DEVICE_ILF void
         csrilu0_binsearch_kernel(rocsparse_int m_,
                                  const rocsparse_int* __restrict__ csr_row_ptr,

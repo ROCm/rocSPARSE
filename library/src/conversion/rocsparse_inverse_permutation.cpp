@@ -27,7 +27,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename I>
+    template <uint32_t BLOCKSIZE, typename I>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void kernel1(I n_, const I* p_, I* q_)
     {
@@ -40,7 +40,7 @@ namespace rocsparse
         q_[p_[idx] - 1] = idx + 1;
     }
 
-    template <unsigned int BLOCKSIZE, typename I>
+    template <uint32_t BLOCKSIZE, typename I>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void kernel0(I n_, const I* p_, I* q_)
     {
@@ -59,9 +59,9 @@ namespace rocsparse
                                               I* __restrict__ q_,
                                               rocsparse_index_base base_)
     {
-        static constexpr unsigned int BLOCKSIZE = 512;
-        dim3                          blocks((n_ - 1) / BLOCKSIZE + 1);
-        dim3                          threads(BLOCKSIZE);
+        static constexpr uint32_t BLOCKSIZE = 512;
+        dim3                      blocks((n_ - 1) / BLOCKSIZE + 1);
+        dim3                      threads(BLOCKSIZE);
         if(base_ == rocsparse_index_base_zero)
         {
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
