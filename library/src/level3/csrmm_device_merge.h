@@ -30,9 +30,9 @@ namespace rocsparse
     // See Yang C., Bulu? A., Owens J.D. (2018) Design Principles for Sparse Matrix Multiplication on the GPU.
     // In: Aldinucci M., Padovani L., Torquati M. (eds) Euro-Par 2018: Parallel Processing. Euro-Par 2018.
     // Lecture Notes in Computer Science, vol 11014. Springer, Cham. https://doi.org/10.1007/978-3-319-96983-1_48
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              bool     TRANSB,
               typename I,
               typename J,
               typename A,
@@ -102,7 +102,7 @@ namespace rocsparse
         for(J colB = 0; colB < ncol; colB += WF_SIZE)
         {
             T valB[WF_SIZE];
-            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            for(uint32_t i = 0; i < WF_SIZE; ++i)
             {
                 T v = rocsparse::shfl(val, i, WF_SIZE);
                 J c = __shfl(col_ind, i, WF_SIZE);
@@ -117,13 +117,13 @@ namespace rocsparse
                 }
             }
 
-            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            for(uint32_t i = 0; i < WF_SIZE; ++i)
             {
                 shared_val[BLOCKSIZE * lid + WF_SIZE * wid + i] = valB[i];
             }
             __syncthreads();
 
-            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            for(uint32_t i = 0; i < WF_SIZE; ++i)
             {
                 valB[i] = shared_val[BLOCKSIZE * i + tid];
             }
@@ -135,14 +135,14 @@ namespace rocsparse
                 {
                     if(row_ind == shared_row[tid - j])
                     {
-                        for(unsigned int i = 0; i < WF_SIZE; ++i)
+                        for(uint32_t i = 0; i < WF_SIZE; ++i)
                         {
                             valB[i] = valB[i] + shared_val[BLOCKSIZE * i + tid - j];
                         }
                     }
                 }
                 __syncthreads();
-                for(unsigned int i = 0; i < WF_SIZE; ++i)
+                for(uint32_t i = 0; i < WF_SIZE; ++i)
                 {
                     shared_val[BLOCKSIZE * i + tid] = valB[i];
                 }
@@ -156,14 +156,14 @@ namespace rocsparse
                 {
                     if(order == rocsparse_order_column)
                     {
-                        for(unsigned int i = 0; i < WF_SIZE; ++i)
+                        for(uint32_t i = 0; i < WF_SIZE; ++i)
                         {
                             dense_C[row_ind + ldc * (colB + i)] += valB[i];
                         }
                     }
                     else
                     {
-                        for(unsigned int i = 0; i < WF_SIZE; ++i)
+                        for(uint32_t i = 0; i < WF_SIZE; ++i)
                         {
                             dense_C[colB + i + ldc * row_ind] += valB[i];
                         }
@@ -173,7 +173,7 @@ namespace rocsparse
 
             if(tid == (BLOCKSIZE - 1))
             {
-                for(unsigned int i = 0; i < WF_SIZE; ++i)
+                for(uint32_t i = 0; i < WF_SIZE; ++i)
                 {
                     val_block_red[hipGridDim_x * (colB + i) + bid] = valB[i];
                 }
@@ -186,9 +186,9 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              bool     TRANSB,
               typename I,
               typename J,
               typename A,
@@ -255,7 +255,7 @@ namespace rocsparse
         const J colB = offset;
 
         T valB[WF_SIZE];
-        for(unsigned int i = 0; i < WF_SIZE; ++i)
+        for(uint32_t i = 0; i < WF_SIZE; ++i)
         {
             T v = rocsparse::shfl(val, i, WF_SIZE);
             J c = __shfl(col_ind, i, WF_SIZE);
@@ -274,13 +274,13 @@ namespace rocsparse
 
         __syncthreads();
         shared_row[tid] = row_ind;
-        for(unsigned int i = 0; i < WF_SIZE; ++i)
+        for(uint32_t i = 0; i < WF_SIZE; ++i)
         {
             shared_val[BLOCKSIZE * lid + WF_SIZE * wid + i] = valB[i];
         }
         __syncthreads();
 
-        for(unsigned int i = 0; i < WF_SIZE; ++i)
+        for(uint32_t i = 0; i < WF_SIZE; ++i)
         {
             valB[i] = shared_val[BLOCKSIZE * i + tid];
         }
@@ -292,14 +292,14 @@ namespace rocsparse
             {
                 if(row_ind == shared_row[tid - j])
                 {
-                    for(unsigned int i = 0; i < WF_SIZE; ++i)
+                    for(uint32_t i = 0; i < WF_SIZE; ++i)
                     {
                         valB[i] = valB[i] + shared_val[BLOCKSIZE * i + tid - j];
                     }
                 }
             }
             __syncthreads();
-            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            for(uint32_t i = 0; i < WF_SIZE; ++i)
             {
                 shared_val[BLOCKSIZE * i + tid] = valB[i];
             }
@@ -313,7 +313,7 @@ namespace rocsparse
             {
                 if(order == rocsparse_order_column)
                 {
-                    for(unsigned int i = 0; i < WF_SIZE; ++i)
+                    for(uint32_t i = 0; i < WF_SIZE; ++i)
                     {
                         if((colB + i) < N)
                         {
@@ -323,7 +323,7 @@ namespace rocsparse
                 }
                 else
                 {
-                    for(unsigned int i = 0; i < WF_SIZE; ++i)
+                    for(uint32_t i = 0; i < WF_SIZE; ++i)
                     {
                         if((colB + i) < N)
                         {
@@ -337,7 +337,7 @@ namespace rocsparse
         if(tid == (BLOCKSIZE - 1))
         {
             row_block_red[bid] = row_ind;
-            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            for(uint32_t i = 0; i < WF_SIZE; ++i)
             {
                 if((colB + i) < N)
                 {
@@ -348,13 +348,13 @@ namespace rocsparse
     }
 
     // Segmented block reduction kernel
-    template <unsigned int BLOCKSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename T>
     ROCSPARSE_DEVICE_ILF void segmented_blockreduce(const I* __restrict__ rows,
                                                     T* __restrict__ vals)
     {
         const int tid = hipThreadIdx_x;
 
-        for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
+        for(uint32_t j = 1; j < BLOCKSIZE; j <<= 1)
         {
             T val = static_cast<T>(0);
             if(tid >= j)
@@ -372,7 +372,7 @@ namespace rocsparse
     }
 
     // Do the final block reduction of the block reduction buffers back into global memory
-    template <unsigned int BLOCKSIZE, typename I, typename J, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename J, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrmmnn_general_block_reduce(I nblocks,
                                       const J* __restrict__ row_block_red,
@@ -426,7 +426,7 @@ namespace rocsparse
     }
 
     // Scale kernel for beta != 1.0
-    template <unsigned int BLOCKSIZE, typename I, typename C, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename C, typename T>
     ROCSPARSE_DEVICE_ILF void csrmmnn_merge_scale_device(
         I m, I n, T beta, C* __restrict__ data, int64_t ld, rocsparse_order order)
     {
@@ -450,7 +450,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int NNZ_PER_BLOCK, typename I, typename J>
+    template <uint32_t BLOCKSIZE, uint32_t NNZ_PER_BLOCK, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrmmnn_merge_compute_row_limits(J m,
                                           I nblocks,
@@ -492,10 +492,10 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              unsigned int LOOPS,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t LOOPS,
+              bool     TRANSB,
               typename T,
               typename I,
               typename J,
@@ -561,7 +561,7 @@ namespace rocsparse
 
             J current_row = rocsparse::shfl(row, 0, WF_SIZE);
 
-            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            for(uint32_t i = 0; i < WF_SIZE; ++i)
             {
 
                 const T v = rocsparse::shfl(val, i, WF_SIZE);
@@ -572,7 +572,7 @@ namespace rocsparse
                 {
                     if(order == rocsparse_order_column)
                     {
-                        for(unsigned int p = 0; p < LOOPS; p++)
+                        for(uint32_t p = 0; p < LOOPS; p++)
                         {
                             rocsparse::atomic_add(
                                 &dense_C[(colB + p * WF_SIZE) * ldc + current_row], alpha * sum[p]);
@@ -580,14 +580,14 @@ namespace rocsparse
                     }
                     else
                     {
-                        for(unsigned int p = 0; p < LOOPS; p++)
+                        for(uint32_t p = 0; p < LOOPS; p++)
                         {
                             rocsparse::atomic_add(&dense_C[current_row * ldc + colB + p * WF_SIZE],
                                                   alpha * sum[p]);
                         }
                     }
 
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         sum[p] = static_cast<T>(0);
                     }
@@ -597,7 +597,7 @@ namespace rocsparse
 
                 if(TRANSB)
                 {
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         sum[p] = rocsparse::fma<T>(
                             v, conj_val(dense_B[c * ldb + colB + p * WF_SIZE], conj_B), sum[p]);
@@ -605,7 +605,7 @@ namespace rocsparse
                 }
                 else
                 {
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         sum[p] = rocsparse::fma<T>(
                             v, conj_val(dense_B[(colB + p * WF_SIZE) * ldb + c], conj_B), sum[p]);
@@ -615,7 +615,7 @@ namespace rocsparse
 
             if(order == rocsparse_order_column)
             {
-                for(unsigned int p = 0; p < LOOPS; p++)
+                for(uint32_t p = 0; p < LOOPS; p++)
                 {
                     rocsparse::atomic_add(&dense_C[(colB + p * WF_SIZE) * ldc + current_row],
                                           alpha * sum[p]);
@@ -623,7 +623,7 @@ namespace rocsparse
             }
             else
             {
-                for(unsigned int p = 0; p < LOOPS; p++)
+                for(uint32_t p = 0; p < LOOPS; p++)
                 {
                     rocsparse::atomic_add(&dense_C[current_row * ldc + colB + p * WF_SIZE],
                                           alpha * sum[p]);
@@ -632,9 +632,9 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              bool     TRANSB,
               typename T,
               typename I,
               typename J,
@@ -703,7 +703,7 @@ namespace rocsparse
             T sum         = static_cast<T>(0);
             J current_row = rocsparse::shfl(row, 0, WF_SIZE);
 
-            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            for(uint32_t i = 0; i < WF_SIZE; ++i)
             {
                 const T v = rocsparse::shfl(val, i, WF_SIZE);
                 const J c = rocsparse::shfl(col, i, WF_SIZE);

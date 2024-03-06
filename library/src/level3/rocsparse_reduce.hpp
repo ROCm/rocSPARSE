@@ -28,8 +28,8 @@ namespace rocsparse
 {
     inline constexpr int reduce_log2ui(int x)
     {
-        unsigned int ax = (unsigned int)x;
-        int          v  = 0;
+        uint32_t ax = (uint32_t)x;
+        int      v  = 0;
         while(ax >>= 1)
         {
             v++;

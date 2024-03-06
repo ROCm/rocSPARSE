@@ -30,7 +30,7 @@
 namespace rocsparse
 {
     // Scale kernel for beta != 1.0
-    template <unsigned int BLOCKSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename T>
     ROCSPARSE_DEVICE_ILF void coommnn_scale_device(
         I m, I n, T beta, T* __restrict__ data, int64_t ld, int64_t stride, rocsparse_order order)
     {
@@ -55,7 +55,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+    template <uint32_t BLOCKSIZE, typename I, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void coommnn_scale_kernel(I m,
                               I n,

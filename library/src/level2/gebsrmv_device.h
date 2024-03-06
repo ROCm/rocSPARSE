@@ -28,7 +28,7 @@
 namespace rocsparse
 {
     // General GEBSRMV that works for any GEBSR block dimensions
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, typename T>
     ROCSPARSE_DEVICE_ILF void gebsrmvn_general_device(rocsparse_direction dir,
                                                       T                   alpha,
                                                       const rocsparse_int* __restrict__ bsr_row_ptr,
@@ -104,7 +104,7 @@ namespace rocsparse
     }
 
     // GEBSRMV kernel for GEBSR block dimension of 1 x n
-    template <unsigned int BLOCKSIZE, unsigned int COLBSRDIM, unsigned int WFSIZE, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t COLBSRDIM, uint32_t WFSIZE, typename T>
     ROCSPARSE_DEVICE_ILF void gebsrmvn_1xn_device(rocsparse_int       mb,
                                                   rocsparse_direction dir,
                                                   T                   alpha,
@@ -148,7 +148,7 @@ namespace rocsparse
 
             // Compute the sum of the two rows within the BSR blocks of the current
             // BSR row
-            for(unsigned int k = 0; k < COLBSRDIM; k++)
+            for(uint32_t k = 0; k < COLBSRDIM; k++)
             {
                 sum = rocsparse::fma(bsr_val[COLBSRDIM * j + k], x[col + k], sum);
             }
@@ -172,7 +172,7 @@ namespace rocsparse
     }
 
     // GEBSRMV kernel for GEBSR block dimension of 2 x n
-    template <unsigned int BLOCKSIZE, unsigned int COLBSRDIM, unsigned int WFSIZE, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t COLBSRDIM, uint32_t WFSIZE, typename T>
     ROCSPARSE_DEVICE_ILF void gebsrmvn_2xn_device(rocsparse_int       mb,
                                                   rocsparse_direction dir,
                                                   T                   alpha,
@@ -222,7 +222,7 @@ namespace rocsparse
 
                 // Compute the sum of the two rows within the BSR blocks of the current
                 // BSR row
-                for(unsigned int k = 0; k < COLBSRDIM; k++)
+                for(uint32_t k = 0; k < COLBSRDIM; k++)
                 {
                     sum0 = rocsparse::fma(
                         bsr_val[ROWBSRDIM * COLBSRDIM * j + k], x[COLBSRDIM * col + k], sum0);
@@ -242,7 +242,7 @@ namespace rocsparse
 
                 // Compute the sum of the two rows within the BSR blocks of the current
                 // BSR row
-                for(unsigned int k = 0; k < COLBSRDIM; k++)
+                for(uint32_t k = 0; k < COLBSRDIM; k++)
                 {
                     sum0 = rocsparse::fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k],
                                           x[COLBSRDIM * col + k],
@@ -274,7 +274,7 @@ namespace rocsparse
     }
 
     // GEBSRMV kernel for GEBSR block dimension of 3 x n
-    template <unsigned int BLOCKSIZE, unsigned int COLBSRDIM, unsigned int WFSIZE, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t COLBSRDIM, uint32_t WFSIZE, typename T>
     ROCSPARSE_DEVICE_ILF void gebsrmvn_3xn_device(rocsparse_int       mb,
                                                   rocsparse_direction dir,
                                                   T                   alpha,
@@ -325,7 +325,7 @@ namespace rocsparse
 
                 // Compute the sum of the two rows within the BSR blocks of the current
                 // BSR row
-                for(unsigned int k = 0; k < COLBSRDIM; k++)
+                for(uint32_t k = 0; k < COLBSRDIM; k++)
                 {
                     sum0 = rocsparse::fma(
                         bsr_val[ROWBSRDIM * COLBSRDIM * j + k], x[COLBSRDIM * col + k], sum0);
@@ -348,7 +348,7 @@ namespace rocsparse
 
                 // Compute the sum of the two rows within the BSR blocks of the current
                 // BSR row
-                for(unsigned int k = 0; k < COLBSRDIM; k++)
+                for(uint32_t k = 0; k < COLBSRDIM; k++)
                 {
                     sum0 = rocsparse::fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k],
                                           x[COLBSRDIM * col + k],
@@ -387,7 +387,7 @@ namespace rocsparse
     }
 
     // GEBSRMV kernel for GEBSR block dimension of 4 x n
-    template <unsigned int BLOCKSIZE, unsigned int COLBSRDIM, unsigned int WFSIZE, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t COLBSRDIM, uint32_t WFSIZE, typename T>
     ROCSPARSE_DEVICE_ILF void gebsrmvn_4xn_device(rocsparse_int       mb,
                                                   rocsparse_direction dir,
                                                   T                   alpha,
@@ -439,7 +439,7 @@ namespace rocsparse
 
                 // Compute the sum of the two rows within the BSR blocks of the current
                 // BSR row
-                for(unsigned int k = 0; k < COLBSRDIM; k++)
+                for(uint32_t k = 0; k < COLBSRDIM; k++)
                 {
                     sum0 = rocsparse::fma(
                         bsr_val[ROWBSRDIM * COLBSRDIM * j + k], x[COLBSRDIM * col + k], sum0);
@@ -465,7 +465,7 @@ namespace rocsparse
 
                 // Compute the sum of the two rows within the BSR blocks of the current
                 // BSR row
-                for(unsigned int k = 0; k < COLBSRDIM; k++)
+                for(uint32_t k = 0; k < COLBSRDIM; k++)
                 {
                     sum0 = rocsparse::fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k],
                                           x[COLBSRDIM * col + k],
@@ -510,7 +510,7 @@ namespace rocsparse
     }
 
     // GEBSRMV kernel for GEBSR block dimension of m x n where m and n <= 8
-    template <unsigned int BLOCKSIZE, unsigned int ROWBSRDIM, unsigned int COLBSRDIM, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t ROWBSRDIM, uint32_t COLBSRDIM, typename T>
     ROCSPARSE_DEVICE_ILF void gebsrmvn_mxn_device(rocsparse_int       mb,
                                                   rocsparse_direction dir,
                                                   T                   alpha,
@@ -534,7 +534,7 @@ namespace rocsparse
                                       : lid;
 
         // Number of BSR blocks processed at the same time
-        constexpr unsigned int NBLOCKS = BLOCKSIZE / (ROWBSRDIM * COLBSRDIM);
+        constexpr uint32_t NBLOCKS = BLOCKSIZE / (ROWBSRDIM * COLBSRDIM);
 
         // BSR row entry and exit point
         const rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
@@ -573,7 +573,7 @@ namespace rocsparse
         if((NBLOCKS & (NBLOCKS - 1)) != 0)
         {
             // Find highest power of 2 less than NBLOCKS
-            unsigned int POW2 = NBLOCKS;
+            uint32_t POW2 = NBLOCKS;
             POW2--;
             POW2 |= POW2 >> 1;
             POW2 |= POW2 >> 2;
@@ -613,7 +613,7 @@ namespace rocsparse
             if((COLBSRDIM & (COLBSRDIM - 1)) != 0)
             {
                 // Find highest power of 2 less than COLBSRDIM
-                unsigned int POW2 = COLBSRDIM;
+                uint32_t POW2 = COLBSRDIM;
                 POW2--;
                 POW2 |= POW2 >> 1;
                 POW2 |= POW2 >> 2;
@@ -658,7 +658,7 @@ namespace rocsparse
             if((COLBSRDIM & (COLBSRDIM - 1)) != 0)
             {
                 // Find highest power of 2 less than COLBSRDIM
-                unsigned int POW2 = COLBSRDIM;
+                uint32_t POW2 = COLBSRDIM;
                 POW2--;
                 POW2 |= POW2 >> 1;
                 POW2 |= POW2 >> 2;
@@ -714,7 +714,7 @@ namespace rocsparse
     }
 
     // GEBSRMV kernel for GEBSR block dimension of m x n where m and n <= 16
-    template <unsigned int BLOCKSIZE, unsigned int ROWBSRDIM, unsigned int COLBSRDIM, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t ROWBSRDIM, uint32_t COLBSRDIM, typename T>
     ROCSPARSE_DEVICE_ILF void gebsrmvn_mxn_16_device(rocsparse_int       mb,
                                                      rocsparse_direction dir,
                                                      T                   alpha,
@@ -738,7 +738,7 @@ namespace rocsparse
                                       : lid;
 
         // Number of BSR blocks processed at the same time
-        constexpr unsigned int NBLOCKS = BLOCKSIZE / (ROWBSRDIM * COLBSRDIM);
+        constexpr uint32_t NBLOCKS = BLOCKSIZE / (ROWBSRDIM * COLBSRDIM);
 
         // BSR row entry and exit point
         const rocsparse_int row_begin = bsr_row_ptr[row] - idx_base;
@@ -777,7 +777,7 @@ namespace rocsparse
         if((NBLOCKS & (NBLOCKS - 1)) != 0)
         {
             // Find highest power of 2 less than NBLOCKS
-            unsigned int POW2 = NBLOCKS;
+            uint32_t POW2 = NBLOCKS;
             POW2--;
             POW2 |= POW2 >> 1;
             POW2 |= POW2 >> 2;
@@ -817,7 +817,7 @@ namespace rocsparse
             if((COLBSRDIM & (COLBSRDIM - 1)) != 0)
             {
                 // Find highest power of 2 less than COLBSRDIM
-                unsigned int POW2 = COLBSRDIM;
+                uint32_t POW2 = COLBSRDIM;
                 POW2--;
                 POW2 |= POW2 >> 1;
                 POW2 |= POW2 >> 2;
@@ -868,7 +868,7 @@ namespace rocsparse
             if((COLBSRDIM & (COLBSRDIM - 1)) != 0)
             {
                 // Find highest power of 2 less than COLBSRDIM
-                unsigned int POW2 = COLBSRDIM;
+                uint32_t POW2 = COLBSRDIM;
                 POW2--;
                 POW2 |= POW2 >> 1;
                 POW2 |= POW2 >> 2;

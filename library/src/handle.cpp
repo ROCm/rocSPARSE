@@ -367,11 +367,11 @@ rocsparse_status rocsparse::copy_csrmv_info(rocsparse_csrmv_info       dest,
         if(dest->adaptive.wg_flags == nullptr)
         {
             RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->adaptive.wg_flags,
-                                                    sizeof(unsigned int) * src->adaptive.size));
+                                                    sizeof(uint32_t) * src->adaptive.size));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(dest->adaptive.wg_flags,
                                       src->adaptive.wg_flags,
-                                      sizeof(unsigned int) * src->adaptive.size,
+                                      sizeof(uint32_t) * src->adaptive.size,
                                       hipMemcpyDeviceToDevice));
     }
 
@@ -392,12 +392,12 @@ rocsparse_status rocsparse::copy_csrmv_info(rocsparse_csrmv_info       dest,
     {
         if(dest->lrb.wg_flags == nullptr)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->lrb.wg_flags,
-                                                    sizeof(unsigned int) * src->lrb.size));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMalloc((void**)&dest->lrb.wg_flags, sizeof(uint32_t) * src->lrb.size));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(dest->lrb.wg_flags,
                                       src->lrb.wg_flags,
-                                      sizeof(unsigned int) * src->lrb.size,
+                                      sizeof(uint32_t) * src->lrb.size,
                                       hipMemcpyDeviceToDevice));
     }
 

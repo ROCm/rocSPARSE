@@ -28,9 +28,9 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int BLOCKDIM,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              uint32_t BLOCKDIM,
               typename T,
               typename I,
               typename J>
@@ -83,7 +83,7 @@ namespace rocsparse
         {
             // Initialize row nnz table and accumulator
             table[wid] = 0;
-            for(unsigned int i = 0; i < BLOCKDIM; i += (WFSIZE / BLOCKDIM))
+            for(uint32_t i = 0; i < BLOCKDIM; i += (WFSIZE / BLOCKDIM))
             {
                 data[BLOCKDIM * BLOCKDIM * wid + BLOCKDIM * r + i + c] = static_cast<T>(0);
             }
@@ -124,7 +124,7 @@ namespace rocsparse
             {
                 bsr_col_ind[block_row_begin] = chunk_begin + bsr_base;
 
-                for(unsigned int i = 0; i < BLOCKDIM; i += (WFSIZE / BLOCKDIM))
+                for(uint32_t i = 0; i < BLOCKDIM; i += (WFSIZE / BLOCKDIM))
                 {
                     if(r < block_dim && (c + i) < block_dim)
                     {
@@ -157,7 +157,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T, typename I, typename J>
+    template <uint32_t BLOCKSIZE, uint32_t BLOCKDIM, typename T, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csr2bsr_block_per_row_multipass_kernel(rocsparse_direction        dir,
                                                 J                          m,
@@ -203,7 +203,7 @@ namespace rocsparse
         while(chunk_begin < nb)
         {
             table = 0;
-            for(unsigned int i = 0; i < BLOCKDIM; i += BLOCKSIZE / BLOCKDIM)
+            for(uint32_t i = 0; i < BLOCKDIM; i += BLOCKSIZE / BLOCKDIM)
             {
                 data[BLOCKDIM * wid + i + lid] = static_cast<T>(0);
             }
@@ -244,7 +244,7 @@ namespace rocsparse
             {
                 bsr_col_ind[block_row_begin] = chunk_begin + bsr_base;
 
-                for(unsigned int i = 0; i < BLOCKDIM; i += BLOCKSIZE / BLOCKDIM)
+                for(uint32_t i = 0; i < BLOCKDIM; i += BLOCKSIZE / BLOCKDIM)
                 {
                     if((i + lid) < block_dim && wid < block_dim)
                     {
@@ -282,7 +282,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename T, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csr2bsr_65_inf_kernel(rocsparse_direction        direction,
                                J                          m,
@@ -425,7 +425,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename T, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csr2bsr_block_dim_equals_one_kernel(J                          m,
                                              J                          n,

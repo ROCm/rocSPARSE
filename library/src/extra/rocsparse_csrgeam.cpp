@@ -33,7 +33,7 @@ namespace rocsparse
     // Compute matrix addition, where each row is processed by a wavefront.
     // Splitting row into several chunks such that we can use shared memory to store whether
     // a column index is populated or not.
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, typename T>
     ROCSPARSE_DEVICE_ILF void
         csrgeam_fill_multipass_device(rocsparse_int m,
                                       rocsparse_int n,
@@ -174,7 +174,7 @@ namespace rocsparse
             bool has_nnz = table[lid];
 
             // Obtain the bitmask that marks the position of each non-zero entry
-            unsigned long long mask = __ballot(has_nnz);
+            uint64_t mask = __ballot(has_nnz);
 
             // If the lane has an nnz assign, it must be filled into C
             if(has_nnz)
@@ -202,7 +202,7 @@ namespace rocsparse
             // Gather wavefront-wide minimum for the next chunks starting column index
             // Using shfl_xor here so that each thread in the wavefront obtains the final
             // result
-            for(unsigned int i = WFSIZE >> 1; i > 0; i >>= 1)
+            for(uint32_t i = WFSIZE >> 1; i > 0; i >>= 1)
             {
                 min_col = rocsparse::min(min_col, __shfl_xor(min_col, i));
             }
@@ -219,7 +219,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename T, typename U>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrgeam_fill_multipass_kernel(rocsparse_int m,
                                        rocsparse_int n,

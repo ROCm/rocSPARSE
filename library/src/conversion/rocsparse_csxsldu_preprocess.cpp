@@ -63,7 +63,7 @@ namespace rocsparse
         return rocsparse_status_success;
     }
 
-    template <unsigned int        BLOCKSIZE,
+    template <uint32_t            BLOCKSIZE,
               rocsparse_diag_type FDIAG,
               rocsparse_diag_type SDIAG,
               typename I,

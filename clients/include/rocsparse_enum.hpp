@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,13 +36,16 @@
 
 struct rocsparse_itilu0_alg_t
 {
-    using value_t                                 = rocsparse_itilu0_alg;
-    static constexpr unsigned int nvalues         = 5;
-    static constexpr value_t      values[nvalues] = {rocsparse_itilu0_alg_default,
-                                                rocsparse_itilu0_alg_async_inplace,
-                                                rocsparse_itilu0_alg_async_split,
-                                                rocsparse_itilu0_alg_sync_split,
-                                                rocsparse_itilu0_alg_sync_split_fusion};
+    using value_t                     = rocsparse_itilu0_alg;
+    static constexpr uint32_t nvalues = 5;
+
+    // clang-format off
+  static constexpr value_t  values[nvalues] = {rocsparse_itilu0_alg_default,
+   					         rocsparse_itilu0_alg_async_inplace,
+                                                 rocsparse_itilu0_alg_async_split,
+                                                 rocsparse_itilu0_alg_sync_split,
+                                                 rocsparse_itilu0_alg_sync_split_fusion};
+    // clang-format on
 
     static void info(std::ostream& out_)
     {
@@ -98,28 +101,32 @@ struct rocsparse_itilu0_alg_t
 
 struct rocsparse_matrix_type_t
 {
-    using value_t                                 = rocsparse_matrix_type;
-    static constexpr unsigned int nvalues         = 4;
-    static constexpr value_t      values[nvalues] = {rocsparse_matrix_type_general,
-                                                rocsparse_matrix_type_symmetric,
-                                                rocsparse_matrix_type_hermitian,
-                                                rocsparse_matrix_type_triangular};
+    using value_t                     = rocsparse_matrix_type;
+    static constexpr uint32_t nvalues = 4;
+    // clang-format off
+  static constexpr value_t  values[nvalues] = {rocsparse_matrix_type_general,
+                                               rocsparse_matrix_type_symmetric,
+                                               rocsparse_matrix_type_hermitian,
+                                               rocsparse_matrix_type_triangular};
+    // clang-format on
 };
 
 struct rocsparse_operation_t
 {
-    using value_t                                 = rocsparse_operation;
-    static constexpr unsigned int nvalues         = 3;
-    static constexpr value_t      values[nvalues] = {rocsparse_operation_none,
-                                                rocsparse_operation_transpose,
-                                                rocsparse_operation_conjugate_transpose};
+    using value_t                     = rocsparse_operation;
+    static constexpr uint32_t nvalues = 3;
+    // clang-format off
+    static constexpr value_t  values[nvalues] = {rocsparse_operation_none,
+                                                 rocsparse_operation_transpose,
+                                                 rocsparse_operation_conjugate_transpose};
+    // clang-format on
 };
 
 struct rocsparse_storage_mode_t
 {
-    using value_t                         = rocsparse_storage_mode;
-    static constexpr unsigned int nvalues = 2;
-    static constexpr value_t      values[nvalues]
+    using value_t                     = rocsparse_storage_mode;
+    static constexpr uint32_t nvalues = 2;
+    static constexpr value_t  values[nvalues]
         = {rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted};
 };
 

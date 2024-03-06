@@ -29,7 +29,7 @@
 namespace rocsparse
 {
     // Compute non-zero entries per CSR row to obtain the COO nnz per row.
-    template <unsigned int BLOCKSIZE>
+    template <uint32_t BLOCKSIZE>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void hyb_coo_nnz(rocsparse_int        m,
                      rocsparse_int        ell_width,
@@ -61,7 +61,7 @@ namespace rocsparse
     }
 
     // CSR to HYB format conversion kernel
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csr2hyb_kernel(rocsparse_int        m,
                         const T*             csr_val,

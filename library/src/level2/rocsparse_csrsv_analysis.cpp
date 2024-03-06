@@ -97,8 +97,8 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
             rocprim::double_buffer<J> keys(tmp_work1, (J*)info->trmt_col_ind);
             rocprim::double_buffer<I> vals((I*)info->trmt_perm, tmp_work2);
 
-            unsigned int startbit = 0;
-            unsigned int endbit   = rocsparse::clz(m);
+            uint32_t startbit = 0;
+            uint32_t endbit   = rocsparse::clz(m);
 
             size_t rocprim_size;
 
@@ -475,8 +475,8 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
 
     size_t rocprim_size;
 
-    unsigned int startbit = 0;
-    unsigned int endbit   = rocsparse::clz(m);
+    uint32_t startbit = 0;
+    uint32_t endbit   = rocsparse::clz(m);
 
     rocprim::double_buffer<int> keys(done_array, workspace2);
     rocprim::double_buffer<J>   vals(workspace, (J*)info->row_map);

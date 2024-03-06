@@ -28,7 +28,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename T>
     ROCSPARSE_DEVICE_ILF void
         roti_device(I nnz, T* x_val, const I* x_ind, T* y, T c, T s, rocsparse_index_base idx_base)
     {

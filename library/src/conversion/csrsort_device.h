@@ -29,7 +29,7 @@
 namespace rocsparse
 {
     // Shift CSR offsets
-    template <unsigned int BLOCKSIZE>
+    template <uint32_t BLOCKSIZE>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrsort_shift_kernel(rocsparse_int size, const rocsparse_int* in, rocsparse_int* out)
     {

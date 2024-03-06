@@ -32,7 +32,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int DIM_X, unsigned int DIM_Y, typename I, typename T>
+    template <uint32_t DIM_X, uint32_t DIM_Y, typename I, typename T>
     ROCSPARSE_KERNEL(DIM_X* DIM_Y)
     void spsm_transpose(
         I m, I n, const T* __restrict__ A, int64_t lda, T* __restrict__ B, int64_t ldb)

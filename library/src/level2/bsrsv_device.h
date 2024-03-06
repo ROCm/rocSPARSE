@@ -29,7 +29,7 @@
 namespace rocsparse
 {
 
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, bool SLEEP, typename T>
     ROCSPARSE_DEVICE_ILF void
         bsrsv_lower_general_device(rocsparse_int mb,
                                    T             alpha,
@@ -157,7 +157,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, bool SLEEP, typename T>
     ROCSPARSE_DEVICE_ILF void
         bsrsv_upper_general_device(rocsparse_int mb,
                                    T             alpha,
@@ -286,11 +286,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int  BLOCKSIZE,
-              unsigned int  WFSIZE,
-              rocsparse_int BSRDIM,
-              bool          SLEEP,
-              typename T>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, rocsparse_int BSRDIM, bool SLEEP, typename T>
     ROCSPARSE_DEVICE_ILF void
         bsrsv_lower_shared_device(rocsparse_int mb,
                                   T             alpha,
@@ -454,11 +450,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int  BLOCKSIZE,
-              unsigned int  WFSIZE,
-              rocsparse_int BSRDIM,
-              bool          SLEEP,
-              typename T>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, rocsparse_int BSRDIM, bool SLEEP, typename T>
     ROCSPARSE_DEVICE_ILF void
         bsrsv_upper_shared_device(rocsparse_int mb,
                                   T             alpha,

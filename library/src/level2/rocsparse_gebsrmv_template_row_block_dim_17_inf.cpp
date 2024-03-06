@@ -50,7 +50,7 @@ namespace rocsparse
                                       y,                                            \
                                       base);
 
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename T, typename U>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gebsrmvn_general_kernel(rocsparse_int       mb,
                                  rocsparse_direction dir,

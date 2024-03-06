@@ -267,9 +267,9 @@ rocsparse_status rocsparse::bsrilu0_analysis_template(rocsparse_handle          
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int BSRDIM,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              uint32_t BSRDIM,
               typename T,
               typename U,
               typename V>
@@ -312,9 +312,9 @@ namespace rocsparse
                                                                  boost_val);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int BSRDIM,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              uint32_t BSRDIM,
               typename T,
               typename U,
               typename V>
@@ -356,9 +356,9 @@ namespace rocsparse
                                                                   boost_val);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int BSRDIM,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              uint32_t BSRDIM,
               typename T,
               typename U,
               typename V>
@@ -400,12 +400,7 @@ namespace rocsparse
                                                                    boost_val);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              bool         SLEEP,
-              typename T,
-              typename U,
-              typename V>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, bool SLEEP, typename T, typename U, typename V>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void bsrilu0_general(rocsparse_direction  dir,
                          rocsparse_int        mb,

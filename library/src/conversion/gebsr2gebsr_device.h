@@ -269,7 +269,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE>
+    template <uint32_t BLOCKSIZE>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gebsr2gebsr_compute_nnz_total_kernel(rocsparse_int mb,
                                               const rocsparse_int* __restrict__ bsr_row_ptr,

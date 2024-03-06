@@ -37,7 +37,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename T, typename I>
+    template <uint32_t BLOCKSIZE, typename T, typename I>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void check_matrix_ell_device(I m,
                                  I n,

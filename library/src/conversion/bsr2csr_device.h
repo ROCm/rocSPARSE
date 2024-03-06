@@ -31,8 +31,8 @@
 namespace rocsparse
 {
     template <rocsparse_direction DIRECTION,
-              unsigned int        BLOCK_SIZE,
-              unsigned int        BLOCK_DIM,
+              uint32_t            BLOCK_SIZE,
+              uint32_t            BLOCK_DIM,
               typename T,
               typename I,
               typename J>
@@ -50,7 +50,7 @@ namespace rocsparse
                                           J* __restrict__ csr_col_ind)
     {
         // Find next largest power of 2
-        unsigned int BLOCK_DIM2 = fnp2(BLOCK_DIM);
+        uint32_t BLOCK_DIM2 = fnp2(BLOCK_DIM);
 
         J tid = hipThreadIdx_x;
         J bid = hipBlockIdx_x;
@@ -100,8 +100,8 @@ namespace rocsparse
     }
 
     template <rocsparse_direction DIRECTION,
-              unsigned int        BLOCK_SIZE,
-              unsigned int        BLOCK_DIM,
+              uint32_t            BLOCK_SIZE,
+              uint32_t            BLOCK_DIM,
               typename T,
               typename I,
               typename J>
@@ -164,9 +164,9 @@ namespace rocsparse
     }
 
     template <rocsparse_direction DIRECTION,
-              unsigned int        BLOCK_SIZE,
-              unsigned int        BLOCK_DIM,
-              unsigned int        SUB_BLOCK_DIM,
+              uint32_t            BLOCK_SIZE,
+              uint32_t            BLOCK_DIM,
+              uint32_t            SUB_BLOCK_DIM,
               typename T,
               typename I,
               typename J>
@@ -242,7 +242,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCK_SIZE, typename T, typename I, typename J>
+    template <uint32_t BLOCK_SIZE, typename T, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCK_SIZE)
     void bsr2csr_block_dim_equals_one_kernel(J                    mb,
                                              J                    nb,

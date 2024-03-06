@@ -125,9 +125,9 @@ rocsparse_status rocsparse::check_matrix_csr_core(rocsparse_handle       handle,
     // If columns are unsorted, then sort them in temp buffer
     if(storage == rocsparse_storage_mode_unsorted)
     {
-        unsigned int startbit = 0;
-        unsigned int endbit   = rocsparse::clz(n);
-        size_t       size;
+        uint32_t startbit = 0;
+        uint32_t endbit   = rocsparse::clz(n);
+        size_t   size;
 
         // offsets buffer
         tmp_offsets = reinterpret_cast<I*>(ptr);

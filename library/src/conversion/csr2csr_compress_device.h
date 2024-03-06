@@ -31,7 +31,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, unsigned int LOOPS, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t WF_SIZE, uint32_t LOOPS, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csr2csr_compress_fill_warp_start_device(rocsparse_int nnz_A,
                                                  const T* __restrict__ csr_val_A,
@@ -49,7 +49,7 @@ namespace rocsparse
             warp_start[0] = 0;
         }
 
-        for(unsigned int i = 0; i < LOOPS; i++)
+        for(uint32_t i = 0; i < LOOPS; i++)
         {
             if(gid < nnz_A)
             {
@@ -78,7 +78,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, unsigned int LOOPS, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t WF_SIZE, uint32_t LOOPS, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csr2csr_compress_use_warp_start_device(rocsparse_int        nnz_A,
                                                 rocsparse_index_base idx_base_A,
@@ -99,7 +99,7 @@ namespace rocsparse
 
         const uint64_t filter_mask = (0xffffffffffffffff >> (63 - lid));
 
-        for(unsigned int i = 0; i < LOOPS; i++)
+        for(uint32_t i = 0; i < LOOPS; i++)
         {
             if(gid < nnz_A)
             {
@@ -135,7 +135,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE>
+    template <uint32_t BLOCKSIZE>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void fill_row_ptr_device(rocsparse_int        m,
                              rocsparse_index_base idx_base_C,
@@ -157,10 +157,10 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int SEGMENTS_PER_BLOCK,
-              unsigned int SEGMENT_SIZE,
-              unsigned int WF_SIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t SEGMENTS_PER_BLOCK,
+              uint32_t SEGMENT_SIZE,
+              uint32_t WF_SIZE,
               typename T>
     ROCSPARSE_DEVICE_ILF void
         csr2csr_compress_device(rocsparse_int        m,

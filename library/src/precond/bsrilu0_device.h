@@ -28,11 +28,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int BSRDIM,
-              typename T,
-              typename U>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, uint32_t BSRDIM, typename T, typename U>
     ROCSPARSE_DEVICE_ILF void bsrilu0_2_8_device(rocsparse_direction  dir,
                                                  rocsparse_int        mb,
                                                  const rocsparse_int* bsr_row_ptr,
@@ -326,11 +322,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int BSRDIM,
-              typename T,
-              typename U>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, uint32_t BSRDIM, typename T, typename U>
     ROCSPARSE_DEVICE_ILF void bsrilu0_9_32_device(rocsparse_direction  dir,
                                                   rocsparse_int        mb,
                                                   const rocsparse_int* bsr_row_ptr,
@@ -346,8 +338,8 @@ namespace rocsparse
                                                   U                    boost_tol,
                                                   T                    boost_val)
     {
-        constexpr static unsigned int DIMX = BSRDIM;
-        constexpr static unsigned int DIMY = BLOCKSIZE / BSRDIM;
+        constexpr static uint32_t DIMX = BSRDIM;
+        constexpr static uint32_t DIMY = BLOCKSIZE / BSRDIM;
 
         // Current row this wavefront is working on
         rocsparse_int row = map[blockIdx.x];
@@ -655,11 +647,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int BSRDIM,
-              typename T,
-              typename U>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, uint32_t BSRDIM, typename T, typename U>
     ROCSPARSE_DEVICE_ILF void bsrilu0_33_64_device(rocsparse_direction  dir,
                                                    rocsparse_int        mb,
                                                    const rocsparse_int* bsr_row_ptr,
@@ -675,8 +663,8 @@ namespace rocsparse
                                                    U                    boost_tol,
                                                    T                    boost_val)
     {
-        constexpr static unsigned int DIMX = BSRDIM;
-        constexpr static unsigned int DIMY = BLOCKSIZE / BSRDIM;
+        constexpr static uint32_t DIMX = BSRDIM;
+        constexpr static uint32_t DIMY = BLOCKSIZE / BSRDIM;
 
         // Current row this wavefront is working on
         rocsparse_int row = map[blockIdx.x];
@@ -965,7 +953,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, bool SLEEP, typename T, typename U>
     ROCSPARSE_DEVICE_ILF void bsrilu0_general_device(rocsparse_direction  dir,
                                                      rocsparse_int        mb,
                                                      const rocsparse_int* bsr_row_ptr,

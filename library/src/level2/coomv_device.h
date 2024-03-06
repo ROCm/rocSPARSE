@@ -29,7 +29,7 @@
 namespace rocsparse
 {
     // Scale kernel for beta != 1.0
-    template <unsigned int BLOCKSIZE, typename I, typename Y, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename Y, typename T>
     ROCSPARSE_DEVICE_ILF void coomv_scale_device(I size, T beta, Y* __restrict__ data)
     {
         const I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
@@ -52,7 +52,7 @@ namespace rocsparse
     // Implementation motivated by papers 'Efficient Sparse Matrix-Vector Multiplication on CUDA',
     // 'Implementing Sparse Matrix-Vector Multiplication on Throughput-Oriented Processors' and
     // 'Segmented operations for sparse matrix computation on vector multiprocessors'
-    template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
     ROCSPARSE_DEVICE_ILF void coomvn_segmented_loops_device(int64_t nnz,
                                                             I       nloops,
                                                             T       alpha,
@@ -95,7 +95,7 @@ namespace rocsparse
         __syncthreads();
 
         // Segmented wavefront reduction
-        for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
+        for(uint32_t j = 1; j < BLOCKSIZE; j <<= 1)
         {
             if(tid >= j)
             {
@@ -162,7 +162,7 @@ namespace rocsparse
             __syncthreads();
 
             // Segmented wavefront reduction
-            for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
+            for(uint32_t j = 1; j < BLOCKSIZE; j <<= 1)
             {
                 if(tid >= j)
                 {
@@ -196,13 +196,13 @@ namespace rocsparse
     }
 
     // Segmented block reduction kernel
-    template <unsigned int BLOCKSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename T>
     ROCSPARSE_DEVICE_ILF void segmented_blockreduce(const I* rows, T* vals)
     {
         const int tid = hipThreadIdx_x;
 
 #pragma unroll
-        for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
+        for(uint32_t j = 1; j < BLOCKSIZE; j <<= 1)
         {
             T val = static_cast<T>(0);
             if(tid >= j)
@@ -220,7 +220,7 @@ namespace rocsparse
     }
 
     // Do the final block reduction of the block reduction buffers back into global memory
-    template <unsigned int BLOCKSIZE, typename I, typename Y, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename Y, typename T>
     ROCSPARSE_DEVICE_ILF void
         coomvn_segmented_loops_reduce_device(I nblocks,
                                              const I* __restrict__ row_block_red,
@@ -262,7 +262,7 @@ namespace rocsparse
     // 'Implementing Sparse Matrix-Vector Multiplication on Throughput-Oriented Processors' and
     // 'Segmented operations for sparse matrix computation on vector multiprocessors' for array
     // of structure format (AoS)
-    template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
     ROCSPARSE_DEVICE_ILF void coomvn_aos_segmented_loops_device(int64_t nnz,
                                                                 I       nloops,
                                                                 T       alpha,
@@ -304,7 +304,7 @@ namespace rocsparse
         __syncthreads();
 
         // Segmented wavefront reduction
-        for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
+        for(uint32_t j = 1; j < BLOCKSIZE; j <<= 1)
         {
             if(tid >= j)
             {
@@ -371,7 +371,7 @@ namespace rocsparse
             __syncthreads();
 
             // Segmented wavefront reduction
-            for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
+            for(uint32_t j = 1; j < BLOCKSIZE; j <<= 1)
             {
                 if(tid >= j)
                 {
@@ -404,8 +404,8 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int LOOPS,
+    template <uint32_t BLOCKSIZE,
+              uint32_t LOOPS,
               typename I,
               typename A,
               typename X,
@@ -451,7 +451,7 @@ namespace rocsparse
         __syncthreads();
 
         // segmented reduction
-        for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
+        for(uint32_t j = 1; j < BLOCKSIZE; j <<= 1)
         {
             if(tid >= j)
             {
@@ -475,7 +475,7 @@ namespace rocsparse
 
         if(LOOPS > 1)
         {
-            for(unsigned int i = 0; i < LOOPS - 1; i++)
+            for(uint32_t i = 0; i < LOOPS - 1; i++)
             {
                 // Keep going for the next iteration
                 idx += BLOCKSIZE;
@@ -516,7 +516,7 @@ namespace rocsparse
                 __syncthreads();
 
                 // segmented reduction
-                for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
+                for(uint32_t j = 1; j < BLOCKSIZE; j <<= 1)
                 {
                     if(tid >= j)
                     {
@@ -549,8 +549,8 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int LOOPS,
+    template <uint32_t BLOCKSIZE,
+              uint32_t LOOPS,
               typename I,
               typename A,
               typename X,
@@ -595,7 +595,7 @@ namespace rocsparse
         __syncthreads();
 
         // segmented reduction
-        for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
+        for(uint32_t j = 1; j < BLOCKSIZE; j <<= 1)
         {
             if(tid >= j)
             {
@@ -617,7 +617,7 @@ namespace rocsparse
             }
         }
 
-        for(unsigned int i = 0; i < LOOPS - 1; i++)
+        for(uint32_t i = 0; i < LOOPS - 1; i++)
         {
             // Keep going for the next iteration
             idx += BLOCKSIZE;
@@ -658,7 +658,7 @@ namespace rocsparse
             __syncthreads();
 
             // segmented reduction
-            for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
+            for(uint32_t j = 1; j < BLOCKSIZE; j <<= 1)
             {
                 if(tid >= j)
                 {

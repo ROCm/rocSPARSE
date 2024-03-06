@@ -28,10 +28,10 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              unsigned int LOOPS,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t LOOPS,
+              bool     TRANSB,
               typename T,
               typename I,
               typename A,
@@ -68,7 +68,7 @@ namespace rocsparse
             T sum[LOOPS]{};
 
             I current_row = rocsparse::shfl(row, 0, WF_SIZE);
-            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            for(uint32_t i = 0; i < WF_SIZE; ++i)
             {
                 const T v = rocsparse::shfl(val, i, WF_SIZE);
                 const I c = rocsparse::shfl(col, i, WF_SIZE);
@@ -78,7 +78,7 @@ namespace rocsparse
                 {
                     if(order_C == rocsparse_order_column)
                     {
-                        for(unsigned int p = 0; p < LOOPS; p++)
+                        for(uint32_t p = 0; p < LOOPS; p++)
                         {
                             rocsparse::atomic_add(
                                 &dense_C[(colB + p * WF_SIZE) * ldc + current_row], alpha * sum[p]);
@@ -86,14 +86,14 @@ namespace rocsparse
                     }
                     else
                     {
-                        for(unsigned int p = 0; p < LOOPS; p++)
+                        for(uint32_t p = 0; p < LOOPS; p++)
                         {
                             rocsparse::atomic_add(&dense_C[current_row * ldc + colB + p * WF_SIZE],
                                                   alpha * sum[p]);
                         }
                     }
 
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         sum[p] = static_cast<T>(0);
                     }
@@ -103,7 +103,7 @@ namespace rocsparse
 
                 if(TRANSB)
                 {
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         sum[p] = rocsparse::fma<T>(
                             v, conj_val(dense_B[c * ldb + colB + p * WF_SIZE], conj_B), sum[p]);
@@ -111,7 +111,7 @@ namespace rocsparse
                 }
                 else
                 {
-                    for(unsigned int p = 0; p < LOOPS; p++)
+                    for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         sum[p] = rocsparse::fma<T>(
                             v, conj_val(dense_B[(colB + p * WF_SIZE) * ldb + c], conj_B), sum[p]);
@@ -121,7 +121,7 @@ namespace rocsparse
 
             if(order_C == rocsparse_order_column)
             {
-                for(unsigned int p = 0; p < LOOPS; p++)
+                for(uint32_t p = 0; p < LOOPS; p++)
                 {
                     rocsparse::atomic_add(&dense_C[(colB + p * WF_SIZE) * ldc + current_row],
                                           alpha * sum[p]);
@@ -129,7 +129,7 @@ namespace rocsparse
             }
             else
             {
-                for(unsigned int p = 0; p < LOOPS; p++)
+                for(uint32_t p = 0; p < LOOPS; p++)
                 {
                     rocsparse::atomic_add(&dense_C[current_row * ldc + colB + p * WF_SIZE],
                                           alpha * sum[p]);
@@ -138,9 +138,9 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              bool     TRANSB,
               typename T,
               typename I,
               typename A,
@@ -182,7 +182,7 @@ namespace rocsparse
             T sum         = static_cast<T>(0);
             I current_row = rocsparse::shfl(row, 0, WF_SIZE);
 
-            for(unsigned int i = 0; i < WF_SIZE; ++i)
+            for(uint32_t i = 0; i < WF_SIZE; ++i)
             {
                 T v = rocsparse::shfl(val, i, WF_SIZE);
                 I c = rocsparse::shfl(col, i, WF_SIZE);
@@ -232,7 +232,7 @@ namespace rocsparse
             const int swid = tid / (BLOCKSIZE / WF_SIZE);
 
             // segmented reduction
-            for(unsigned int j = 1; j < (BLOCKSIZE / WF_SIZE); j <<= 1)
+            for(uint32_t j = 1; j < (BLOCKSIZE / WF_SIZE); j <<= 1)
             {
                 if(slid >= j)
                 {
@@ -284,8 +284,8 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              bool     TRANSB,
               typename T,
               typename I,
               typename A,
@@ -330,10 +330,10 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              unsigned int LOOPS,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t LOOPS,
+              bool     TRANSB,
               typename T,
               typename I,
               typename A,
@@ -383,9 +383,9 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              bool     TRANSB,
               typename T,
               typename I,
               typename A,
@@ -434,8 +434,8 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              bool     TRANSB,
               typename T,
               typename I,
               typename A,
@@ -534,9 +534,9 @@ namespace rocsparse
         order_C,                                                                \
         descr->base);
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              bool         TRANSB,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              bool     TRANSB,
               typename T,
               typename I,
               typename A,

@@ -28,7 +28,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gthrz_kernel(rocsparse_int        nnz,
                       T*                   y,

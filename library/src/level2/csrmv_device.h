@@ -28,8 +28,8 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
               typename I,
               typename J,
               typename A,
@@ -101,8 +101,8 @@ namespace rocsparse
         data[idx] *= scalar;
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
               typename I,
               typename J,
               typename A,
@@ -166,7 +166,7 @@ namespace rocsparse
     ROCSPARSE_DEVICE_ILF void csrmvn_adaptive_device(bool                 conj,
                                                      I                    nnz,
                                                      const I*             row_blocks,
-                                                     unsigned int*        wg_flags,
+                                                     uint32_t*            wg_flags,
                                                      const J*             wg_ids,
                                                      T                    alpha,
                                                      const I*             csr_row_ptr,
@@ -383,7 +383,7 @@ namespace rocsparse
                 // Load in a bunch of partial results into your register space, rather than LDS (no
                 // contention)
                 // Then dump the partially reduced answers into the LDS for inter-work-item reduction.
-                // Using a long induction variable to make sure unsigned int overflow doesn't break
+                // Using a long induction variable to make sure uint32_t overflow doesn't break
                 // things.
                 for(I j = vecStart + lid; j < vecEnd; j += WG_SIZE)
                 {
@@ -431,8 +431,8 @@ namespace rocsparse
             // First, figure out which workgroup you are in the row.
             // You can use that to find the global ID for the first workgroup calculating
             // this long row.
-            J             first_wg_in_row = gid - wg_ids[gid];
-            unsigned long compare_value   = wg_flags[gid];
+            J        first_wg_in_row = gid - wg_ids[gid];
+            uint32_t compare_value   = wg_flags[gid];
 
             // wg_flags[first_wg_in_row] in the first workgroup is the flag that everyone waits on.
             if(gid == first_wg_in_row && lid == 0)
@@ -504,7 +504,7 @@ namespace rocsparse
     // Output:  n_rows_bins = <array of 32 uint32_t's>, where the value at index i is the number of rows
     //          in bin i. May want to be particular about spreading across cache banks (w/ padding),
     //          for atomics-load-balancing reasons.
-    template <unsigned int BLOCKSIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrmvn_preprocess_device_32_bins_3phase_phase1(J        m,
                                                         const I* csr_row_ptr,
@@ -517,8 +517,8 @@ namespace rocsparse
         {
             const I row_len = csr_row_ptr[i + 1] - csr_row_ptr[i];
 
-            const unsigned int target_bin
-                = (row_len != 0) ? (unsigned int)rocsparse::ceil(log2f(row_len)) : 0;
+            const uint32_t target_bin
+                = (row_len != 0) ? (uint32_t)rocsparse::ceil(log2f(row_len)) : 0;
 
             rows_binoffsets_scratch[i] = rocsparse::atomic_add(&n_rows_bins[target_bin], (J)1);
         }
@@ -556,7 +556,7 @@ namespace rocsparse
     //          of each bin in the final output array.
     // Output:  rows_bins = <J* of length csr.rows>. Single array with all bins:
     //          [(bin0 first row #), ... (bin0 last row #), (bin1 first row #), ... (bin1 last row #), ...]
-    template <unsigned int BLOCKSIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrmvn_preprocess_device_32_bins_3phase_phase3(J        m,
                                                         const I* csr_row_ptr,
@@ -570,15 +570,15 @@ namespace rocsparse
         {
             const I row_len = csr_row_ptr[i + 1] - csr_row_ptr[i];
 
-            const unsigned int target_bin
-                = (row_len != 0) ? (unsigned int)rocsparse::ceil(log2f(row_len)) : 0;
+            const uint32_t target_bin
+                = (row_len != 0) ? (uint32_t)rocsparse::ceil(log2f(row_len)) : 0;
 
             rows_bins[n_rows_bins[target_bin] + rows_binoffsets_scratch[i]] = i;
         }
     }
 
     // "Stream" case a la CSR-Adaptive
-    template <unsigned int BLOCKSIZE,
+    template <uint32_t BLOCKSIZE,
               typename I,
               typename J,
               typename A,
@@ -599,8 +599,8 @@ namespace rocsparse
                                                            Y*                   y,
                                                            rocsparse_index_base idx_base)
     {
-        const unsigned int lid = hipThreadIdx_x;
-        const unsigned int gid = hipBlockIdx_x;
+        const uint32_t lid = hipThreadIdx_x;
+        const uint32_t gid = hipBlockIdx_x;
 
         // Allocation from the caller is of size [WG_SIZE << bin_id] elements
         extern __shared__ char shared_memory[];
@@ -609,15 +609,15 @@ namespace rocsparse
         const J bin_start    = n_rows_bins[bin_id];
         const J bin_num_rows = n_rows_bins[bin_id + 1] - bin_start;
 
-        const unsigned int wg_row_start = gid * BLOCKSIZE;
-        const unsigned int wg_row_end
+        const uint32_t wg_row_start = gid * BLOCKSIZE;
+        const uint32_t wg_row_end
             = rocsparse::min(wg_row_start + BLOCKSIZE, uint32_t(bin_num_rows));
-        const unsigned int wg_num_rows = wg_row_end - wg_row_start;
+        const uint32_t wg_num_rows = wg_row_end - wg_row_start;
 
         // Load a block of row data using all threads in the WG.
-        for(unsigned int base_idx = 0; base_idx < (BLOCKSIZE << bin_id); base_idx += BLOCKSIZE)
+        for(uint32_t base_idx = 0; base_idx < (BLOCKSIZE << bin_id); base_idx += BLOCKSIZE)
         {
-            unsigned int row_idx = wg_row_start + ((base_idx + lid) >> bin_id);
+            uint32_t row_idx = wg_row_start + ((base_idx + lid) >> bin_id);
             if(row_idx < wg_row_start + wg_num_rows)
             {
                 const J row_id = rows_bins[row_idx + bin_start];
@@ -626,8 +626,8 @@ namespace rocsparse
                 const I row_end   = csr_row_ptr[row_id + 1] - idx_base;
                 const I row_len   = row_end - row_start;
 
-                const unsigned int col_idx_in_row = lid & ((1 << bin_id) - 1);
-                const unsigned int lds_idx        = base_idx + lid;
+                const uint32_t col_idx_in_row = lid & ((1 << bin_id) - 1);
+                const uint32_t lds_idx        = base_idx + lid;
 
                 if(col_idx_in_row < row_len)
                 {
@@ -648,11 +648,11 @@ namespace rocsparse
         // TODO: adaptation as per CSR-Adaptive-Stream
         if(lid < wg_num_rows)
         {
-            const unsigned int lds_start_idx = (lid << bin_id);
-            const J            row_id        = rows_bins[bin_start + wg_row_start + lid];
-            T                  acc           = 0;
+            const uint32_t lds_start_idx = (lid << bin_id);
+            const J        row_id        = rows_bins[bin_start + wg_row_start + lid];
+            T              acc           = 0;
 
-            for(unsigned int idx = 0; idx < (1 << bin_id); idx++)
+            for(uint32_t idx = 0; idx < (1 << bin_id); idx++)
             {
                 acc += partialSums[lds_start_idx + idx];
             }
@@ -668,8 +668,8 @@ namespace rocsparse
     // csrmv_lrb_short_rows_2: Same basic structure as csrmv_lrb_short_rows,
     // but with a fixed-size LDS allocation. Intended for cases where the former's
     // dynamic LDS allocation approach would blow up size requirements beyond reasonable bounds.
-    template <unsigned int BLOCKSIZE,
-              unsigned int CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS,
+    template <uint32_t BLOCKSIZE,
+              uint32_t CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS,
               typename I,
               typename J,
               typename A,
@@ -680,7 +680,7 @@ namespace rocsparse
                                                              I                    nnz,
                                                              const J*             rows_bins,
                                                              const J*             n_rows_bins,
-                                                             const unsigned int   bin_id,
+                                                             const uint32_t       bin_id,
                                                              T                    alpha,
                                                              const I*             csr_row_ptr,
                                                              const J*             csr_col_ind,
@@ -690,27 +690,27 @@ namespace rocsparse
                                                              Y*                   y,
                                                              rocsparse_index_base idx_base)
     {
-        const unsigned int lid = hipThreadIdx_x;
-        const unsigned int gid = hipBlockIdx_x;
+        const uint32_t lid = hipThreadIdx_x;
+        const uint32_t gid = hipBlockIdx_x;
 
         // In LDS-Stream-V2, we have a fixed LDS allocation of CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS elements (example: 1024).
         // So, each thread will load 1024 / BLOCKSIZE elements, which, depending on the bin, corresponds to a different # rows.
         // Bin 0 (1 element) = 1024 rows, bin 1 = 512 rows, bin 2 = 256 rows, bin 3 = 128 rows, etc.
         __shared__ T partialSums[CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS];
 
-        const J            bin_start    = n_rows_bins[bin_id];
-        const J            bin_num_rows = n_rows_bins[bin_id + 1] - bin_start;
-        const unsigned int rows_per_wg  = CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS >> bin_id;
-        const unsigned int wg_row_start = gid * rows_per_wg;
-        const unsigned int wg_row_end
+        const J        bin_start    = n_rows_bins[bin_id];
+        const J        bin_num_rows = n_rows_bins[bin_id + 1] - bin_start;
+        const uint32_t rows_per_wg  = CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS >> bin_id;
+        const uint32_t wg_row_start = gid * rows_per_wg;
+        const uint32_t wg_row_end
             = rocsparse::min(wg_row_start + rows_per_wg, uint32_t(bin_num_rows));
-        const unsigned int wg_num_rows = wg_row_end - wg_row_start;
+        const uint32_t wg_num_rows = wg_row_end - wg_row_start;
 
         // Load a block of row data using all threads in the WG.
-        for(unsigned int base_idx = 0; base_idx < CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS;
+        for(uint32_t base_idx = 0; base_idx < CSRMV_LRB_SHORT_ROWS_2_LDS_ELEMS;
             base_idx += BLOCKSIZE)
         {
-            unsigned int row_idx = wg_row_start + ((base_idx + lid) >> bin_id);
+            uint32_t row_idx = wg_row_start + ((base_idx + lid) >> bin_id);
             if(row_idx < wg_row_end)
             {
                 const J row_id = rows_bins[row_idx + bin_start];
@@ -719,8 +719,8 @@ namespace rocsparse
                 const I row_end   = csr_row_ptr[row_id + 1] - idx_base;
                 const I row_len   = row_end - row_start;
 
-                const unsigned int col_idx_in_row = lid & ((1 << bin_id) - 1);
-                const unsigned int lds_idx        = base_idx + lid;
+                const uint32_t col_idx_in_row = lid & ((1 << bin_id) - 1);
+                const uint32_t lds_idx        = base_idx + lid;
                 if(col_idx_in_row < row_len)
                 {
                     const A val = conj_val(csr_val[row_start + col_idx_in_row], conj);
@@ -738,16 +738,16 @@ namespace rocsparse
 
         // For the moment: just have each thread reduce a given row
         // TODO: adaptation as per CSR-Adaptive-Stream
-        for(unsigned int row_base = 0; row_base < rows_per_wg; row_base += BLOCKSIZE)
+        for(uint32_t row_base = 0; row_base < rows_per_wg; row_base += BLOCKSIZE)
         {
-            const unsigned int this_row_offset_in_wg = row_base + lid;
+            const uint32_t this_row_offset_in_wg = row_base + lid;
             if(this_row_offset_in_wg < wg_num_rows)
             {
-                const unsigned int lds_start_idx = (this_row_offset_in_wg << bin_id);
-                const J row_id = rows_bins[bin_start + wg_row_start + this_row_offset_in_wg];
+                const uint32_t lds_start_idx = (this_row_offset_in_wg << bin_id);
+                const J        row_id = rows_bins[bin_start + wg_row_start + this_row_offset_in_wg];
 
                 T acc = 0;
-                for(unsigned int idx = 0; idx < (1 << bin_id); idx++)
+                for(uint32_t idx = 0; idx < (1 << bin_id); idx++)
                 {
                     acc += partialSums[lds_start_idx + idx];
                 }
@@ -760,8 +760,8 @@ namespace rocsparse
     }
 
     // "Vector" case a la CSR-Adaptive using one warp per row
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
               typename I,
               typename J,
               typename A,
@@ -774,7 +774,7 @@ namespace rocsparse
                                                   int64_t              count,
                                                   const J*             rows_bins,
                                                   const J*             n_rows_bins,
-                                                  unsigned int         bin_id,
+                                                  uint32_t             bin_id,
                                                   T                    alpha,
                                                   const I*             csr_row_ptr,
                                                   const J*             csr_col_ind,
@@ -825,7 +825,7 @@ namespace rocsparse
     }
 
     // "Vector" case a la CSR-Adaptive using one block per row
-    template <unsigned int BLOCKSIZE,
+    template <uint32_t BLOCKSIZE,
               typename I,
               typename J,
               typename A,
@@ -836,7 +836,7 @@ namespace rocsparse
                                                             I                    nnz,
                                                             const J*             rows_bins,
                                                             const J*             n_rows_bins,
-                                                            unsigned int         bin_id,
+                                                            uint32_t             bin_id,
                                                             T                    alpha,
                                                             const I*             csr_row_ptr,
                                                             const J*             csr_col_ind,
@@ -903,8 +903,8 @@ namespace rocsparse
     }
 
     // "LongRows" aka "VectorL" case a la CSR-Adaptive
-    template <unsigned int BLOCKSIZE,
-              unsigned int BLOCK_MULTIPLIER,
+    template <uint32_t BLOCKSIZE,
+              uint32_t BLOCK_MULTIPLIER,
               typename I,
               typename J,
               typename A,
@@ -913,10 +913,10 @@ namespace rocsparse
               typename T>
     ROCSPARSE_DEVICE_ILF void csrmvn_lrb_long_rows_device(bool                 conj,
                                                           I                    nnz,
-                                                          unsigned int*        wg_flags,
+                                                          uint32_t*            wg_flags,
                                                           const J*             rows_bins,
                                                           const J*             n_rows_bins,
-                                                          unsigned int         bin_id,
+                                                          uint32_t             bin_id,
                                                           T                    alpha,
                                                           const I*             csr_row_ptr,
                                                           const J*             csr_col_ind,
@@ -931,13 +931,12 @@ namespace rocsparse
         const int lid = hipThreadIdx_x;
         const int gid = hipBlockIdx_x;
 
-        const J            bin_start       = n_rows_bins[bin_id];
-        const unsigned int bin_max_row_len = (1 << bin_id);
-        const unsigned int num_wgs_per_row
-            = (bin_max_row_len - 1) / (BLOCK_MULTIPLIER * BLOCKSIZE) + 1;
-        const J row_idx = gid / num_wgs_per_row;
-        const J wg      = gid % num_wgs_per_row;
-        const J row     = rows_bins[bin_start + row_idx];
+        const J        bin_start       = n_rows_bins[bin_id];
+        const uint32_t bin_max_row_len = (1 << bin_id);
+        const uint32_t num_wgs_per_row = (bin_max_row_len - 1) / (BLOCK_MULTIPLIER * BLOCKSIZE) + 1;
+        const J        row_idx         = gid / num_wgs_per_row;
+        const J        wg              = gid % num_wgs_per_row;
+        const J        row             = rows_bins[bin_start + row_idx];
 
         // wg_flags contains the flag bits used so that the multiple WGs calculating a long row can
         // know when the first workgroup for that row has finished initializing the output
@@ -966,8 +965,8 @@ namespace rocsparse
         // First, figure out which workgroup you are in the row.
         // You can use that to find the global ID for the first workgroup calculating
         // this long row.
-        const J             first_wg_in_row = gid - wg;
-        const unsigned long compare_value   = wg_flags[gid];
+        const J        first_wg_in_row = gid - wg;
+        const uint32_t compare_value   = wg_flags[gid];
 
         // wg_flags[first_wg_in_row] in the first workgroup is the flag that everyone waits on.
         if(gid == first_wg_in_row && lid == 0)

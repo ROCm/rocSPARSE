@@ -28,7 +28,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, unsigned int WFSIZE, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t BLOCKDIM, uint32_t WFSIZE, typename T>
     ROCSPARSE_DEVICE_ILF void
         bsrgeam_wf_per_row_multipass_2_3_device(rocsparse_direction dir,
                                                 rocsparse_int       mb,
@@ -102,9 +102,9 @@ namespace rocsparse
         {
             // Initialize row nnz table and value accumulator
             table[lid] = false;
-            for(unsigned int r = 0; r < BLOCKDIM; r++)
+            for(uint32_t r = 0; r < BLOCKDIM; r++)
             {
-                for(unsigned int c = 0; c < BLOCKDIM; c++)
+                for(uint32_t c = 0; c < BLOCKDIM; c++)
                 {
                     data[BLOCKDIM * BLOCKDIM * lid + BLOCKDIM * r + c] = static_cast<T>(0);
                 }
@@ -134,9 +134,9 @@ namespace rocsparse
                     // Initialize with value of A
                     if(dir == rocsparse_direction_row)
                     {
-                        for(unsigned int r = 0; r < BLOCKDIM; r++)
+                        for(uint32_t r = 0; r < BLOCKDIM; r++)
                         {
-                            for(unsigned int c = 0; c < BLOCKDIM; c++)
+                            for(uint32_t c = 0; c < BLOCKDIM; c++)
                             {
                                 data[BLOCKDIM * BLOCKDIM * shf_A + BLOCKDIM * r + c]
                                     = alpha
@@ -147,9 +147,9 @@ namespace rocsparse
                     }
                     else
                     {
-                        for(unsigned int r = 0; r < BLOCKDIM; r++)
+                        for(uint32_t r = 0; r < BLOCKDIM; r++)
                         {
-                            for(unsigned int c = 0; c < BLOCKDIM; c++)
+                            for(uint32_t c = 0; c < BLOCKDIM; c++)
                             {
                                 data[BLOCKDIM * BLOCKDIM * shf_A + BLOCKDIM * r + c]
                                     = alpha
@@ -188,7 +188,7 @@ namespace rocsparse
                     // Add values of B
                     if(dir == rocsparse_direction_row)
                     {
-                        for(unsigned int r = 0; r < BLOCKDIM; r++)
+                        for(uint32_t r = 0; r < BLOCKDIM; r++)
                         {
                             for(int c = 0; c < BLOCKDIM; c++)
                             {
@@ -203,7 +203,7 @@ namespace rocsparse
                     }
                     else
                     {
-                        for(unsigned int r = 0; r < BLOCKDIM; r++)
+                        for(uint32_t r = 0; r < BLOCKDIM; r++)
                         {
                             for(int c = 0; c < BLOCKDIM; c++)
                             {
@@ -231,7 +231,7 @@ namespace rocsparse
             bool has_nnzb = table[lid];
 
             // Obtain the bitmask that marks the position of each non-zero entry
-            unsigned long long mask = __ballot(has_nnzb);
+            uint64_t mask = __ballot(has_nnzb);
 
             // If the lane has an nnz assign, it must be filled into C
             if(has_nnzb)
@@ -252,7 +252,7 @@ namespace rocsparse
                 bsr_col_ind_C[row_begin_C + offset - 1] = lid + chunk_begin + idx_base_C;
                 if(dir == rocsparse_direction_row)
                 {
-                    for(unsigned int r = 0; r < BLOCKDIM; r++)
+                    for(uint32_t r = 0; r < BLOCKDIM; r++)
                     {
                         for(int c = 0; c < BLOCKDIM; c++)
                         {
@@ -264,7 +264,7 @@ namespace rocsparse
                 }
                 else
                 {
-                    for(unsigned int r = 0; r < BLOCKDIM; r++)
+                    for(uint32_t r = 0; r < BLOCKDIM; r++)
                     {
                         for(int c = 0; c < BLOCKDIM; c++)
                         {
@@ -282,7 +282,7 @@ namespace rocsparse
             // Gather wavefront-wide minimum for the next chunks starting column index
             // Using shfl_xor here so that each thread in the wavefront obtains the final
             // result
-            for(unsigned int i = WFSIZE >> 1; i > 0; i >>= 1)
+            for(uint32_t i = WFSIZE >> 1; i > 0; i >>= 1)
             {
                 min_col = rocsparse::min(min_col, __shfl_xor(min_col, i));
             }
@@ -302,7 +302,7 @@ namespace rocsparse
     // Compute matrix addition, where each row is processed by a wavefront.
     // Splitting row into several chunks such that we can use shared memory to store whether
     // a column index is populated or not.
-    template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t BLOCKDIM, typename T>
     ROCSPARSE_DEVICE_ILF void
         bsrgeam_wf_per_row_multipass_device(rocsparse_direction dir,
                                             rocsparse_int       mb,
@@ -516,7 +516,7 @@ namespace rocsparse
     // Compute matrix addition, where each row is processed by a block.
     // Splitting row into several chunks such that we can use shared memory to store whether
     // a column index is populated or not.
-    template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t BLOCKDIM, typename T>
     ROCSPARSE_DEVICE_ILF void
         bsrgeam_block_per_row_multipass_device(rocsparse_direction dir,
                                                rocsparse_int       mb,
@@ -726,7 +726,7 @@ namespace rocsparse
                 __syncthreads();
 
                 // Segmented wavefront reduction
-                for(unsigned int j = 1; j < (BLOCKSIZE / (BLOCKDIM * BLOCKDIM)); j <<= 1)
+                for(uint32_t j = 1; j < (BLOCKSIZE / (BLOCKDIM * BLOCKDIM)); j <<= 1)
                 {
                     if(wid >= j)
                     {
@@ -804,7 +804,7 @@ namespace rocsparse
     // Compute matrix addition, where each row is processed by a block.
     // Splitting row into several chunks such that we can use shared memory to store whether
     // a column index is populated or not.
-    template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t BLOCKDIM, typename T>
     ROCSPARSE_DEVICE_ILF void
         bsrgeam_block_per_row_multipass_device2(rocsparse_direction dir,
                                                 rocsparse_int       mb,
@@ -865,7 +865,7 @@ namespace rocsparse
         {
             // Initialize row nnz table and value accumulator
             table = 0;
-            for(unsigned int i = 0; i < BLOCKDIM; i += BLOCKSIZE / BLOCKDIM)
+            for(uint32_t i = 0; i < BLOCKDIM; i += BLOCKSIZE / BLOCKDIM)
             {
                 data[BLOCKDIM * wid + i + lid] = static_cast<T>(0);
             }
@@ -888,7 +888,7 @@ namespace rocsparse
                     table = 1;
 
                     // Initialize with value of A
-                    for(unsigned int i = 0; i < BLOCKDIM; i += BLOCKSIZE / BLOCKDIM)
+                    for(uint32_t i = 0; i < BLOCKDIM; i += BLOCKSIZE / BLOCKDIM)
                     {
                         if((i + lid) < block_dim && wid < block_dim)
                         {
@@ -932,7 +932,7 @@ namespace rocsparse
                     table = 1;
 
                     // Add values of B
-                    for(unsigned int i = 0; i < BLOCKDIM; i += BLOCKSIZE / BLOCKDIM)
+                    for(uint32_t i = 0; i < BLOCKDIM; i += BLOCKSIZE / BLOCKDIM)
                     {
                         if((i + lid) < block_dim && wid < block_dim)
                         {
@@ -969,7 +969,7 @@ namespace rocsparse
             {
                 bsr_col_ind_C[row_begin_C] = chunk_begin + idx_base_C;
 
-                for(unsigned int i = 0; i < BLOCKDIM; i += BLOCKSIZE / BLOCKDIM)
+                for(uint32_t i = 0; i < BLOCKDIM; i += BLOCKSIZE / BLOCKDIM)
                 {
                     if((i + lid) < block_dim && wid < block_dim)
                     {

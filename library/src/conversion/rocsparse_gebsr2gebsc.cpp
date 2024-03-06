@@ -171,9 +171,9 @@ rocsparse_status rocsparse::gebsr2gebsc_template(rocsparse_handle     handle, //
     ROCSPARSE_CHECKARG_ARRAY(14, nnzb, temp_buffer);
 
     // Stream
-    hipStream_t  stream   = handle->stream;
-    unsigned int startbit = 0;
-    unsigned int endbit   = rocsparse::clz(nb);
+    hipStream_t stream   = handle->stream;
+    uint32_t    startbit = 0;
+    uint32_t    endbit   = rocsparse::clz(nb);
 
     // Temporary buffer entry points
     char* ptr = reinterpret_cast<char*>(temp_buffer);

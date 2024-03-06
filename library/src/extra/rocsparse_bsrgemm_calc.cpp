@@ -40,10 +40,10 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              unsigned int HASHSIZE,
-              unsigned int HASHVAL,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t HASHSIZE,
+              uint32_t HASHVAL,
               typename I,
               typename J,
               typename T,
@@ -105,10 +105,10 @@ namespace rocsparse
             add);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int HASHSIZE,
-              unsigned int HASHVAL,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              uint32_t HASHSIZE,
+              uint32_t HASHVAL,
               typename I,
               typename J,
               typename T,
@@ -170,11 +170,11 @@ namespace rocsparse
             add);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WF_SIZE,
-              unsigned int HASHSIZE,
-              unsigned int HASHVAL,
-              unsigned int BLOCKDIM,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t HASHSIZE,
+              uint32_t HASHVAL,
+              uint32_t BLOCKDIM,
               typename I,
               typename J,
               typename T,
@@ -238,10 +238,10 @@ namespace rocsparse
             add);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int HASHSIZE,
-              unsigned int HASHVAL,
-              unsigned int BLOCKDIM,
+    template <uint32_t BLOCKSIZE,
+              uint32_t HASHSIZE,
+              uint32_t HASHVAL,
+              uint32_t BLOCKDIM,
               typename I,
               typename J,
               typename T,
@@ -305,9 +305,9 @@ namespace rocsparse
             add);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int CHUNKSIZE,
-              unsigned int BLOCKDIM,
+    template <uint32_t BLOCKSIZE,
+              uint32_t CHUNKSIZE,
+              uint32_t BLOCKDIM,
               typename I,
               typename J,
               typename T,
@@ -371,9 +371,9 @@ namespace rocsparse
             add);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int CHUNKSIZE,
-              unsigned int BLOCKDIM,
+    template <uint32_t BLOCKSIZE,
+              uint32_t CHUNKSIZE,
+              uint32_t BLOCKDIM,
               typename I,
               typename J,
               typename T,

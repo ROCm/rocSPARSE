@@ -37,7 +37,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename T, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void check_matrix_coo_device(J       m,
                                  J       n,

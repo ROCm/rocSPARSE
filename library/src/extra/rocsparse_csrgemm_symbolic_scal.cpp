@@ -33,7 +33,7 @@
 namespace rocsparse
 {
     // Copy an array
-    template <unsigned int BLOCKSIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrgemm_symbolic_copy(I size,
                                const J* __restrict__ in,

@@ -34,7 +34,7 @@ using namespace rocsparse;
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     rocsparse_status nrminf(rocsparse_handle          handle_,
                             size_t                    nitems_,
                             const T*                  x_,
@@ -42,7 +42,7 @@ namespace rocsparse
                             const floating_data_t<T>* nrm0_,
                             bool                      MX);
 
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     rocsparse_status nrminf_diff(rocsparse_handle          handle_,
                                  size_t                    nitems_,
                                  const T*                  x_,
@@ -58,7 +58,7 @@ namespace
     struct calculator_inverse_diagonal_t
     {
 
-        template <unsigned int BLOCKSIZE, bool CONJ>
+        template <uint32_t BLOCKSIZE, bool CONJ>
         ROCSPARSE_KERNEL(BLOCKSIZE)
         void kernel_inverse_diagonal(J m,
                                      const J* __restrict__ ind,
@@ -112,9 +112,9 @@ namespace
             //
             // Compute inverse of the diagonal.
             //
-            static constexpr unsigned int BLOCKSIZE = 1024;
-            dim3                          blocks((m - 1) / BLOCKSIZE + 1);
-            dim3                          threads(BLOCKSIZE);
+            static constexpr uint32_t BLOCKSIZE = 1024;
+            dim3                      blocks((m - 1) / BLOCKSIZE + 1);
+            dim3                      threads(BLOCKSIZE);
             switch(trans)
             {
             case rocsparse_operation_transpose:
@@ -161,14 +161,14 @@ namespace
     };
 }
 
-template <unsigned int BLOCKSIZE, typename J, typename T>
+template <uint32_t BLOCKSIZE, typename J, typename T>
 ROCSPARSE_KERNEL(BLOCKSIZE)
 void kernel_add_scaled_residual(J m,
                                 const T* __restrict__ r_,
                                 T* __restrict__ y_,
                                 const T* __restrict__ invdiag)
 {
-    const unsigned int tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
+    const uint32_t tid = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
     if(tid < m)
     {
         y_[tid] = y_[tid] + invdiag[tid] * r_[tid];
@@ -201,10 +201,10 @@ rocsparse_status rocsparse::csritsv_solve_template(rocsparse_handle          han
         return rocsparse_status_success;
     }
 
-    rocsparse_csritsv_info        csritsv_info = info->csritsv_info;
-    static constexpr unsigned int BLOCKSIZE    = 1024;
-    dim3                          blocks((m - 1) / BLOCKSIZE + 1);
-    dim3                          threads(BLOCKSIZE);
+    rocsparse_csritsv_info    csritsv_info = info->csritsv_info;
+    static constexpr uint32_t BLOCKSIZE    = 1024;
+    dim3                      blocks((m - 1) / BLOCKSIZE + 1);
+    dim3                      threads(BLOCKSIZE);
 
     //
     // reinitialize zero pivot.

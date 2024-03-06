@@ -31,7 +31,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+    template <uint32_t BLOCKSIZE, typename I, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gemvi_scale_kernel(I m, U scalar_device_host, T* x)
     {
@@ -43,7 +43,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename T, typename U>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, typename I, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gemvi_kernel(I m,
                       I n,

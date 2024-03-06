@@ -39,7 +39,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, typename I, typename T>
     ROCSPARSE_DEVICE_ILF void gemvi_device(I                    m,
                                            I                    n,
                                            T                    alpha,

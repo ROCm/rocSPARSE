@@ -214,10 +214,10 @@ struct _rocsparse_color_info
 
 struct rocsparse_adaptive_info
 {
-    size_t        size{}; // num row blocks
-    void*         row_blocks{};
-    unsigned int* wg_flags{};
-    void*         wg_ids{};
+    size_t    size{}; // num row blocks
+    void*     row_blocks{};
+    uint32_t* wg_flags{};
+    void*     wg_ids{};
 };
 
 struct rocsparse_lrb_info
@@ -226,8 +226,8 @@ struct rocsparse_lrb_info
     void* rows_bins{}; // size of m
     void* n_rows_bins{}; // size of 32
 
-    size_t        size{};
-    unsigned int* wg_flags{};
+    size_t    size{};
+    uint32_t* wg_flags{};
 
     int64_t nRowsBins[32]{}; // host array
 };

@@ -53,8 +53,8 @@ rocsparse_status rocsparse::csr2csc_core(rocsparse_handle     handle,
     // Stream
     hipStream_t stream = handle->stream;
 
-    unsigned int startbit = 0;
-    unsigned int endbit   = rocsparse::clz(n);
+    uint32_t startbit = 0;
+    uint32_t endbit   = rocsparse::clz(n);
 
     // Temporary buffer entry points
     char* ptr = reinterpret_cast<char*>(temp_buffer);

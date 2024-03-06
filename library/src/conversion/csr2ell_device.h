@@ -31,17 +31,17 @@ namespace rocsparse
 {
     // Compute non-zero entries per CSR row and do a block reduction over the maximum
     // Store result in a workspace for final reduction on part2
-    template <unsigned int BLOCKSIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void ell_width_kernel_part1(J m, const I* csr_row_ptr, J* workspace)
     {
-        const unsigned int tid = hipThreadIdx_x;
-        const unsigned int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+        const uint32_t tid = hipThreadIdx_x;
+        const uint32_t gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
         __shared__ J sdata[BLOCKSIZE];
         sdata[tid] = 0;
 
-        for(unsigned int idx = gid; idx < m; idx += hipGridDim_x * BLOCKSIZE)
+        for(uint32_t idx = gid; idx < m; idx += hipGridDim_x * BLOCKSIZE)
         {
             sdata[tid] = rocsparse::max(sdata[tid], J(csr_row_ptr[idx + 1] - csr_row_ptr[idx]));
         }
@@ -57,16 +57,16 @@ namespace rocsparse
     }
 
     // Part2 kernel for final reduction over the maximum CSR nnz row entries
-    template <unsigned int BLOCKSIZE, typename J>
+    template <uint32_t BLOCKSIZE, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void ell_width_kernel_part2(J m, J* workspace)
     {
-        const unsigned int tid = hipThreadIdx_x;
+        const uint32_t tid = hipThreadIdx_x;
 
         __shared__ J sdata[BLOCKSIZE];
         sdata[tid] = 0;
 
-        for(unsigned int i = tid; i < m; i += BLOCKSIZE)
+        for(uint32_t i = tid; i < m; i += BLOCKSIZE)
         {
             sdata[tid] = rocsparse::max(sdata[tid], workspace[i]);
         }
@@ -82,7 +82,7 @@ namespace rocsparse
     }
 
     // CSR to ELL format conversion kernel
-    template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename T, typename I, typename J>
     __device__ void csr2ell_device(J                    m,
                                    const T*             csr_val,
                                    const I*             csr_row_ptr,
@@ -128,7 +128,7 @@ namespace rocsparse
     }
 
     // CSR to ELL format conversion kernel
-    template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename T, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csr2ell_kernel(J                    m,
                         const T*             csr_val,
@@ -151,7 +151,7 @@ namespace rocsparse
                                            ell_idx_base);
     }
     // CSR to ELL format conversion kernel
-    template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename T, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csr2ell_strided_batched_kernel(J                    m,
                                         const T*             csr_val,

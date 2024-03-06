@@ -28,7 +28,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASH, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, uint32_t HASH, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csric0_hash_kernel(rocsparse_int m,
                             const rocsparse_int* __restrict__ csr_row_ptr,
@@ -53,7 +53,7 @@ namespace rocsparse
         rocsparse_int* data  = &sdata[wid * WFSIZE * HASH];
 
         // Initialize hash table with -1
-        for(unsigned int j = lid; j < WFSIZE * HASH; j += WFSIZE)
+        for(uint32_t j = lid; j < WFSIZE * HASH; j += WFSIZE)
         {
             table[j] = -1;
         }
@@ -235,7 +235,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, bool SLEEP, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csric0_binsearch_kernel(rocsparse_int m,
                                  const rocsparse_int* __restrict__ csr_row_ptr,

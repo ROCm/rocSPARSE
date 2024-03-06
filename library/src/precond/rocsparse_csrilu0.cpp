@@ -71,12 +71,7 @@ namespace rocsparse
         return rocsparse_status_success;
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              bool         SLEEP,
-              typename T,
-              typename U,
-              typename V>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, bool SLEEP, typename T, typename U, typename V>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrilu0_binsearch(rocsparse_int        m,
                            const rocsparse_int* csr_row_ptr,
@@ -115,9 +110,9 @@ namespace rocsparse
                                                                       boost_val);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int HASH,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              uint32_t HASH,
               typename T,
               typename U,
               typename V>

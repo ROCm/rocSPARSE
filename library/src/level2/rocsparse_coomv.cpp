@@ -49,7 +49,7 @@ inline bool rocsparse::enum_utils::is_invalid(rocsparse_coomv_alg value_)
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename I, typename Y, typename U>
+    template <uint32_t BLOCKSIZE, typename I, typename Y, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void coomv_scale(I size, U beta_device_host, Y* __restrict__ data)
     {
@@ -60,7 +60,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
+    template <uint32_t BLOCKSIZE,
               typename I,
               typename A,
               typename X,
@@ -97,7 +97,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename Y, typename T, typename U>
+    template <uint32_t BLOCKSIZE, typename I, typename Y, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void coomvn_segmented_loops_reduce(I nblocks,
                                        U alpha_device_host,
@@ -113,8 +113,8 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int LOOPS,
+    template <uint32_t BLOCKSIZE,
+              uint32_t LOOPS,
               typename I,
               typename A,
               typename X,
@@ -138,7 +138,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename A, typename X, typename Y, typename U>
+    template <uint32_t BLOCKSIZE, typename I, typename A, typename X, typename Y, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void coomvt_kernel(rocsparse_operation trans,
                        int64_t             nnz,

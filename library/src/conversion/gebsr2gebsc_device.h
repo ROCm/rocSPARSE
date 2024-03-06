@@ -28,7 +28,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gebsr2gebsc_permute_kernel(rocsparse_int        nnzb,
                                     rocsparse_int        linsize_block,

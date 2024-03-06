@@ -35,7 +35,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+    template <uint32_t BLOCKSIZE, typename I, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void bsrgemm_copy_scale(I size,
                             U beta_device_host,

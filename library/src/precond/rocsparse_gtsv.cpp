@@ -74,7 +74,7 @@ rocsparse_status rocsparse::gtsv_buffer_size_template(rocsparse_handle handle,
         return rocsparse_status_success;
     }
 
-    constexpr unsigned int BLOCKSIZE = 256;
+    constexpr uint32_t BLOCKSIZE = 256;
 
     rocsparse_int block_dim = 2;
     rocsparse_int m_pad     = ((m - 1) / (block_dim * BLOCKSIZE) + 1) * (block_dim * BLOCKSIZE);
@@ -112,7 +112,7 @@ rocsparse_status rocsparse::gtsv_buffer_size_template(rocsparse_handle handle,
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
+    template <uint32_t BLOCKSIZE, uint32_t BLOCKDIM, typename T>
     static rocsparse_status gtsv_spike_solver_template(rocsparse_handle handle,
                                                        rocsparse_int    m,
                                                        rocsparse_int    n,
@@ -537,7 +537,7 @@ rocsparse_status rocsparse::gtsv_template(rocsparse_handle handle,
         return rocsparse_status_success;
     }
 
-    constexpr unsigned int BLOCKSIZE = 256;
+    constexpr uint32_t BLOCKSIZE = 256;
 
     rocsparse_int block_dim = 2;
     rocsparse_int m_pad     = ((m - 1) / (block_dim * BLOCKSIZE) + 1) * (block_dim * BLOCKSIZE);

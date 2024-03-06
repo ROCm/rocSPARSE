@@ -28,10 +28,10 @@
 
 namespace rocsparse
 {
-    template <unsigned int WF_SIZE,
-              unsigned int LOOPS,
-              unsigned int COLS,
-              bool         NT,
+    template <uint32_t WF_SIZE,
+              uint32_t LOOPS,
+              uint32_t COLS,
+              bool     NT,
               typename T,
               typename I,
               typename A,
@@ -101,7 +101,7 @@ namespace rocsparse
             {
                 if(trans_B == rocsparse_operation_conjugate_transpose)
                 {
-                    for(unsigned int p = 0; p < COLS; p++)
+                    for(uint32_t p = 0; p < COLS; p++)
                     {
                         val[p] = v
                                  * rocsparse::conj(
@@ -110,7 +110,7 @@ namespace rocsparse
                 }
                 else
                 {
-                    for(unsigned int p = 0; p < COLS; p++)
+                    for(uint32_t p = 0; p < COLS; p++)
                     {
                         val[p] = v * dense_B[c * ldb + (col_offset + p) + batch_stride_B * batch];
                     }
@@ -120,7 +120,7 @@ namespace rocsparse
             {
                 if(trans_B == rocsparse_operation_conjugate_transpose)
                 {
-                    for(unsigned int p = 0; p < COLS; p++)
+                    for(uint32_t p = 0; p < COLS; p++)
                     {
                         val[p] = v
                                  * rocsparse::conj(
@@ -129,7 +129,7 @@ namespace rocsparse
                 }
                 else
                 {
-                    for(unsigned int p = 0; p < COLS; p++)
+                    for(uint32_t p = 0; p < COLS; p++)
                     {
                         val[p] = v * dense_B[(col_offset + p) * ldb + c + batch_stride_B * batch];
                     }
@@ -144,7 +144,7 @@ namespace rocsparse
                 const I prevrow = shared_row[WF_SIZE - 1];
                 if(row == prevrow)
                 {
-                    for(unsigned int p = 0; p < COLS; p++)
+                    for(uint32_t p = 0; p < COLS; p++)
                     {
                         val[p] += shared_val[p][WF_SIZE - 1];
                     }
@@ -153,7 +153,7 @@ namespace rocsparse
                 {
                     if(order_C == rocsparse_order_column)
                     {
-                        for(unsigned int p = 0; p < COLS; p++)
+                        for(uint32_t p = 0; p < COLS; p++)
                         {
                             rocsparse::atomic_add(
                                 &dense_C[prevrow + (col_offset + p) * ldc + batch_stride_C * batch],
@@ -162,7 +162,7 @@ namespace rocsparse
                     }
                     else
                     {
-                        for(unsigned int p = 0; p < COLS; p++)
+                        for(uint32_t p = 0; p < COLS; p++)
                         {
                             rocsparse::atomic_add(
                                 &dense_C[(col_offset + p) + prevrow * ldc + batch_stride_C * batch],
@@ -174,7 +174,7 @@ namespace rocsparse
 
             __syncthreads();
 
-            for(unsigned int p = 0; p < COLS; p++)
+            for(uint32_t p = 0; p < COLS; p++)
             {
                 shared_val[p][lid] = val[p];
             }
@@ -184,13 +184,13 @@ namespace rocsparse
 
 #pragma unroll
             // Segmented wavefront reduction
-            for(unsigned int j = 1; j < WF_SIZE; j <<= 1)
+            for(uint32_t j = 1; j < WF_SIZE; j <<= 1)
             {
                 if(lid >= j)
                 {
                     if(row == shared_row[lid - j])
                     {
-                        for(unsigned int p = 0; p < COLS; p++)
+                        for(uint32_t p = 0; p < COLS; p++)
                         {
                             val[p] += shared_val[p][lid - j];
                         }
@@ -198,7 +198,7 @@ namespace rocsparse
                 }
                 __syncthreads();
 
-                for(unsigned int p = 0; p < COLS; p++)
+                for(uint32_t p = 0; p < COLS; p++)
                 {
                     shared_val[p][lid] = val[p];
                 }
@@ -214,7 +214,7 @@ namespace rocsparse
                 {
                     if(order_C == rocsparse_order_column)
                     {
-                        for(unsigned int p = 0; p < COLS; p++)
+                        for(uint32_t p = 0; p < COLS; p++)
                         {
                             rocsparse::atomic_add(
                                 &dense_C[row + (col_offset + p) * ldc + batch_stride_C * batch],
@@ -223,7 +223,7 @@ namespace rocsparse
                     }
                     else
                     {
-                        for(unsigned int p = 0; p < COLS; p++)
+                        for(uint32_t p = 0; p < COLS; p++)
                         {
                             rocsparse::atomic_add(
                                 &dense_C[(col_offset + p) + row * ldc + batch_stride_C * batch],
@@ -239,7 +239,7 @@ namespace rocsparse
         {
             if(order_C == rocsparse_order_column)
             {
-                for(unsigned int p = 0; p < COLS; p++)
+                for(uint32_t p = 0; p < COLS; p++)
                 {
                     rocsparse::atomic_add(
                         &dense_C[row + (col_offset + p) * ldc + batch_stride_C * batch], val[p]);
@@ -247,7 +247,7 @@ namespace rocsparse
             }
             else
             {
-                for(unsigned int p = 0; p < COLS; p++)
+                for(uint32_t p = 0; p < COLS; p++)
                 {
                     rocsparse::atomic_add(
                         &dense_C[(col_offset + p) + row * ldc + batch_stride_C * batch], val[p]);
@@ -256,10 +256,10 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int WF_SIZE,
-              unsigned int LOOPS,
-              unsigned int COLS,
-              bool         NT,
+    template <uint32_t WF_SIZE,
+              uint32_t LOOPS,
+              uint32_t COLS,
+              bool     NT,
               typename T,
               typename I,
               typename A,

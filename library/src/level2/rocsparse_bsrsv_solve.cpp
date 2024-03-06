@@ -194,8 +194,8 @@ namespace rocsparse
                                        descr->diag_type,                           \
                                        dir)
 
-    template <unsigned int  BLOCKSIZE,
-              unsigned int  WFSIZE,
+    template <uint32_t      BLOCKSIZE,
+              uint32_t      WFSIZE,
               rocsparse_int BSRDIM,
               bool          SLEEP,
               typename T,
@@ -233,8 +233,8 @@ namespace rocsparse
                                                                                dir);
     }
 
-    template <unsigned int  BLOCKSIZE,
-              unsigned int  WFSIZE,
+    template <uint32_t      BLOCKSIZE,
+              uint32_t      WFSIZE,
               rocsparse_int BSRDIM,
               bool          SLEEP,
               typename T,
@@ -272,7 +272,7 @@ namespace rocsparse
                                                                                dir);
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, bool SLEEP, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void bsrsv_lower_general(rocsparse_int mb,
                              U             alpha_device_host,
@@ -306,7 +306,7 @@ namespace rocsparse
                                                                         dir);
     }
 
-    template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
+    template <uint32_t BLOCKSIZE, uint32_t WFSIZE, bool SLEEP, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void bsrsv_upper_general(rocsparse_int mb,
                              U             alpha_device_host,

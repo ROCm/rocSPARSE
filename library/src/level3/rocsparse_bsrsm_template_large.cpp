@@ -61,7 +61,7 @@ namespace rocsparse
         LAUNCH_BSRSM_GTHR_DIM(bsize, 64, 8);  \
     }
 
-    template <unsigned int BLOCKSIZE, typename T, typename U>
+    template <uint32_t BLOCKSIZE, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void bsrsm_copy_scale(rocsparse_int m,
                           rocsparse_int n,
@@ -76,7 +76,7 @@ namespace rocsparse
         rocsparse::bsrsm_copy_scale_device(m, n, alpha, B, ldb, X, ldx);
     }
 
-    template <unsigned int DIM_X, unsigned int DIM_Y, typename T, typename U>
+    template <uint32_t DIM_X, uint32_t DIM_Y, typename T, typename U>
     ROCSPARSE_KERNEL(DIM_X* DIM_Y)
     void bsrsm_transpose(rocsparse_int m,
                          rocsparse_int n,
@@ -142,7 +142,7 @@ namespace rocsparse
         ptr += 256;
 
         // 16 columns per block seem to work very well
-        static constexpr unsigned int NCOL = 16;
+        static constexpr uint32_t NCOL = 16;
 
         const int narrays = (nrhs - 1) / NCOL + 1;
 
@@ -264,7 +264,8 @@ namespace rocsparse
         else
         {
             // Select tuned kernel
-            unsigned int nbsr = rocsparse::max(4U, fnp2(block_dim));
+
+            uint32_t nbsr = rocsparse::max(4U, fnp2(block_dim));
 
             while(nbsr > wfSize)
             {

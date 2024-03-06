@@ -32,7 +32,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void bsrxmv_scale_array(I mb,
                             I size_of_mask,
@@ -67,7 +67,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void bsrxmv_scale_array(I mb,
                             I size_of_mask,

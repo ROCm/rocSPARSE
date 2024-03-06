@@ -28,7 +28,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void coo2dense_kernel(I                    m,
                           I                    n,
@@ -62,7 +62,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void coo2dense_aos_kernel(I                    m,
                               I                    n,

@@ -36,7 +36,7 @@ namespace rocsparse
 {
     // Hash operation to insert key into hash table
     // Returns true if key has been added
-    template <unsigned int HASHVAL, unsigned int HASHSIZE, typename I>
+    template <uint32_t HASHVAL, uint32_t HASHSIZE, typename I>
     ROCSPARSE_DEVICE_ILF bool insert_key(I key, I* __restrict__ table)
     {
         // Compute hash
@@ -71,7 +71,7 @@ namespace rocsparse
 
     // Hash operation to insert key into hash table
     // Returns true if key has been added
-    template <unsigned int HASHVAL, unsigned int HASHSIZE, typename I, typename J>
+    template <uint32_t HASHVAL, uint32_t HASHSIZE, typename I, typename J>
     ROCSPARSE_DEVICE_ILF bool
         insert_key(J key, I* __restrict__ table, I* __restrict__ local_idxs, I local_idx)
     {
@@ -100,7 +100,7 @@ namespace rocsparse
         return false;
     }
     // Hash operation to insert pair into hash table
-    template <unsigned int HASHVAL, unsigned int HASHSIZE, typename I, typename T>
+    template <uint32_t HASHVAL, uint32_t HASHSIZE, typename I, typename T>
     ROCSPARSE_DEVICE_ILF void
         insert_pair(I key, T val, I* __restrict__ table, T* __restrict__ data, I empty)
     {
@@ -134,10 +134,10 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int HASHSIZE,
-              unsigned int HASHVAL,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              uint32_t HASHSIZE,
+              uint32_t HASHVAL,
               typename I,
               typename J,
               typename T>
@@ -185,7 +185,7 @@ namespace rocsparse
         T* data  = &sdata[wid * HASHSIZE];
 
         // Initialize hash table
-        for(unsigned int i = lid; i < HASHSIZE; i += WFSIZE)
+        for(uint32_t i = lid; i < HASHSIZE; i += WFSIZE)
         {
             table[i] = nk;
             data[i]  = static_cast<T>(0);
@@ -253,7 +253,7 @@ namespace rocsparse
         I row_begin_C = csr_row_ptr_C[row] - idx_base_C;
 
         // Loop over hash table
-        for(unsigned int i = lid; i < HASHSIZE; i += WFSIZE)
+        for(uint32_t i = lid; i < HASHSIZE; i += WFSIZE)
         {
             // Get column from hash table to fill it into C
             J col_C = table[i];
@@ -268,7 +268,7 @@ namespace rocsparse
             I idx_C = row_begin_C;
 
             // Initialize index into hash table
-            unsigned int hash_idx = 0;
+            uint32_t hash_idx = 0;
 
             // Loop through hash table to find the (sorted) index into C for the
             // current column index
@@ -293,10 +293,10 @@ namespace rocsparse
     }
 
     // Compute column entries and accumulate values, where each row is processed by a single block
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int HASHSIZE,
-              unsigned int HASHVAL,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              uint32_t HASHSIZE,
+              uint32_t HASHVAL,
               typename I,
               typename J,
               typename T>
@@ -335,7 +335,7 @@ namespace rocsparse
         __shared__ T data[HASHSIZE];
 
         // Initialize hash table
-        for(unsigned int i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
+        for(uint32_t i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
         {
             table[i] = nk;
             data[i]  = static_cast<T>(0);
@@ -401,7 +401,7 @@ namespace rocsparse
         J hash_offset = 0;
 
         // Loop over the hash table and do the compression
-        for(unsigned int i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
+        for(uint32_t i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
         {
             // Get column and value from hash table
             J col_C = table[i];
@@ -412,7 +412,7 @@ namespace rocsparse
 
             // Each thread obtains a bit mask of all wavefront-wide non-zero entries
             // to compute its wavefront-wide non-zero offset
-            unsigned long long mask = __ballot(has_nnz);
+            uint64_t mask = __ballot(has_nnz);
 
             // The number of bits set to 1 is the amount of wavefront-wide non-zeros
             int nnz = __popcll(mask);
@@ -420,8 +420,7 @@ namespace rocsparse
             // Obtain the lane mask, where all bits lesser equal the lane id are set to 1
             // e.g. for lane id 7, lanemask_le = 0b11111111
             // HIP implements only __lanemask_lt() unfortunately ...
-            unsigned long long lanemask_le
-                = UINT64_MAX >> (sizeof(unsigned long long) * CHAR_BIT - (__lane_id() + 1));
+            uint64_t lanemask_le = UINT64_MAX >> (sizeof(uint64_t) * CHAR_BIT - (__lane_id() + 1));
 
             // Compute the intra wavefront offset of the lane id by bitwise AND with the lane mask
             int offset = __popcll(lanemask_le & mask);
@@ -437,7 +436,7 @@ namespace rocsparse
             __syncthreads();
 
             // Each thread accumulates the offset of all previous wavefronts to obtain its offset
-            for(unsigned int j = 1; j < BLOCKSIZE / warpSize; ++j)
+            for(uint32_t j = 1; j < BLOCKSIZE / warpSize; ++j)
             {
                 if(hipThreadIdx_x >= j * warpSize)
                 {
@@ -505,9 +504,9 @@ namespace rocsparse
     // block. Splitting row into several chunks such that we can use shared memory to store
     // whether a column index is populated or not. Each row has at least 4097 non-zero
     // entries to compute.
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int CHUNKSIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              uint32_t CHUNKSIZE,
               typename I,
               typename J,
               typename T>
@@ -569,7 +568,7 @@ namespace rocsparse
         while(chunk_begin < n)
         {
             // Initialize row nnz table and accumulator
-            for(unsigned int i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
+            for(uint32_t i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
             {
                 table[i] = 0;
                 data[i]  = static_cast<T>(0);
@@ -699,7 +698,7 @@ namespace rocsparse
             // "Pseudo compress" the table array such that we can copy the values over into C
             // In fact, we do an exclusive scan to obtain the index where each non-zero has
             // to be copied to
-            for(unsigned int i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
+            for(uint32_t i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
             {
                 // Each thread loads its marker and value to know whether it has to process a
                 // non-zero entry or not
@@ -708,7 +707,7 @@ namespace rocsparse
 
                 // Each thread obtains a bit mask of all wavefront-wide non-zero entries
                 // to compute its wavefront-wide non-zero offset in C
-                unsigned long long mask = __ballot(has_nnz);
+                uint64_t mask = __ballot(has_nnz);
 
                 // The number of bits set to 1 is the amount of wavefront-wide non-zeros
                 int nnz = __popcll(mask);
@@ -716,8 +715,8 @@ namespace rocsparse
                 // Obtain the lane mask, where all bits lesser equal the lane id are set to 1
                 // e.g. for lane id 7, lanemask_le = 0b11111111
                 // HIP implements only __lanemask_lt() unfortunately ...
-                unsigned long long lanemask_le
-                    = UINT64_MAX >> (sizeof(unsigned long long) * CHAR_BIT - (__lane_id() + 1));
+                uint64_t lanemask_le
+                    = UINT64_MAX >> (sizeof(uint64_t) * CHAR_BIT - (__lane_id() + 1));
 
                 // Compute the intra wavefront offset of the lane id by bitwise AND with the lane mask
                 int offset = __popcll(lanemask_le & mask);
@@ -734,7 +733,7 @@ namespace rocsparse
 
                 // Each thread accumulates the offset of all previous wavefronts to obtain its
                 // offset into C
-                for(unsigned int j = 1; j < BLOCKSIZE / warpSize; ++j)
+                for(uint32_t j = 1; j < BLOCKSIZE / warpSize; ++j)
                 {
                     if(hipThreadIdx_x >= j * warpSize)
                     {
@@ -789,10 +788,10 @@ namespace rocsparse
         return (xp) ? *xp : static_cast<T>(0);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int HASHSIZE,
-              unsigned int HASHVAL,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              uint32_t HASHSIZE,
+              uint32_t HASHVAL,
               typename I,
               typename J,
               typename T,
@@ -852,10 +851,10 @@ namespace rocsparse
             add);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int HASHSIZE,
-              unsigned int HASHVAL,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              uint32_t HASHSIZE,
+              uint32_t HASHVAL,
               typename I,
               typename J,
               typename T,
@@ -913,9 +912,9 @@ namespace rocsparse
             add);
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
-              unsigned int CHUNKSIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
+              uint32_t CHUNKSIZE,
               typename I,
               typename J,
               typename T,

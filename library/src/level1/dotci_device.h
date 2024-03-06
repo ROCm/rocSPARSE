@@ -28,7 +28,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename I, typename X, typename Y, typename T>
+    template <uint32_t BLOCKSIZE, typename I, typename X, typename Y, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void dotci_kernel_part1(I                    nnz,
                             const X*             x_val,
@@ -60,7 +60,7 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE, typename T>
+    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void dotci_kernel_part2(T* workspace, T* result)
     {

@@ -336,8 +336,8 @@ rocsparse_status
     size_t temp_storage_size_bytes_sort = 0;
     size_t temp_storage_size_bytes_scan = 0;
 
-    unsigned int startbit = 0;
-    unsigned int endbit   = 8 * sizeof(T);
+    uint32_t startbit = 0;
+    uint32_t endbit   = 8 * sizeof(T);
     RETURN_IF_HIP_ERROR(rocprim::radix_sort_keys(nullptr,
                                                  temp_storage_size_bytes_sort,
                                                  output,

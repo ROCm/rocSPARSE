@@ -34,7 +34,7 @@
 
 namespace rocsparse
 {
-    template <unsigned int        BLOCKSIZE,
+    template <uint32_t            BLOCKSIZE,
               rocsparse_diag_type FDIAG,
               rocsparse_diag_type SDIAG,
               typename T,
@@ -220,12 +220,12 @@ rocsparse_status rocsparse::csxsldu_compute_template(rocsparse_handle handle_,
                                                      //
                                                      void* buffer_)
 {
-    static constexpr unsigned int nthreads_per_block = 1024;
-    J                             size               = (dir_ == rocsparse_direction_row) ? m_ : n_;
-    J                             sizet              = (dir_ == rocsparse_direction_row) ? n_ : m_;
-    J                             nblocks            = (size - 1) / nthreads_per_block + 1;
-    dim3                          blocks(nblocks);
-    dim3                          threads(nthreads_per_block);
+    static constexpr uint32_t nthreads_per_block = 1024;
+    J                         size               = (dir_ == rocsparse_direction_row) ? m_ : n_;
+    J                         sizet              = (dir_ == rocsparse_direction_row) ? n_ : m_;
+    J                         nblocks            = (size - 1) / nthreads_per_block + 1;
+    dim3                      blocks(nblocks);
+    dim3                      threads(nthreads_per_block);
 
     I* buffer = (I*)buffer_;
     I* lptr   = (ldir_ != dir_) ? buffer : lptr_;

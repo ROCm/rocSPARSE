@@ -222,8 +222,8 @@ rocsparse_status rocsparse::coosort_by_row_template(rocsparse_handle handle,
     // Stream
     hipStream_t stream = handle->stream;
 
-    unsigned int startbit = 0;
-    unsigned int endbit   = rocsparse::clz(m);
+    uint32_t startbit = 0;
+    uint32_t endbit   = rocsparse::clz(m);
 
     // Temporary buffer entry points
     char* ptr = reinterpret_cast<char*>(temp_buffer);

@@ -67,11 +67,11 @@ namespace rocsparse
                 const floating_data_t<T>* __restrict__ nrm0)
     {
 
-        static constexpr unsigned int nid  = BLOCKSIZE / WFSIZE;
-        const J                       lid  = hipThreadIdx_x & (WFSIZE - 1);
-        const J                       wid  = hipThreadIdx_x / WFSIZE;
-        const J                       row0 = BLOCKSIZE * hipBlockIdx_x + wid;
-        J                             iter = 0;
+        static constexpr uint32_t nid  = BLOCKSIZE / WFSIZE;
+        const J                   lid  = hipThreadIdx_x & (WFSIZE - 1);
+        const J                   wid  = hipThreadIdx_x / WFSIZE;
+        const J                   row0 = BLOCKSIZE * hipBlockIdx_x + wid;
+        J                         iter = 0;
         floating_data_t<T> nrminf = floating_data_t<T>(0), nrminf_residual = floating_data_t<T>(0);
         {
             __shared__ floating_data_t<T> sdata[BLOCKSIZE / WFSIZE];
@@ -349,8 +349,8 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
               typename T,
               typename I,
               typename J,
@@ -361,7 +361,7 @@ namespace rocsparse
             (rocsparse::kernel<BLOCKSIZE, WFSIZE, T, I, J>), blocks_, threads_, 0, stream_, p...);
     }
 
-    template <unsigned int BLOCKSIZE, typename T, typename I, typename J, typename... P>
+    template <uint32_t BLOCKSIZE, typename T, typename I, typename J, typename... P>
     static void
         kernel_dispatch(J m_, J mean_nnz_per_row_, int wavefront_size, hipStream_t stream_, P... p)
     {
@@ -432,10 +432,10 @@ namespace rocsparse
                         T* __restrict__ dval0_,
                         T* __restrict__ dval_)
     {
-        static constexpr unsigned int nid = BLOCKSIZE / WFSIZE;
-        const J                       lid = hipThreadIdx_x & (WFSIZE - 1);
-        const J                       wid = hipThreadIdx_x / WFSIZE;
-        const J                       row = nid * hipBlockIdx_x + wid;
+        static constexpr uint32_t nid = BLOCKSIZE / WFSIZE;
+        const J                   lid = hipThreadIdx_x & (WFSIZE - 1);
+        const J                   wid = hipThreadIdx_x / WFSIZE;
+        const J                   row = nid * hipBlockIdx_x + wid;
         if(row < m_)
         {
             for(J iter = 0; iter < niter_; ++iter)
@@ -521,8 +521,8 @@ namespace rocsparse
         }
     }
 
-    template <unsigned int BLOCKSIZE,
-              unsigned int WFSIZE,
+    template <uint32_t BLOCKSIZE,
+              uint32_t WFSIZE,
               typename T,
               typename I,
               typename J,
@@ -537,7 +537,7 @@ namespace rocsparse
                                           p...);
     }
 
-    template <unsigned int BLOCKSIZE, typename T, typename I, typename J, typename... P>
+    template <uint32_t BLOCKSIZE, typename T, typename I, typename J, typename... P>
     static void kernel_freerun_dispatch(
         J m_, J mean_nnz_per_row_, int wavefront_size, hipStream_t stream_, P... p)
     {

@@ -30,14 +30,14 @@
 
 namespace rocsparse
 {
-    template <unsigned int BLOCKSIZE, typename I>
+    template <uint32_t BLOCKSIZE, typename I>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void ell2csr_index_base(I* __restrict__ nnz)
     {
         --(*nnz);
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void ell2csr_nnz_per_row(J m,
                              J n,
@@ -77,7 +77,7 @@ namespace rocsparse
         csr_row_ptr[ai + 1] = nnz;
     }
 
-    template <unsigned int BLOCKSIZE, typename T, typename I, typename J>
+    template <uint32_t BLOCKSIZE, typename T, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void ell2csr_fill(J m,
                       J n,
