@@ -33,8 +33,6 @@
 
 #include <hip/hip_runtime.h>
 
-using namespace rocsparse;
-
 namespace rocsparse
 {
     template <typename T, typename U>
@@ -416,7 +414,7 @@ rocsparse_status rocsparse::gebsrmv_template(rocsparse_handle          handle, /
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmv_template(handle,
                                                             trans,
-                                                            rocsparse_csrmv_alg_stream,
+                                                            rocsparse::csrmv_alg_stream,
                                                             mb,
                                                             nb,
                                                             nnzb,

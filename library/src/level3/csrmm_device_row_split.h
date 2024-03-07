@@ -78,13 +78,13 @@ namespace rocsparse
         for(I j = row_start + lid; j < row_end; j += WF_SIZE)
         {
             const J col = csr_col_ind[j] - idx_base;
-            const T val = conj_val(csr_val[j], conj_A);
+            const T val = rocsparse::conj_val(csr_val[j], conj_A);
 
             for(uint32_t p = 0; p < LOOPS; p++)
             {
                 sum[p] = rocsparse::fma<T>(
                     val,
-                    conj_val(rocsparse::ldg(dense_B + col + (colB + p) * ldb), conj_B),
+                    rocsparse::conj_val(rocsparse::ldg(dense_B + col + (colB + p) * ldb), conj_B),
                     sum[p]);
             }
         }
@@ -200,9 +200,10 @@ namespace rocsparse
                           ? (ldb * (rocsparse::nontemporal_load(csr_col_ind + k) - idx_base))
                           : 0;
 
-                const T val = (k < row_end)
-                                  ? conj_val(rocsparse::nontemporal_load(csr_val + k), conj_A)
-                                  : static_cast<T>(0);
+                const T val
+                    = (k < row_end)
+                          ? rocsparse::conj_val(rocsparse::nontemporal_load(csr_val + k), conj_A)
+                          : static_cast<T>(0);
 
                 for(uint32_t i = 0; i < WF_SIZE; ++i)
                 {
@@ -213,7 +214,8 @@ namespace rocsparse
                     {
                         sum[p] = rocsparse::fma<T>(
                             v,
-                            conj_val(rocsparse::ldg(dense_B + colB + p * WF_SIZE + c), conj_B),
+                            rocsparse::conj_val(rocsparse::ldg(dense_B + colB + p * WF_SIZE + c),
+                                                conj_B),
                             sum[p]);
                     }
                 }
@@ -315,19 +317,20 @@ namespace rocsparse
                     = (k < row_end)
                           ? (ldb * (rocsparse::nontemporal_load(csr_col_ind + k) - idx_base))
                           : 0;
-                const T val = (k < row_end)
-                                  ? conj_val(rocsparse::nontemporal_load(csr_val + k), conj_A)
-                                  : static_cast<T>(0);
+                const T val
+                    = (k < row_end)
+                          ? rocsparse::conj_val(rocsparse::nontemporal_load(csr_val + k), conj_A)
+                          : static_cast<T>(0);
 
                 for(uint32_t i = 0; i < WF_SIZE; ++i)
                 {
                     const T       v = rocsparse::shfl(val, i, WF_SIZE);
                     const int64_t c = __shfl(col, i, WF_SIZE);
-                    sum             = rocsparse::fma<T>(
-                        v,
-                        (colB < ncol) ? conj_val(rocsparse::ldg(dense_B + colB + c), conj_B)
-                                                  : static_cast<T>(0),
-                        sum);
+                    sum             = rocsparse::fma<T>(v,
+                                            (colB < ncol) ? rocsparse::conj_val(
+                                                rocsparse::ldg(dense_B + colB + c), conj_B)
+                                                                      : static_cast<T>(0),
+                                            sum);
                 }
             }
 

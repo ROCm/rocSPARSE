@@ -33,7 +33,7 @@ namespace rocsparse
     template <typename I, typename J, typename A>
     rocsparse_status cscmv_analysis_template(rocsparse_handle          handle,
                                              rocsparse_operation       trans,
-                                             rocsparse_csrmv_alg       alg,
+                                             rocsparse::csrmv_alg      alg,
                                              J                         m,
                                              J                         n,
                                              I                         nnz,
@@ -46,7 +46,7 @@ namespace rocsparse
     template <typename T, typename I, typename J, typename A, typename X, typename Y>
     rocsparse_status cscmv_template(rocsparse_handle          handle,
                                     rocsparse_operation       trans,
-                                    rocsparse_csrmv_alg       alg,
+                                    rocsparse::csrmv_alg      alg,
                                     J                         m,
                                     J                         n,
                                     I                         nnz,

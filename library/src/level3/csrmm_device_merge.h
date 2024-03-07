@@ -93,7 +93,8 @@ namespace rocsparse
             row_ind = left;
             col_ind = rocsparse::nontemporal_load(&csr_col_ind[BLOCKSIZE * bid + tid]) - idx_base;
             val     = alpha
-                  * conj_val(rocsparse::nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]), conj_A);
+                  * rocsparse::conj_val(
+                      rocsparse::nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]), conj_A);
         }
 
         shared_row[tid] = row_ind;
@@ -109,11 +110,11 @@ namespace rocsparse
 
                 if(!TRANSB)
                 {
-                    valB[i] = v * conj_val(dense_B[c + ldb * (colB + lid)], conj_B);
+                    valB[i] = v * rocsparse::conj_val(dense_B[c + ldb * (colB + lid)], conj_B);
                 }
                 else
                 {
-                    valB[i] = v * conj_val(dense_B[ldb * c + colB + lid], conj_B);
+                    valB[i] = v * rocsparse::conj_val(dense_B[ldb * c + colB + lid], conj_B);
                 }
             }
 
@@ -249,7 +250,8 @@ namespace rocsparse
             row_ind = left;
             col_ind = rocsparse::nontemporal_load(&csr_col_ind[BLOCKSIZE * bid + tid]) - idx_base;
             val     = alpha
-                  * conj_val(rocsparse::nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]), conj_A);
+                  * rocsparse::conj_val(
+                      rocsparse::nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]), conj_A);
         }
 
         const J colB = offset;
@@ -262,13 +264,15 @@ namespace rocsparse
 
             if(!TRANSB)
             {
-                valB[i] = (colB + lid) < N ? v * conj_val(dense_B[c + ldb * (colB + lid)], conj_B)
-                                           : static_cast<T>(0);
+                valB[i] = (colB + lid) < N
+                              ? v * rocsparse::conj_val(dense_B[c + ldb * (colB + lid)], conj_B)
+                              : static_cast<T>(0);
             }
             else
             {
-                valB[i] = (colB + lid) < N ? v * conj_val(dense_B[ldb * c + (colB + lid)], conj_B)
-                                           : static_cast<T>(0);
+                valB[i] = (colB + lid) < N
+                              ? v * rocsparse::conj_val(dense_B[ldb * c + (colB + lid)], conj_B)
+                              : static_cast<T>(0);
             }
         }
 
@@ -550,7 +554,8 @@ namespace rocsparse
 
             row = left;
             col = rocsparse::nontemporal_load(&csr_col_ind[BLOCKSIZE * bid + tid]) - idx_base;
-            val = conj_val(rocsparse::nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]), conj_A);
+            val = rocsparse::conj_val(rocsparse::nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]),
+                                      conj_A);
         }
 
         for(J l = 0; l < ncol; l += WF_SIZE * LOOPS)
@@ -600,7 +605,9 @@ namespace rocsparse
                     for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         sum[p] = rocsparse::fma<T>(
-                            v, conj_val(dense_B[c * ldb + colB + p * WF_SIZE], conj_B), sum[p]);
+                            v,
+                            rocsparse::conj_val(dense_B[c * ldb + colB + p * WF_SIZE], conj_B),
+                            sum[p]);
                     }
                 }
                 else
@@ -608,7 +615,9 @@ namespace rocsparse
                     for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         sum[p] = rocsparse::fma<T>(
-                            v, conj_val(dense_B[(colB + p * WF_SIZE) * ldb + c], conj_B), sum[p]);
+                            v,
+                            rocsparse::conj_val(dense_B[(colB + p * WF_SIZE) * ldb + c], conj_B),
+                            sum[p]);
                     }
                 }
             }
@@ -693,7 +702,8 @@ namespace rocsparse
 
             row = left;
             col = rocsparse::nontemporal_load(&csr_col_ind[BLOCKSIZE * bid + tid]) - idx_base;
-            val = conj_val(rocsparse::nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]), conj_A);
+            val = rocsparse::conj_val(rocsparse::nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]),
+                                      conj_A);
         }
 
         for(J l = ncol_offset; l < N; l += WF_SIZE)
@@ -732,11 +742,13 @@ namespace rocsparse
                 {
                     if(TRANSB)
                     {
-                        sum = rocsparse::fma<T>(v, conj_val(dense_B[c * ldb + colB], conj_B), sum);
+                        sum = rocsparse::fma<T>(
+                            v, rocsparse::conj_val(dense_B[c * ldb + colB], conj_B), sum);
                     }
                     else
                     {
-                        sum = rocsparse::fma<T>(v, conj_val(dense_B[colB * ldb + c], conj_B), sum);
+                        sum = rocsparse::fma<T>(
+                            v, rocsparse::conj_val(dense_B[colB * ldb + c], conj_B), sum);
                     }
                 }
             }

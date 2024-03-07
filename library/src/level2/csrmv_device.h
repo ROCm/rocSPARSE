@@ -65,7 +65,7 @@ namespace rocsparse
             // Loop over non-zero elements
             for(I j = row_start + lid; j < row_end; j += WF_SIZE)
             {
-                sum = rocsparse::fma<T>(alpha * conj_val(csr_val[j], conj),
+                sum = rocsparse::fma<T>(alpha * rocsparse::conj_val(csr_val[j], conj),
                                         rocsparse::ldg(x + csr_col_ind[j] - idx_base),
                                         sum);
             }
@@ -134,7 +134,7 @@ namespace rocsparse
             for(I j = row_begin + lid; j < row_end; j += WF_SIZE)
             {
                 const J col = csr_col_ind[j] - idx_base;
-                const A val = conj_val(csr_val[j], conj);
+                const A val = rocsparse::conj_val(csr_val[j], conj);
 
                 rocsparse::atomic_add(&y[col], row_val * val);
             }
@@ -249,7 +249,7 @@ namespace rocsparse
             {
                 for(J i = 0; i < BLOCKSIZE; i += WG_SIZE)
                 {
-                    partialSums[lid + i] = alpha * conj_val(csr_val[col + i], conj)
+                    partialSums[lid + i] = alpha * rocsparse::conj_val(csr_val[col + i], conj)
                                            * x[csr_col_ind[col + i] - idx_base];
                 }
             }
@@ -264,7 +264,7 @@ namespace rocsparse
                 // to be launched, and this loop can't be unrolled.
                 for(I i = 0; col + i < csr_row_ptr[stop_row] - idx_base; i += WG_SIZE)
                 {
-                    partialSums[lid + i] = alpha * conj_val(csr_val[col + i], conj)
+                    partialSums[lid + i] = alpha * rocsparse::conj_val(csr_val[col + i], conj)
                                            * x[csr_col_ind[col + i] - idx_base];
                 }
             }
@@ -387,8 +387,9 @@ namespace rocsparse
                 // things.
                 for(I j = vecStart + lid; j < vecEnd; j += WG_SIZE)
                 {
-                    temp_sum = rocsparse::fma<T>(
-                        alpha * conj_val(csr_val[j], conj), x[csr_col_ind[j] - idx_base], temp_sum);
+                    temp_sum = rocsparse::fma<T>(alpha * rocsparse::conj_val(csr_val[j], conj),
+                                                 x[csr_col_ind[j] - idx_base],
+                                                 temp_sum);
                 }
 
                 partialSums[lid] = temp_sum;
@@ -462,8 +463,9 @@ namespace rocsparse
             // Then dump the partially reduced answers into the LDS for inter-work-item reduction.
             for(I j = vecStart + lid; j < vecEnd; j += WG_SIZE)
             {
-                temp_sum = rocsparse::fma<T>(
-                    alpha * conj_val(csr_val[j], conj), x[csr_col_ind[j] - idx_base], temp_sum);
+                temp_sum = rocsparse::fma<T>(alpha * rocsparse::conj_val(csr_val[j], conj),
+                                             x[csr_col_ind[j] - idx_base],
+                                             temp_sum);
             }
 
             partialSums[lid] = temp_sum;
@@ -631,7 +633,7 @@ namespace rocsparse
 
                 if(col_idx_in_row < row_len)
                 {
-                    const A val = conj_val(csr_val[row_start + col_idx_in_row], conj);
+                    const A val = rocsparse::conj_val(csr_val[row_start + col_idx_in_row], conj);
                     partialSums[lds_idx]
                         = alpha * val * x[csr_col_ind[row_start + col_idx_in_row] - idx_base];
                 }
@@ -723,7 +725,7 @@ namespace rocsparse
                 const uint32_t lds_idx        = base_idx + lid;
                 if(col_idx_in_row < row_len)
                 {
-                    const A val = conj_val(csr_val[row_start + col_idx_in_row], conj);
+                    const A val = rocsparse::conj_val(csr_val[row_start + col_idx_in_row], conj);
                     partialSums[lds_idx]
                         = alpha * val * x[csr_col_ind[row_start + col_idx_in_row] - idx_base];
                 }
@@ -806,8 +808,9 @@ namespace rocsparse
 
         for(I j = vecStart + lid; j < vecEnd; j += WF_SIZE)
         {
-            temp_sum = rocsparse::fma<T>(
-                alpha * conj_val(csr_val[j], conj), x[csr_col_ind[j] - idx_base], temp_sum);
+            temp_sum = rocsparse::fma<T>(alpha * rocsparse::conj_val(csr_val[j], conj),
+                                         x[csr_col_ind[j] - idx_base],
+                                         temp_sum);
         }
 
         // Obtain row sum using parallel warp reduction
@@ -878,8 +881,9 @@ namespace rocsparse
         // Then dump the partially reduced answers into the LDS for inter-work-item reduction.
         for(I j = vecStart + lid; j < vecEnd; j += BLOCKSIZE)
         {
-            temp_sum = rocsparse::fma<T>(
-                alpha * conj_val(csr_val[j], conj), x[csr_col_ind[j] - idx_base], temp_sum);
+            temp_sum = rocsparse::fma<T>(alpha * rocsparse::conj_val(csr_val[j], conj),
+                                         x[csr_col_ind[j] - idx_base],
+                                         temp_sum);
         }
 
         partialSums[lid] = temp_sum;
@@ -996,8 +1000,9 @@ namespace rocsparse
         // Then dump the partially reduced answers into the LDS for inter-work-item reduction.
         for(I j = vecStart + lid; j < vecEnd; j += BLOCKSIZE)
         {
-            temp_sum = rocsparse::fma<T>(
-                alpha * conj_val(csr_val[j], conj), x[csr_col_ind[j] - idx_base], temp_sum);
+            temp_sum = rocsparse::fma<T>(alpha * rocsparse::conj_val(csr_val[j], conj),
+                                         x[csr_col_ind[j] - idx_base],
+                                         temp_sum);
         }
 
         partialSums[lid] = temp_sum;

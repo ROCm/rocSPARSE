@@ -28,8 +28,6 @@
 
 #include "coomv_device.h"
 
-using namespace rocsparse;
-
 template <>
 inline bool rocsparse::enum_utils::is_invalid(rocsparse_coomv_aos_alg value_)
 {

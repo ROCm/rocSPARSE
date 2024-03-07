@@ -487,7 +487,7 @@ rocsparse_status rocsparse::csritsv_analysis_template(rocsparse_handle          
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmv_analysis_template(handle,
                                                                      trans,
-                                                                     rocsparse_csrmv_alg_adaptive,
+                                                                     rocsparse::csrmv_alg_adaptive,
                                                                      m,
                                                                      m,
                                                                      nnz,

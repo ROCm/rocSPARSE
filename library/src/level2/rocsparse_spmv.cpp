@@ -157,27 +157,27 @@ namespace rocsparse
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
     }
 
-    static rocsparse_status spmv_alg2csrmv_alg(rocsparse_spmv_alg   spmv_alg,
-                                               rocsparse_csrmv_alg& csrmv_alg)
+    static rocsparse_status spmv_alg2csrmv_alg(rocsparse_spmv_alg    spmv_alg,
+                                               rocsparse::csrmv_alg& target)
     {
         switch(spmv_alg)
         {
         case rocsparse_spmv_alg_csr_stream:
         {
-            csrmv_alg = rocsparse_csrmv_alg_stream;
+            target = rocsparse::csrmv_alg_stream;
             return rocsparse_status_success;
         }
 
         case rocsparse_spmv_alg_default:
         case rocsparse_spmv_alg_csr_adaptive:
         {
-            csrmv_alg = rocsparse_csrmv_alg_adaptive;
+            target = rocsparse::csrmv_alg_adaptive;
             return rocsparse_status_success;
         }
 
         case rocsparse_spmv_alg_csr_lrb:
         {
-            csrmv_alg = rocsparse_csrmv_alg_lrb;
+            target = rocsparse::csrmv_alg_lrb;
             return rocsparse_status_success;
         }
 
@@ -433,8 +433,8 @@ namespace rocsparse
 
         case rocsparse_format_csr:
         {
-            rocsparse_csrmv_alg csrmv_alg;
-            RETURN_IF_ROCSPARSE_ERROR((rocsparse::spmv_alg2csrmv_alg(alg, csrmv_alg)));
+            rocsparse::csrmv_alg alg_csrmv;
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse::spmv_alg2csrmv_alg(alg, alg_csrmv)));
 
             switch(stage)
             {
@@ -457,7 +457,7 @@ namespace rocsparse
                     RETURN_IF_ROCSPARSE_ERROR(
                         rocsparse::csrmv_analysis_template(handle,
                                                            trans,
-                                                           csrmv_alg,
+                                                           alg_csrmv,
                                                            (J)mat->rows,
                                                            (J)mat->cols,
                                                            (I)mat->nnz,
@@ -478,7 +478,7 @@ namespace rocsparse
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmv_template(
                     handle,
                     trans,
-                    csrmv_alg,
+                    alg_csrmv,
                     (J)mat->rows,
                     (J)mat->cols,
                     (I)mat->nnz,
@@ -500,8 +500,8 @@ namespace rocsparse
 
         case rocsparse_format_csc:
         {
-            rocsparse_csrmv_alg csrmv_alg;
-            RETURN_IF_ROCSPARSE_ERROR((rocsparse::spmv_alg2csrmv_alg(alg, csrmv_alg)));
+            rocsparse::csrmv_alg alg_csrmv;
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse::spmv_alg2csrmv_alg(alg, alg_csrmv)));
 
             switch(stage)
             {
@@ -523,7 +523,7 @@ namespace rocsparse
                     RETURN_IF_ROCSPARSE_ERROR(
                         rocsparse::cscmv_analysis_template(handle,
                                                            trans,
-                                                           csrmv_alg,
+                                                           alg_csrmv,
                                                            (J)mat->rows,
                                                            (J)mat->cols,
                                                            (I)mat->nnz,
@@ -543,7 +543,7 @@ namespace rocsparse
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse::cscmv_template(
                     handle,
                     trans,
-                    csrmv_alg,
+                    alg_csrmv,
                     (J)mat->rows,
                     (J)mat->cols,
                     (I)mat->nnz,

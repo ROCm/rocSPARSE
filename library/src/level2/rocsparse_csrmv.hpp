@@ -28,12 +28,12 @@
 
 namespace rocsparse
 {
-    typedef enum rocsparse_csrmv_alg_
+    typedef enum csrmv_alg_
     {
-        rocsparse_csrmv_alg_stream = 0,
-        rocsparse_csrmv_alg_adaptive,
-        rocsparse_csrmv_alg_lrb
-    } rocsparse_csrmv_alg;
+        csrmv_alg_stream = 0,
+        csrmv_alg_adaptive,
+        csrmv_alg_lrb
+    } csrmv_alg;
 
     template <typename I, typename J, typename A>
     rocsparse_status csrmv_analysis_adaptive_template_dispatch(rocsparse_handle          handle,
@@ -62,7 +62,7 @@ namespace rocsparse
     template <typename I, typename J, typename A>
     rocsparse_status csrmv_analysis_template(rocsparse_handle          handle,
                                              rocsparse_operation       trans,
-                                             rocsparse_csrmv_alg       alg,
+                                             rocsparse::csrmv_alg      alg,
                                              J                         m,
                                              J                         n,
                                              I                         nnz,
@@ -126,7 +126,7 @@ namespace rocsparse
     template <typename T, typename I, typename J, typename A, typename X, typename Y>
     rocsparse_status csrmv_template(rocsparse_handle          handle,
                                     rocsparse_operation       trans,
-                                    rocsparse_csrmv_alg       alg,
+                                    rocsparse::csrmv_alg      alg,
                                     J                         m,
                                     J                         n,
                                     I                         nnz,

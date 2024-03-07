@@ -88,11 +88,13 @@ namespace rocsparse
                       ? rocsparse::nontemporal_load(&coo_col_ind[idx + batch_stride_A * batch])
                             - idx_base
                       : 0;
-            const T val = (idx < nnz) ? alpha
-                                            * conj_val(rocsparse::nontemporal_load(
-                                                           &coo_val[idx + batch_stride_A * batch]),
-                                                       conj_A)
-                                      : static_cast<T>(0);
+            const T val
+                = (idx < nnz)
+                      ? alpha
+                            * rocsparse::conj_val(
+                                rocsparse::nontemporal_load(&coo_val[idx + batch_stride_A * batch]),
+                                conj_A)
+                      : static_cast<T>(0);
 
             row_ind = row;
 
@@ -104,14 +106,14 @@ namespace rocsparse
                 if(!TRANSB)
                 {
                     valB[i] = v
-                              * conj_val(dense_B[c + ldb * (colB + lid) + batch_stride_B * batch],
-                                         conj_B);
+                              * rocsparse::conj_val(
+                                  dense_B[c + ldb * (colB + lid) + batch_stride_B * batch], conj_B);
                 }
                 else
                 {
                     valB[i] = v
-                              * conj_val(dense_B[ldb * c + (colB + lid) + batch_stride_B * batch],
-                                         conj_B);
+                              * rocsparse::conj_val(
+                                  dense_B[ldb * c + (colB + lid) + batch_stride_B * batch], conj_B);
                 }
             }
 
@@ -291,11 +293,13 @@ namespace rocsparse
                       ? rocsparse::nontemporal_load(&coo_col_ind[idx + batch_stride_A * batch])
                             - idx_base
                       : 0;
-            const T val = (idx < nnz) ? alpha
-                                            * conj_val(rocsparse::nontemporal_load(
-                                                           &coo_val[idx + batch_stride_A * batch]),
-                                                       conj_A)
-                                      : static_cast<T>(0);
+            const T val
+                = (idx < nnz)
+                      ? alpha
+                            * rocsparse::conj_val(
+                                rocsparse::nontemporal_load(&coo_val[idx + batch_stride_A * batch]),
+                                conj_A)
+                      : static_cast<T>(0);
 
             row_ind = row;
 
@@ -310,7 +314,7 @@ namespace rocsparse
                     valB[i]
                         = (colB + lid) < N
                               ? v
-                                    * conj_val(
+                                    * rocsparse::conj_val(
                                         dense_B[c + ldb * (colB + lid) + batch_stride_B * batch],
                                         conj_B)
                               : static_cast<T>(0);
@@ -320,7 +324,7 @@ namespace rocsparse
                     valB[i]
                         = (colB + lid) < N
                               ? v
-                                    * conj_val(
+                                    * rocsparse::conj_val(
                                         dense_B[ldb * c + (colB + lid) + batch_stride_B * batch],
                                         conj_B)
                               : static_cast<T>(0);

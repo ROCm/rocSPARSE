@@ -29,16 +29,14 @@
 
 #include "rocsparse_csrmv.hpp"
 
-using namespace rocsparse;
-
 template <>
-inline bool rocsparse::enum_utils::is_invalid(rocsparse_csrmv_alg value_)
+inline bool rocsparse::enum_utils::is_invalid(rocsparse::csrmv_alg value_)
 {
     switch(value_)
     {
-    case rocsparse_csrmv_alg_stream:
-    case rocsparse_csrmv_alg_adaptive:
-    case rocsparse_csrmv_alg_lrb:
+    case rocsparse::csrmv_alg_stream:
+    case rocsparse::csrmv_alg_adaptive:
+    case rocsparse::csrmv_alg_lrb:
     {
         return false;
     }
@@ -49,7 +47,7 @@ inline bool rocsparse::enum_utils::is_invalid(rocsparse_csrmv_alg value_)
 template <typename I, typename J, typename A>
 rocsparse_status rocsparse::csrmv_analysis_template(rocsparse_handle          handle,
                                                     rocsparse_operation       trans,
-                                                    rocsparse_csrmv_alg       alg,
+                                                    rocsparse::csrmv_alg      alg,
                                                     J                         m,
                                                     J                         n,
                                                     I                         nnz,
@@ -67,21 +65,21 @@ rocsparse_status rocsparse::csrmv_analysis_template(rocsparse_handle          ha
 
     switch(alg)
     {
-    case rocsparse_csrmv_alg_adaptive:
+    case rocsparse::csrmv_alg_adaptive:
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmv_analysis_adaptive_template_dispatch(
             handle, trans, m, n, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info));
         return rocsparse_status_success;
     }
 
-    case rocsparse_csrmv_alg_lrb:
+    case rocsparse::csrmv_alg_lrb:
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmv_analysis_lrb_template_dispatch(
             handle, trans, m, n, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info));
         return rocsparse_status_success;
     }
 
-    case rocsparse_csrmv_alg_stream:
+    case rocsparse::csrmv_alg_stream:
     {
         return rocsparse_status_success;
     }
@@ -93,7 +91,7 @@ rocsparse_status rocsparse::csrmv_analysis_template(rocsparse_handle          ha
 template <typename T, typename I, typename J, typename A, typename X, typename Y>
 rocsparse_status rocsparse::csrmv_template(rocsparse_handle          handle,
                                            rocsparse_operation       trans,
-                                           rocsparse_csrmv_alg       alg,
+                                           rocsparse::csrmv_alg      alg,
                                            J                         m,
                                            J                         n,
                                            I                         nnz,
@@ -152,7 +150,7 @@ rocsparse_status rocsparse::csrmv_template(rocsparse_handle          handle,
     }
 
     if(info == nullptr || info->csrmv_info == nullptr || trans != rocsparse_operation_none
-       || (alg == rocsparse_csrmv_alg_lrb && descr->type == rocsparse_matrix_type_symmetric))
+       || (alg == rocsparse::csrmv_alg_lrb && descr->type == rocsparse_matrix_type_symmetric))
     {
         // If csrmv info is not available, call csrmv general
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
@@ -212,7 +210,7 @@ rocsparse_status rocsparse::csrmv_template(rocsparse_handle          handle,
         {
             switch(alg)
             {
-            case rocsparse_csrmv_alg_stream:
+            case rocsparse::csrmv_alg_stream:
             {
                 RETURN_IF_ROCSPARSE_ERROR(
                     rocsparse::csrmv_stream_template_dispatch<T>(handle,
@@ -232,7 +230,7 @@ rocsparse_status rocsparse::csrmv_template(rocsparse_handle          handle,
                                                                  force_conj));
                 return rocsparse_status_success;
             }
-            case rocsparse_csrmv_alg_adaptive:
+            case rocsparse::csrmv_alg_adaptive:
             {
                 RETURN_IF_ROCSPARSE_ERROR(
                     rocsparse::csrmv_adaptive_template_dispatch<T>(handle,
@@ -252,7 +250,7 @@ rocsparse_status rocsparse::csrmv_template(rocsparse_handle          handle,
                                                                    force_conj));
                 return rocsparse_status_success;
             }
-            case rocsparse_csrmv_alg_lrb:
+            case rocsparse::csrmv_alg_lrb:
             {
                 RETURN_IF_ROCSPARSE_ERROR(
                     rocsparse::csrmv_lrb_template_dispatch<T>(handle,
@@ -278,7 +276,7 @@ rocsparse_status rocsparse::csrmv_template(rocsparse_handle          handle,
         {
             switch(alg)
             {
-            case rocsparse_csrmv_alg_adaptive:
+            case rocsparse::csrmv_alg_adaptive:
             {
                 RETURN_IF_ROCSPARSE_ERROR(
                     rocsparse::csrmv_adaptive_template_dispatch<T>(handle,
@@ -298,7 +296,7 @@ rocsparse_status rocsparse::csrmv_template(rocsparse_handle          handle,
                                                                    force_conj));
                 return rocsparse_status_success;
             }
-            case rocsparse_csrmv_alg_lrb:
+            case rocsparse::csrmv_alg_lrb:
             {
                 RETURN_IF_ROCSPARSE_ERROR(
                     rocsparse::csrmv_lrb_template_dispatch<T>(handle,
@@ -318,7 +316,7 @@ rocsparse_status rocsparse::csrmv_template(rocsparse_handle          handle,
                                                               force_conj));
                 return rocsparse_status_success;
             }
-            case rocsparse_csrmv_alg_stream:
+            case rocsparse::csrmv_alg_stream:
             {
                 RETURN_IF_ROCSPARSE_ERROR(
                     rocsparse::csrmv_stream_template_dispatch<T>(handle,
@@ -418,7 +416,7 @@ rocsparse_status rocsparse_csrmv_analysis_impl(rocsparse_handle          handle,
     RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmv_analysis_template(
         handle,
         trans,
-        info != nullptr ? rocsparse_csrmv_alg_adaptive : rocsparse_csrmv_alg_stream,
+        info != nullptr ? rocsparse::csrmv_alg_adaptive : rocsparse::csrmv_alg_stream,
         m,
         n,
         nnz,
@@ -503,7 +501,7 @@ rocsparse_status rocsparse_csrmv_impl(rocsparse_handle          handle,
     RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmv_template(
         handle,
         trans,
-        info != nullptr ? rocsparse_csrmv_alg_adaptive : rocsparse_csrmv_alg_stream,
+        info != nullptr ? rocsparse::csrmv_alg_adaptive : rocsparse::csrmv_alg_stream,
         m,
         n,
         nnz,
@@ -524,7 +522,7 @@ rocsparse_status rocsparse_csrmv_impl(rocsparse_handle          handle,
 #define INSTANTIATE(TTYPE, ITYPE, JTYPE)                                                             \
     template rocsparse_status rocsparse::csrmv_analysis_template(rocsparse_handle          handle,   \
                                                                  rocsparse_operation       trans,    \
-                                                                 rocsparse_csrmv_alg       alg,      \
+                                                                 rocsparse::csrmv_alg      alg,      \
                                                                  JTYPE                     m,        \
                                                                  JTYPE                     n,        \
                                                                  ITYPE                     nnz,      \
@@ -535,7 +533,7 @@ rocsparse_status rocsparse_csrmv_impl(rocsparse_handle          handle,
                                                                  rocsparse_mat_info info);           \
     template rocsparse_status rocsparse::csrmv_template(rocsparse_handle          handle,            \
                                                         rocsparse_operation       trans,             \
-                                                        rocsparse_csrmv_alg       alg,               \
+                                                        rocsparse::csrmv_alg      alg,               \
                                                         JTYPE                     m,                 \
                                                         JTYPE                     n,                 \
                                                         ITYPE                     nnz,               \
@@ -568,7 +566,7 @@ INSTANTIATE(rocsparse_double_complex, int64_t, int64_t);
 #define INSTANTIATE_MIXED_ANALYSIS(ITYPE, JTYPE, ATYPE)                                             \
     template rocsparse_status rocsparse::csrmv_analysis_template(rocsparse_handle          handle,  \
                                                                  rocsparse_operation       trans,   \
-                                                                 rocsparse_csrmv_alg       alg,     \
+                                                                 rocsparse::csrmv_alg      alg,     \
                                                                  JTYPE                     m,       \
                                                                  JTYPE                     n,       \
                                                                  ITYPE                     nnz,     \
@@ -586,7 +584,7 @@ INSTANTIATE_MIXED_ANALYSIS(int64_t, int64_t, int8_t);
 #define INSTANTIATE_MIXED(TTYPE, ITYPE, JTYPE, ATYPE, XTYPE, YTYPE)                                  \
     template rocsparse_status rocsparse::csrmv_template(rocsparse_handle          handle,            \
                                                         rocsparse_operation       trans,             \
-                                                        rocsparse_csrmv_alg       alg,               \
+                                                        rocsparse::csrmv_alg      alg,               \
                                                         JTYPE                     m,                 \
                                                         JTYPE                     n,                 \
                                                         ITYPE                     nnz,               \

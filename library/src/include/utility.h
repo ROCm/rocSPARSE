@@ -231,7 +231,7 @@ namespace rocsparse
         return T{};
     }
 
-#define LOG_TRACE_SCALAR_VALUE(handle, value) log_trace_scalar_value(handle, value)
+#define LOG_TRACE_SCALAR_VALUE(handle, value) rocsparse::log_trace_scalar_value(handle, value)
 
     // Bench log scalar values pointed to by pointer
     template <typename T>

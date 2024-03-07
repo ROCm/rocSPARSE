@@ -26,8 +26,6 @@
 #include "internal/precond/rocsparse_csritilu0.h"
 #include "rocsparse_csritilu0_driver.hpp"
 
-using namespace rocsparse;
-
 namespace rocsparse
 {
     template <typename T, typename I, typename J, typename... P>
@@ -70,13 +68,13 @@ namespace rocsparse
     }
 
     template <typename T, typename I, typename J>
-    static rocsparse_status csritilu0_compute_template(rocsparse_handle     handle_,
-                                                       rocsparse_itilu0_alg alg_,
-                                                       J                    options_,
-                                                       J*                   nmaxiter_,
-                                                       floating_data_t<T>   tol_,
-                                                       J                    m_,
-                                                       I                    nnz_,
+    static rocsparse_status csritilu0_compute_template(rocsparse_handle              handle_,
+                                                       rocsparse_itilu0_alg          alg_,
+                                                       J                             options_,
+                                                       J*                            nmaxiter_,
+                                                       rocsparse::floating_data_t<T> tol_,
+                                                       J                             m_,
+                                                       I                             nnz_,
                                                        const I* __restrict__ ptr_,
                                                        const J* __restrict__ ind_,
                                                        const T* __restrict__ val_,
@@ -117,13 +115,13 @@ namespace rocsparse
     }
 
     template <typename T, typename I, typename J>
-    rocsparse_status csritilu0_compute_impl(rocsparse_handle     handle, //0
-                                            rocsparse_itilu0_alg alg, //1
-                                            J                    options, //2
-                                            J*                   nmaxiter, //3
-                                            floating_data_t<T>   tol, //4
-                                            J                    m, //5
-                                            I                    nnz, //6
+    rocsparse_status csritilu0_compute_impl(rocsparse_handle              handle, //0
+                                            rocsparse_itilu0_alg          alg, //1
+                                            J                             options, //2
+                                            J*                            nmaxiter, //3
+                                            rocsparse::floating_data_t<T> tol, //4
+                                            J                             m, //5
+                                            I                             nnz, //6
                                             const I* __restrict__ ptr, //7
                                             const J* __restrict__ ind, //8
                                             const T* __restrict__ val, //9
@@ -182,20 +180,20 @@ namespace rocsparse
 }
 
 #define IMPL(NAME, T, I, J)                                                                \
-    extern "C" rocsparse_status NAME(rocsparse_handle     handle,                          \
-                                     rocsparse_itilu0_alg alg,                             \
-                                     J                    options,                         \
-                                     J*                   nmaxiter,                        \
-                                     floating_data_t<T>   tol,                             \
-                                     J                    m,                               \
-                                     I                    nnz,                             \
-                                     const I*             ptr,                             \
-                                     const J*             ind,                             \
-                                     const T*             val,                             \
-                                     T*                   ilu0,                            \
-                                     rocsparse_index_base base,                            \
-                                     size_t               buffer_size,                     \
-                                     void*                buffer)                          \
+    extern "C" rocsparse_status NAME(rocsparse_handle              handle,                 \
+                                     rocsparse_itilu0_alg          alg,                    \
+                                     J                             options,                \
+                                     J*                            nmaxiter,               \
+                                     rocsparse::floating_data_t<T> tol,                    \
+                                     J                             m,                      \
+                                     I                             nnz,                    \
+                                     const I*                      ptr,                    \
+                                     const J*                      ind,                    \
+                                     const T*                      val,                    \
+                                     T*                            ilu0,                   \
+                                     rocsparse_index_base          base,                   \
+                                     size_t                        buffer_size,            \
+                                     void*                         buffer)                 \
     try                                                                                    \
     {                                                                                      \
         RETURN_IF_ROCSPARSE_ERROR((rocsparse::csritilu0_compute_impl<T, I, J>(handle,      \
