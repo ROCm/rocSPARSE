@@ -30,8 +30,6 @@
 
 #include "coomv_device.h"
 
-using namespace rocsparse;
-
 template <>
 inline bool rocsparse::enum_utils::is_invalid(rocsparse_coomv_alg value_)
 {
@@ -892,40 +890,40 @@ INSTANTIATE_MIXED(rocsparse_double_complex,
  *    C wrapper
  * ===========================================================================
  */
-#define C_IMPL(NAME, TYPE)                                                  \
-    extern "C" rocsparse_status NAME(rocsparse_handle          handle,      \
-                                     rocsparse_operation       trans,       \
-                                     rocsparse_int             m,           \
-                                     rocsparse_int             n,           \
-                                     rocsparse_int             nnz,         \
-                                     const TYPE*               alpha,       \
-                                     const rocsparse_mat_descr descr,       \
-                                     const TYPE*               coo_val,     \
-                                     const rocsparse_int*      coo_row_ind, \
-                                     const rocsparse_int*      coo_col_ind, \
-                                     const TYPE*               x,           \
-                                     const TYPE*               beta,        \
-                                     TYPE*                     y)           \
-    try                                                                     \
-    {                                                                       \
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_coomv_impl(handle,              \
-                                                       trans,               \
-                                                       m,                   \
-                                                       n,                   \
-                                                       nnz,                 \
-                                                       alpha,               \
-                                                       descr,               \
-                                                       coo_val,             \
-                                                       coo_row_ind,         \
-                                                       coo_col_ind,         \
-                                                       x,                   \
-                                                       beta,                \
-                                                       y));                 \
-        return rocsparse_status_success;                                    \
-    }                                                                       \
-    catch(...)                                                              \
-    {                                                                       \
-        RETURN_ROCSPARSE_EXCEPTION();                                       \
+#define C_IMPL(NAME, TYPE)                                                     \
+    extern "C" rocsparse_status NAME(rocsparse_handle          handle,         \
+                                     rocsparse_operation       trans,          \
+                                     rocsparse_int             m,              \
+                                     rocsparse_int             n,              \
+                                     rocsparse_int             nnz,            \
+                                     const TYPE*               alpha,          \
+                                     const rocsparse_mat_descr descr,          \
+                                     const TYPE*               coo_val,        \
+                                     const rocsparse_int*      coo_row_ind,    \
+                                     const rocsparse_int*      coo_col_ind,    \
+                                     const TYPE*               x,              \
+                                     const TYPE*               beta,           \
+                                     TYPE*                     y)              \
+    try                                                                        \
+    {                                                                          \
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::rocsparse_coomv_impl(handle,      \
+                                                                  trans,       \
+                                                                  m,           \
+                                                                  n,           \
+                                                                  nnz,         \
+                                                                  alpha,       \
+                                                                  descr,       \
+                                                                  coo_val,     \
+                                                                  coo_row_ind, \
+                                                                  coo_col_ind, \
+                                                                  x,           \
+                                                                  beta,        \
+                                                                  y));         \
+        return rocsparse_status_success;                                       \
+    }                                                                          \
+    catch(...)                                                                 \
+    {                                                                          \
+        RETURN_ROCSPARSE_EXCEPTION();                                          \
     }
 
 C_IMPL(rocsparse_scoomv, float);

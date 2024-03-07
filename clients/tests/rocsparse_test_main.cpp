@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +27,6 @@
 
 #include <gtest/gtest.h>
 
-using namespace testing;
-
 #include "test_check.hpp"
 bool test_check::s_auto_testing_bad_arg;
 
@@ -52,9 +50,9 @@ rocsparse_status rocsparse_record_timing(double msec, double gflops, double gbs)
     return rocsparse_status_success;
 }
 
-class ConfigurableEventListener : public TestEventListener
+class ConfigurableEventListener : public testing::TestEventListener
 {
-    TestEventListener* eventListener;
+    testing::TestEventListener* eventListener;
 
 public:
     bool showTestCases; // Show the names of each test case.
@@ -63,7 +61,7 @@ public:
     bool showInlineFailures; // Show each failure as it occurs.
     bool showEnvironment; // Show the setup of the global environment.
 
-    explicit ConfigurableEventListener(TestEventListener* theEventListener)
+    explicit ConfigurableEventListener(testing::TestEventListener* theEventListener)
         : eventListener(theEventListener)
         , showTestCases(true)
         , showTestNames(true)
@@ -78,17 +76,17 @@ public:
         delete eventListener;
     }
 
-    void OnTestProgramStart(const UnitTest& unit_test) override
+    void OnTestProgramStart(const testing::UnitTest& unit_test) override
     {
         eventListener->OnTestProgramStart(unit_test);
     }
 
-    void OnTestIterationStart(const UnitTest& unit_test, int iteration) override
+    void OnTestIterationStart(const testing::UnitTest& unit_test, int iteration) override
     {
         eventListener->OnTestIterationStart(unit_test, iteration);
     }
 
-    void OnEnvironmentsSetUpStart(const UnitTest& unit_test) override
+    void OnEnvironmentsSetUpStart(const testing::UnitTest& unit_test) override
     {
         if(showEnvironment)
         {
@@ -96,7 +94,7 @@ public:
         }
     }
 
-    void OnEnvironmentsSetUpEnd(const UnitTest& unit_test) override
+    void OnEnvironmentsSetUpEnd(const testing::UnitTest& unit_test) override
     {
         if(showEnvironment)
         {
@@ -104,7 +102,7 @@ public:
         }
     }
 
-    void OnTestCaseStart(const TestCase& test_case) override
+    void OnTestCaseStart(const testing::TestCase& test_case) override
     {
         if(showTestCases)
         {
@@ -112,7 +110,7 @@ public:
         }
     }
 
-    void OnTestStart(const TestInfo& test_info) override
+    void OnTestStart(const testing::TestInfo& test_info) override
     {
         if(showTestNames)
         {
@@ -120,12 +118,12 @@ public:
         }
     }
 
-    void OnTestPartResult(const TestPartResult& result) override
+    void OnTestPartResult(const testing::TestPartResult& result) override
     {
         eventListener->OnTestPartResult(result);
     }
 
-    void OnTestEnd(const TestInfo& test_info) override
+    void OnTestEnd(const testing::TestInfo& test_info) override
     {
         if(test_info.result()->Failed() ? showInlineFailures : showSuccesses)
         {
@@ -133,7 +131,7 @@ public:
         }
     }
 
-    void OnTestCaseEnd(const TestCase& test_case) override
+    void OnTestCaseEnd(const testing::TestCase& test_case) override
     {
         if(showTestCases)
         {
@@ -141,7 +139,7 @@ public:
         }
     }
 
-    void OnEnvironmentsTearDownStart(const UnitTest& unit_test) override
+    void OnEnvironmentsTearDownStart(const testing::UnitTest& unit_test) override
     {
         if(showEnvironment)
         {
@@ -149,7 +147,7 @@ public:
         }
     }
 
-    void OnEnvironmentsTearDownEnd(const UnitTest& unit_test) override
+    void OnEnvironmentsTearDownEnd(const testing::UnitTest& unit_test) override
     {
         if(showEnvironment)
         {
@@ -157,12 +155,12 @@ public:
         }
     }
 
-    void OnTestIterationEnd(const UnitTest& unit_test, int iteration) override
+    void OnTestIterationEnd(const testing::UnitTest& unit_test, int iteration) override
     {
         eventListener->OnTestIterationEnd(unit_test, iteration);
     }
 
-    void OnTestProgramEnd(const UnitTest& unit_test) override
+    void OnTestProgramEnd(const testing::UnitTest& unit_test) override
     {
         eventListener->OnTestProgramEnd(unit_test);
     }
@@ -266,13 +264,13 @@ int main(int argc, char** argv)
     rocsparse_parse_data(argc, argv, datapath + "rocsparse_test.data");
 
     // Initialize google test
-    InitGoogleTest(&argc, argv);
+    testing::InitGoogleTest(&argc, argv);
 
     // Free up all temporary data generated during test creation
     test_cleanup::cleanup();
 
     // Remove the default listener
-    auto& listeners       = UnitTest::GetInstance()->listeners();
+    auto& listeners       = testing::UnitTest::GetInstance()->listeners();
     auto  default_printer = listeners.Release(listeners.default_result_printer());
 
     // Add our listener, by default everything is on (the same as using the default listener)

@@ -65,7 +65,7 @@ namespace rocsparse
             // Loop over non-zero elements
             for(I j = row_start + lid; j < row_end; j += WF_SIZE)
             {
-                const A val = conj_val(csr_val[j], conj);
+                const A val = rocsparse::conj_val(csr_val[j], conj);
                 sum         = rocsparse::fma<T>(
                     alpha * val, rocsparse::ldg(x + csr_col_ind[j] - idx_base), sum);
             }
@@ -125,7 +125,7 @@ namespace rocsparse
                 if(col != row)
                 {
 
-                    const A val = conj_val(csr_val[j], conj);
+                    const A val = rocsparse::conj_val(csr_val[j], conj);
                     rocsparse::atomic_add(&y[col], row_val * val);
                 }
             }
@@ -269,7 +269,7 @@ namespace rocsparse
                 // This allows loop unrolling, since BLOCKSIZE is a compile-time constant
                 for(J i = 0; i < BLOCKSIZE; i += WG_SIZE)
                 {
-                    partial_sums[lid + i] = alpha * conj_val(csr_val[col + i], conj);
+                    partial_sums[lid + i] = alpha * rocsparse::conj_val(csr_val[col + i], conj);
                 }
             }
             else
@@ -284,7 +284,7 @@ namespace rocsparse
                 const I max_to_load = csr_row_ptr[stop_row] - csr_row_ptr[row];
                 for(I i = 0; (lid + i) < max_to_load; i += WG_SIZE)
                 {
-                    partial_sums[lid + i] = alpha * conj_val(csr_val[col + i], conj);
+                    partial_sums[lid + i] = alpha * rocsparse::conj_val(csr_val[col + i], conj);
                 }
             }
 
@@ -464,7 +464,7 @@ namespace rocsparse
                 for(I j = vecStart + lid; j < vecEnd; j += WG_SIZE)
                 {
                     const J col = csr_col_ind[j] - idx_base;
-                    mySum       = rocsparse::fma<T>(conj_val(csr_val[j], conj), x[col], mySum);
+                    mySum = rocsparse::fma<T>(rocsparse::conj_val(csr_val[j], conj), x[col], mySum);
                 }
 
                 partial_sums[lid] = mySum;
@@ -534,8 +534,8 @@ namespace rocsparse
                 if(myCol != myRow)
                 {
 
-                    rocsparse::atomic_add(&y[myCol],
-                                          (alpha * conj_val(csr_val[j], conj) * x[myRow]));
+                    rocsparse::atomic_add(
+                        &y[myCol], (alpha * rocsparse::conj_val(csr_val[j], conj) * x[myRow]));
                 }
             }
         }
@@ -587,7 +587,7 @@ namespace rocsparse
             {
 
                 const J col = csr_col_ind[j] - idx_base;
-                mySum       = rocsparse::fma<T>(conj_val(csr_val[j], conj), x[col], mySum);
+                mySum = rocsparse::fma<T>(rocsparse::conj_val(csr_val[j], conj), x[col], mySum);
             }
 
             partial_sums[lid] = mySum;
@@ -656,7 +656,8 @@ namespace rocsparse
             const J myCol  = csr_col_ind[j] - idx_base;
             if(myCol != myRow2)
             {
-                rocsparse::atomic_add(&y[myCol], (alpha * conj_val(csr_val[j], conj) * x[myRow2]));
+                rocsparse::atomic_add(&y[myCol],
+                                      (alpha * rocsparse::conj_val(csr_val[j], conj) * x[myRow2]));
             }
         }
     }

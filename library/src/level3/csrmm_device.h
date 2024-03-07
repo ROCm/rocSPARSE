@@ -92,8 +92,8 @@ namespace rocsparse
             {
                 shared_col[wid][lid]
                     = csr_col_ind[k + columns_values_batch_stride_A * batch] - idx_base;
-                shared_val[wid][lid]
-                    = conj_val(csr_val[k + columns_values_batch_stride_A * batch], conj_A);
+                shared_val[wid][lid] = rocsparse::conj_val(
+                    csr_val[k + columns_values_batch_stride_A * batch], conj_A);
             }
             else
             {
@@ -109,8 +109,8 @@ namespace rocsparse
                 {
                     sum = rocsparse::fma<T>(
                         shared_val[wid][i],
-                        conj_val(dense_B[shared_col[wid][i] + colB + batch_stride_B * batch],
-                                 conj_B),
+                        rocsparse::conj_val(
+                            dense_B[shared_col[wid][i] + colB + batch_stride_B * batch], conj_B),
                         sum);
                 }
             }
@@ -224,10 +224,10 @@ namespace rocsparse
                         = (rocsparse::nontemporal_load(csr_col_ind + k
                                                        + columns_values_batch_stride_A * batch)
                            - idx_base);
-                    shared_val[wid][lid]
-                        = conj_val(rocsparse::nontemporal_load(
-                                       csr_val + k + columns_values_batch_stride_A * batch),
-                                   conj_A);
+                    shared_val[wid][lid] = rocsparse::conj_val(
+                        rocsparse::nontemporal_load(csr_val + k
+                                                    + columns_values_batch_stride_A * batch),
+                        conj_A);
                 }
                 else
                 {
@@ -246,9 +246,9 @@ namespace rocsparse
                     {
                         sum[p] = rocsparse::fma<T>(
                             sv,
-                            conj_val(rocsparse::ldg(dense_B + col + p * WF_SIZE + sc
-                                                    + batch_stride_B * batch),
-                                     conj_B),
+                            rocsparse::conj_val(rocsparse::ldg(dense_B + col + p * WF_SIZE + sc
+                                                               + batch_stride_B * batch),
+                                                conj_B),
                             sum[p]);
                     }
                 }
@@ -374,10 +374,10 @@ namespace rocsparse
                         = (rocsparse::nontemporal_load(csr_col_ind + k
                                                        + columns_values_batch_stride_A * batch)
                            - idx_base);
-                    shared_val[wid][lid]
-                        = conj_val(rocsparse::nontemporal_load(
-                                       csr_val + k + columns_values_batch_stride_A * batch),
-                                   conj_A);
+                    shared_val[wid][lid] = rocsparse::conj_val(
+                        rocsparse::nontemporal_load(csr_val + k
+                                                    + columns_values_batch_stride_A * batch),
+                        conj_A);
                 }
                 else
                 {
@@ -393,9 +393,10 @@ namespace rocsparse
                     {
                         sum = rocsparse::fma<T>(
                             shared_val[wid][i],
-                            conj_val(rocsparse::ldg(dense_B + col + ldb * shared_col[wid][i]
-                                                    + batch_stride_B * batch),
-                                     conj_B),
+                            rocsparse::conj_val(rocsparse::ldg(dense_B + col
+                                                               + ldb * shared_col[wid][i]
+                                                               + batch_stride_B * batch),
+                                                conj_B),
                             sum);
                     }
                 }
@@ -509,9 +510,9 @@ namespace rocsparse
         const int64_t colB = cid * ldb;
 
         __shared__ T shared_B[BLOCKSIZE / WF_SIZE][WF_SIZE];
-        shared_B[wid][lid] = (cid < N)
-                                 ? conj_val(dense_B[row + colB + batch_stride_B * batch], conj_B)
-                                 : static_cast<T>(0);
+        shared_B[wid][lid]
+            = (cid < N) ? rocsparse::conj_val(dense_B[row + colB + batch_stride_B * batch], conj_B)
+                        : static_cast<T>(0);
 
         __threadfence_block();
         const I row_start = csr_row_ptr[row + offsets_batch_stride_A * batch] - idx_base;
@@ -521,7 +522,8 @@ namespace rocsparse
         {
             const J col = csr_col_ind[j + columns_values_batch_stride_A * batch] - idx_base;
             const T val
-                = alpha * conj_val(csr_val[j + columns_values_batch_stride_A * batch], conj_A);
+                = alpha
+                  * rocsparse::conj_val(csr_val[j + columns_values_batch_stride_A * batch], conj_A);
 
             if(order_C == rocsparse_order_column)
             {
@@ -595,8 +597,9 @@ namespace rocsparse
         __shared__ T shared_B[BLOCKSIZE / WF_SIZE][WF_SIZE];
 
         shared_B[wid][lid]
-            = (cid < N) ? conj_val(dense_B[ldb * row + cid + batch_stride_B * batch], conj_B)
-                        : static_cast<T>(0);
+            = (cid < N)
+                  ? rocsparse::conj_val(dense_B[ldb * row + cid + batch_stride_B * batch], conj_B)
+                  : static_cast<T>(0);
 
         __threadfence_block();
         const I row_start = csr_row_ptr[row + offsets_batch_stride_A * batch] - idx_base;
@@ -606,7 +609,8 @@ namespace rocsparse
         {
             const J col = csr_col_ind[j + columns_values_batch_stride_A * batch] - idx_base;
             const T val
-                = alpha * conj_val(csr_val[j + columns_values_batch_stride_A * batch], conj_A);
+                = alpha
+                  * rocsparse::conj_val(csr_val[j + columns_values_batch_stride_A * batch], conj_A);
 
             if(order_C == rocsparse_order_column)
             {

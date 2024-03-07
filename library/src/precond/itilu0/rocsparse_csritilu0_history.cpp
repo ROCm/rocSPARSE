@@ -27,8 +27,6 @@
 #include "internal/precond/rocsparse_csritilu0.h"
 #include "rocsparse_csritilu0_driver.hpp"
 
-using namespace rocsparse;
-
 namespace rocsparse
 {
     template <typename T, typename J, typename... P>
@@ -41,28 +39,28 @@ namespace rocsparse
         {
             RETURN_IF_ROCSPARSE_ERROR(
                 (rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>::
-                     history<floating_data_t<T>, J>::run(parameters...)));
+                     history<rocsparse::floating_data_t<T>, J>::run(parameters...)));
             return rocsparse_status_success;
         }
         case rocsparse_itilu0_alg_async_split:
         {
             RETURN_IF_ROCSPARSE_ERROR(
                 (rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_async_split>::
-                     history<floating_data_t<T>, J>::run(parameters...)));
+                     history<rocsparse::floating_data_t<T>, J>::run(parameters...)));
             return rocsparse_status_success;
         }
         case rocsparse_itilu0_alg_sync_split:
         {
             RETURN_IF_ROCSPARSE_ERROR(
                 (rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split>::
-                     history<floating_data_t<T>, J>::run(parameters...)));
+                     history<rocsparse::floating_data_t<T>, J>::run(parameters...)));
             return rocsparse_status_success;
         }
         case rocsparse_itilu0_alg_sync_split_fusion:
         {
             RETURN_IF_ROCSPARSE_ERROR(
                 (rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::
-                     history<floating_data_t<T>, J>::run(parameters...)));
+                     history<rocsparse::floating_data_t<T>, J>::run(parameters...)));
             return rocsparse_status_success;
         }
         }
@@ -71,12 +69,13 @@ namespace rocsparse
     }
 
     template <typename T, typename J>
-    static rocsparse_status csritilu0_history_template(rocsparse_handle     handle_,
-                                                       rocsparse_itilu0_alg alg_,
-                                                       J* __restrict__ niter_,
-                                                       floating_data_t<T>* __restrict__ nrms_,
-                                                       size_t buffer_size_,
-                                                       void* __restrict__ buffer_)
+    static rocsparse_status
+        csritilu0_history_template(rocsparse_handle     handle_,
+                                   rocsparse_itilu0_alg alg_,
+                                   J* __restrict__ niter_,
+                                   rocsparse::floating_data_t<T>* __restrict__ nrms_,
+                                   size_t buffer_size_,
+                                   void* __restrict__ buffer_)
     {
         RETURN_IF_ROCSPARSE_ERROR((rocsparse::history_dispatch<T, J>(
             alg_, handle_, alg_, niter_, nrms_, buffer_size_, buffer_)));
@@ -88,7 +87,7 @@ template <typename T, typename J>
 rocsparse_status rocsparse::csritilu0_history_impl(rocsparse_handle     handle,
                                                    rocsparse_itilu0_alg alg,
                                                    J* __restrict__ niter,
-                                                   floating_data_t<T>* __restrict__ nrms,
+                                                   rocsparse::floating_data_t<T>* __restrict__ nrms,
                                                    size_t buffer_size,
                                                    void* __restrict__ buffer)
 {
@@ -112,22 +111,22 @@ rocsparse_status rocsparse::csritilu0_history_impl(rocsparse_handle     handle,
     return rocsparse_status_success;
 }
 
-#define IMPL(NAME, T, J)                                                    \
-    extern "C" rocsparse_status NAME(rocsparse_handle     handle,           \
-                                     rocsparse_itilu0_alg alg,              \
-                                     J*                   niter,            \
-                                     floating_data_t<T>*  nrms,             \
-                                     size_t               buffer_size,      \
-                                     void*                buffer)           \
-    try                                                                     \
-    {                                                                       \
-        RETURN_IF_ROCSPARSE_ERROR((rocsparse::csritilu0_history_impl<T, J>( \
-            handle, alg, niter, nrms, buffer_size, buffer)));               \
-        return rocsparse_status_success;                                    \
-    }                                                                       \
-    catch(...)                                                              \
-    {                                                                       \
-        RETURN_ROCSPARSE_EXCEPTION();                                       \
+#define IMPL(NAME, T, J)                                                         \
+    extern "C" rocsparse_status NAME(rocsparse_handle               handle,      \
+                                     rocsparse_itilu0_alg           alg,         \
+                                     J*                             niter,       \
+                                     rocsparse::floating_data_t<T>* nrms,        \
+                                     size_t                         buffer_size, \
+                                     void*                          buffer)      \
+    try                                                                          \
+    {                                                                            \
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::csritilu0_history_impl<T, J>(      \
+            handle, alg, niter, nrms, buffer_size, buffer)));                    \
+        return rocsparse_status_success;                                         \
+    }                                                                            \
+    catch(...)                                                                   \
+    {                                                                            \
+        RETURN_ROCSPARSE_EXCEPTION();                                            \
     }
 
 IMPL(rocsparse_scsritilu0_history, float, rocsparse_int);

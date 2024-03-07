@@ -106,7 +106,9 @@ namespace rocsparse
                     for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         sum[p] = rocsparse::fma<T>(
-                            v, conj_val(dense_B[c * ldb + colB + p * WF_SIZE], conj_B), sum[p]);
+                            v,
+                            rocsparse::conj_val(dense_B[c * ldb + colB + p * WF_SIZE], conj_B),
+                            sum[p]);
                     }
                 }
                 else
@@ -114,7 +116,9 @@ namespace rocsparse
                     for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         sum[p] = rocsparse::fma<T>(
-                            v, conj_val(dense_B[(colB + p * WF_SIZE) * ldb + c], conj_B), sum[p]);
+                            v,
+                            rocsparse::conj_val(dense_B[(colB + p * WF_SIZE) * ldb + c], conj_B),
+                            sum[p]);
                     }
                 }
             }
@@ -211,11 +215,13 @@ namespace rocsparse
                 {
                     if(TRANSB)
                     {
-                        sum = rocsparse::fma<T>(v, conj_val(dense_B[c * ldb + colB], conj_B), sum);
+                        sum = rocsparse::fma<T>(
+                            v, rocsparse::conj_val(dense_B[c * ldb + colB], conj_B), sum);
                     }
                     else
                     {
-                        sum = rocsparse::fma<T>(v, conj_val(dense_B[colB * ldb + c], conj_B), sum);
+                        sum = rocsparse::fma<T>(
+                            v, rocsparse::conj_val(dense_B[colB * ldb + c], conj_B), sum);
                     }
                 }
             }
@@ -315,10 +321,10 @@ namespace rocsparse
 
         const I row = coo_row_ind[gid] - idx_base;
         const I col = coo_col_ind[gid] - idx_base;
-        const T val = conj_val(coo_val[gid], conj_A);
+        const T val = rocsparse::conj_val(coo_val[gid], conj_A);
 
-        const T bval = (TRANSB) ? conj_val(dense_B[ldb * row + hipBlockIdx_y], conj_B)
-                                : conj_val(dense_B[hipBlockIdx_y * ldb + row], conj_B);
+        const T bval = (TRANSB) ? rocsparse::conj_val(dense_B[ldb * row + hipBlockIdx_y], conj_B)
+                                : rocsparse::conj_val(dense_B[hipBlockIdx_y * ldb + row], conj_B);
 
         if(order_C == rocsparse_order_column)
         {

@@ -99,7 +99,7 @@ rocsparse_status rocsparse::bsrmv_analysis_template(rocsparse_handle          ha
             RETURN_IF_ROCSPARSE_ERROR(
                 rocsparse::csrmv_analysis_template(handle,
                                                    trans,
-                                                   rocsparse_csrmv_alg_adaptive,
+                                                   rocsparse::csrmv_alg_adaptive,
                                                    mb,
                                                    nb,
                                                    nnzb,
