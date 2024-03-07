@@ -371,8 +371,8 @@ namespace rocsparse
         {
             // Stage1: Break large tridiagonal system into multiple smaller systems
             // using parallel cyclic reduction so that each sub system is of size 512.
-            rocsparse_int iter
-                = static_cast<rocsparse_int>(log2(m)) - static_cast<rocsparse_int>(log2(512));
+            rocsparse_int iter = static_cast<rocsparse_int>(rocsparse::log2(m))
+                                 - static_cast<rocsparse_int>(rocsparse::log2(512));
 
             rocsparse_int stride = 1;
             for(rocsparse_int i = 0; i < iter; i++)
@@ -391,8 +391,8 @@ namespace rocsparse
         {
             // Stage1: Break large tridiagonal system into multiple smaller systems
             // using parallel cyclic reduction so that each sub system is of size 512 or less.
-            rocsparse_int iter
-                = static_cast<rocsparse_int>(log2(m)) - static_cast<rocsparse_int>(log2(512)) + 1;
+            rocsparse_int iter = static_cast<rocsparse_int>(rocsparse::log2(m))
+                                 - static_cast<rocsparse_int>(rocsparse::log2(512)) + 1;
 
             rocsparse_int stride = 1;
             for(rocsparse_int i = 0; i < iter; i++)

@@ -518,7 +518,7 @@ namespace rocsparse
             const I row_len = csr_row_ptr[i + 1] - csr_row_ptr[i];
 
             const uint32_t target_bin
-                = (row_len != 0) ? (uint32_t)rocsparse::ceil(log2f(row_len)) : 0;
+                = (row_len != 0) ? (uint32_t)rocsparse::ceil(rocsparse::log2(row_len)) : 0;
 
             rows_binoffsets_scratch[i] = rocsparse::atomic_add(&n_rows_bins[target_bin], (J)1);
         }
@@ -571,7 +571,7 @@ namespace rocsparse
             const I row_len = csr_row_ptr[i + 1] - csr_row_ptr[i];
 
             const uint32_t target_bin
-                = (row_len != 0) ? (uint32_t)rocsparse::ceil(log2f(row_len)) : 0;
+                = (row_len != 0) ? (uint32_t)rocsparse::ceil(rocsparse::log2(row_len)) : 0;
 
             rows_bins[n_rows_bins[target_bin] + rows_binoffsets_scratch[i]] = i;
         }
