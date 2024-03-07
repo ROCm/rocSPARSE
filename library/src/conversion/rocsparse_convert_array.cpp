@@ -256,7 +256,7 @@ namespace rocsparse
                 const SOURCE sf = floating_data_t<SOURCE>(s);
                 const TARGET t{static_cast<floating_data_t<TARGET>>(sf),
                                static_cast<floating_data_t<TARGET>>(0)};
-                shd[tid]     = std::abs(s - sf);
+                shd[tid]     = rocsparse::abs(s - sf);
                 target_[gid] = t;
             }
             else
@@ -301,7 +301,7 @@ namespace rocsparse
 
                 const SOURCE sback{static_cast<floating_data_t<SOURCE>>(std::real(t)),
                                    static_cast<floating_data_t<SOURCE>>(std::imag(t))};
-                shd[tid]     = std::abs(s - sback);
+                shd[tid]     = rocsparse::abs(s - sback);
                 target_[gid] = t;
             }
             else
@@ -363,7 +363,7 @@ namespace rocsparse
             {
                 const SOURCE s = source_[gid];
                 const TARGET t = static_cast<TARGET>(s);
-                shd[tid]       = std::abs(s - static_cast<SOURCE>(t));
+                shd[tid]       = rocsparse::abs(s - static_cast<SOURCE>(t));
                 target_[gid]   = t;
             }
             else

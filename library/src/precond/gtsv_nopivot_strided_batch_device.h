@@ -57,7 +57,7 @@ namespace rocsparse
         rocsparse_int bid = hipBlockIdx_x;
         rocsparse_int gid = tid + batch_stride * bid;
 
-        rocsparse_int iter   = static_cast<rocsparse_int>(log2(BLOCKSIZE));
+        rocsparse_int iter   = static_cast<rocsparse_int>(rocsparse::log2(BLOCKSIZE));
         rocsparse_int stride = 1;
         rocsparse_int i      = BLOCKSIZE;
 
@@ -169,7 +169,7 @@ namespace rocsparse
         rocsparse_int bid = hipBlockIdx_x;
         rocsparse_int gid = tid + batch_stride * bid;
 
-        rocsparse_int iter   = static_cast<rocsparse_int>(log2(BLOCKSIZE / 2));
+        rocsparse_int iter   = static_cast<rocsparse_int>(rocsparse::log2(BLOCKSIZE / 2));
         rocsparse_int stride = 1;
 
         // Parallel cyclic reduction shared memory
@@ -249,8 +249,8 @@ namespace rocsparse
         rocsparse_int bid = hipBlockIdx_x;
         rocsparse_int gid = tid + batch_stride * bid;
 
-        rocsparse_int tot_iter = static_cast<rocsparse_int>(log2(BLOCKSIZE));
-        rocsparse_int pcr_iter = static_cast<rocsparse_int>(log2(PCR_SIZE / 2));
+        rocsparse_int tot_iter = static_cast<rocsparse_int>(rocsparse::log2(BLOCKSIZE));
+        rocsparse_int pcr_iter = static_cast<rocsparse_int>(rocsparse::log2(PCR_SIZE / 2));
         rocsparse_int cr_iter  = tot_iter - pcr_iter;
         rocsparse_int stride   = 1;
         rocsparse_int i        = BLOCKSIZE;
@@ -431,7 +431,7 @@ namespace rocsparse
         rocsparse_int bid = hipBlockIdx_x;
         rocsparse_int gid = tid + batch_stride * bid;
 
-        rocsparse_int iter   = static_cast<rocsparse_int>(log2(BLOCKSIZE / 2));
+        rocsparse_int iter   = static_cast<rocsparse_int>(rocsparse::log2(BLOCKSIZE / 2));
         rocsparse_int stride = 1;
 
         // Parallel cyclic reduction shared memory
@@ -596,7 +596,7 @@ namespace rocsparse
     {
         rocsparse_int tid = hipThreadIdx_x;
 
-        rocsparse_int iter   = static_cast<rocsparse_int>(log2(BLOCKSIZE));
+        rocsparse_int iter   = static_cast<rocsparse_int>(rocsparse::log2(BLOCKSIZE));
         rocsparse_int stride = 1;
         rocsparse_int i      = BLOCKSIZE;
 
@@ -787,7 +787,7 @@ namespace rocsparse
         rocsparse_int tid = hipThreadIdx_x;
         rocsparse_int gid = hipGridDim_x * tid + hipBlockIdx_x;
 
-        rocsparse_int iter   = static_cast<rocsparse_int>(log2(BLOCKSIZE / 2));
+        rocsparse_int iter   = static_cast<rocsparse_int>(rocsparse::log2(BLOCKSIZE / 2));
         rocsparse_int stride = 1;
 
         // Parallel cyclic reduction shared memory

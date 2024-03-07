@@ -40,8 +40,6 @@
 #endif
 #endif
 
-namespace rocsparse
-{
 // BSR indexing macros
 #define BSR_IND(j, bi, bj, dir) ((dir == rocsparse_direction_row) ? BSR_IND_R(j, bi, bj) : BSR_IND_C(j, bi, bj))
 #define BSR_IND_R(j, bi, bj) (block_dim * block_dim * (j) + (bi) * block_dim + (bj))
@@ -50,6 +48,9 @@ namespace rocsparse
 #define GEBSR_IND(j, bi, bj, dir) ((dir == rocsparse_direction_row) ? GEBSR_IND_R(j, bi, bj) : GEBSR_IND_C(j, bi, bj))
 #define GEBSR_IND_R(j, bi, bj) (row_block_dim * col_block_dim * (j) + (bi) * col_block_dim + (bj))
 #define GEBSR_IND_C(j, bi, bj) (row_block_dim * col_block_dim * (j) + (bi) + (bj) * row_block_dim)
+
+namespace rocsparse
+{
 
 // find next power of 2
 __device__ __host__ __forceinline__ uint32_t fnp2(uint32_t x)
@@ -121,6 +122,13 @@ __device__ __forceinline__ rocsparse_double_complex fma(rocsparse_double_complex
 
   __device__ __forceinline__ float sqrt(float val) { return std::sqrt(val); }
   __device__ __forceinline__ double sqrt(double val) { return std::sqrt(val); }
+
+  __device__ __host__ __forceinline__ float log2(float val) { return std::log2f(val); }
+  __device__ __host__ __forceinline__ double log2(double val) { return std::log2(val); }
+  __device__ __host__ __forceinline__ float  log2(int32_t val) { return std::log2f(val); }
+  __device__ __host__ __forceinline__ double log2(int64_t val) { return std::log2(val); }
+  __device__ __host__ __forceinline__ float  log2(uint32_t val) { return std::log2f(val); }
+  __device__ __host__ __forceinline__ double log2(uint64_t val) { return std::log2(val); }
 
 __device__ __forceinline__ rocsparse_float_complex sqrt(rocsparse_float_complex val)
 {
