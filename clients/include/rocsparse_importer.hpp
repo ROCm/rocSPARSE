@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_IMPORTER_HPP
-#define ROCSPARSE_IMPORTER_HPP
 
 #include "rocsparse_check.hpp"
 
@@ -33,8 +31,7 @@
 #include "rocsparse_matrix_dense.hpp"
 #include "rocsparse_matrix_gebsx.hpp"
 
-template <typename X, typename Y>
-rocsparse_status rocsparse_type_conversion(const X& x, Y& y);
+#include "rocsparse_type_conversion.hpp"
 
 template <typename X, typename Y>
 inline void
@@ -77,6 +74,22 @@ inline void rocsparse_importer_copy_mixed_arrays(size_t size,
         x[i] = rocsparse_double_complex(static_cast<double>(std::real(y[i])),
                                         static_cast<double>(std::imag(y[i])));
     }
+}
+
+template <>
+inline void rocsparse_importer_copy_mixed_arrays(size_t size,
+                                                 int8_t* __restrict__ x,
+                                                 const rocsparse_float_complex* __restrict__ y)
+{
+    throw rocsparse_status_not_implemented;
+}
+
+template <>
+inline void rocsparse_importer_copy_mixed_arrays(size_t size,
+                                                 int8_t* __restrict__ x,
+                                                 const rocsparse_double_complex* __restrict__ y)
+{
+    throw rocsparse_status_not_implemented;
 }
 
 template <>
@@ -444,5 +457,3 @@ inline void missing_file_error_message(const char* filename)
     std::cerr << "#" << std::endl;
     exit(rocsparse_status_internal_error);
 }
-
-#endif

@@ -22,7 +22,6 @@
 # ########################################################################
 
 find_package(GTest 1.11.0 REQUIRED)
-find_package(rocsparseio QUIET)
 
 # MEMSTAT ?
 if(BUILD_MEMSTAT)
@@ -345,7 +344,7 @@ set(ROCSPARSE_CLIENTS_COMMON
   ../common/rocsparse_exporter_rocalution.cpp
   ../common/rocsparse_exporter_matrixmarket.cpp
   ../common/rocsparse_exporter_ascii.cpp
-  ../common/rocsparse_importer.cpp
+  ../common/rocsparse_type_conversion.cpp
   ../common/rocsparse_importer_rocalution.cpp
   ../common/rocsparse_importer_rocsparseio.cpp
   ../common/rocsparse_importer_matrixmarket.cpp
@@ -353,6 +352,7 @@ set(ROCSPARSE_CLIENTS_COMMON
   ../common/rocsparse_importer_mlcsr.cpp
   ../common/rocsparse_clients_envariables.cpp
   ../common/rocsparse_clients_matrices_dir.cpp
+  ../common/rocsparseio.cpp
   )
 
 add_executable(rocsparse-test rocsparse_test_main.cpp ${ROCSPARSE_TEST_SOURCES} ${ROCSPARSE_CLIENTS_COMMON} ${ROCSPARSE_CLIENTS_TESTINGS})
@@ -362,19 +362,12 @@ target_compile_definitions(rocsparse-test PRIVATE GOOGLE_TEST)
 
 # Target compile options
 target_compile_options(rocsparse-test PRIVATE -ffp-contract=on -mfma -Wno-deprecated -Wno-unused-command-line-argument -Wall)
-if (rocsparseio_FOUND)
-  message("Compiles rocSPARSE client with rocSPARSEIO to import/export matrices.")
-  target_compile_options(rocsparse-test PRIVATE -DROCSPARSEIO)
-endif()
 
 # Internal common header
 target_include_directories(rocsparse-test PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
 
 # Target link libraries
 target_link_libraries(rocsparse-test PRIVATE GTest::GTest roc::rocsparse hip::host hip::device)
-if (rocsparseio_FOUND)
-  target_link_libraries(rocsparse-test PRIVATE roc::rocsparseio)
-endif()
 
 # Add OpenMP if available
 if(OPENMP_FOUND)

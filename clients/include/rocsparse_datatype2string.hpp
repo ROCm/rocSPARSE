@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,12 +54,12 @@ typedef enum rocsparse_matrix_init_
     rocsparse_matrix_random           = 0, /**< Random initialization */
     rocsparse_matrix_laplace_2d       = 1, /**< Initialize 2D laplacian matrix */
     rocsparse_matrix_laplace_3d       = 2, /**< Initialize 3D laplacian matrix */
-    rocsparse_matrix_file_mtx         = 3, /**< Read from .mtx (matrix market) file */
-    rocsparse_matrix_file_smtx        = 4, /**< Read from .smtx (machine learning csr) file */
-    rocsparse_matrix_file_bsmtx       = 5, /**< Read from .bsmtx (machine learning bsr) file */
-    rocsparse_matrix_file_rocalution  = 6, /**< Read from .csr (rocALUTION) file */
+    rocsparse_matrix_file_mtx         = 3, /**< Read from matrix market file */
+    rocsparse_matrix_file_smtx        = 4, /**< Read from machine learning csr file */
+    rocsparse_matrix_file_bsmtx       = 5, /**< Read from machine learning bsr file */
+    rocsparse_matrix_file_rocalution  = 6, /**< Read from rocalution file */
     rocsparse_matrix_zero             = 7, /**< Generates zero matrix */
-    rocsparse_matrix_file_rocsparseio = 8, /**< Read from .bin (rocSPARSEIO) file */
+    rocsparse_matrix_file_rocsparseio = 8, /**< Read from rocsparseio file */
     rocsparse_matrix_tridiagonal      = 9, /**< Initialize tridiagonal matrix */
     rocsparse_matrix_pentadiagonal    = 10 /**< Initialize pentadiagonal matrix */
 } rocsparse_matrix_init;

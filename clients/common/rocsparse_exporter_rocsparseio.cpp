@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,6 @@
 
 template <typename X, typename Y>
 rocsparse_status rocsparse_type_conversion(const X& x, Y& y);
-
-#ifdef ROCSPARSEIO
 
 template <typename X, typename Y>
 inline rocsparse_status rocsparse2rocsparseio_convert(const X& x, Y& y);
@@ -125,11 +123,9 @@ inline rocsparseio_type rocsparseio_type_convert<rocsparse_double_complex>()
 {
     return rocsparseio_type_complex64;
 };
-#endif
 
 rocsparse_exporter_rocsparseio::~rocsparse_exporter_rocsparseio()
 {
-#ifdef ROCSPARSEIO
     const char* env = getenv("GTEST_LISTENER");
     if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
     {
@@ -140,13 +136,12 @@ rocsparse_exporter_rocsparseio::~rocsparse_exporter_rocsparseio()
     if(istatus != rocsparseio_status_success)
     {
     }
-#endif
 }
 
 rocsparse_exporter_rocsparseio::rocsparse_exporter_rocsparseio(const std::string& filename_)
     : m_filename(filename_)
 {
-#ifdef ROCSPARSEIO
+
     const char* env = getenv("GTEST_LISTENER");
     if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
     {
@@ -160,9 +155,6 @@ rocsparse_exporter_rocsparseio::rocsparse_exporter_rocsparseio(const std::string
         std::cerr << "Problem with rocsparseio_open" << std::endl;
         throw rocsparse_status_internal_error;
     }
-#else
-    throw rocsparse_status_not_implemented;
-#endif
 }
 
 template <typename T, typename I, typename J>
@@ -175,7 +167,6 @@ rocsparse_status rocsparse_exporter_rocsparseio::write_sparse_csx(rocsparse_dire
                                                                   const T* __restrict__ val_,
                                                                   rocsparse_index_base base_)
 {
-#ifdef ROCSPARSEIO
     const rocsparseio_type ptr_type = rocsparseio_type_convert<I>();
     const rocsparseio_type ind_type = rocsparseio_type_convert<J>();
     const rocsparseio_type val_type = rocsparseio_type_convert<T>();
@@ -227,10 +218,6 @@ rocsparse_status rocsparse_exporter_rocsparseio::write_sparse_csx(rocsparse_dire
         return rocsparse_status_internal_error;
     }
     return rocsparse_status_success;
-
-#else
-    return rocsparse_status_not_implemented;
-#endif
 }
 
 template <typename T, typename I, typename J>
@@ -246,7 +233,7 @@ rocsparse_status rocsparse_exporter_rocsparseio::write_sparse_gebsx(rocsparse_di
                                                                     const T* __restrict__ val_,
                                                                     rocsparse_index_base base_)
 {
-#ifdef ROCSPARSEIO
+
     const rocsparseio_type ptr_type = rocsparseio_type_convert<I>();
     const rocsparseio_type ind_type = rocsparseio_type_convert<J>();
     const rocsparseio_type val_type = rocsparseio_type_convert<T>();
@@ -333,17 +320,13 @@ rocsparse_status rocsparse_exporter_rocsparseio::write_sparse_gebsx(rocsparse_di
         return rocsparse_status_internal_error;
     }
     return rocsparse_status_success;
-
-#else
-    return rocsparse_status_not_implemented;
-#endif
 }
 
 template <typename T, typename I>
 rocsparse_status
     rocsparse_exporter_rocsparseio::write_dense_vector(I nmemb_, const T* __restrict__ x_, I incx_)
 {
-#ifdef ROCSPARSEIO
+
     const rocsparseio_type val_type = rocsparseio_type_convert<T>();
     size_t                 nmemb, incx;
     rocsparse_status       status;
@@ -366,16 +349,13 @@ rocsparse_status
         return rocsparse_status_internal_error;
     }
     return rocsparse_status_success;
-#else
-    return rocsparse_status_not_implemented;
-#endif
 }
 
 template <typename T, typename I>
 rocsparse_status rocsparse_exporter_rocsparseio::write_dense_matrix(
     rocsparse_order order_, I m_, I n_, const T* __restrict__ x_, I ld_)
 {
-#ifdef ROCSPARSEIO
+
     rocsparseio_order      order;
     size_t                 m, n, ld;
     rocsparse_status       status;
@@ -414,10 +394,6 @@ rocsparse_status rocsparse_exporter_rocsparseio::write_dense_matrix(
         return rocsparse_status_internal_error;
     }
     return rocsparse_status_success;
-
-#else
-    return rocsparse_status_not_implemented;
-#endif
 }
 
 template <typename T, typename I>
@@ -429,7 +405,7 @@ rocsparse_status rocsparse_exporter_rocsparseio::write_sparse_coo(I m_,
                                                                   const T* __restrict__ val_,
                                                                   rocsparse_index_base base_)
 {
-#ifdef ROCSPARSEIO
+
     const rocsparseio_type ind_type = rocsparseio_type_convert<I>();
     const rocsparseio_type val_type = rocsparseio_type_convert<T>();
 
@@ -469,9 +445,6 @@ rocsparse_status rocsparse_exporter_rocsparseio::write_sparse_coo(I m_,
         return rocsparse_status_internal_error;
     }
     return rocsparse_status_success;
-#else
-    return rocsparse_status_not_implemented;
-#endif
 }
 
 #define INSTANTIATE_TIJ(T, I, J)                                                  \

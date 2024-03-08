@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,11 +25,12 @@
 #include "rocsparse_matrix_factory.hpp"
 #include "rocsparse_clients_envariables.hpp"
 #include "rocsparse_clients_matrices_dir.hpp"
+#include "rocsparse_importer_format_t.hpp"
 #include "rocsparse_init.hpp"
 
-static void get_matrix_full_filename(const Arguments&   arg_,
-                                     const std::string& extension_,
-                                     std::string&       full_filename_)
+static void get_matrix_full_filename(const Arguments& arg_,
+                                     const char*      extension_,
+                                     std::string&     full_filename_)
 {
 
     if(arg_.timing)
@@ -119,7 +120,10 @@ rocsparse_matrix_factory<T, I, J>::rocsparse_matrix_factory(const Arguments&    
     case rocsparse_matrix_file_rocalution:
     {
         std::string full_filename;
-        get_matrix_full_filename(arg, ".csr", full_filename);
+        get_matrix_full_filename(
+            arg,
+            rocsparse_importer_format_t::extension(rocsparse_importer_format_t::rocalution),
+            full_filename);
 
         this->m_instance
             = new rocsparse_matrix_factory_rocalution<T, I, J>(full_filename.c_str(), to_int);
@@ -129,7 +133,10 @@ rocsparse_matrix_factory<T, I, J>::rocsparse_matrix_factory(const Arguments&    
     case rocsparse_matrix_file_rocsparseio:
     {
         std::string full_filename;
-        get_matrix_full_filename(arg, ".bin", full_filename);
+        get_matrix_full_filename(
+            arg,
+            rocsparse_importer_format_t::extension(rocsparse_importer_format_t::rocsparseio),
+            full_filename);
         this->m_instance
             = new rocsparse_matrix_factory_rocsparseio<T, I, J>(full_filename.c_str(), to_int);
         break;
@@ -138,7 +145,10 @@ rocsparse_matrix_factory<T, I, J>::rocsparse_matrix_factory(const Arguments&    
     case rocsparse_matrix_file_mtx:
     {
         std::string full_filename;
-        get_matrix_full_filename(arg, ".mtx", full_filename);
+        get_matrix_full_filename(
+            arg,
+            rocsparse_importer_format_t::extension(rocsparse_importer_format_t::matrixmarket),
+            full_filename);
         this->m_instance = new rocsparse_matrix_factory_mtx<T, I, J>(full_filename.c_str());
         break;
     }
@@ -146,7 +156,10 @@ rocsparse_matrix_factory<T, I, J>::rocsparse_matrix_factory(const Arguments&    
     case rocsparse_matrix_file_smtx:
     {
         std::string full_filename;
-        get_matrix_full_filename(arg, ".smtx", full_filename);
+        get_matrix_full_filename(
+            arg,
+            rocsparse_importer_format_t::extension(rocsparse_importer_format_t::mlcsr),
+            full_filename);
         this->m_instance = new rocsparse_matrix_factory_smtx<T, I, J>(full_filename.c_str());
         break;
     }
@@ -154,7 +167,10 @@ rocsparse_matrix_factory<T, I, J>::rocsparse_matrix_factory(const Arguments&    
     case rocsparse_matrix_file_bsmtx:
     {
         std::string full_filename;
-        get_matrix_full_filename(arg, ".bsmtx", full_filename);
+        get_matrix_full_filename(
+            arg,
+            rocsparse_importer_format_t::extension(rocsparse_importer_format_t::mlbsr),
+            full_filename);
         this->m_instance = new rocsparse_matrix_factory_bsmtx<T, I, J>(full_filename.c_str());
         break;
     }
