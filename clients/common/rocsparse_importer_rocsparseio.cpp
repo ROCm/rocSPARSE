@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * ************************************************************************ */
 
 #include "rocsparse_importer_rocsparseio.hpp"
-
-#ifdef ROCSPARSEIO
 
 #define ROCSPARSE_CHECK_ROCSPARSEIO(iostatus_)  \
     if(iostatus_ != rocsparseio_status_success) \
@@ -99,10 +97,17 @@ template <typename T>
 inline rocsparseio_type type_tconvert();
 
 template <>
+inline rocsparseio_type type_tconvert<int8_t>()
+{
+    return rocsparseio_type_int8;
+};
+
+template <>
 inline rocsparseio_type type_tconvert<int32_t>()
 {
     return rocsparseio_type_int32;
 };
+
 template <>
 inline rocsparseio_type type_tconvert<int64_t>()
 {
@@ -128,11 +133,10 @@ inline rocsparseio_type type_tconvert<rocsparse_double_complex>()
 {
     return rocsparseio_type_complex64;
 };
-#endif
 
 rocsparse_importer_rocsparseio::~rocsparse_importer_rocsparseio()
 {
-#ifdef ROCSPARSEIO
+
     const char* env = getenv("GTEST_LISTENER");
     if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
     {
@@ -143,13 +147,12 @@ rocsparse_importer_rocsparseio::~rocsparse_importer_rocsparseio()
     if(istatus != rocsparseio_status_success)
     {
     }
-#endif
 }
 
 rocsparse_importer_rocsparseio::rocsparse_importer_rocsparseio(const std::string& filename_)
     : m_filename(filename_)
 {
-#ifdef ROCSPARSEIO
+
     const char* env = getenv("GTEST_LISTENER");
     if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
     {
@@ -163,9 +166,6 @@ rocsparse_importer_rocsparseio::rocsparse_importer_rocsparseio(const std::string
         missing_file_error_message(this->m_filename.c_str());
         throw rocsparse_status_internal_error;
     }
-#else
-    throw rocsparse_status_not_implemented;
-#endif
 }
 
 template <typename I>
@@ -174,7 +174,7 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_coo(I*           
                                                                    int64_t*              nnz,
                                                                    rocsparse_index_base* base)
 {
-#ifdef ROCSPARSEIO
+
     size_t                 iM;
     size_t                 iN;
     size_t                 innz;
@@ -206,15 +206,11 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_coo(I*           
     this->m_nnz = innz;
     ROCSPARSE_CHECK_ROCSPARSEIO(rocsparseio2rocsparse_convert(ibase, *base));
     return rocsparse_status_success;
-#else
-    return rocsparse_status_not_implemented;
-#endif
 }
 
 template <typename T, typename I>
 rocsparse_status rocsparse_importer_rocsparseio::import_sparse_coo(I* row_ind, I* col_ind, T* val)
 {
-#ifdef ROCSPARSEIO
     rocsparseio_status     istatus;
     const rocsparseio_type csr_ind_type = type_tconvert<I>(), csr_val_type = type_tconvert<T>();
 
@@ -286,6 +282,7 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_coo(I* row_ind, I
                 break;
             }
 
+            case rocsparseio_type_int8:
             case rocsparseio_type_float32:
             case rocsparseio_type_float64:
             case rocsparseio_type_complex32:
@@ -303,6 +300,12 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_coo(I* row_ind, I
             case rocsparseio_type_int32:
             case rocsparseio_type_int64:
             {
+                break;
+            }
+
+            case rocsparseio_type_int8:
+            {
+                rocsparse_importer_copy_mixed_arrays(NNZ, val, (const int8_t*)tmp_val);
                 break;
             }
 
@@ -336,9 +339,6 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_coo(I* row_ind, I
         }
     }
     return rocsparse_status_success;
-#else
-    return rocsparse_status_not_implemented;
-#endif
 }
 
 template <typename I, typename J>
@@ -351,7 +351,6 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_gebsx(rocsparse_d
                                                                      J* block_dim_column,
                                                                      rocsparse_index_base* base)
 {
-#ifdef ROCSPARSEIO
     rocsparseio_status     istatus;
     rocsparseio_direction  idir, idirb;
     rocsparseio_index_base ibase;
@@ -404,15 +403,12 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_gebsx(rocsparse_d
     this->m_row_block_dim = irow_block_dim;
     this->m_col_block_dim = icol_block_dim;
     return rocsparse_status_success;
-#else
-    return rocsparse_status_not_implemented;
-#endif
 }
 
 template <typename T, typename I, typename J>
 rocsparse_status rocsparse_importer_rocsparseio::import_sparse_gebsx(I* ptr, J* ind, T* val)
 {
-#ifdef ROCSPARSEIO
+
     rocsparseio_status     istatus;
     const rocsparseio_type csr_ptr_type = type_tconvert<I>(), csr_ind_type = type_tconvert<J>(),
                            csr_val_type = type_tconvert<T>();
@@ -488,6 +484,7 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_gebsx(I* ptr, J* 
                 break;
             }
 
+            case rocsparseio_type_int8:
             case rocsparseio_type_float32:
             case rocsparseio_type_float64:
             case rocsparseio_type_complex32:
@@ -512,6 +509,7 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_gebsx(I* ptr, J* 
                 rocsparse_importer_copy_mixed_arrays(NNZB, ind, (const int64_t*)tmp_ind);
                 break;
             }
+            case rocsparseio_type_int8:
             case rocsparseio_type_float32:
             case rocsparseio_type_float64:
             case rocsparseio_type_complex32:
@@ -529,6 +527,13 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_gebsx(I* ptr, J* 
             case rocsparseio_type_int32:
             case rocsparseio_type_int64:
             {
+                break;
+            }
+
+            case rocsparseio_type_int8:
+            {
+                rocsparse_importer_copy_mixed_arrays(
+                    NNZB * row_block_dim * col_block_dim, val, (const int8_t*)tmp_val);
                 break;
             }
 
@@ -565,9 +570,6 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_gebsx(I* ptr, J* 
     }
 
     return rocsparse_status_success;
-#else
-    return rocsparse_status_not_implemented;
-#endif
 }
 
 template <typename I, typename J>
@@ -576,7 +578,6 @@ rocsparse_status
     rocsparse_importer_rocsparseio::import_sparse_csx(
         rocsparse_direction* dir, J* m, J* n, I* nnz, rocsparse_index_base* base)
 {
-#ifdef ROCSPARSEIO
     rocsparseio_status     istatus;
     rocsparseio_direction  io_dir;
     rocsparseio_index_base ibase;
@@ -613,15 +614,12 @@ rocsparse_status
     this->m_m   = iM;
     this->m_nnz = innz;
     return rocsparse_status_success;
-#else
-    return rocsparse_status_not_implemented;
-#endif
 }
 
 template <typename T, typename I, typename J>
 rocsparse_status rocsparse_importer_rocsparseio::import_sparse_csx(I* ptr, J* ind, T* val)
 {
-#ifdef ROCSPARSEIO
+
     rocsparseio_status     istatus;
     const rocsparseio_type csr_ptr_type = type_tconvert<I>(), csr_ind_type = type_tconvert<J>(),
                            csr_val_type = type_tconvert<T>();
@@ -695,6 +693,7 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_csx(I* ptr, J* in
                 break;
             }
 
+            case rocsparseio_type_int8:
             case rocsparseio_type_float32:
             case rocsparseio_type_float64:
             case rocsparseio_type_complex32:
@@ -719,6 +718,7 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_csx(I* ptr, J* in
                 rocsparse_importer_copy_mixed_arrays(NNZ, ind, (const int64_t*)tmp_ind);
                 break;
             }
+            case rocsparseio_type_int8:
             case rocsparseio_type_float32:
             case rocsparseio_type_float64:
             case rocsparseio_type_complex32:
@@ -736,6 +736,12 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_csx(I* ptr, J* in
             case rocsparseio_type_int32:
             case rocsparseio_type_int64:
             {
+                break;
+            }
+
+            case rocsparseio_type_int8:
+            {
+                rocsparse_importer_copy_mixed_arrays(NNZ, val, (const int8_t*)tmp_val);
                 break;
             }
 
@@ -768,9 +774,6 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_csx(I* ptr, J* in
     }
 
     return rocsparse_status_success;
-#else
-    return rocsparse_status_not_implemented;
-#endif
 }
 
 #define INSTANTIATE_TIJ(T, I, J)                                                             \

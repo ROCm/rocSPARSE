@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,17 +28,14 @@
 
 #include "rocsparse_exporter.hpp"
 
-#ifdef ROCSPARSEIO
 #include "rocsparseio.h"
-#endif
 
 class rocsparse_exporter_rocsparseio : public rocsparse_exporter<rocsparse_exporter_rocsparseio>
 {
 protected:
-    std::string m_filename{};
-#ifdef ROCSPARSEIO
+    std::string        m_filename{};
     rocsparseio_handle m_handle{};
-#endif
+
 public:
     ~rocsparse_exporter_rocsparseio();
     using IMPL = rocsparse_exporter_rocsparseio;

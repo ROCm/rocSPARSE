@@ -119,6 +119,11 @@ if(BUILD_CLIENTS_BENCHMARKS)
   add_subdirectory(benchmarks)
 endif()
 
+#
+# Build tools
+#
+add_subdirectory(tools)
+
 if(BUILD_CLIENTS_TESTS)
   enable_testing()
   add_subdirectory(tests)
