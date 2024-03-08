@@ -86,28 +86,30 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
 
     // Stream
     hipStream_t stream = handle->stream;
+
     // Compute required temporary storage buffer size
     size_t nwarps                   = (nnz_A - 1) / handle->wavefront_size + 1;
-    size_t temp_storage_size_bytes1 = sizeof(int) * (nwarps / 256 + 1) * 256;
+    size_t temp_storage_size_bytes1 = sizeof(uint32_t) * (nwarps / 256 + 1) * 256;
 
-    auto   op = rocprim::plus<rocsparse_int>();
+    // Compute buffer size for inclusive scan on csr_row_ptr_C
     size_t temp_storage_size_bytes2;
     RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(nullptr,
                                                 temp_storage_size_bytes2,
                                                 (rocsparse_int*)nullptr,
                                                 (rocsparse_int*)nullptr,
                                                 m + 1,
-                                                op,
+                                                rocprim::plus<rocsparse_int>(),
                                                 stream));
     temp_storage_size_bytes2 = ((temp_storage_size_bytes2 - 1) / 256 + 1) * 256;
 
+    // Compute buffer size for inclusive scan on warp_start
     size_t temp_storage_size_bytes3;
     RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(nullptr,
                                                 temp_storage_size_bytes3,
-                                                (rocsparse_int*)nullptr,
-                                                (rocsparse_int*)nullptr,
+                                                (uint32_t*)nullptr,
+                                                (uint32_t*)nullptr,
                                                 nwarps + 1,
-                                                op,
+                                                rocprim::plus<uint32_t>(),
                                                 stream));
     temp_storage_size_bytes3 = ((temp_storage_size_bytes3 - 1) / 256 + 1) * 256;
 
@@ -128,8 +130,8 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
         temp_alloc = true;
     }
 
-    char* ptr        = reinterpret_cast<char*>(temp_storage_ptr);
-    int*  warp_start = reinterpret_cast<int*>(ptr);
+    char*     ptr        = reinterpret_cast<char*>(temp_storage_ptr);
+    uint32_t* warp_start = reinterpret_cast<uint32_t*>(ptr);
     ptr += temp_storage_size_bytes1;
     void* temp_storage_buffer2 = ptr;
     ptr += temp_storage_size_bytes2;
@@ -153,7 +155,7 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
                                                 csr_row_ptr_C,
                                                 csr_row_ptr_C,
                                                 m + 1,
-                                                op,
+                                                rocprim::plus<rocsparse_int>(),
                                                 stream));
 
     if(csr_val_C == nullptr || csr_col_ind_C == nullptr)
@@ -214,7 +216,7 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
                                                 warp_start,
                                                 warp_start,
                                                 nwarps + 1,
-                                                op,
+                                                rocprim::plus<uint32_t>(),
                                                 stream));
 
     if(handle->wavefront_size == 32)
