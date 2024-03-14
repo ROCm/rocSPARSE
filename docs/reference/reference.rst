@@ -11,7 +11,7 @@ rocSPARSE API Reference Guide
 The *rocSPARSE API Reference Guide* presents an index of rocSPARSE functions, datatypes, and details of the different rocSPARSE functions by category.
 
   * :ref:`api`
-  * :ref:`rocsparse-types`
+  * :ref:`rocsparse_types_`
   * :ref:`rocsparse_auxiliary_functions_` required for subsequent library calls
   * :ref:`rocsparse_level1_functions_` between a vector in sparse format and a vector in dense format
   * :ref:`rocsparse_level2_functions_` between a matrix in sparse format and a vector in dense format

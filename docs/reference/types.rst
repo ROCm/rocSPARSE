@@ -2,7 +2,7 @@
   :description: rocSPARSE documentation and API reference library
   :keywords: rocSPARSE, ROCm, API, documentation
 
-.. _rocsparse_types:
+.. _rocsparse_types_:
 
 ********************************************************************
 rocSPARSE datatypes

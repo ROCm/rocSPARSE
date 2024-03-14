@@ -98,7 +98,7 @@ namespace rocsparseio
 
 #undef ROCSPARSEIO_ENUM_STATUS
 
-        value_type value{};
+        value_type       value{};
 
         inline constexpr operator value_type() const
         {
@@ -166,7 +166,7 @@ namespace rocsparseio
             sparse_coo   = rocsparseio_format_sparse_coo,
         } value_type;
 
-        value_type value{};
+        value_type       value{};
         inline constexpr operator value_type() const
         {
             return this->value;
@@ -234,7 +234,7 @@ namespace rocsparseio
             column = rocsparseio_order_column,
         } value_type;
 
-        value_type value{};
+        value_type       value{};
         inline constexpr operator value_type() const
         {
             return this->value;
@@ -292,7 +292,7 @@ namespace rocsparseio
             column = rocsparseio_direction_column,
         } value_type;
 
-        value_type value{};
+        value_type       value{};
         inline constexpr operator value_type() const
         {
             return this->value;
@@ -352,7 +352,7 @@ namespace rocsparseio
             complex64 = rocsparseio_type_complex64,
         } value_type;
 
-        value_type value{};
+        value_type       value{};
         inline constexpr operator value_type() const
         {
             return this->value;
