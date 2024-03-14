@@ -66,7 +66,7 @@ namespace rocsparseio
             ascii       = rocsparseio_file_format_ascii
         } value_type;
 
-        value_type value{};
+        value_type       value{};
         inline constexpr operator value_type() const
         {
             return this->value;

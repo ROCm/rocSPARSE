@@ -41,13 +41,15 @@ File                        Description
 `rocsparse.h`               Includes all other API related rocSPARSE header files.
 `rocsparse-auxiliary.h`     Declares all rocSPARSE auxiliary functions, such as handle and descriptor management.
 `rocsparse-complex-types.h` Defines the rocSPARSE complex data types `rocsparse_float_complex` and `rocsparse_double_complex`.
-`rocsparse-functions.h`     Declares all rocSPARSE Sparse Linear Algebra Subroutines of Level1, 2, 3, Extra, Preconditioner, Format Conversion, Reordering, and Utility.
+`rocsparse-functions.h`     Declares all rocSPARSE Sparse Linear Algebra Subroutines of Level1, Level2, Level3, Extra, Preconditioner, Format Conversion, Reordering, Generic and Utility. Achieved by including headers from the `library/include/internal` directory.
 `rocsparse-types.h`         Defines all data types used by rocSPARSE.
 `rocsparse-version.h.in`    Provides the configured version and settings that is initially set by CMake during compilation.
 =========================== ===========
 
+The `library/include/internal` directory contains the public API for all rocSPARSE Sparse Linear Algebra Subroutines organized into Level1, Level2, Level3, Extra, Preconditioner, Format Conversion, Reordering, Generic and Utility directories.
+
 `library/src/` directory
-----------------------------
+------------------------
 
 This directory contains all rocSPARSE library source files.
 The root of the `library/src/` directory hosts the implementation of the library handle and auxiliary functions.
@@ -69,7 +71,7 @@ File                      Description
 ========================= ===========
 
 `clients/` directory
-------------------------
+--------------------
 
 This directory contains all clients, e.g. samples, unit tests and benchmarks.
 Further details are given in :ref:`rocsparse_clients`.
@@ -367,7 +369,7 @@ rocSPARSE clients host a variety of different examples as well as a unit test an
 For detailed instructions on how to build rocSPARSE with clients, see :ref:`rocsparse_building`.
 
 Samples
---------
+-------
 
 The `clients/samples` collection offers sample implementations of the rocSPARSE API.
 In the following table, available examples with description, are listed.
@@ -446,3 +448,69 @@ spmv_alg             Specify the algorithm to use when running SpMV
 spmm_alg             Specify the algorithm to use when running SpMM
 gtsv_interleaved_alg Specify the algorithm to use when running gtsv interleaved batch routine
 ==================== ===========
+
+For example to benchmark the csrmv routine using double precision, you can run the following command:
+
+./rocsparse-bench -f csrmv --precision d --alpha 1 --beta 0 --iters 1000 --rocalution <path to .csr matrix file>
+
+Python plotting scripts
+-----------------------
+
+rocSPARSE also contains some useful python plotting scripts that work in conjunction with the rocsparse-bench executable. To use these
+plotting scripts to, for example, plot the performance of csrmv routine with multiple matrices you would first call:
+
+`./rocsparse-bench -f csrmv --precision d --alpha 1 --beta 0 --iters 1000 --bench-x --rocalution /path/to/matrix/files/*.csr --bench-o name_of_output_file.json`
+
+This will produce the json file `name_of_output_file.json` containing all the performance data. This file can then be passed to the python plotting script
+`rocSPARSE/scripts/rocsparse-bench-plot.py` like so:
+
+python rocsparse-bench-plot.py /path/to/json/file/name_of_output_file.json
+
+This will generate pdf files plotting:
+* GB/s
+* GFLOPS/s
+* milliseconds
+
+We also have plotting scripts that allow you to generate plots comparing two or more rocsparse-bench performance
+runs. For example if you want to compare the performance of csrmv with single precision and double precision,
+you would first run:
+
+`./rocsparse-bench -f csrmv --precision s --alpha 1 --beta 0 --iters 1000 --bench-x --rocalution /path/to/matrix/files/*.csr --bench-o scsrmv_output_file.json`
+`./rocsparse-bench -f csrmv --precision d --alpha 1 --beta 0 --iters 1000 --bench-x --rocalution /path/to/matrix/files/*.csr --bench-o dcsrmv_output_file.json`
+
+Doing so generates the two json output files `scsrmv_output_file.json` and `dcsrmv_output_file.json`. These can then be
+passed to the python plotting script `rocSPARSE/scripts/rocsparse-bench-compare.py` like so:
+
+python rocsparse-bench-compare.py /path/to/json/file/scsrmv_output_file.json /path/to/json/file/dcsrmv_output_file.json
+
+This will generate pdf files plotting:
+* GB/s
+* GFLOPS/s
+* milliseconds
+* GB/s ratio
+* GFLOPS/s ratio
+
+comparing the two runs.
+
+In both python scripts, the y axis defaults to log scaling. If you would like linear scaling on the y axis you can pass
+the option --linear to either of the python plotting scripts. You can see a full list of options by using the -h|--help option.
+
+Helper scripts for downloading matrices
+---------------------------------------
+
+rocSPARSE contains some helper scripts for downloading matrices from the `sparse suite collection <http://sparse.tamu.edu/>`.
+These matrices can be useful for additional testing and performance measurement. The scripts are found in
+`rocSPARSE/scripts/performance/matrices`. To use these scripts to download matrices, run the following commands:
+
+`./build_convert.sh`
+`./get_matrices_1.sh`
+`./get_matrices_2.sh`
+`./get_matrices_3.sh`
+`./get_matrices_4.sh`
+`./get_matrices_5.sh`
+`./get_matrices_6.sh`
+`./get_matrices_7.sh`
+`./get_matrices_8.sh`
+
+This will download the matrices and convert them to .csr format so that they can be used by rocsparse-bench using
+the --rocalution option.
