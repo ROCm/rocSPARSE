@@ -108,7 +108,14 @@ namespace rocsparse
         hipStream_t stream = handle->stream;
         dim3        bellmm_blocks((mb - 1) / 1 + 1, (n - 1) / 32 + 1);
         dim3        bellmm_threads(32, 32, 1);
-        assert(trans_A == rocsparse_operation_none);
+
+        if(trans_A != rocsparse_operation_none)
+        {
+            RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(
+                rocsparse_status_not_implemented,
+                "This function is designed for trans_A = rocsparse_operation_none.");
+        }
+
         //
         // What happends if A needs to be transposed?
         //

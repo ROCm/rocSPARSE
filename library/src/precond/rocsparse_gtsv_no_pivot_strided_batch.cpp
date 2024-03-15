@@ -237,7 +237,7 @@ namespace rocsparse
                                                                 rocsparse_int    batch_stride,
                                                                 void*            temp_buffer)
     {
-        assert(m <= 512);
+        rocsparse_host_assert(m <= 512, "This function is designed for m <= 512.");
 
         // Run special algorithm if m is power of 2
         if((m & (m - 1)) == 0)
@@ -329,7 +329,7 @@ namespace rocsparse
                                                                 rocsparse_int    batch_stride,
                                                                 void*            temp_buffer)
     {
-        assert(m > 512);
+        rocsparse_host_assert(m > 512, "This function is designed for m > 512.");
 
         char* ptr = reinterpret_cast<char*>(temp_buffer);
         T*    da0 = reinterpret_cast<T*>(ptr);

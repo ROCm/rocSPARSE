@@ -49,17 +49,9 @@ void testing_spitsv_csr_bad_arg(const Arguments& arg)
     rocsparse_local_handle local_handle;
 
     // Spitsv structures
-    rocsparse_local_spmat local_A(m,
-                                  n,
-                                  nnz,
-                                  (void*)0x4,
-                                  (void*)0x4,
-                                  (void*)0x4,
-                                  itype,
-                                  jtype,
-                                  base,
-                                  compute_type,
-                                  rocsparse_format_csr);
+    rocsparse_local_spmat local_A(
+        m, n, nnz, (void*)0x4, (void*)0x4, (void*)0x4, itype, jtype, base, compute_type);
+
     rocsparse_local_dnvec local_x(m, (void*)0x4, compute_type);
     rocsparse_local_dnvec local_y(m, (void*)0x4, compute_type);
 
@@ -197,17 +189,9 @@ void testing_spitsv_csr(const Arguments& arg)
     CHECK_HIP_ERROR(hipMemcpy(dalpha, &halpha, sizeof(T), hipMemcpyHostToDevice));
 
     // Create descriptors
-    rocsparse_local_spmat A(M,
-                            N,
-                            nnz_A,
-                            dcsr_row_ptr,
-                            dcsr_col_ind,
-                            dcsr_val,
-                            itype,
-                            jtype,
-                            base,
-                            ttype,
-                            rocsparse_format_csr);
+    rocsparse_local_spmat A(
+        M, N, nnz_A, dcsr_row_ptr, dcsr_col_ind, dcsr_val, itype, jtype, base, ttype);
+
     rocsparse_local_dnvec x(M, dx, ttype);
     rocsparse_local_dnvec y1(M, dy_1, ttype);
     rocsparse_local_dnvec y2(M, dy_2, ttype);

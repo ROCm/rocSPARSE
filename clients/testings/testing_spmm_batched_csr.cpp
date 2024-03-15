@@ -61,17 +61,8 @@ void testing_spmm_batched_csr_bad_arg(const Arguments& arg)
     T beta  = static_cast<T>(0.0);
 
     // SpMM structures
-    rocsparse_local_spmat local_mat_A(m,
-                                      k,
-                                      nnz,
-                                      csr_row_ptr,
-                                      csr_col_ind,
-                                      csr_val,
-                                      itype,
-                                      jtype,
-                                      base,
-                                      ttype,
-                                      rocsparse_format_csr);
+    rocsparse_local_spmat local_mat_A(
+        m, k, nnz, csr_row_ptr, csr_col_ind, csr_val, itype, jtype, base, ttype);
     rocsparse_local_dnmat local_mat_B(k, n, k, B, ttype, order_B);
     rocsparse_local_dnmat local_mat_C(m, n, m, C, ttype, order_C);
 
@@ -281,17 +272,8 @@ void testing_spmm_batched_csr(const Arguments& arg)
     CHECK_HIP_ERROR(hipMemcpy(dbeta, &hbeta, sizeof(T), hipMemcpyHostToDevice));
 
     // Create descriptors
-    rocsparse_local_spmat A(A_m,
-                            A_n,
-                            nnz_A,
-                            dcsr_row_ptr,
-                            dcsr_col_ind,
-                            dcsr_val,
-                            itype,
-                            jtype,
-                            base,
-                            ttype,
-                            rocsparse_format_csr);
+    rocsparse_local_spmat A(
+        A_m, A_n, nnz_A, dcsr_row_ptr, dcsr_col_ind, dcsr_val, itype, jtype, base, ttype);
 
     ldb = std::max(int64_t(1), ldb);
     ldc = std::max(int64_t(1), ldc);

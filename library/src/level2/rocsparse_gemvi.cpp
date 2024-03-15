@@ -125,7 +125,8 @@ namespace rocsparse
             }
             else
             {
-                assert(handle->wavefront_size == 64);
+                rocsparse_host_assert(handle->wavefront_size == 64,
+                                      "Wrong wavefront size dispatch.");
 
                 dim3 gemvi_blocks((m - 1) / 64 + 1);
                 dim3 gemvi_threads(GEMVI_DIM);

@@ -46,17 +46,8 @@ void testing_spsm_csr_bad_arg(const Arguments& arg)
     rocsparse_local_handle local_handle;
 
     // SpSM structures
-    rocsparse_local_spmat local_A(m,
-                                  n,
-                                  nnz,
-                                  (void*)0x4,
-                                  (void*)0x4,
-                                  (void*)0x4,
-                                  itype,
-                                  jtype,
-                                  base,
-                                  compute_type,
-                                  rocsparse_format_csr);
+    rocsparse_local_spmat local_A(
+        m, n, nnz, (void*)0x4, (void*)0x4, (void*)0x4, itype, jtype, base, compute_type);
     rocsparse_local_dnmat local_B(m, k, m, (void*)0x4, compute_type, rocsparse_order_column);
     rocsparse_local_dnmat local_C(m, k, m, (void*)0x4, compute_type, rocsparse_order_column);
 
@@ -370,17 +361,8 @@ void testing_spsm_csr(const Arguments& arg)
     CHECK_HIP_ERROR(hipMemcpy(dalpha, &halpha, sizeof(T), hipMemcpyHostToDevice));
 
     // Create descriptors
-    rocsparse_local_spmat A(M,
-                            N,
-                            nnz_A,
-                            dcsr_row_ptr,
-                            dcsr_col_ind,
-                            dcsr_val,
-                            itype,
-                            jtype,
-                            base,
-                            ttype,
-                            rocsparse_format_csr);
+    rocsparse_local_spmat A(
+        M, N, nnz_A, dcsr_row_ptr, dcsr_col_ind, dcsr_val, itype, jtype, base, ttype);
 
     rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, order_B);
     rocsparse_local_dnmat C1(C_m, C_n, ldc, dC_1, ttype, order_C);
@@ -983,17 +965,8 @@ static void
         hipMemcpy(dC, hC, sizeof(rocsparse_float_complex) * m * k, hipMemcpyHostToDevice));
 
     // Create descriptors
-    rocsparse_local_spmat A(m,
-                            m,
-                            nnz_A,
-                            dcsr_row_ptr,
-                            dcsr_col_ind,
-                            dcsr_val,
-                            itype,
-                            jtype,
-                            base,
-                            compute_type,
-                            rocsparse_format_csr);
+    rocsparse_local_spmat A(
+        m, m, nnz_A, dcsr_row_ptr, dcsr_col_ind, dcsr_val, itype, jtype, base, compute_type);
 
     rocsparse_local_dnmat B(k, m, ldb, dB, compute_type, order_B);
     rocsparse_local_dnmat C(m, k, ldc, dC, compute_type, order_C);

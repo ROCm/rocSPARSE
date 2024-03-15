@@ -531,9 +531,15 @@ namespace rocsparse
                                                          rocsparse_datatype  compute_type,
                                                          Ts&&... ts)
     {
-        assert(compute_type == atype);
-        assert(compute_type == btype);
-        assert(compute_type == ctype);
+        rocsparse_host_assert(
+            compute_type == atype,
+            "This function is designed for atype and compute_type being the same.");
+        rocsparse_host_assert(
+            compute_type == btype,
+            "This function is designed for btype and compute_type being the same.");
+        rocsparse_host_assert(
+            compute_type == ctype,
+            "This function is designed for ctype and compute_type being the same.");
 
         switch(compute_type)
         {

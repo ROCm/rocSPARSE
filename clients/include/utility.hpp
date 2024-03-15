@@ -557,10 +557,9 @@ public:
                           rocsparse_indextype  row_col_ind_type,
                           rocsparse_index_base idx_base,
                           rocsparse_datatype   compute_type,
-                          rocsparse_format     format)
+                          bool                 csc_format = false)
     {
-
-        if(format == rocsparse_format_csr)
+        if(csc_format == false)
         {
             const rocsparse_status status = rocsparse_create_csr_descr(&this->descr,
                                                                        m,
@@ -580,7 +579,6 @@ public:
         }
         else
         {
-            assert(format == rocsparse_format_csc);
             const rocsparse_status status = rocsparse_create_csc_descr(&this->descr,
                                                                        m,
                                                                        n,
@@ -615,8 +613,7 @@ public:
                                 get_indextype<J>(),
                                 h.base,
                                 get_datatype<T>(),
-                                (DIRECTION_ == rocsparse_direction_row) ? rocsparse_format_csr
-                                                                        : rocsparse_format_csc)
+                                (DIRECTION_ == rocsparse_direction_column))
     {
     }
 

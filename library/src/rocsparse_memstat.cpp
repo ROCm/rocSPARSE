@@ -600,7 +600,10 @@ hipError_t memstat_allocator<MODE>::check_guards(char* d, size_t size)
             }
 
             // Make sure no corruption has occurred
-            assert(memcmp(host, guard, sizeof(guard)) == 0);
+            if(memcmp(host, guard, sizeof(guard)) != 0)
+            {
+                FORWARD_WITH_MESSAGE_IF_HIP_ERROR(hipErrorUnknown, "Memory corruption detected");
+            }
 
             // Point to guard before allocated memory
             d -= PAD;
@@ -613,7 +616,10 @@ hipError_t memstat_allocator<MODE>::check_guards(char* d, size_t size)
             }
 
             // Make sure no corruption has occurred
-            assert(memcmp(host, guard, sizeof(guard)) == 0);
+            if(memcmp(host, guard, sizeof(guard)) != 0)
+            {
+                FORWARD_WITH_MESSAGE_IF_HIP_ERROR(hipErrorUnknown, "Memory corruption detected");
+            }
         }
         return hipSuccess;
     }
@@ -867,9 +873,8 @@ void memstat::add(void* address, size_t nbytes, memstat_mode::value_t mode, cons
     }
     else
     {
-        std::cerr << "the address " << address << " already exist in the memory database"
-                  << std::endl;
-        exit(1);
+        THROW_WITH_MESSAGE_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error,
+                                              "Address already exists in the memstat database.");
     }
 }
 
@@ -972,8 +977,8 @@ void memstat::remove(void* address, const char* tag)
     }
     else
     {
-        std::cerr << "ROCSPARSE MEMSTAT, remove: address " << address << " not found." << std::endl;
-        exit(1);
+        THROW_WITH_MESSAGE_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error,
+                                              "Cannot remove address from the memstat database");
     }
 }
 

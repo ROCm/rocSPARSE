@@ -811,7 +811,7 @@ namespace rocsparse
         }
         else
         {
-            assert(mul == false && add == false);
+            rocsparse_host_assert(mul == false && add == false, "Wrong logical dispatch.");
             ROCSPARSE_CHECKARG_HANDLE(0, handle);
             ROCSPARSE_CHECKARG_ENUM(1, trans_A);
             ROCSPARSE_CHECKARG_ENUM(2, trans_B);
@@ -951,7 +951,7 @@ rocsparse_status rocsparse::csrgemm_nnz_template(rocsparse_handle          handl
     }
     else
     {
-        assert(mul == false && add == false);
+        rocsparse_host_assert(mul == false && add == false, "Wrong logical dispatch.");
 
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {

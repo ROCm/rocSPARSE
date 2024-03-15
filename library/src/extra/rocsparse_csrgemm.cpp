@@ -149,7 +149,7 @@ namespace rocsparse
         }
         else
         {
-            assert(mul == false && add == false);
+            rocsparse_host_assert(mul == false && add == false, "Wrong logical dispatch.");
             return rocsparse_status_success;
         }
     }
@@ -270,7 +270,7 @@ rocsparse_status rocsparse::csrgemm_template(rocsparse_handle          handle,
     }
     else
     {
-        assert(mul == false && add == false && "discrepancy with the logical dispatch");
+        rocsparse_host_assert(mul == false && add == false, "Wrong logical dispatch.");
         return rocsparse_status_success;
     }
 }
@@ -613,7 +613,7 @@ namespace rocsparse
         }
         else
         {
-            assert(mul == false && add == false && "discrepancy with the logical dispatch");
+            rocsparse_host_assert(mul == false && add == false, "Wrong logical dispatch.");
         }
 
         return rocsparse_status_continue;

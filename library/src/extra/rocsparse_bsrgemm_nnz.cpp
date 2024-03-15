@@ -292,7 +292,7 @@ namespace rocsparse
         }
         else
         {
-            assert(mul == false && add == false);
+            rocsparse_host_assert(mul == false && add == false, "Wrong logical dispatch.");
             ROCSPARSE_CHECKARG_HANDLE(0, handle);
             ROCSPARSE_CHECKARG_ENUM(1, dir);
             ROCSPARSE_CHECKARG_ENUM(2, trans_A);

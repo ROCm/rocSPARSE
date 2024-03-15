@@ -625,7 +625,7 @@ try
     }
     else
     {
-        assert(wavefront_size == 64);
+        rocsparse_host_assert(wavefront_size == 64, "Wrong wavefront size dispatch.");
         if(direction == rocsparse_direction_row)
         {
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(

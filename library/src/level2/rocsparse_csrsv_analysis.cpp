@@ -286,7 +286,8 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
             }
             else
             {
-                assert(handle->wavefront_size == 64);
+                rocsparse_host_assert(handle->wavefront_size == 64,
+                                      "Wrong wavefront size dispatch.");
                 if(descr->fill_mode == rocsparse_fill_mode_upper)
                 {
                     RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
@@ -415,7 +416,8 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
             }
             else
             {
-                assert(handle->wavefront_size == 64);
+                rocsparse_host_assert(handle->wavefront_size == 64,
+                                      "Wrong wavefront size dispatch.");
                 if(descr->fill_mode == rocsparse_fill_mode_upper)
                 {
                     RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(

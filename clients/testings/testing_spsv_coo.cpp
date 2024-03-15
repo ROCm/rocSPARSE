@@ -38,24 +38,14 @@ void testing_spsv_coo_bad_arg(const Arguments& arg)
 
     // Index and data type
     rocsparse_indextype itype        = get_indextype<I>();
-    rocsparse_indextype jtype        = get_indextype<I>();
     rocsparse_datatype  compute_type = get_datatype<T>();
 
     // Create rocsparse handle
     rocsparse_local_handle local_handle;
 
     // SpSV structures
-    rocsparse_local_spmat local_A(m,
-                                  n,
-                                  nnz,
-                                  (void*)0x4,
-                                  (void*)0x4,
-                                  (void*)0x4,
-                                  itype,
-                                  jtype,
-                                  base,
-                                  compute_type,
-                                  rocsparse_format_coo);
+    rocsparse_local_spmat local_A(
+        m, n, nnz, (void*)0x4, (void*)0x4, (void*)0x4, itype, base, compute_type);
     rocsparse_local_dnvec local_x(m, (void*)0x4, compute_type);
     rocsparse_local_dnvec local_y(m, (void*)0x4, compute_type);
 

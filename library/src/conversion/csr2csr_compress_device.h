@@ -24,7 +24,6 @@
 
 #pragma once
 
-#include <assert.h>
 #include <limits>
 
 #include "common.h"
@@ -69,7 +68,8 @@ namespace rocsparse
                 const int warp_index
                     = (LOOPS * (BLOCKSIZE / WF_SIZE) * bid + (BLOCKSIZE / WF_SIZE) * i + wid);
 
-                assert(warp_index < ((nnz_A - 1) / WF_SIZE + 1) && "Warp index out of bounds");
+                rocsparse_device_assert(warp_index < ((nnz_A - 1) / WF_SIZE + 1),
+                                        "Warp index out of bounds.");
 
                 warp_start[warp_index + 1] = count_nnzs;
             }
@@ -119,8 +119,9 @@ namespace rocsparse
                 // If we are keeping the matrix entry, insert it into the compressed CSR matrix
                 if(predicate)
                 {
-                    assert(count_previous_nnzs > 0
-                           && "When predicate is true, non-zero count cannot be zero.");
+                    rocsparse_device_assert(
+                        count_previous_nnzs > 0,
+                        "When predicate is true, non-zero count cannot be zero.");
 
                     const uint32_t start = warp_start[LOOPS * (BLOCKSIZE / WF_SIZE) * bid
                                                       + (BLOCKSIZE / WF_SIZE) * i + wid];

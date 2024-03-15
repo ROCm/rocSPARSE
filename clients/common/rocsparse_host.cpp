@@ -5921,7 +5921,13 @@ void host_csrilu0(rocsparse_int                     M,
                   U                                 boost_tol,
                   T                                 boost_val)
 {
-    assert((struct_pivot != nullptr) && (numeric_pivot != nullptr) && (singular_pivot != nullptr));
+    if((struct_pivot == nullptr) || (numeric_pivot == nullptr) || (singular_pivot == nullptr))
+    {
+        std::cerr << "host_csrilu0: invalid parameters, failed condition: ((struct_pivot != "
+                     "nullptr) && (numeric_pivot != nullptr) && (singular_pivot != nullptr))."
+                  << std::endl;
+        throw(1);
+    }
 
     // Initialize pivot
     *struct_pivot   = -1;

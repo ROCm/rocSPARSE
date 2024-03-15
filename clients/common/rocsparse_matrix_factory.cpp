@@ -180,14 +180,14 @@ rocsparse_matrix_factory<T, I, J>::rocsparse_matrix_factory(const Arguments&    
         this->m_instance = new rocsparse_matrix_factory_zero<T, I, J>();
         break;
     }
+    }
 
-    default:
+    if(this->m_instance == nullptr)
     {
-        this->m_instance = nullptr;
-        break;
+        std::cerr << "rocsparse_matrix_factory constructor failed, at line " << __LINE__
+                  << std::endl;
+        throw(1);
     }
-    }
-    assert(this->m_instance != nullptr);
 }
 
 //

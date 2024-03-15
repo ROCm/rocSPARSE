@@ -30,6 +30,8 @@
 #endif
 #include <hip/hip_runtime.h>
 
+#include "rocsparse_assert.hpp"
+
 // clang-format off
 
 #ifndef ROCSPARSE_USE_MOVE_DPP
@@ -48,6 +50,8 @@
 #define GEBSR_IND(j, bi, bj, dir) ((dir == rocsparse_direction_row) ? GEBSR_IND_R(j, bi, bj) : GEBSR_IND_C(j, bi, bj))
 #define GEBSR_IND_R(j, bi, bj) (row_block_dim * col_block_dim * (j) + (bi) * col_block_dim + (bj))
 #define GEBSR_IND_C(j, bi, bj) (row_block_dim * col_block_dim * (j) + (bi) + (bj) * row_block_dim)
+
+
 
 namespace rocsparse
 {
@@ -167,27 +171,25 @@ __device__ __forceinline__ double imag(const double& x) { return static_cast<dou
 __device__ __forceinline__ float imag(const rocsparse_float_complex& x) { return std::imag(x); }
 __device__ __forceinline__ double imag(const rocsparse_double_complex& x) { return std::imag(x); }
 
-__device__ __forceinline__ bool gt(const float& x, const float& y) { return x > y; }
-__device__ __forceinline__ bool gt(const double& x, const double& y) { return x > y; }
-__device__ __forceinline__ bool gt(const rocsparse_float_complex& x, const rocsparse_float_complex& y)
+
+ __device__ __forceinline__ bool gt(const float& x, const float& y) { return x > y; }
+ __device__ __forceinline__ bool gt(const double& x, const double& y) { return x > y; }
+ __device__ __forceinline__ bool gt(const rocsparse_float_complex& x, const rocsparse_float_complex& y)
 {
     if(&x == &y)
     {
         return false;
     }
-
-    assert(std::imag(x) == std::imag(y) && std::imag(x) == 0.0f);
 
     return std::real(x) > std::real(y);
 }
-__device__ __forceinline__ bool gt(const rocsparse_double_complex& x, const rocsparse_double_complex& y)
+
+ __device__ __forceinline__ bool gt(const rocsparse_double_complex& x, const rocsparse_double_complex& y)
 {
     if(&x == &y)
     {
         return false;
     }
-
-    assert(std::imag(x) == std::imag(y) && std::imag(x) == 0.0);
 
     return std::real(x) > std::real(y);
 }

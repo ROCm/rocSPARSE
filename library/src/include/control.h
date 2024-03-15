@@ -137,6 +137,40 @@ namespace rocsparse
         }                                                                 \
     } while(false)
 
+#define FORWARD_IF_HIP_ERROR(INPUT_STATUS_FOR_CHECK)                                  \
+    do                                                                                \
+    {                                                                                 \
+        const hipError_t TMP_STATUS_FOR_CHECK = (INPUT_STATUS_FOR_CHECK);             \
+        if(TMP_STATUS_FOR_CHECK != hipSuccess)                                        \
+        {                                                                             \
+            std::stringstream s;                                                      \
+            s << "hip error detected: code '" << TMP_STATUS_FOR_CHECK << "', name '"  \
+              << hipGetErrorName(TMP_STATUS_FOR_CHECK) << "', description '"          \
+              << hipGetErrorString(TMP_STATUS_FOR_CHECK) << "'";                      \
+            ROCSPARSE_ERROR_MESSAGE(                                                  \
+                rocsparse::get_rocsparse_status_for_hip_status(TMP_STATUS_FOR_CHECK), \
+                s.str().c_str());                                                     \
+            return TMP_STATUS_FOR_CHECK;                                              \
+        }                                                                             \
+    } while(false)
+
+#define FORWARD_WITH_MESSAGE_IF_HIP_ERROR(INPUT_STATUS_FOR_CHECK, MESSAGE)                  \
+    do                                                                                      \
+    {                                                                                       \
+        const hipError_t TMP_STATUS_FOR_CHECK = (INPUT_STATUS_FOR_CHECK);                   \
+        if(TMP_STATUS_FOR_CHECK != hipSuccess)                                              \
+        {                                                                                   \
+            std::stringstream s;                                                            \
+            s << (MESSAGE) << ", hip error detected: code '" << TMP_STATUS_FOR_CHECK        \
+              << "', name '" << hipGetErrorName(TMP_STATUS_FOR_CHECK) << "', description '" \
+              << hipGetErrorString(TMP_STATUS_FOR_CHECK) << "'";                            \
+            ROCSPARSE_ERROR_MESSAGE(                                                        \
+                rocsparse::get_rocsparse_status_for_hip_status(TMP_STATUS_FOR_CHECK),       \
+                s.str().c_str());                                                           \
+            return TMP_STATUS_FOR_CHECK;                                                    \
+        }                                                                                   \
+    } while(false)
+
 //
 //
 //

@@ -295,8 +295,8 @@ namespace rocsparse
         if(allocate_row_blocks)
         {
             size_t dist = std::distance(rowBlocksBase, rowBlocks);
-
-            assert((dist) <= rowBlockSize);
+            rocsparse_host_assert((dist) <= rowBlockSize,
+                                  "Calculated distance is expected to be bounded by rowBlockSize.");
             // Update the size of rowBlocks to reflect the actual amount of memory used
             rowBlockSize = dist;
         }

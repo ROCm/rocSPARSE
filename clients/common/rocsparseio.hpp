@@ -99,7 +99,6 @@ namespace rocsparseio
 #undef ROCSPARSEIO_ENUM_STATUS
 
         value_type       value{};
-
         inline constexpr operator value_type() const
         {
             return this->value;

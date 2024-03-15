@@ -2374,6 +2374,26 @@ void rocsparse_disable_debug_verbose();
 ROCSPARSE_EXPORT
 int rocsparse_state_debug_verbose();
 
+/*! \ingroup aux_module
+   *  \brief Enable debug force host assert.
+   *  \details The debug force host assert forces the evaluation of assert on host when the compiler directive NDEBUG is used.
+   */
+ROCSPARSE_EXPORT
+void rocsparse_enable_debug_force_host_assert();
+
+/*! \ingroup aux_module
+   *  \brief Disable debug force host assert.
+   */
+ROCSPARSE_EXPORT
+void rocsparse_disable_debug_force_host_assert();
+
+/*! \ingroup aux_module
+   * \brief Get state of  debug force host assert.
+   * \return 1 if enabled, 0 otherwise.
+   */
+ROCSPARSE_EXPORT
+int rocsparse_state_debug_force_host_assert();
+
 //
 // If ROCSPARSE_WITH_MEMSTAT is defined
 // then a set of extra routines is offered
