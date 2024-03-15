@@ -17,6 +17,10 @@ Documentation for rocSPARSE is available at
 * Improved user manual section *Installation and Building for Linux and Windows*
 * Improved SpMV in CSR format on MI300
 
+### Removals
+
+* Removed some csric0, bsric0, and csrilu0 tests that were completing correctly but taking too long on MI300 A0 hardware.
+
 ## rocSPARSE 3.0.2 for ROCm 6.0.0
 
 ### Additions
