@@ -36,75 +36,90 @@ static std::mutex s_mutex;
 
 bool rocsparse::debug_variables_st::get_debug() const
 {
-    return debug;
+    return this->debug;
+}
+
+bool rocsparse::debug_variables_st::get_debug_force_host_assert() const
+{
+    return this->debug_force_host_assert;
 }
 
 bool rocsparse::debug_variables_st::get_debug_verbose() const
 {
-    return debug_verbose;
+    return this->debug_verbose;
 }
 
 bool rocsparse::debug_variables_st::get_debug_kernel_launch() const
 {
-    return debug_kernel_launch;
+    return this->debug_kernel_launch;
 }
 
 bool rocsparse::debug_variables_st::get_debug_arguments() const
 {
-    return debug_arguments;
+    return this->debug_arguments;
 }
 
 bool rocsparse::debug_variables_st::get_debug_arguments_verbose() const
 {
-    return debug_arguments_verbose;
+    return this->debug_arguments_verbose;
 }
 
 void rocsparse::debug_variables_st::set_debug(bool value)
 {
-    if(value != debug)
+    if(value != this->debug)
     {
         s_mutex.lock();
-        debug = value;
+        this->debug = value;
         s_mutex.unlock();
     }
 }
 
 void rocsparse::debug_variables_st::set_debug_verbose(bool value)
 {
-    if(value != debug_verbose)
+    if(value != this->debug_verbose)
     {
         s_mutex.lock();
-        debug_verbose = value;
+        this->debug_verbose = value;
+        s_mutex.unlock();
+    }
+}
+
+void rocsparse::debug_variables_st::set_debug_force_host_assert(bool value)
+{
+    if(value != this->debug_force_host_assert)
+    {
+        s_mutex.lock();
+        this->debug_force_host_assert = value;
         s_mutex.unlock();
     }
 }
 
 void rocsparse::debug_variables_st::set_debug_arguments(bool value)
 {
-    if(value != debug_arguments)
+    if(value != this->debug_arguments)
     {
         s_mutex.lock();
-        debug_arguments = value;
+        this->debug_arguments = value;
         s_mutex.unlock();
     }
 }
 
 void rocsparse::debug_variables_st::set_debug_kernel_launch(bool value)
 {
-    if(value != debug_kernel_launch)
+    if(value != this->debug_kernel_launch)
     {
         s_mutex.lock();
-        debug_kernel_launch = value;
+        this->debug_kernel_launch = value;
         s_mutex.unlock();
     }
 }
 
 void rocsparse::debug_variables_st::set_debug_arguments_verbose(bool value)
 {
-    if(value != debug_arguments_verbose)
+    if(value != this->debug_arguments_verbose)
     {
         s_mutex.lock();
-        debug_arguments_verbose = value;
+        this->debug_arguments_verbose = value;
         s_mutex.unlock();
     }
 }
@@ -119,6 +134,11 @@ int rocsparse_state_debug_arguments_verbose()
 int rocsparse_state_debug_verbose()
 {
     return rocsparse_debug_variables.get_debug_verbose() ? 1 : 0;
+}
+
+int rocsparse_state_debug_force_host_assert()
+{
+    return rocsparse_debug_variables.get_debug_force_host_assert() ? 1 : 0;
 }
 
 int rocsparse_state_debug_kernel_launch()
@@ -178,6 +198,16 @@ void rocsparse_disable_debug_verbose()
 {
     rocsparse_debug_variables.set_debug_verbose(false);
     rocsparse_disable_debug_arguments_verbose();
+}
+
+void rocsparse_enable_debug_force_host_assert()
+{
+    rocsparse_debug_variables.set_debug_force_host_assert(true);
+}
+
+void rocsparse_disable_debug_force_host_assert()
+{
+    rocsparse_debug_variables.set_debug_force_host_assert(false);
 }
 
 void rocsparse_enable_debug()

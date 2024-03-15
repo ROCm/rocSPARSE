@@ -150,7 +150,7 @@ rocsparse_status rocsparse::csrgemm_symbolic_quickreturn(rocsparse_handle       
     }
     else
     {
-        assert(false == mul && false == add && "wrong logical dispatch");
+        rocsparse_host_assert(mul == false && add == false, "Wrong logical dispatch.");
         if(m == 0 || n == 0 || nnz_C == 0)
         {
             return rocsparse_status_success;
@@ -365,7 +365,8 @@ rocsparse_status rocsparse::csrgemm_symbolic_core(rocsparse_handle          hand
     }
     else
     {
-        assert(false == mul && false == add && "wrong logical dispatch");
+        rocsparse_host_assert(mul == false && add == false, "Wrong logical dispatch.");
+
         return rocsparse_status_success;
     }
 }

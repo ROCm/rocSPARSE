@@ -406,8 +406,9 @@ namespace rocsparse
                                                         U                         beta,
                                                         T*                        y)
     {
-        assert(row_block_dim >= 5);
-        assert(row_block_dim <= 8);
+        rocsparse_host_assert(
+            row_block_dim >= 5 && row_block_dim <= 8,
+            "This function is designed for row_block_dim >= 5 and row_block_dim <= 8.");
 
         if(trans == rocsparse_operation_none)
         {

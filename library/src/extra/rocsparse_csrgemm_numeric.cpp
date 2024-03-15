@@ -152,7 +152,8 @@ rocsparse_status rocsparse::csrgemm_numeric_core(rocsparse_handle          handl
     }
     else
     {
-        assert(false == mul && false == add && "wrong logical dispatch");
+        rocsparse_host_assert(mul == false && add == false, "Wrong logical dispatch.");
+
         if(descr_C->type != rocsparse_matrix_type_general)
         {
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
@@ -296,7 +297,7 @@ rocsparse_status rocsparse::csrgemm_numeric_quickreturn(rocsparse_handle        
     }
     else
     {
-        assert(false == mul && false == add && "wrong logical dispatch");
+        rocsparse_host_assert(mul == false && add == false, "Wrong logical dispatch.");
         if(m == 0 || n == 0)
         {
             return rocsparse_status_success;
@@ -468,7 +469,8 @@ namespace rocsparse
         }
         else
         {
-            assert(false == mul && false == add && "wrong logical dispatch");
+            rocsparse_host_assert(mul == false && add == false, "Wrong logical dispatch.");
+
             ROCSPARSE_CHECKARG_POINTER(23, descr_C);
             ROCSPARSE_CHECKARG_ARRAY(25, nnz_C, csr_val_C);
             ROCSPARSE_CHECKARG_ARRAY(26, m, csr_row_ptr_C);

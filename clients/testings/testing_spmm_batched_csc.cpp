@@ -61,17 +61,9 @@ void testing_spmm_batched_csc_bad_arg(const Arguments& arg)
     T beta  = static_cast<T>(0.0);
 
     // SpMM structures
-    rocsparse_local_spmat local_mat_A(m,
-                                      k,
-                                      nnz,
-                                      csc_col_ptr,
-                                      csc_row_ind,
-                                      csc_val,
-                                      itype,
-                                      jtype,
-                                      base,
-                                      ttype,
-                                      rocsparse_format_csc);
+    static const bool     use_csc_format = true;
+    rocsparse_local_spmat local_mat_A(
+        m, k, nnz, csc_col_ptr, csc_row_ind, csc_val, itype, jtype, base, ttype, use_csc_format);
     rocsparse_local_dnmat local_mat_B(k, n, k, B, ttype, order_B);
     rocsparse_local_dnmat local_mat_C(m, n, m, C, ttype, order_C);
 
@@ -281,6 +273,7 @@ void testing_spmm_batched_csc(const Arguments& arg)
     CHECK_HIP_ERROR(hipMemcpy(dbeta, &hbeta, sizeof(T), hipMemcpyHostToDevice));
 
     // Create descriptors
+    static const bool     use_csc_format = true;
     rocsparse_local_spmat A(A_m,
                             A_n,
                             nnz_A,
@@ -291,7 +284,7 @@ void testing_spmm_batched_csc(const Arguments& arg)
                             jtype,
                             base,
                             ttype,
-                            rocsparse_format_csc);
+                            use_csc_format);
 
     ldb = std::max(int64_t(1), ldb);
     ldc = std::max(int64_t(1), ldc);

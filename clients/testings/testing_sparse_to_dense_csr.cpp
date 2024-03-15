@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,17 +50,8 @@ void testing_sparse_to_dense_csr_bad_arg(const Arguments& arg)
     rocsparse_datatype  ttype = get_datatype<T>();
 
     // Sparse and dense matrix structures
-    rocsparse_local_spmat local_mat_A(m,
-                                      n,
-                                      nnz,
-                                      csr_row_ptr,
-                                      csr_col_ind,
-                                      csr_val,
-                                      itype,
-                                      jtype,
-                                      base,
-                                      ttype,
-                                      rocsparse_format_csr);
+    rocsparse_local_spmat local_mat_A(
+        m, n, nnz, csr_row_ptr, csr_col_ind, csr_val, itype, jtype, base, ttype);
     rocsparse_local_dnmat local_mat_B(m, n, ld, dense_val, ttype, order);
 
     rocsparse_spmat_descr mat_A = local_mat_A;
@@ -146,17 +137,8 @@ void testing_sparse_to_dense_csr(const Arguments& arg)
         if(m == 0 && n == 0 && ld >= mn)
         {
             I                     nnz = 0;
-            rocsparse_local_spmat mat_A(m,
-                                        n,
-                                        nnz,
-                                        d_csr_row_ptr,
-                                        d_csr_col_ind,
-                                        d_csr_val,
-                                        itype,
-                                        jtype,
-                                        base,
-                                        ttype,
-                                        rocsparse_format_csr);
+            rocsparse_local_spmat mat_A(
+                m, n, nnz, d_csr_row_ptr, d_csr_col_ind, d_csr_val, itype, jtype, base, ttype);
             rocsparse_local_dnmat mat_B(m, n, ld, d_dense_val, ttype, order);
 
             size_t buffer_size;
@@ -215,7 +197,7 @@ void testing_sparse_to_dense_csr(const Arguments& arg)
 
     rocsparse_local_dnmat mat_dense(m, n, ld, d_dense_val, ttype, order);
     rocsparse_local_spmat mat_sparse(
-        m, n, 0, d_csr_row_ptr, nullptr, nullptr, itype, jtype, base, ttype, rocsparse_format_csr);
+        m, n, 0, d_csr_row_ptr, nullptr, nullptr, itype, jtype, base, ttype);
 
     // Find size of required temporary buffer
     size_t buffer_size;

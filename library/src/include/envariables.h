@@ -53,6 +53,7 @@ namespace rocsparse
     ENVARIABLE(VERBOSE)                 \
     ENVARIABLE(MEMSTAT)                 \
     ENVARIABLE(MEMSTAT_FORCE_MANAGED)   \
+    ENVARIABLE(DEBUG_FORCE_HOST_ASSERT) \
     ENVARIABLE(MEMSTAT_GUARDS)
 
         //

@@ -40,6 +40,7 @@ namespace rocsparse
         bool debug_verbose;
         bool debug_arguments_verbose;
         bool debug_kernel_launch;
+        bool debug_force_host_assert;
 
     public:
         bool get_debug() const;
@@ -47,12 +48,14 @@ namespace rocsparse
         bool get_debug_kernel_launch() const;
         bool get_debug_arguments() const;
         bool get_debug_arguments_verbose() const;
+        bool get_debug_force_host_assert() const;
 
         void set_debug(bool value);
         void set_debug_verbose(bool value);
         void set_debug_arguments(bool value);
         void set_debug_kernel_launch(bool value);
         void set_debug_arguments_verbose(bool value);
+        void set_debug_force_host_assert(bool value);
     };
 
     struct debug_st
@@ -95,6 +98,12 @@ namespace rocsparse
                     rocsparse::envariables::names[rocsparse::envariables::DEBUG_ARGUMENTS_VERBOSE]))
                     ? debug_arguments
                     : ROCSPARSE_ENVARIABLES.get(rocsparse::envariables::DEBUG_ARGUMENTS_VERBOSE));
+
+            m_var.set_debug_force_host_assert(
+                (!getenv(
+                    rocsparse::envariables::names[rocsparse::envariables::DEBUG_FORCE_HOST_ASSERT]))
+                    ? debug
+                    : ROCSPARSE_ENVARIABLES.get(rocsparse::envariables::DEBUG_FORCE_HOST_ASSERT));
 
             const bool debug_kernel_launch
                 = ROCSPARSE_ENVARIABLES.get(rocsparse::envariables::DEBUG_KERNEL_LAUNCH);

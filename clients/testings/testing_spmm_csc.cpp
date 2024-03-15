@@ -1,5 +1,5 @@
 /* ************************************************************************
-* Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -58,6 +58,7 @@ void testing_spmm_csc_bad_arg(const Arguments& arg)
     rocsparse_datatype  compute_type = get_datatype<T>();
 
     // SpMM structures
+    static const bool     csc_format_required = true;
     rocsparse_local_spmat local_mat_A(m,
                                       k,
                                       nnz,
@@ -68,7 +69,7 @@ void testing_spmm_csc_bad_arg(const Arguments& arg)
                                       jtype,
                                       base,
                                       compute_type,
-                                      rocsparse_format_csc);
+                                      csc_format_required);
     rocsparse_local_dnmat local_mat_B(k, n, k, B, compute_type, order_B);
     rocsparse_local_dnmat local_mat_C(m, n, m, C, compute_type, order_C);
 
@@ -211,6 +212,7 @@ void testing_spmm_csc(const Arguments& arg)
     CHECK_HIP_ERROR(hipMemcpy(dbeta, &hbeta, sizeof(T), hipMemcpyHostToDevice));
 
     // Create descriptors
+    static const bool     csc_format_required = true;
     rocsparse_local_spmat A(A_m,
                             A_n,
                             nnz_A,
@@ -221,7 +223,7 @@ void testing_spmm_csc(const Arguments& arg)
                             jtype,
                             base,
                             ttype,
-                            rocsparse_format_csc);
+                            csc_format_required);
 
     ldb = std::max(int64_t(1), ldb);
     ldc = std::max(int64_t(1), ldc);

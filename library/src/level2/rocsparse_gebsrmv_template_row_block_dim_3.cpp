@@ -337,7 +337,8 @@ namespace rocsparse
                                                       U                         beta,
                                                       T*                        y)
     {
-        assert(row_block_dim == 3);
+        rocsparse_host_assert(row_block_dim == 3,
+                              "This function is designed for row_block_dim = 3.");
 
         if(trans == rocsparse_operation_none)
         {

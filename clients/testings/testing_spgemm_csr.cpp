@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,50 +75,14 @@ void testing_spgemm_csr_bad_arg(const Arguments& arg)
     rocsparse_datatype  compute_type = get_datatype<T>();
 
     // SpGEMM structures
-    rocsparse_local_spmat local_A(m,
-                                  k,
-                                  nnz_A,
-                                  csr_row_ptr_A,
-                                  csr_col_ind_A,
-                                  csr_val_A,
-                                  itype,
-                                  jtype,
-                                  base,
-                                  compute_type,
-                                  rocsparse_format_csr);
-    rocsparse_local_spmat local_B(k,
-                                  n,
-                                  nnz_B,
-                                  csr_row_ptr_B,
-                                  csr_col_ind_B,
-                                  csr_val_B,
-                                  itype,
-                                  jtype,
-                                  base,
-                                  compute_type,
-                                  rocsparse_format_csr);
-    rocsparse_local_spmat local_C(m,
-                                  n,
-                                  nnz_C,
-                                  csr_row_ptr_C,
-                                  csr_col_ind_C,
-                                  csr_val_C,
-                                  itype,
-                                  jtype,
-                                  base,
-                                  compute_type,
-                                  rocsparse_format_csr);
-    rocsparse_local_spmat local_D(m,
-                                  n,
-                                  nnz_D,
-                                  csr_row_ptr_D,
-                                  csr_col_ind_D,
-                                  csr_val_D,
-                                  itype,
-                                  jtype,
-                                  base,
-                                  compute_type,
-                                  rocsparse_format_csr);
+    rocsparse_local_spmat local_A(
+        m, k, nnz_A, csr_row_ptr_A, csr_col_ind_A, csr_val_A, itype, jtype, base, compute_type);
+    rocsparse_local_spmat local_B(
+        k, n, nnz_B, csr_row_ptr_B, csr_col_ind_B, csr_val_B, itype, jtype, base, compute_type);
+    rocsparse_local_spmat local_C(
+        m, n, nnz_C, csr_row_ptr_C, csr_col_ind_C, csr_val_C, itype, jtype, base, compute_type);
+    rocsparse_local_spmat local_D(
+        m, n, nnz_D, csr_row_ptr_D, csr_col_ind_D, csr_val_D, itype, jtype, base, compute_type);
 
     rocsparse_spmat_descr A = local_A;
     rocsparse_spmat_descr B = local_B;

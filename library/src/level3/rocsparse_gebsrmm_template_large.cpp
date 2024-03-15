@@ -108,7 +108,7 @@ static enum_large_config get_large_config(rocsparse_int block_dim, rocsparse_int
     }
     else
     {
-        assert(block_dim <= 32);
+        rocsparse_host_assert(block_dim <= 32, "Wrong logical dispatch.");
         config = large_config_32_32;
     }
     return config;
@@ -139,7 +139,8 @@ namespace rocsparse
                                             int64_t                   ldc)
     {
         hipStream_t stream = handle->stream;
-        assert(row_block_dim <= 32);
+        rocsparse_host_assert(row_block_dim <= 32,
+                              "This function is designed for row_block_dim <= 32.");
 
 #define LAUNCH_LARGE_KERNEL(M_, N_)                                                        \
     dim3 gebsrmm_blocks((mb - 1) / 1 + 1, (n - 1) / N_ + 1);                               \

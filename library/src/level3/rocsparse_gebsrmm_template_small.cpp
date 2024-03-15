@@ -129,7 +129,8 @@ namespace rocsparse
             config = small_config_4_2_16;
         else
         {
-            assert(row_block_dim == 4 && col_block_dim == 3);
+            rocsparse_host_assert(row_block_dim == 4 && col_block_dim == 3,
+                                  "Wrong logical dispatch.");
             config = small_config_4_3_16;
         }
 
@@ -159,8 +160,10 @@ namespace rocsparse
                                             int64_t                   ldc)
     {
         hipStream_t stream = handle->stream;
-        assert(row_block_dim <= 4);
-        assert(col_block_dim <= 4);
+        rocsparse_host_assert(row_block_dim <= 4,
+                              "This function is designed for row_block_dim <= 4.");
+        rocsparse_host_assert(col_block_dim <= 4,
+                              "This function is designed for col_block_dim <= 4.");
 
 #define LAUNCH_SMALL_KERNEL(M_, K_, BLOCK_DIM_, N_)                         \
     dim3 gebsrmm_blocks((mb - 1) / 1 + 1, (n - 1) / N_ + 1);                \

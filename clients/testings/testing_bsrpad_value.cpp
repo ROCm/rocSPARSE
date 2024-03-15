@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -85,9 +85,6 @@ void testing_bsrpad_value(const Arguments& arg)
     rocsparse_direction    direction = arg.direction;
     rocsparse_storage_mode storage   = arg.storage;
     T                      value     = 1;
-
-    assert(M >= 0);
-    assert(block_dim > 0);
 
     rocsparse_int Mb = (M + block_dim - 1) / block_dim;
 

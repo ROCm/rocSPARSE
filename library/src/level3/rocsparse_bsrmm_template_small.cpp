@@ -137,7 +137,8 @@ namespace rocsparse
     {
         hipStream_t         stream = handle->stream;
         const rocsparse_int m      = mb * block_dim;
-        assert(block_dim == 2);
+        rocsparse_host_assert(block_dim == 2, "This function is designed for block_dim = 2.");
+
         if(trans_B == rocsparse_operation_none)
         {
             constexpr rocsparse_int BSRMMNN_DIM = 64;

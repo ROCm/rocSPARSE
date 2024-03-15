@@ -165,7 +165,7 @@ namespace rocsparse
                                                   rocsparse_int    ldb,
                                                   void*            temp_buffer)
     {
-        assert(m <= 512);
+        rocsparse_host_assert(m <= 512, "This function is designed for m <= 512.");
 
         // Run special algorithm if m is power of 2
         if((m & (m - 1)) == 0)
@@ -327,7 +327,8 @@ namespace rocsparse
                                                    rocsparse_int    ldb,
                                                    void*            temp_buffer)
     {
-        assert(m > 512 && m <= 65536);
+        rocsparse_host_assert(m > 512 && m <= 65536,
+                              "This function is designed for m > 512 and m <= 65536.");
 
         char* ptr = reinterpret_cast<char*>(temp_buffer);
         T*    da0 = reinterpret_cast<T*>(ptr);
@@ -483,7 +484,7 @@ namespace rocsparse
                                                   rocsparse_int    ldb,
                                                   void*            temp_buffer)
     {
-        assert(m > 65536);
+        rocsparse_host_assert(m > 65536, "This function is designed for m > 65536.");
 
         char* ptr = reinterpret_cast<char*>(temp_buffer);
         T*    da0 = reinterpret_cast<T*>(ptr);

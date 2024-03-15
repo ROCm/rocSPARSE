@@ -343,8 +343,9 @@ namespace rocsparse
                                                           U                         beta,
                                                           T*                        y)
     {
-        assert(row_block_dim >= 13);
-        assert(row_block_dim <= 16);
+        rocsparse_host_assert(
+            row_block_dim >= 13 && row_block_dim <= 16,
+            "This function is designed for row_block_dim >= 13 and row_block_dim <= 16.");
 
         if(trans == rocsparse_operation_none)
         {

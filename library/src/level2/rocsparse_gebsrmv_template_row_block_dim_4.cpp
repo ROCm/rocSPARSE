@@ -337,8 +337,8 @@ namespace rocsparse
                                                       U                         beta,
                                                       T*                        y)
     {
-        assert(row_block_dim == 4);
-
+        rocsparse_host_assert(row_block_dim == 4,
+                              "This function is designed for row_block_dim = 4.");
         if(trans == rocsparse_operation_none)
         {
             launch_gebsrmv_row_block_dim_4(handle,

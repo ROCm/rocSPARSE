@@ -28,6 +28,7 @@
 
 namespace rocsparse
 {
+
     template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gpsv_strided_gather(rocsparse_int m,

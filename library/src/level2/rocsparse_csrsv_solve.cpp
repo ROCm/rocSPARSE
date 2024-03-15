@@ -231,7 +231,8 @@ namespace rocsparse
             }
             else
             {
-                assert(handle->wavefront_size == 64);
+                rocsparse_host_assert(handle->wavefront_size == 64,
+                                      "Wrong wavefront size dispatch.");
                 RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrsv_kernel<CSRSV_DIM, 64, false>),
                                                    csrsv_blocks,
                                                    csrsv_threads,
