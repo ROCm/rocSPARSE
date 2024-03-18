@@ -451,7 +451,9 @@ gtsv_interleaved_alg Specify the algorithm to use when running gtsv interleaved 
 
 For example to benchmark the csrmv routine using double precision, you can run the following command:
 
+```
 ./rocsparse-bench -f csrmv --precision d --alpha 1 --beta 0 --iters 1000 --rocalution <path to .csr matrix file>
+```
 
 Python plotting scripts
 -----------------------
@@ -459,36 +461,54 @@ Python plotting scripts
 rocSPARSE also contains some useful python plotting scripts that work in conjunction with the rocsparse-bench executable. To use these
 plotting scripts to, for example, plot the performance of csrmv routine with multiple matrices you would first call:
 
-`./rocsparse-bench -f csrmv --precision d --alpha 1 --beta 0 --iters 1000 --bench-x --rocalution /path/to/matrix/files/*.csr --bench-o name_of_output_file.json`
+```
+./rocsparse-bench -f csrmv --precision d --alpha 1 --beta 0 --iters 1000 --bench-x --rocalution /path/to/matrix/files/*.csr --bench-o name_of_output_file.json
+```
 
-This will produce the json file `name_of_output_file.json` containing all the performance data. This file can then be passed to the python plotting script
-`rocSPARSE/scripts/rocsparse-bench-plot.py` like so:
+This will produce the json file ``name_of_output_file.json`` containing all the performance data. This file can then be passed to the python plotting script
+``rocSPARSE/scripts/rocsparse-bench-plot.py`` like so:
 
+```
 python rocsparse-bench-plot.py /path/to/json/file/name_of_output_file.json
+```
 
 This will generate pdf files plotting:
-* GB/s
-* GFLOPS/s
-* milliseconds
+
+    * GB/s
+    * GFLOPS/s
+    * milliseconds
+
+.. note::
+    The parameter that comes after the ``--bench-x`` option passed to ``rocsparse-bench`` specifies which values will be used on the x-axis.
+    In the above example, we passed ``--rocalution /path/to/matrix/files/*.csr`` following ``--bench-x`` which means that each entry in the
+    x-axis of the generated plot will be a matrix found in the directory ``/path/to/matrix/files/``.
 
 We also have plotting scripts that allow you to generate plots comparing two or more rocsparse-bench performance
 runs. For example if you want to compare the performance of csrmv with single precision and double precision,
 you would first run:
 
-`./rocsparse-bench -f csrmv --precision s --alpha 1 --beta 0 --iters 1000 --bench-x --rocalution /path/to/matrix/files/*.csr --bench-o scsrmv_output_file.json`
-`./rocsparse-bench -f csrmv --precision d --alpha 1 --beta 0 --iters 1000 --bench-x --rocalution /path/to/matrix/files/*.csr --bench-o dcsrmv_output_file.json`
+```
+./rocsparse-bench -f csrmv --precision s --alpha 1 --beta 0 --iters 1000 --bench-x --rocalution /path/to/matrix/files/*.csr --bench-o scsrmv_output_file.json
+```
+
+```
+./rocsparse-bench -f csrmv --precision d --alpha 1 --beta 0 --iters 1000 --bench-x --rocalution /path/to/matrix/files/*.csr --bench-o dcsrmv_output_file.json
+```
 
 Doing so generates the two json output files `scsrmv_output_file.json` and `dcsrmv_output_file.json`. These can then be
 passed to the python plotting script `rocSPARSE/scripts/rocsparse-bench-compare.py` like so:
 
+```
 python rocsparse-bench-compare.py /path/to/json/file/scsrmv_output_file.json /path/to/json/file/dcsrmv_output_file.json
+```
 
 This will generate pdf files plotting:
-* GB/s
-* GFLOPS/s
-* milliseconds
-* GB/s ratio
-* GFLOPS/s ratio
+
+    * GB/s
+    * GFLOPS/s
+    * milliseconds
+    * GB/s ratio
+    * GFLOPS/s ratio
 
 comparing the two runs.
 
@@ -498,19 +518,45 @@ the option --linear to either of the python plotting scripts. You can see a full
 Helper scripts for downloading matrices
 ---------------------------------------
 
-rocSPARSE contains some helper scripts for downloading matrices from the `sparse suite collection <http://sparse.tamu.edu/>`.
+rocSPARSE contains some helper scripts for downloading matrices from the `sparse suite collection <http://sparse.tamu.edu/>`_.
 These matrices can be useful for additional testing and performance measurement. The scripts are found in
 `rocSPARSE/scripts/performance/matrices`. To use these scripts to download matrices, run the following commands:
 
-`./build_convert.sh`
-`./get_matrices_1.sh`
-`./get_matrices_2.sh`
-`./get_matrices_3.sh`
-`./get_matrices_4.sh`
-`./get_matrices_5.sh`
-`./get_matrices_6.sh`
-`./get_matrices_7.sh`
-`./get_matrices_8.sh`
+```
+./build_convert.sh
+```
+
+```
+./get_matrices_1.sh
+```
+
+```
+./get_matrices_2.sh
+```
+
+```
+./get_matrices_3.sh
+```
+
+```
+./get_matrices_4.sh
+```
+
+```
+./get_matrices_5.sh
+```
+
+```
+./get_matrices_6.sh
+```
+
+```
+./get_matrices_7.sh
+```
+
+```
+./get_matrices_8.sh
+```
 
 This will download the matrices and convert them to .csr format so that they can be used by rocsparse-bench using
 the --rocalution option.
