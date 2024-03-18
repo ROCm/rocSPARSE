@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -73,6 +73,48 @@ extern "C" {
 *  \retval     rocsparse_status_invalid_size \p m or \p n or \p ld is invalid.
 *  \retval     rocsparse_status_invalid_pointer \p A or \p nnz_per_row_columns or \p nnz_total_dev_host_ptr
 *              pointer is invalid.
+*
+*  \par Example
+*  \code{.c}
+*      // rocSPARSE handle
+*      rocsparse_handle handle;
+*      rocsparse_create_handle(&handle);
+*
+*      // Matrix descriptor
+*      rocsparse_mat_descr descr;
+*      rocsparse_create_mat_descr(&descr);
+*
+*      // Dense matrix in column order
+*      //     1 2 0 3 0
+*      // A = 0 4 5 0 0
+*      //     6 0 0 7 8
+*      float hdense_A[15] = {1.0f, 0.0f, 6.0f, 2.0f, 4.0f, 0.0f, 0.0f, 5.0f, 0.0f, 3.0f, 0.0f, 7.0f, 0.0f, 0.0f, 8.0f};
+*
+*      rocsparse_int m         = 3;
+*      rocsparse_int n         = 5;
+*      rocsparse_direction dir = rocsparse_direction_row;
+*
+*      float* ddense_A = nullptr;
+*      hipMalloc((void**)&ddense_A, sizeof(float) * m * n);
+*      hipMemcpy(ddense_A, hdense_A, sizeof(float) * m * n, hipMemcpyHostToDevice);
+*
+*      // Allocate memory for the nnz_per_row_columns array
+*      rocsparse_int* dnnz_per_row;
+*      hipMalloc((void**)&dnnz_per_row, sizeof(rocsparse_int) * m);
+*
+*      rocsparse_int nnz_A;
+*      rocsparse_snnz(handle, dir, m, n, descr, ddense_A, m, dnnz_per_row, &nnz_A);
+*
+*      // Copy result back to host
+*      rocsparse_int hnnz_per_row[3];
+*      hipMemcpy(hnnz_per_row, dnnz_per_row, sizeof(rocsparse_int) * m, hipMemcpyDeviceToHost);
+*
+*      hipFree(ddense_A);
+*      hipFree(dnnz_per_row);
+*
+*      rocsparse_destroy_mat_descr(descr);
+*      rocsparse_destroy_handle(handle);
+*  \endcode
 */
 /**@{*/
 ROCSPARSE_EXPORT
