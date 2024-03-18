@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -74,6 +74,57 @@ extern "C" {
 *  \retval     rocsparse_status_invalid_value \p tol is invalid.
 *  \retval     rocsparse_status_invalid_pointer \p csr_val_A or \p csr_row_ptr_A or \p nnz_per_row or \p nnz_C
 *              pointer is invalid.
+*
+*  \par Example
+*  \code{.c}
+*      // rocSPARSE handle
+*      rocsparse_handle handle;
+*      rocsparse_create_handle(&handle);
+*
+*      // Matrix descriptor
+*      rocsparse_mat_descr descr_A;
+*      rocsparse_create_mat_descr(&descr_A);
+*
+*      //     1 2 0 3 0
+*      // A = 0 4 5 0 0
+*      //     6 0 0 7 8
+*      float tol = 4.2f;
+*
+*      rocsparse_int m     = 3;
+*      rocsparse_int n     = 5;
+*      rocsparse_int nnz_A = 8;
+*
+*      rocsparse_int hcsr_row_ptr_A[4] = {0, 3, 5, 8};
+*      float hcsr_val_A[8]   = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
+*
+*      rocsparse_int* dcsr_row_ptr_A = nullptr;
+*      float* dcsr_val_A = nullptr;
+*      hipMalloc((void**)&dcsr_row_ptr_A, sizeof(rocsparse_int) * (m + 1));
+*      hipMalloc((void**)&dcsr_val_A, sizeof(float) * nnz_A);
+*
+*      hipMemcpy(dcsr_row_ptr_A, hcsr_row_ptr_A, sizeof(rocsparse_int) * (m + 1), hipMemcpyHostToDevice);
+*      hipMemcpy(dcsr_val_A, hcsr_val_A, sizeof(float) * nnz_A, hipMemcpyHostToDevice);
+*
+*      // Allocate memory for the nnz_per_row array
+*      rocsparse_int* dnnz_per_row;
+*      hipMalloc((void**)&dnnz_per_row, sizeof(rocsparse_int) * m);
+*
+*      // Call snnz_compress() which fills in nnz_per_row array and finds the number
+*      // of entries that will be in the compressed CSR matrix
+*      rocsparse_int nnz_C;
+*      rocsparse_snnz_compress(handle, m, descr_A, dcsr_val_A, dcsr_row_ptr_A, dnnz_per_row, &nnz_C, tol);
+*
+*      // Copy result back to host
+*      rocsparse_int hnnz_per_row[3];
+*      hipMemcpy(hnnz_per_row, dnnz_per_row, sizeof(rocsparse_int) * m, hipMemcpyDeviceToHost);
+*
+*      hipFree(dcsr_row_ptr_A);
+*      hipFree(dcsr_val_A);
+*      hipFree(dnnz_per_row);
+*
+*      rocsparse_destroy_mat_descr(descr_A);
+*      rocsparse_destroy_handle(handle);
+*  \endcode
 */
 /**@{*/
 ROCSPARSE_EXPORT

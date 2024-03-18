@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -116,6 +116,83 @@ extern "C" {
 *  \retval     rocsparse_status_arch_mismatch the device is not supported.
 *  \retval     rocsparse_status_not_implemented
 *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
+*
+*  \par Example
+*  This example performs a sparse matrix vector multiplication in COO format.
+*  \code{.c}
+*      // rocSPARSE handle
+*      rocsparse_handle handle;
+*      rocsparse_create_handle(&handle);
+*
+*      // A sparse matrix
+*      // 1 0 3 4
+*      // 0 0 5 1
+*      // 0 2 0 0
+*      // 4 0 0 8
+*      rocsparse_int hArow[8] = {0, 0, 0, 1, 1, 2, 3, 3};
+*      rocsparse_int hAcol[8] = {0, 2, 3, 2, 3, 1, 0, 3};
+*      double        hAval[8] = {1.0, 3.0, 4.0, 5.0, 1.0, 2.0, 4.0, 8.0};
+*
+*      rocsparse_int m = 4;
+*      rocsparse_int n = 4;
+*      rocsparse_int nnz = 8;
+*
+*      double halpha = 1.0;
+*      double hbeta  = 0.0;
+*
+*      double  hx[4] = {1.0, 2.0, 3.0, 4.0};
+*
+*      // Matrix descriptor
+*      rocsparse_mat_descr descrA;
+*      rocsparse_create_mat_descr(&descrA);
+*
+*      // Offload data to device
+*      rocsparse_int* dArow = NULL;
+*      rocsparse_int* dAcol = NULL;
+*      double*        dAval = NULL;
+*      double*        dx    = NULL;
+*      double*        dy    = NULL;
+*
+*      hipMalloc((void**)&dArow, sizeof(rocsparse_int) * nnz);
+*      hipMalloc((void**)&dAcol, sizeof(rocsparse_int) * nnz);
+*      hipMalloc((void**)&dAval, sizeof(double) * nnz);
+*      hipMalloc((void**)&dx, sizeof(double) * n);
+*      hipMalloc((void**)&dy, sizeof(double) * m);
+*
+*      hipMemcpy(dArow, hArow, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice);
+*      hipMemcpy(dAcol, hAcol, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice);
+*      hipMemcpy(dAval, hAval, sizeof(double) * nnz, hipMemcpyHostToDevice);
+*      hipMemcpy(dx, hx, sizeof(double) * n, hipMemcpyHostToDevice);
+*
+*      // Call rocsparse coomv
+*      rocsparse_dcoomv(handle,
+*                       rocsparse_operation_none,
+*                       m,
+*                       n,
+*                       nnz,
+*                       &halpha,
+*                       descrA,
+*                       dAval,
+*                       dArow,
+*                       dAcol,
+*                       dx,
+*                       &hbeta,
+*                       dy);
+*
+*      // Copy back to host
+*      double hy[4];
+*      hipMemcpy(hy, dy, sizeof(double) * m, hipMemcpyDeviceToHost);
+*
+*      // Clear up on device
+*      hipFree(dArow);
+*      hipFree(dAcol);
+*      hipFree(dAval);
+*      hipFree(dx);
+*      hipFree(dy);
+*
+*      rocsparse_destroy_mat_descr(descrA);
+*      rocsparse_destroy_handle(handle);
+*  \endcode
 */
 /**@{*/
 ROCSPARSE_EXPORT
