@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,414 +25,15 @@
 
 #include "common.h"
 
+#include <rocprim/iterator/counting_iterator.hpp>
+#include <rocprim/thread/thread_search.hpp>
+
 namespace rocsparse
 {
-    // See Yang C., Bulu? A., Owens J.D. (2018) Design Principles for Sparse Matrix Multiplication on the GPU.
-    // In: Aldinucci M., Padovani L., Torquati M. (eds) Euro-Par 2018: Parallel Processing. Euro-Par 2018.
-    // Lecture Notes in Computer Science, vol 11014. Springer, Cham. https://doi.org/10.1007/978-3-319-96983-1_48
-    template <uint32_t BLOCKSIZE,
-              uint32_t WF_SIZE,
-              bool     TRANSB,
-              typename I,
-              typename J,
-              typename A,
-              typename B,
-              typename C,
-              typename T>
-    ROCSPARSE_DEVICE_ILF void csrmmnn_merge_main_device(bool conj_A,
-                                                        bool conj_B,
-                                                        J    ncol,
-                                                        J    M,
-                                                        J    N,
-                                                        J    K,
-                                                        I    nnz,
-                                                        T    alpha,
-                                                        J* __restrict__ row_block_red,
-                                                        T* __restrict__ val_block_red,
-                                                        const J* __restrict__ row_limits,
-                                                        const I* __restrict__ csr_row_ptr,
-                                                        const J* __restrict__ csr_col_ind,
-                                                        const A* __restrict__ csr_val,
-                                                        const B* __restrict__ dense_B,
-                                                        int64_t ldb,
-                                                        T       beta,
-                                                        C* __restrict__ dense_C,
-                                                        int64_t              ldc,
-                                                        rocsparse_order      order,
-                                                        rocsparse_index_base idx_base)
-    {
-        const int tid = hipThreadIdx_x;
-        const int bid = hipBlockIdx_x;
-        const int lid = tid & (WF_SIZE - 1);
-        const int wid = tid / WF_SIZE;
-
-        __shared__ J shared_row[BLOCKSIZE];
-        __shared__ T shared_val[BLOCKSIZE * WF_SIZE];
-
-        J left  = row_limits[bid];
-        J right = row_limits[bid + 1];
-
-        J row_ind = -1;
-        J col_ind = 0;
-        T val     = static_cast<T>(0);
-
-        if((BLOCKSIZE * bid + tid) < nnz)
-        {
-            while(left < right)
-            {
-                const J mid = (left + right) / 2;
-                if((csr_row_ptr[mid + 1] - idx_base) <= (BLOCKSIZE * bid + tid))
-                {
-                    left = mid + 1;
-                }
-                else
-                {
-                    right = mid;
-                }
-            }
-            row_ind = left;
-            col_ind = rocsparse::nontemporal_load(&csr_col_ind[BLOCKSIZE * bid + tid]) - idx_base;
-            val     = alpha
-                  * rocsparse::conj_val(
-                      rocsparse::nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]), conj_A);
-        }
-
-        shared_row[tid] = row_ind;
-        __syncthreads();
-
-        for(J colB = 0; colB < ncol; colB += WF_SIZE)
-        {
-            T valB[WF_SIZE];
-            for(uint32_t i = 0; i < WF_SIZE; ++i)
-            {
-                T v = rocsparse::shfl(val, i, WF_SIZE);
-                J c = __shfl(col_ind, i, WF_SIZE);
-
-                if(!TRANSB)
-                {
-                    valB[i] = v * rocsparse::conj_val(dense_B[c + ldb * (colB + lid)], conj_B);
-                }
-                else
-                {
-                    valB[i] = v * rocsparse::conj_val(dense_B[ldb * c + colB + lid], conj_B);
-                }
-            }
-
-            for(uint32_t i = 0; i < WF_SIZE; ++i)
-            {
-                shared_val[BLOCKSIZE * lid + WF_SIZE * wid + i] = valB[i];
-            }
-            __syncthreads();
-
-            for(uint32_t i = 0; i < WF_SIZE; ++i)
-            {
-                valB[i] = shared_val[BLOCKSIZE * i + tid];
-            }
-
-            // segmented reduction
-            for(J j = 1; j < BLOCKSIZE; j <<= 1)
-            {
-                if(tid >= j)
-                {
-                    if(row_ind == shared_row[tid - j])
-                    {
-                        for(uint32_t i = 0; i < WF_SIZE; ++i)
-                        {
-                            valB[i] = valB[i] + shared_val[BLOCKSIZE * i + tid - j];
-                        }
-                    }
-                }
-                __syncthreads();
-                for(uint32_t i = 0; i < WF_SIZE; ++i)
-                {
-                    shared_val[BLOCKSIZE * i + tid] = valB[i];
-                }
-                __syncthreads();
-            }
-
-            // All lanes but the last one write their result in C.
-            if(tid < (BLOCKSIZE - 1))
-            {
-                if(row_ind != shared_row[tid + 1] && row_ind >= 0)
-                {
-                    if(order == rocsparse_order_column)
-                    {
-                        for(uint32_t i = 0; i < WF_SIZE; ++i)
-                        {
-                            dense_C[row_ind + ldc * (colB + i)] += valB[i];
-                        }
-                    }
-                    else
-                    {
-                        for(uint32_t i = 0; i < WF_SIZE; ++i)
-                        {
-                            dense_C[colB + i + ldc * row_ind] += valB[i];
-                        }
-                    }
-                }
-            }
-
-            if(tid == (BLOCKSIZE - 1))
-            {
-                for(uint32_t i = 0; i < WF_SIZE; ++i)
-                {
-                    val_block_red[hipGridDim_x * (colB + i) + bid] = valB[i];
-                }
-            }
-        }
-
-        if(tid == (BLOCKSIZE - 1))
-        {
-            row_block_red[bid] = row_ind;
-        }
-    }
-
-    template <uint32_t BLOCKSIZE,
-              uint32_t WF_SIZE,
-              bool     TRANSB,
-              typename I,
-              typename J,
-              typename A,
-              typename B,
-              typename C,
-              typename T>
-    ROCSPARSE_DEVICE_ILF void csrmmnn_merge_remainder_device(bool conj_A,
-                                                             bool conj_B,
-                                                             J    offset,
-                                                             J    M,
-                                                             J    N,
-                                                             J    K,
-                                                             I    nnz,
-                                                             T    alpha,
-                                                             J* __restrict__ row_block_red,
-                                                             T* __restrict__ val_block_red,
-                                                             const J* __restrict__ row_limits,
-                                                             const I* __restrict__ csr_row_ptr,
-                                                             const J* __restrict__ csr_col_ind,
-                                                             const A* __restrict__ csr_val,
-                                                             const B* __restrict__ dense_B,
-                                                             int64_t ldb,
-                                                             T       beta,
-                                                             C* __restrict__ dense_C,
-                                                             int64_t              ldc,
-                                                             rocsparse_order      order,
-                                                             rocsparse_index_base idx_base)
-    {
-        const int tid = hipThreadIdx_x;
-        const int bid = hipBlockIdx_x;
-        const int lid = tid & (WF_SIZE - 1);
-        const int wid = tid / WF_SIZE;
-
-        __shared__ J shared_row[BLOCKSIZE];
-        __shared__ T shared_val[BLOCKSIZE * WF_SIZE];
-
-        J left  = row_limits[bid];
-        J right = row_limits[bid + 1];
-
-        J row_ind = -1;
-        J col_ind = 0;
-        T val     = static_cast<T>(0);
-
-        if(BLOCKSIZE * bid + tid < nnz)
-        {
-            while(left < right)
-            {
-                J mid = (left + right) / 2;
-                if((csr_row_ptr[mid + 1] - idx_base) <= (BLOCKSIZE * bid + tid))
-                {
-                    left = mid + 1;
-                }
-                else
-                {
-                    right = mid;
-                }
-            }
-            row_ind = left;
-            col_ind = rocsparse::nontemporal_load(&csr_col_ind[BLOCKSIZE * bid + tid]) - idx_base;
-            val     = alpha
-                  * rocsparse::conj_val(
-                      rocsparse::nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]), conj_A);
-        }
-
-        const J colB = offset;
-
-        T valB[WF_SIZE];
-        for(uint32_t i = 0; i < WF_SIZE; ++i)
-        {
-            T v = rocsparse::shfl(val, i, WF_SIZE);
-            J c = __shfl(col_ind, i, WF_SIZE);
-
-            if(!TRANSB)
-            {
-                valB[i] = (colB + lid) < N
-                              ? v * rocsparse::conj_val(dense_B[c + ldb * (colB + lid)], conj_B)
-                              : static_cast<T>(0);
-            }
-            else
-            {
-                valB[i] = (colB + lid) < N
-                              ? v * rocsparse::conj_val(dense_B[ldb * c + (colB + lid)], conj_B)
-                              : static_cast<T>(0);
-            }
-        }
-
-        __syncthreads();
-        shared_row[tid] = row_ind;
-        for(uint32_t i = 0; i < WF_SIZE; ++i)
-        {
-            shared_val[BLOCKSIZE * lid + WF_SIZE * wid + i] = valB[i];
-        }
-        __syncthreads();
-
-        for(uint32_t i = 0; i < WF_SIZE; ++i)
-        {
-            valB[i] = shared_val[BLOCKSIZE * i + tid];
-        }
-
-        // segmented reduction
-        for(J j = 1; j < BLOCKSIZE; j <<= 1)
-        {
-            if(tid >= j)
-            {
-                if(row_ind == shared_row[tid - j])
-                {
-                    for(uint32_t i = 0; i < WF_SIZE; ++i)
-                    {
-                        valB[i] = valB[i] + shared_val[BLOCKSIZE * i + tid - j];
-                    }
-                }
-            }
-            __syncthreads();
-            for(uint32_t i = 0; i < WF_SIZE; ++i)
-            {
-                shared_val[BLOCKSIZE * i + tid] = valB[i];
-            }
-            __syncthreads();
-        }
-
-        // All lanes but the last one write their result in C.
-        if(tid < (BLOCKSIZE - 1))
-        {
-            if(row_ind != shared_row[tid + 1] && row_ind >= 0)
-            {
-                if(order == rocsparse_order_column)
-                {
-                    for(uint32_t i = 0; i < WF_SIZE; ++i)
-                    {
-                        if((colB + i) < N)
-                        {
-                            dense_C[row_ind + ldc * (colB + i)] += valB[i];
-                        }
-                    }
-                }
-                else
-                {
-                    for(uint32_t i = 0; i < WF_SIZE; ++i)
-                    {
-                        if((colB + i) < N)
-                        {
-                            dense_C[colB + i + ldc * row_ind] += valB[i];
-                        }
-                    }
-                }
-            }
-        }
-
-        if(tid == (BLOCKSIZE - 1))
-        {
-            row_block_red[bid] = row_ind;
-            for(uint32_t i = 0; i < WF_SIZE; ++i)
-            {
-                if((colB + i) < N)
-                {
-                    val_block_red[hipGridDim_x * (colB + i) + bid] = valB[i];
-                }
-            }
-        }
-    }
-
-    // Segmented block reduction kernel
-    template <uint32_t BLOCKSIZE, typename I, typename T>
-    ROCSPARSE_DEVICE_ILF void segmented_blockreduce(const I* __restrict__ rows,
-                                                    T* __restrict__ vals)
-    {
-        const int tid = hipThreadIdx_x;
-
-        for(uint32_t j = 1; j < BLOCKSIZE; j <<= 1)
-        {
-            T val = static_cast<T>(0);
-            if(tid >= j)
-            {
-                if(rows[tid] == rows[tid - j])
-                {
-                    val = vals[tid - j];
-                }
-            }
-            __syncthreads();
-
-            vals[tid] = vals[tid] + val;
-            __syncthreads();
-        }
-    }
-
-    // Do the final block reduction of the block reduction buffers back into global memory
-    template <uint32_t BLOCKSIZE, typename I, typename J, typename T>
-    ROCSPARSE_KERNEL(BLOCKSIZE)
-    void csrmmnn_general_block_reduce(I nblocks,
-                                      const J* __restrict__ row_block_red,
-                                      const T* __restrict__ val_block_red,
-                                      T*              dense_C,
-                                      int64_t         ldc,
-                                      rocsparse_order order)
-    {
-        const int tid = hipThreadIdx_x;
-
-        // Shared memory to hold row indices and values for segmented reduction
-        __shared__ I shared_row[BLOCKSIZE];
-        __shared__ T shared_val[BLOCKSIZE];
-
-        shared_row[tid] = -1;
-        shared_val[tid] = static_cast<T>(0);
-
-        __syncthreads();
-
-        const I col = hipBlockIdx_x;
-
-        for(I i = tid; i < nblocks; i += BLOCKSIZE)
-        {
-            // Copy data to reduction buffers
-            shared_row[tid] = row_block_red[i];
-            shared_val[tid] = val_block_red[i + nblocks * col];
-
-            __syncthreads();
-
-            // Do segmented block reduction
-            segmented_blockreduce<BLOCKSIZE>(shared_row, shared_val);
-
-            // Add reduced sum to C if valid
-            const I row   = shared_row[tid];
-            const I rowp1 = (tid < BLOCKSIZE - 1) ? shared_row[tid + 1] : -1;
-
-            if(row != rowp1 && row >= 0)
-            {
-                if(order == rocsparse_order_column)
-                {
-                    dense_C[row + ldc * col] = dense_C[row + ldc * col] + shared_val[tid];
-                }
-                else
-                {
-                    dense_C[col + ldc * row] = dense_C[col + ldc * row] + shared_val[tid];
-                }
-            }
-
-            __syncthreads();
-        }
-    }
-
     // Scale kernel for beta != 1.0
     template <uint32_t BLOCKSIZE, typename I, typename C, typename T>
-    ROCSPARSE_DEVICE_ILF void csrmmnn_merge_scale_device(
-        I m, I n, T beta, C* __restrict__ data, int64_t ld, rocsparse_order order)
+    ROCSPARSE_DEVICE_ILF void csrmmnn_merge_path_scale_device(
+        I m, I n, T beta, C* __restrict__ data, int64_t ld, rocsparse_order order_C)
     {
         const I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
@@ -441,8 +42,8 @@ namespace rocsparse
             return;
         }
 
-        const I wid = (order == rocsparse_order_column) ? gid / m : gid / n;
-        const I lid = (order == rocsparse_order_column) ? gid % m : gid % n;
+        const I wid = (order_C == rocsparse_order_column) ? gid / m : gid / n;
+        const I lid = (order_C == rocsparse_order_column) ? gid % m : gid % n;
 
         if(beta == 0)
         {
@@ -454,188 +55,330 @@ namespace rocsparse
         }
     }
 
-    template <uint32_t BLOCKSIZE, uint32_t NNZ_PER_BLOCK, typename I, typename J>
-    ROCSPARSE_KERNEL(BLOCKSIZE)
-    void csrmmnn_merge_compute_row_limits(J m,
-                                          I nblocks,
-                                          I nnz,
-                                          const I* __restrict__ csr_row_ptr,
-                                          J* __restrict__ row_limits,
-                                          rocsparse_index_base idx_base)
+    template <typename T>
+    struct coordinate_t
     {
-        const I gid = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
+        T x;
+        T y;
+    };
 
-        if(gid >= nblocks)
-        {
-            return;
-        }
+    template <uint32_t BLOCKSIZE, uint32_t ITEMS_PER_THREAD, typename I, typename J>
+    ROCSPARSE_KERNEL(BLOCKSIZE)
+    void csrmmnn_merge_compute_coords(J M,
+                                      I nnz,
+                                      const I* __restrict__ csr_row_ptr,
+                                      coordinate_t<uint32_t>* __restrict__ coord0,
+                                      coordinate_t<uint32_t>* __restrict__ coord1,
+                                      rocsparse_index_base idx_base)
+    {
+        const int bid = blockIdx.x;
 
-        const I s0 = NNZ_PER_BLOCK * gid;
+        // Search starting/ending coordinates of the range for this block.
+        const I diagonal0 = (bid + 0) * ITEMS_PER_THREAD;
+        const I diagonal1 = (bid + 1) * ITEMS_PER_THREAD;
 
-        J left  = 0;
-        J right = m;
-        J mid   = (left + right) / 2;
-        while((csr_row_ptr[left] - idx_base) < s0 && left < mid && right > mid)
-        {
-            if((csr_row_ptr[mid] - idx_base) <= s0)
-            {
-                left = mid;
-            }
-            else
-            {
-                right = mid;
-            }
-            mid = (left + right) / 2;
-        }
+        rocprim::counting_iterator<I> nnz_indices0(idx_base);
+        rocprim::counting_iterator<I> nnz_indices1(idx_base);
 
-        row_limits[gid] = left;
-
-        if(gid == nblocks - 1)
-        {
-            row_limits[gid + 1] = m;
-        }
+        // Search across the diagonals to find coordinates to process.
+        merge_path_search(diagonal0, csr_row_ptr + 1, nnz_indices0, I(M), nnz, coord0[bid]);
+        merge_path_search(diagonal1, csr_row_ptr + 1, nnz_indices1, I(M), nnz, coord1[bid]);
     }
 
-    template <uint32_t BLOCKSIZE,
-              uint32_t WF_SIZE,
+    // Given the sparse A matrix:
+    // 1 2 3 4 0 5 6 7
+    // 0 0 2 3 1 0 0 4
+    // 0 0 0 0 0 0 0 0
+    // 1 0 0 0 0 0 0 7
+    // 0 0 3 4 5 6 7 0
+    // 0 1 0 0 3 0 0 4
+    // 1 2 3 4 5 6 0 0
+    // 1 2 3 4 0 0 0 0
+    //
+    // total work = m + nnz = 8 + 31 = 39
+    // block_size = 8
+    // block_count = 5
+    //
+    // This results in the following merge-path
+    //   0  1  2  3  4  5  6  7  8
+    // 0 |........................  --- (0,0)
+    //   |  :  :  :  :  :  :  :  :   |
+    // 1 |........................   |
+    //   |  :  :  :  :  :  :  :  :   |
+    // 2 |........................   |
+    //   |  :  :  :  :  :  :  :  :   |
+    // 3 |........................   block 0
+    //   |  :  :  :  :  :  :  :  :   |
+    // 4 |........................   |
+    //   |  :  :  :  :  :  :  :  :   |
+    // 5 |........................   |
+    //   |  :  :  :  :  :  :  :  :   |
+    // 6 |___.....................  --- (1,7)
+    //   :  |  :  :  :  :  :  :  :   |
+    // 7 ...|.....................   |
+    //   :  |  :  :  :  :  :  :  :   |
+    // 8 ...|.....................   |
+    //   :  |  :  :  :  :  :  :  :   |
+    // 9 ...|.....................   block 1
+    //   :  |  :  :  :  :  :  :  :   |
+    //10 ...|______...............   |
+    //   :  :  :  |  :  :  :  :  :   |
+    //11 .........|...............   |
+    //   :  :  :  |  :  :  :  :  :   |
+    //12 .........|___............  --- (3,13)
+    //   :  :  :  :  |  :  :  :  :   |
+    //13 ............|............   |
+    //   :  :  :  :  |  :  :  :  :   |
+    //14 ............|............   |
+    //   :  :  :  :  |  :  :  :  :   |
+    //15 ............|............   block 2
+    //   :  :  :  :  |  :  :  :  :   |
+    //16 ............|............   |
+    //   :  :  :  :  |  :  :  :  :   |
+    //17 ............|___.........   |
+    //   :  :  :  :  :  |  :  :  :   |
+    //18 ...............|.........  --- (5,19)
+    //   :  :  :  :  :  |  :  :  :   |
+    //19 ...............|.........   |
+    //   :  :  :  :  :  |  :  :  :   |
+    //20 ...............|___......   |
+    //   :  :  :  :  :  :  |  :  :   |
+    //21 ..................|......   |
+    //   :  :  :  :  :  :  |  :  :   block 3
+    //22 ..................|......   |
+    //   :  :  :  :  :  :  |  :  :   |
+    //23 ..................|......   |
+    //   :  :  :  :  :  :  |  :  :   |
+    //24 ..................|......   |
+    //   :  :  :  :  :  :  |  :  :   |
+    //25 ..................|......  --- (6,26)
+    //   :  :  :  :  :  :  |  :  :   |
+    //26 ..................|___...   |
+    //   :  :  :  :  :  :  :  |  :   |
+    //27 .....................|...   |
+    //   :  :  :  :  :  :  :  |  :   block 4
+    //28 .....................|...   |
+    //   :  :  :  :  :  :  :  |  :   |
+    //29 .....................|...   |
+    //   :  :  :  :  :  :  :  |  :   |
+    //30 .....................|___  --- (8, 30)
+    template <uint32_t WF_SIZE,
+              uint32_t ITEMS_PER_THREAD,
               uint32_t LOOPS,
-              bool     TRANSB,
-              typename T,
               typename I,
               typename J,
               typename A,
               typename B,
-              typename C>
-    ROCSPARSE_DEVICE_ILF void csrmmnt_merge_main_device(bool conj_A,
-                                                        bool conj_B,
-                                                        J    ncol,
-                                                        J    M,
-                                                        J    N,
-                                                        J    K,
-                                                        I    nnz,
-                                                        T    alpha,
-                                                        const J* __restrict__ row_limits,
-                                                        const I* __restrict__ csr_row_ptr,
-                                                        const J* __restrict__ csr_col_ind,
-                                                        const A* __restrict__ csr_val,
-                                                        const B* __restrict__ dense_B,
-                                                        int64_t ldb,
-                                                        C* __restrict__ dense_C,
-                                                        int64_t              ldc,
-                                                        rocsparse_order      order,
-                                                        rocsparse_index_base idx_base)
+              typename C,
+              typename T>
+    ROCSPARSE_DEVICE_ILF void csrmmnt_merge_path_main_device(bool     conj_A,
+                                                             bool     conj_B,
+                                                             J        ncol_offset,
+                                                             J        ncol,
+                                                             J        M,
+                                                             J        N,
+                                                             J        K,
+                                                             I        nnz,
+                                                             T        alpha,
+                                                             const I* csr_row_ptr,
+                                                             const J* csr_col_ind,
+                                                             const A* csr_val,
+                                                             const coordinate_t<uint32_t>* coord0,
+                                                             const coordinate_t<uint32_t>* coord1,
+                                                             const B*                      dense_B,
+                                                             int64_t                       ldb,
+                                                             T                             beta,
+                                                             C*                            dense_C,
+                                                             int64_t                       ldc,
+                                                             rocsparse_order               order_C,
+                                                             rocsparse_index_base          idx_base)
     {
-        const int tid = hipThreadIdx_x;
-        const int bid = hipBlockIdx_x;
-        const int lid = tid & (WF_SIZE - 1);
+        const int lid = threadIdx.x & (WF_SIZE - 1);
+        const int bid = blockIdx.x;
 
-        J left  = row_limits[bid];
-        J right = row_limits[bid + 1];
+        const coordinate_t<uint32_t> start_coord = coord0[bid];
+        const coordinate_t<uint32_t> end_coord   = coord1[bid];
 
-        J row = 0;
-        J col = 0;
-        T val = static_cast<T>(0);
+        J       start_row = start_coord.x;
+        const J end_row   = end_coord.x;
 
-        if((BLOCKSIZE * bid + tid) < nnz)
+        const I ptr_start_row = csr_row_ptr[start_row] - idx_base;
+        const I ptr_end_row   = csr_row_ptr[end_row] - idx_base;
+
+        const I start_nz = (start_coord.y == (ptr_start_row)) ? 0 : start_coord.y;
+        const I end_nz   = (end_coord.y == (ptr_end_row)) ? 0 : end_coord.y;
+
+        if(start_nz != 0)
         {
-            // Compute COO row index on the fly
-            while(left < right)
+            // Entire block is used in the middle part of a long row
+            if(start_row == end_row && end_nz != 0)
             {
-                J mid = (left + right) / 2;
-                if((csr_row_ptr[mid + 1] - idx_base) <= (BLOCKSIZE * bid + tid))
+                for(J l = ncol_offset; l < ncol; l += WF_SIZE * LOOPS)
                 {
-                    left = mid + 1;
-                }
-                else
-                {
-                    right = mid;
-                }
-            }
+                    const J colB = l + lid;
 
-            row = left;
-            col = rocsparse::nontemporal_load(&csr_col_ind[BLOCKSIZE * bid + tid]) - idx_base;
-            val = rocsparse::conj_val(rocsparse::nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]),
-                                      conj_A);
-        }
+                    T sum[LOOPS]{};
+                    for(I j = start_nz; j < end_nz; j++)
+                    {
+                        const T val = conj_val(csr_val[j], conj_A);
+                        const J col = (csr_col_ind[j] - idx_base);
 
-        for(J l = 0; l < ncol; l += WF_SIZE * LOOPS)
-        {
-            const J colB = l + lid;
+                        for(uint32_t p = 0; p < LOOPS; p++)
+                        {
+                            sum[p] = rocsparse::fma<T>(
+                                val,
+                                conj_val(dense_B[ldb * col + (colB + p * WF_SIZE)], conj_B),
+                                sum[p]);
+                        }
+                    }
 
-            T sum[LOOPS]{};
-
-            J current_row = rocsparse::shfl(row, 0, WF_SIZE);
-
-            for(uint32_t i = 0; i < WF_SIZE; ++i)
-            {
-
-                const T v = rocsparse::shfl(val, i, WF_SIZE);
-                const J c = rocsparse::shfl(col, i, WF_SIZE);
-                const J r = rocsparse::shfl(row, i, WF_SIZE);
-
-                if(r != current_row)
-                {
-                    if(order == rocsparse_order_column)
+                    if(order_C == rocsparse_order_column)
                     {
                         for(uint32_t p = 0; p < LOOPS; p++)
                         {
-                            rocsparse::atomic_add(
-                                &dense_C[(colB + p * WF_SIZE) * ldc + current_row], alpha * sum[p]);
+                            rocsparse::atomic_add(&dense_C[start_row + ldc * (colB + p * WF_SIZE)],
+                                                  (alpha * sum[p]));
                         }
                     }
                     else
                     {
                         for(uint32_t p = 0; p < LOOPS; p++)
                         {
-                            rocsparse::atomic_add(&dense_C[current_row * ldc + colB + p * WF_SIZE],
-                                                  alpha * sum[p]);
+                            rocsparse::atomic_add(&dense_C[ldc * start_row + (colB + p * WF_SIZE)],
+                                                  (alpha * sum[p]));
+                        }
+                    }
+                }
+
+                return;
+            }
+            else // last part of long row where the block ends on a subsequent row and therefore more work to be done.
+            {
+                for(J l = ncol_offset; l < ncol; l += WF_SIZE * LOOPS)
+                {
+                    const J colB = l + lid;
+
+                    T       sum[LOOPS]{};
+                    const I end = csr_row_ptr[start_row + 1] - idx_base;
+                    for(I j = start_nz; j < end; j++)
+                    {
+                        const T val = conj_val(csr_val[j], conj_A);
+                        const J col = (csr_col_ind[j] - idx_base);
+
+                        for(uint32_t p = 0; p < LOOPS; p++)
+                        {
+                            sum[p] = rocsparse::fma<T>(
+                                val,
+                                conj_val(dense_B[ldb * col + (colB + p * WF_SIZE)], conj_B),
+                                sum[p]);
                         }
                     }
 
-                    for(uint32_t p = 0; p < LOOPS; p++)
+                    if(order_C == rocsparse_order_column)
                     {
-                        sum[p] = static_cast<T>(0);
+                        for(uint32_t p = 0; p < LOOPS; p++)
+                        {
+                            rocsparse::atomic_add(&dense_C[start_row + ldc * (colB + p * WF_SIZE)],
+                                                  (alpha * sum[p]));
+                        }
                     }
-
-                    current_row = r;
+                    else
+                    {
+                        for(uint32_t p = 0; p < LOOPS; p++)
+                        {
+                            rocsparse::atomic_add(&dense_C[ldc * start_row + (colB + p * WF_SIZE)],
+                                                  (alpha * sum[p]));
+                        }
+                    }
                 }
 
-                if(TRANSB)
+                start_row += 1;
+            }
+        }
+
+        // Complete rows therefore no atomics required
+        for(J i = start_row; i < end_row; i++)
+        {
+            const I row_begin = csr_row_ptr[i] - idx_base;
+            const I row_end   = csr_row_ptr[i + 1] - idx_base;
+            const I count     = row_end - row_begin;
+
+            for(J l = ncol_offset; l < ncol; l += WF_SIZE * LOOPS)
+            {
+                const J colB = l + lid;
+
+                T sum[LOOPS]{};
+
+                for(I j = 0; j < count; j++)
                 {
+                    const T val = conj_val(csr_val[row_begin + j], conj_A);
+                    const J col = (csr_col_ind[row_begin + j] - idx_base);
+
                     for(uint32_t p = 0; p < LOOPS; p++)
                     {
                         sum[p] = rocsparse::fma<T>(
-                            v,
-                            rocsparse::conj_val(dense_B[c * ldb + colB + p * WF_SIZE], conj_B),
+                            val,
+                            conj_val(dense_B[ldb * col + (colB + p * WF_SIZE)], conj_B),
                             sum[p]);
+                    }
+                }
+
+                if(order_C == rocsparse_order_column)
+                {
+                    for(uint32_t p = 0; p < LOOPS; p++)
+                    {
+                        dense_C[i + ldc * (colB + p * WF_SIZE)] = rocsparse::fma<T>(
+                            alpha, sum[p], dense_C[i + ldc * (colB + p * WF_SIZE)]);
                     }
                 }
                 else
                 {
                     for(uint32_t p = 0; p < LOOPS; p++)
                     {
-                        sum[p] = rocsparse::fma<T>(
-                            v,
-                            rocsparse::conj_val(dense_B[(colB + p * WF_SIZE) * ldb + c], conj_B),
-                            sum[p]);
+                        dense_C[ldc * i + (colB + p * WF_SIZE)] = rocsparse::fma<T>(
+                            alpha, sum[p], dense_C[ldc * i + (colB + p * WF_SIZE)]);
                     }
                 }
             }
+        }
 
-            if(order == rocsparse_order_column)
+        // first part of row
+        if(end_nz != 0)
+        {
+            for(J l = ncol_offset; l < ncol; l += WF_SIZE * LOOPS)
             {
-                for(uint32_t p = 0; p < LOOPS; p++)
+                const J colB = l + lid;
+
+                T sum[LOOPS]{};
+                for(I j = ptr_end_row; j < end_nz; j++)
                 {
-                    rocsparse::atomic_add(&dense_C[(colB + p * WF_SIZE) * ldc + current_row],
-                                          alpha * sum[p]);
+                    const T val = conj_val(csr_val[j], conj_A);
+                    const J col = (csr_col_ind[j] - idx_base);
+
+                    for(uint32_t p = 0; p < LOOPS; p++)
+                    {
+                        sum[p] = rocsparse::fma<T>(
+                            val,
+                            conj_val(dense_B[ldb * col + (colB + p * WF_SIZE)], conj_B),
+                            sum[p]);
+                    }
                 }
-            }
-            else
-            {
-                for(uint32_t p = 0; p < LOOPS; p++)
+
+                if(order_C == rocsparse_order_column)
                 {
-                    rocsparse::atomic_add(&dense_C[current_row * ldc + colB + p * WF_SIZE],
-                                          alpha * sum[p]);
+                    for(uint32_t p = 0; p < LOOPS; p++)
+                    {
+                        rocsparse::atomic_add(&dense_C[end_row + ldc * (colB + p * WF_SIZE)],
+                                              (alpha * sum[p]));
+                    }
+                }
+                else
+                {
+                    for(uint32_t p = 0; p < LOOPS; p++)
+                    {
+                        rocsparse::atomic_add(&dense_C[ldc * end_row + (colB + p * WF_SIZE)],
+                                              (alpha * sum[p]));
+                    }
                 }
             }
         }
@@ -643,177 +386,568 @@ namespace rocsparse
 
     template <uint32_t BLOCKSIZE,
               uint32_t WF_SIZE,
-              bool     TRANSB,
-              typename T,
+              uint32_t ITEMS_PER_THREAD,
               typename I,
               typename J,
               typename A,
               typename B,
-              typename C>
-    ROCSPARSE_DEVICE_ILF void csrmmnt_merge_remainder_device(bool conj_A,
-                                                             bool conj_B,
-                                                             J    ncol_offset,
-                                                             J    M,
-                                                             J    N,
-                                                             J    K,
-                                                             I    nnz,
-                                                             T    alpha,
-                                                             const J* __restrict__ row_limits,
-                                                             const I* __restrict__ csr_row_ptr,
-                                                             const J* __restrict__ csr_col_ind,
-                                                             const A* __restrict__ csr_val,
-                                                             const B* __restrict__ dense_B,
-                                                             int64_t ldb,
-                                                             C* __restrict__ dense_C,
-                                                             int64_t              ldc,
-                                                             rocsparse_order      order,
-                                                             rocsparse_index_base idx_base)
+              typename C,
+              typename T>
+    ROCSPARSE_DEVICE_ILF void
+        csrmmnt_merge_path_main_multi_rows_device(bool                          conj_A,
+                                                  bool                          conj_B,
+                                                  J                             ncol_offset,
+                                                  J                             ncol,
+                                                  J                             M,
+                                                  J                             N,
+                                                  J                             K,
+                                                  I                             nnz,
+                                                  T                             alpha,
+                                                  const I*                      csr_row_ptr,
+                                                  const J*                      csr_col_ind,
+                                                  const A*                      csr_val,
+                                                  const coordinate_t<uint32_t>* coord0,
+                                                  const coordinate_t<uint32_t>* coord1,
+                                                  const B*                      dense_B,
+                                                  int64_t                       ldb,
+                                                  T                             beta,
+                                                  C*                            dense_C,
+                                                  int64_t                       ldc,
+                                                  rocsparse_order               order_C,
+                                                  rocsparse_index_base          idx_base)
     {
-        const int tid = hipThreadIdx_x;
-        const int bid = hipBlockIdx_x;
+        const int tid = threadIdx.x;
         const int lid = tid & (WF_SIZE - 1);
-        const int wid = tid / WF_SIZE;
+        const int wid = tid / (WF_SIZE);
 
-        __shared__ J shared_row[(BLOCKSIZE / WF_SIZE) * WF_SIZE];
-        __shared__ T shared_val[(BLOCKSIZE / WF_SIZE) * WF_SIZE];
+        const int bid = (BLOCKSIZE / WF_SIZE) * blockIdx.x + wid;
 
-        J left  = row_limits[bid];
-        J right = row_limits[bid + 1];
+        const uint64_t total_work  = static_cast<uint64_t>(M + nnz);
+        const uint64_t block_count = (total_work - 1) / ITEMS_PER_THREAD + 1;
 
-        J row = 0;
-        J col = 0;
-        T val = static_cast<T>(0);
-
-        if((BLOCKSIZE * bid + tid) < nnz)
+        if(bid < block_count)
         {
-            // Compute COO row index on the fly
-            while(left < right)
+            const coordinate_t<uint32_t> start_coord = coord0[bid];
+            const coordinate_t<uint32_t> end_coord   = coord1[bid];
+
+            J       start_row = start_coord.x;
+            const J end_row   = end_coord.x;
+
+            const I ptr_start_row = csr_row_ptr[start_row] - idx_base;
+            const I ptr_end_row   = csr_row_ptr[end_row] - idx_base;
+
+            const I start_nz = (start_coord.y == ptr_start_row) ? 0 : start_coord.y;
+            const I end_nz   = (end_coord.y == ptr_end_row) ? 0 : end_coord.y;
+
+            if(start_nz != 0)
             {
-                const J mid = (left + right) / 2;
-                if((csr_row_ptr[mid + 1] - idx_base) <= (BLOCKSIZE * bid + tid))
+                // Entire block is used in the middle part of a long row
+                if(start_row == end_row && end_nz != 0)
                 {
-                    left = mid + 1;
+                    for(J l = ncol_offset; l < ncol; l += WF_SIZE)
+                    {
+                        const J colB = l + lid;
+
+                        T sum = static_cast<T>(0);
+                        for(I j = start_nz; j < end_nz; j++)
+                        {
+                            const T val = conj_val(csr_val[j], conj_A);
+                            const J col = (csr_col_ind[j] - idx_base);
+
+                            sum = rocsparse::fma<T>(
+                                val, conj_val(dense_B[ldb * col + colB], conj_B), sum);
+                        }
+
+                        if(order_C == rocsparse_order_column)
+                        {
+                            rocsparse::atomic_add(&dense_C[start_row + ldc * colB], (alpha * sum));
+                        }
+                        else
+                        {
+                            rocsparse::atomic_add(&dense_C[ldc * start_row + colB], (alpha * sum));
+                        }
+                    }
+
+                    return;
                 }
-                else
+                else // last part of long row where the block ends on a subsequent row and therefore more work to be done.
                 {
-                    right = mid;
+                    for(J l = ncol_offset; l < ncol; l += WF_SIZE)
+                    {
+                        const J colB = l + lid;
+
+                        T       sum = static_cast<T>(0);
+                        const I end = csr_row_ptr[start_row + 1] - idx_base;
+                        for(I j = start_nz; j < end; j++)
+                        {
+                            const T val = conj_val(csr_val[j], conj_A);
+                            const J col = (csr_col_ind[j] - idx_base);
+
+                            sum = rocsparse::fma<T>(
+                                val, conj_val(dense_B[ldb * col + colB], conj_B), sum);
+                        }
+
+                        if(order_C == rocsparse_order_column)
+                        {
+                            rocsparse::atomic_add(&dense_C[start_row + ldc * colB], (alpha * sum));
+                        }
+                        else
+                        {
+                            rocsparse::atomic_add(&dense_C[ldc * start_row + colB], (alpha * sum));
+                        }
+                    }
+
+                    start_row += 1;
                 }
             }
 
-            row = left;
-            col = rocsparse::nontemporal_load(&csr_col_ind[BLOCKSIZE * bid + tid]) - idx_base;
-            val = rocsparse::conj_val(rocsparse::nontemporal_load(&csr_val[BLOCKSIZE * bid + tid]),
-                                      conj_A);
-        }
-
-        for(J l = ncol_offset; l < N; l += WF_SIZE)
-        {
-            const J colB = l + lid;
-
-            T sum         = static_cast<T>(0);
-            J current_row = rocsparse::shfl(row, 0, WF_SIZE);
-
-            for(uint32_t i = 0; i < WF_SIZE; ++i)
+            // Complete rows therefore no atomics required
+            for(J i = start_row; i < end_row; i++)
             {
-                const T v = rocsparse::shfl(val, i, WF_SIZE);
-                const J c = rocsparse::shfl(col, i, WF_SIZE);
-                const J r = rocsparse::shfl(row, i, WF_SIZE);
+                const I row_begin = csr_row_ptr[i] - idx_base;
+                const I row_end   = csr_row_ptr[i + 1] - idx_base;
+                const I count     = row_end - row_begin;
 
-                if(r != current_row)
+                for(J l = ncol_offset; l < ncol; l += WF_SIZE)
                 {
+                    const J colB = l + lid;
+
+                    T sum = static_cast<T>(0);
+                    for(I j = 0; j < count; j++)
+                    {
+                        const T val = conj_val(csr_val[row_begin + j], conj_A);
+                        const J col = (csr_col_ind[row_begin + j] - idx_base);
+
+                        sum = rocsparse::fma<T>(
+                            val, conj_val(dense_B[ldb * col + colB], conj_B), sum);
+                    }
+
+                    if(order_C == rocsparse_order_column)
+                    {
+                        dense_C[i + ldc * colB]
+                            = rocsparse::fma<T>(alpha, sum, dense_C[i + ldc * colB]);
+                    }
+                    else
+                    {
+                        dense_C[ldc * i + colB]
+                            = rocsparse::fma<T>(alpha, sum, dense_C[ldc * i + colB]);
+                    }
+                }
+            }
+
+            // first part of row
+            if(end_nz != 0)
+            {
+                for(J l = ncol_offset; l < ncol; l += WF_SIZE)
+                {
+                    const J colB = l + lid;
+
+                    T sum = static_cast<T>(0);
+                    for(I j = ptr_end_row; j < end_nz; j++)
+                    {
+                        const T val = conj_val(csr_val[j], conj_A);
+                        const J col = (csr_col_ind[j] - idx_base);
+
+                        sum = rocsparse::fma<T>(
+                            val, conj_val(dense_B[ldb * col + colB], conj_B), sum);
+                    }
+
+                    if(order_C == rocsparse_order_column)
+                    {
+                        rocsparse::atomic_add(&dense_C[end_row + ldc * colB], (alpha * sum));
+                    }
+                    else
+                    {
+                        rocsparse::atomic_add(&dense_C[ldc * end_row + colB], (alpha * sum));
+                    }
+                }
+            }
+        }
+    }
+
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t ITEMS_PER_THREAD,
+              typename I,
+              typename J,
+              typename A,
+              typename B,
+              typename C,
+              typename T>
+    ROCSPARSE_DEVICE_ILF void
+        csrmmnt_merge_path_remainder_device(bool                          conj_A,
+                                            bool                          conj_B,
+                                            J                             ncol_offset,
+                                            J                             M,
+                                            J                             N,
+                                            J                             K,
+                                            I                             nnz,
+                                            T                             alpha,
+                                            const I*                      csr_row_ptr,
+                                            const J*                      csr_col_ind,
+                                            const A*                      csr_val,
+                                            const coordinate_t<uint32_t>* coord0,
+                                            const coordinate_t<uint32_t>* coord1,
+                                            const B*                      dense_B,
+                                            int64_t                       ldb,
+                                            T                             beta,
+                                            C*                            dense_C,
+                                            int64_t                       ldc,
+                                            rocsparse_order               order_C,
+                                            rocsparse_index_base          idx_base)
+    {
+        const int tid = threadIdx.x;
+        const int lid = tid & (WF_SIZE - 1);
+        const int wid = tid / (WF_SIZE);
+
+        const int bid = (BLOCKSIZE / WF_SIZE) * blockIdx.x + wid;
+
+        const uint64_t total_work  = static_cast<uint64_t>(M + nnz);
+        const uint64_t block_count = (total_work - 1) / ITEMS_PER_THREAD + 1;
+
+        if(bid < block_count)
+        {
+            const coordinate_t<uint32_t> start_coord = coord0[bid];
+            const coordinate_t<uint32_t> end_coord   = coord1[bid];
+
+            J       start_row = start_coord.x;
+            const J end_row   = end_coord.x;
+
+            const I ptr_start_row = csr_row_ptr[start_row] - idx_base;
+            const I ptr_end_row   = csr_row_ptr[end_row] - idx_base;
+
+            const I start_nz = (start_coord.y == ptr_start_row) ? 0 : start_coord.y;
+            const I end_nz   = (end_coord.y == ptr_end_row) ? 0 : end_coord.y;
+
+            if(start_nz != 0)
+            {
+                // Entire block is used in the middle part of a long row
+                if(start_row == end_row && end_nz != 0)
+                {
+                    for(J l = ncol_offset; l < N; l += WF_SIZE)
+                    {
+                        const J colB = l + lid;
+
+                        if(colB < N)
+                        {
+                            T sum = static_cast<T>(0);
+                            for(I j = start_nz; j < end_nz; j++)
+                            {
+                                const T val = conj_val(csr_val[j], conj_A);
+                                const J col = (csr_col_ind[j] - idx_base);
+
+                                sum = rocsparse::fma<T>(
+                                    val, conj_val(dense_B[ldb * col + colB], conj_B), sum);
+                            }
+
+                            if(order_C == rocsparse_order_column)
+                            {
+                                rocsparse::atomic_add(&dense_C[start_row + ldc * colB],
+                                                      (alpha * sum));
+                            }
+                            else
+                            {
+                                rocsparse::atomic_add(&dense_C[ldc * start_row + colB],
+                                                      (alpha * sum));
+                            }
+                        }
+                    }
+
+                    return;
+                }
+                else // last part of long row where the block ends on a subsequent row and therefore more work to be done.
+                {
+                    for(J l = ncol_offset; l < N; l += WF_SIZE)
+                    {
+                        const J colB = l + lid;
+
+                        if(colB < N)
+                        {
+                            T       sum = static_cast<T>(0);
+                            const I end = csr_row_ptr[start_row + 1] - idx_base;
+                            for(I j = start_nz; j < end; j++)
+                            {
+                                const T val = conj_val(csr_val[j], conj_A);
+                                const J col = (csr_col_ind[j] - idx_base);
+
+                                sum = rocsparse::fma<T>(
+                                    val, conj_val(dense_B[ldb * col + colB], conj_B), sum);
+                            }
+
+                            if(order_C == rocsparse_order_column)
+                            {
+                                rocsparse::atomic_add(&dense_C[start_row + ldc * colB],
+                                                      (alpha * sum));
+                            }
+                            else
+                            {
+                                rocsparse::atomic_add(&dense_C[ldc * start_row + colB],
+                                                      (alpha * sum));
+                            }
+                        }
+                    }
+
+                    start_row += 1;
+                }
+            }
+
+            // Complete rows therefore no atomics required
+            for(J i = start_row; i < end_row; i++)
+            {
+                const I row_begin = csr_row_ptr[i] - idx_base;
+                const I row_end   = csr_row_ptr[i + 1] - idx_base;
+                const I count     = row_end - row_begin;
+
+                for(J l = ncol_offset; l < N; l += WF_SIZE)
+                {
+                    const J colB = l + lid;
+
                     if(colB < N)
                     {
-                        if(order == rocsparse_order_column)
+                        T sum = static_cast<T>(0);
+                        for(I j = 0; j < count; j++)
                         {
-                            rocsparse::atomic_add(&dense_C[colB * ldc + current_row], alpha * sum);
+                            const T val = conj_val(csr_val[row_begin + j], conj_A);
+                            const J col = (csr_col_ind[row_begin + j] - idx_base);
+
+                            sum = rocsparse::fma<T>(
+                                val, conj_val(dense_B[ldb * col + colB], conj_B), sum);
+                        }
+
+                        if(order_C == rocsparse_order_column)
+                        {
+                            dense_C[i + ldc * colB]
+                                = rocsparse::fma<T>(alpha, sum, dense_C[i + ldc * colB]);
                         }
                         else
                         {
-                            rocsparse::atomic_add(&dense_C[current_row * ldc + colB], alpha * sum);
-                        }
-                    }
-
-                    sum = static_cast<T>(0);
-
-                    current_row = r;
-                }
-
-                if(colB < N)
-                {
-                    if(TRANSB)
-                    {
-                        sum = rocsparse::fma<T>(
-                            v, rocsparse::conj_val(dense_B[c * ldb + colB], conj_B), sum);
-                    }
-                    else
-                    {
-                        sum = rocsparse::fma<T>(
-                            v, rocsparse::conj_val(dense_B[colB * ldb + c], conj_B), sum);
-                    }
-                }
-            }
-
-            __syncthreads();
-            shared_row[(BLOCKSIZE / WF_SIZE) * lid + wid] = current_row;
-            shared_val[(BLOCKSIZE / WF_SIZE) * lid + wid] = sum;
-            __syncthreads();
-
-            current_row = shared_row[tid];
-            sum         = shared_val[tid];
-
-            const int slid = tid & ((BLOCKSIZE / WF_SIZE) - 1);
-            const int swid = tid / (BLOCKSIZE / WF_SIZE);
-
-            // segmented reduction
-            for(J j = 1; j < (BLOCKSIZE / WF_SIZE); j <<= 1)
-            {
-                if(slid >= j)
-                {
-                    if(current_row == shared_row[slid - j])
-                    {
-                        sum = sum + shared_val[(BLOCKSIZE / WF_SIZE) * swid + slid - j];
-                    }
-                }
-                __syncthreads();
-                shared_val[(BLOCKSIZE / WF_SIZE) * swid + slid] = sum;
-                __syncthreads();
-            }
-
-            if(slid < ((BLOCKSIZE / WF_SIZE) - 1))
-            {
-                if(current_row != shared_row[slid + 1] && current_row >= 0)
-                {
-                    if((l + swid) < N)
-                    {
-                        if(order == rocsparse_order_column)
-                        {
-                            rocsparse::atomic_add(&dense_C[(l + swid) * ldc + current_row],
-                                                  alpha * sum);
-                        }
-                        else
-                        {
-                            rocsparse::atomic_add(&dense_C[current_row * ldc + (l + swid)],
-                                                  alpha * sum);
+                            dense_C[ldc * i + colB]
+                                = rocsparse::fma<T>(alpha, sum, dense_C[ldc * i + colB]);
                         }
                     }
                 }
             }
 
-            if(slid == ((BLOCKSIZE / WF_SIZE) - 1))
+            // first part of row
+            if(end_nz != 0)
             {
-                if(current_row >= 0)
+                for(J l = ncol_offset; l < N; l += WF_SIZE)
                 {
-                    if((l + swid) < N)
+                    const J colB = l + lid;
+
+                    if(colB < N)
                     {
-                        if(order == rocsparse_order_column)
+                        T sum = static_cast<T>(0);
+                        for(I j = ptr_end_row; j < end_nz; j++)
                         {
-                            rocsparse::atomic_add(&dense_C[(l + swid) * ldc + current_row],
-                                                  alpha * sum);
+                            const T val = conj_val(csr_val[j], conj_A);
+                            const J col = (csr_col_ind[j] - idx_base);
+
+                            sum = rocsparse::fma<T>(
+                                val, conj_val(dense_B[ldb * col + colB], conj_B), sum);
+                        }
+
+                        if(order_C == rocsparse_order_column)
+                        {
+                            rocsparse::atomic_add(&dense_C[end_row + ldc * colB], (alpha * sum));
                         }
                         else
                         {
-                            rocsparse::atomic_add(&dense_C[current_row * ldc + (l + swid)],
-                                                  alpha * sum);
+                            rocsparse::atomic_add(&dense_C[ldc * end_row + colB], (alpha * sum));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t ITEMS_PER_THREAD,
+              typename I,
+              typename J,
+              typename A,
+              typename B,
+              typename C,
+              typename T>
+    ROCSPARSE_DEVICE_ILF void csrmmnn_merge_path_device(bool                          conj_A,
+                                                        bool                          conj_B,
+                                                        J                             M,
+                                                        J                             N,
+                                                        J                             K,
+                                                        I                             nnz,
+                                                        T                             alpha,
+                                                        const I*                      csr_row_ptr,
+                                                        const J*                      csr_col_ind,
+                                                        const A*                      csr_val,
+                                                        const coordinate_t<uint32_t>* coord0,
+                                                        const coordinate_t<uint32_t>* coord1,
+                                                        const B*                      dense_B,
+                                                        int64_t                       ldb,
+                                                        T                             beta,
+                                                        C*                            dense_C,
+                                                        int64_t                       ldc,
+                                                        rocsparse_order               order_C,
+                                                        rocsparse_index_base          idx_base)
+    {
+        const int tid = threadIdx.x;
+        const int lid = tid & (WF_SIZE - 1);
+        const int wid = tid / (WF_SIZE);
+
+        const int bid = (BLOCKSIZE / WF_SIZE) * blockIdx.x + wid;
+
+        const uint64_t total_work  = static_cast<uint64_t>(M + nnz);
+        const uint64_t block_count = (total_work - 1) / ITEMS_PER_THREAD + 1;
+
+        if(bid < block_count)
+        {
+            const coordinate_t<uint32_t> start_coord = coord0[bid];
+            const coordinate_t<uint32_t> end_coord   = coord1[bid];
+
+            J       start_row = start_coord.x;
+            const J end_row   = end_coord.x;
+
+            const I ptr_start_row = csr_row_ptr[start_row] - idx_base;
+            const I ptr_end_row   = csr_row_ptr[end_row] - idx_base;
+
+            const I start_nz = (start_coord.y == ptr_start_row) ? 0 : start_coord.y;
+            const I end_nz   = (end_coord.y == ptr_end_row) ? 0 : end_coord.y;
+
+            if(start_nz != 0)
+            {
+                // Entire block is used in the middle part of a long row
+                if(start_row == end_row && end_nz != 0)
+                {
+                    for(J l = 0; l < N; l += WF_SIZE)
+                    {
+                        const J colB = l + lid;
+
+                        if(colB < N)
+                        {
+                            T sum = static_cast<T>(0);
+                            for(I j = start_nz; j < end_nz; j++)
+                            {
+                                const T val = conj_val(csr_val[j], conj_A);
+                                const J col = (csr_col_ind[j] - idx_base);
+
+                                sum = rocsparse::fma<T>(
+                                    val, conj_val(dense_B[col + ldb * colB], conj_B), sum);
+                            }
+
+                            if(order_C == rocsparse_order_column)
+                            {
+                                rocsparse::atomic_add(&dense_C[start_row + ldc * colB],
+                                                      (alpha * sum));
+                            }
+                            else
+                            {
+                                rocsparse::atomic_add(&dense_C[ldc * start_row + colB],
+                                                      (alpha * sum));
+                            }
+                        }
+                    }
+
+                    return;
+                }
+                else // last part of long row where the block ends on a subsequent row and therefore more work to be done.
+                {
+                    for(J l = 0; l < N; l += WF_SIZE)
+                    {
+                        const J colB = l + lid;
+
+                        if(colB < N)
+                        {
+                            T       sum = static_cast<T>(0);
+                            const I end = csr_row_ptr[start_row + 1] - idx_base;
+                            for(I j = start_nz; j < end; j++)
+                            {
+                                const T val = conj_val(csr_val[j], conj_A);
+                                const J col = (csr_col_ind[j] - idx_base);
+
+                                sum = rocsparse::fma<T>(
+                                    val, conj_val(dense_B[col + ldb * colB], conj_B), sum);
+                            }
+
+                            if(order_C == rocsparse_order_column)
+                            {
+                                rocsparse::atomic_add(&dense_C[start_row + ldc * colB],
+                                                      (alpha * sum));
+                            }
+                            else
+                            {
+                                rocsparse::atomic_add(&dense_C[ldc * start_row + colB],
+                                                      (alpha * sum));
+                            }
+                        }
+                    }
+
+                    start_row += 1;
+                }
+            }
+
+            // Complete rows therefore no atomics required
+            for(J i = start_row; i < end_row; i++)
+            {
+                const I row_begin = csr_row_ptr[i] - idx_base;
+                const I row_end   = csr_row_ptr[i + 1] - idx_base;
+                const I count     = row_end - row_begin;
+
+                for(J l = 0; l < N; l += WF_SIZE)
+                {
+                    const J colB = l + lid;
+
+                    if(colB < N)
+                    {
+                        T sum = static_cast<T>(0);
+                        for(I j = 0; j < count; j++)
+                        {
+                            const T val = conj_val(csr_val[row_begin + j], conj_A);
+                            const J col = (csr_col_ind[row_begin + j] - idx_base);
+
+                            sum = rocsparse::fma<T>(
+                                val, conj_val(dense_B[col + ldb * colB], conj_B), sum);
+                        }
+
+                        if(order_C == rocsparse_order_column)
+                        {
+                            dense_C[i + ldc * colB]
+                                = rocsparse::fma<T>(alpha, sum, dense_C[i + ldc * colB]);
+                        }
+                        else
+                        {
+                            dense_C[ldc * i + colB]
+                                = rocsparse::fma<T>(alpha, sum, dense_C[ldc * i + colB]);
+                        }
+                    }
+                }
+            }
+
+            // first part of row
+            if(end_nz != 0)
+            {
+                for(J l = 0; l < N; l += WF_SIZE)
+                {
+                    const J colB = l + lid;
+
+                    if(colB < N)
+                    {
+                        T sum = static_cast<T>(0);
+                        for(I j = ptr_end_row; j < end_nz; j++)
+                        {
+                            const T val = conj_val(csr_val[j], conj_A);
+                            const J col = (csr_col_ind[j] - idx_base);
+
+                            sum = rocsparse::fma<T>(
+                                val, conj_val(dense_B[col + ldb * colB], conj_B), sum);
+                        }
+
+                        if(order_C == rocsparse_order_column)
+                        {
+                            rocsparse::atomic_add(&dense_C[end_row + ldc * colB], (alpha * sum));
+                        }
+                        else
+                        {
+                            rocsparse::atomic_add(&dense_C[ldc * end_row + colB], (alpha * sum));
                         }
                     }
                 }

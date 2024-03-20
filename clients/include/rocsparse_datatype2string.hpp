@@ -415,8 +415,10 @@ constexpr auto rocsparse_spmmalg2string(rocsparse_spmm_alg alg)
         return "coosegmented_atomic";
     case rocsparse_spmm_alg_csr_row_split:
         return "csrrow_split";
-    case rocsparse_spmm_alg_csr_merge:
-        return "csrmerge";
+    case rocsparse_spmm_alg_csr_nnz_split:
+        return "csrnnz_split";
+    case rocsparse_spmm_alg_csr_merge_path:
+        return "csrmerge_path";
     }
     return "invalid";
 }

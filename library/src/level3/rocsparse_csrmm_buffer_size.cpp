@@ -37,7 +37,8 @@ inline bool rocsparse::enum_utils::is_invalid(rocsparse_csrmm_alg value_)
     {
     case rocsparse_csrmm_alg_default:
     case rocsparse_csrmm_alg_row_split:
-    case rocsparse_csrmm_alg_merge:
+    case rocsparse_csrmm_alg_nnz_split:
+    case rocsparse_csrmm_alg_merge_path:
     {
         return false;
     }
@@ -47,6 +48,20 @@ inline bool rocsparse::enum_utils::is_invalid(rocsparse_csrmm_alg value_)
 
 namespace rocsparse
 {
+    template <typename T, typename I, typename J, typename A>
+    rocsparse_status csrmm_buffer_size_template_nnz_split(rocsparse_handle          handle,
+                                                          rocsparse_operation       trans_A,
+                                                          rocsparse_csrmm_alg       alg,
+                                                          J                         m,
+                                                          J                         n,
+                                                          J                         k,
+                                                          I                         nnz,
+                                                          const rocsparse_mat_descr descr,
+                                                          const A*                  csr_val,
+                                                          const I*                  csr_row_ptr,
+                                                          const J*                  csr_col_ind,
+                                                          size_t*                   buffer_size);
+
     template <typename T, typename I, typename J, typename A>
     rocsparse_status csrmm_buffer_size_template_merge(rocsparse_handle          handle,
                                                       rocsparse_operation       trans_A,
@@ -77,7 +92,25 @@ namespace rocsparse
     {
         switch(alg)
         {
-        case rocsparse_csrmm_alg_merge:
+        case rocsparse_csrmm_alg_nnz_split:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse::csrmm_buffer_size_template_nnz_split<T>(handle,
+                                                                   trans_A,
+                                                                   alg,
+                                                                   m,
+                                                                   n,
+                                                                   k,
+                                                                   nnz,
+                                                                   descr,
+                                                                   csr_val,
+                                                                   csr_row_ptr,
+                                                                   csr_col_ind,
+                                                                   buffer_size));
+            return rocsparse_status_success;
+        }
+
+        case rocsparse_csrmm_alg_merge_path:
         {
             RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmm_buffer_size_template_merge<T>(handle,
                                                                                      trans_A,

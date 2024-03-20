@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -108,11 +108,12 @@ extern "C" {
 *
 *  \note
 *  Different algorithms are available which can provide better performance for different matrices.
-*  Currently, the available algorithms are rocsparse_spmm_alg_csr, rocsparse_spmm_alg_csr_row_split
-*  or rocsparse_spmm_alg_csr_merge for CSR matrices, rocsparse_spmm_alg_bell for Blocked ELL matrices and
-*  rocsparse_spmm_alg_coo_segmented or rocsparse_spmm_alg_coo_atomic for COO matrices. Additionally,
-*  one can specify the algorithm to be rocsparse_spmm_alg_default. In the case of CSR matrices this will
-*  set the algorithm to be rocsparse_spmm_alg_csr, in the case of Blocked ELL matrices this will set the
+*  Currently, the available algorithms are rocsparse_spmm_alg_csr, rocsparse_spmm_alg_csr_row_split,
+*  rocsparse_spmm_alg_csr_nnz_split (also named rocsparse_spmm_alg_csr_merge) or rocsparse_spmm_alg_csr_merge_path for CSR matrices,
+*  rocsparse_spmm_alg_bell for Blocked ELL matrices and rocsparse_spmm_alg_coo_segmented or
+*  rocsparse_spmm_alg_coo_atomic for COO matrices. Additionally, one can specify the algorithm to be
+*  rocsparse_spmm_alg_default. In the case of CSR matrices this will set the algorithm to be
+*  rocsparse_spmm_alg_csr, in the case of Blocked ELL matrices this will set the
 *  algorithm to be rocsparse_spmm_alg_bell and for COO matrices it will set the algorithm to be
 *  rocsparse_spmm_alg_coo_atomic. When A is transposed, rocsparse_spmm will revert to using
 *  rocsparse_spmm_alg_csr for CSR format and rocsparse_spmm_alg_coo_atomic for COO format regardless

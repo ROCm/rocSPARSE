@@ -112,6 +112,7 @@ set(rocsparse_source
   src/level3/rocsparse_bellmm_template_general.cpp
   src/level3/rocsparse_csrmm_template_general.cpp
   src/level3/rocsparse_csrmm_template_row_split.cpp
+  src/level3/rocsparse_csrmm_template_nnz_split.cpp
   src/level3/rocsparse_csrmm_template_merge.cpp
   src/level3/rocsparse_csrmm_buffer_size.cpp
   src/level3/rocsparse_csrmm_analysis.cpp

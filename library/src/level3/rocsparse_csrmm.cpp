@@ -86,6 +86,29 @@ namespace rocsparse
                                               bool                      force_conj_A);
 
     template <typename T, typename I, typename J, typename A, typename B, typename C, typename U>
+    rocsparse_status csrmm_template_nnz_split(rocsparse_handle          handle,
+                                              rocsparse_operation       trans_A,
+                                              rocsparse_operation       trans_B,
+                                              J                         m,
+                                              J                         n,
+                                              J                         k,
+                                              I                         nnz,
+                                              U                         alpha,
+                                              const rocsparse_mat_descr descr,
+                                              const A*                  csr_val,
+                                              const I*                  csr_row_ptr,
+                                              const J*                  csr_col_ind,
+                                              const B*                  dense_B,
+                                              int64_t                   ldb,
+                                              rocsparse_order           order_B,
+                                              U                         beta,
+                                              C*                        dense_C,
+                                              int64_t                   ldc,
+                                              rocsparse_order           order_C,
+                                              void*                     temp_buffer,
+                                              bool                      force_conj_A);
+
+    template <typename T, typename I, typename J, typename A, typename B, typename C, typename U>
     rocsparse_status csrmm_template_merge(rocsparse_handle          handle,
                                           rocsparse_operation       trans_A,
                                           rocsparse_operation       trans_B,
@@ -174,33 +197,32 @@ namespace rocsparse
             return rocsparse_status_success;
         }
 
-        case rocsparse_csrmm_alg_merge:
+        case rocsparse_csrmm_alg_row_split:
         {
             switch(trans_A)
             {
             case rocsparse_operation_none:
             {
-                RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmm_template_merge<T>(handle,
-                                                                             trans_A,
-                                                                             trans_B,
-                                                                             m,
-                                                                             n,
-                                                                             k,
-                                                                             nnz,
-                                                                             alpha,
-                                                                             descr,
-                                                                             csr_val,
-                                                                             csr_row_ptr,
-                                                                             csr_col_ind,
-                                                                             dense_B,
-                                                                             ldb,
-                                                                             order_B,
-                                                                             beta,
-                                                                             dense_C,
-                                                                             ldc,
-                                                                             order_C,
-                                                                             temp_buffer,
-                                                                             force_conj_A));
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmm_template_row_split<T>(handle,
+                                                                                 trans_A,
+                                                                                 trans_B,
+                                                                                 m,
+                                                                                 n,
+                                                                                 k,
+                                                                                 nnz,
+                                                                                 alpha,
+                                                                                 descr,
+                                                                                 csr_val,
+                                                                                 csr_row_ptr,
+                                                                                 csr_col_ind,
+                                                                                 dense_B,
+                                                                                 ldb,
+                                                                                 order_B,
+                                                                                 beta,
+                                                                                 dense_C,
+                                                                                 ldc,
+                                                                                 order_C,
+                                                                                 force_conj_A));
                 return rocsparse_status_success;
             }
             case rocsparse_operation_transpose:
@@ -239,13 +261,13 @@ namespace rocsparse
             }
         }
 
-        case rocsparse_csrmm_alg_row_split:
+        case rocsparse_csrmm_alg_nnz_split:
         {
             switch(trans_A)
             {
             case rocsparse_operation_none:
             {
-                RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmm_template_row_split<T>(handle,
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmm_template_nnz_split<T>(handle,
                                                                                  trans_A,
                                                                                  trans_B,
                                                                                  m,
@@ -264,7 +286,73 @@ namespace rocsparse
                                                                                  dense_C,
                                                                                  ldc,
                                                                                  order_C,
+                                                                                 temp_buffer,
                                                                                  force_conj_A));
+                return rocsparse_status_success;
+            }
+            case rocsparse_operation_transpose:
+            case rocsparse_operation_conjugate_transpose:
+            {
+                RETURN_IF_ROCSPARSE_ERROR(
+                    rocsparse::csrmm_template_general<T>(handle,
+                                                         trans_A,
+                                                         trans_B,
+                                                         m,
+                                                         n,
+                                                         k,
+                                                         nnz,
+                                                         batch_count_A,
+                                                         offsets_batch_stride_A,
+                                                         columns_values_batch_stride_A,
+                                                         alpha,
+                                                         descr,
+                                                         csr_val,
+                                                         csr_row_ptr,
+                                                         csr_col_ind,
+                                                         dense_B,
+                                                         ldb,
+                                                         batch_count_B,
+                                                         batch_stride_B,
+                                                         order_B,
+                                                         beta,
+                                                         dense_C,
+                                                         ldc,
+                                                         batch_count_C,
+                                                         batch_stride_C,
+                                                         order_C,
+                                                         force_conj_A));
+                return rocsparse_status_success;
+            }
+            }
+        }
+
+        case rocsparse_csrmm_alg_merge_path:
+        {
+            switch(trans_A)
+            {
+            case rocsparse_operation_none:
+            {
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmm_template_merge<T>(handle,
+                                                                             trans_A,
+                                                                             trans_B,
+                                                                             m,
+                                                                             n,
+                                                                             k,
+                                                                             nnz,
+                                                                             alpha,
+                                                                             descr,
+                                                                             csr_val,
+                                                                             csr_row_ptr,
+                                                                             csr_col_ind,
+                                                                             dense_B,
+                                                                             ldb,
+                                                                             order_B,
+                                                                             beta,
+                                                                             dense_C,
+                                                                             ldc,
+                                                                             order_C,
+                                                                             temp_buffer,
+                                                                             force_conj_A));
                 return rocsparse_status_success;
             }
             case rocsparse_operation_transpose:

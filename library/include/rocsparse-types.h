@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -737,10 +737,13 @@ typedef enum rocsparse_spmm_alg_
     rocsparse_spmm_alg_coo_segmented, /**< SpMM algorithm for COO format using segmented scan. */
     rocsparse_spmm_alg_coo_atomic, /**< SpMM algorithm for COO format using atomics. */
     rocsparse_spmm_alg_csr_row_split, /**< SpMM algorithm for CSR format using row split and shfl. */
-    rocsparse_spmm_alg_csr_merge, /**< SpMM algorithm for CSR format using conversion to COO. */
+    rocsparse_spmm_alg_csr_merge, /**< SpMM algorithm for CSR format using nnz split algorithm. Is the same as rocsparse_spmm_alg_csr_nnz_split. */
     rocsparse_spmm_alg_coo_segmented_atomic, /**< SpMM algorithm for COO format using segmented scan and atomics. */
     rocsparse_spmm_alg_bell, /**< SpMM algorithm for Blocked ELL format. */
-    rocsparse_spmm_alg_bsr /**< SpMM algorithm for BSR format. */
+    rocsparse_spmm_alg_bsr, /**< SpMM algorithm for BSR format. */
+    rocsparse_spmm_alg_csr_merge_path, /**< SpMM algorithm for CSR format using merge path algorithm. */
+    rocsparse_spmm_alg_csr_nnz_split
+    = rocsparse_spmm_alg_csr_merge /**< SpMM algorithm for CSR format using nnz split algorithm. */
 } rocsparse_spmm_alg;
 
 /*! \ingroup types_module

@@ -30,7 +30,8 @@ typedef enum rocsparse_csrmm_alg_
 {
     rocsparse_csrmm_alg_default = 0,
     rocsparse_csrmm_alg_row_split,
-    rocsparse_csrmm_alg_merge
+    rocsparse_csrmm_alg_nnz_split,
+    rocsparse_csrmm_alg_merge_path
 } rocsparse_csrmm_alg;
 
 namespace rocsparse
