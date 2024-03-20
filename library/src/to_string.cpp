@@ -411,7 +411,8 @@ const char* rocsparse::to_string(rocsparse_spmm_alg value_)
         CASE(rocsparse_spmm_alg_coo_segmented);
         CASE(rocsparse_spmm_alg_coo_atomic);
         CASE(rocsparse_spmm_alg_csr_row_split);
-        CASE(rocsparse_spmm_alg_csr_merge);
+        CASE(rocsparse_spmm_alg_csr_nnz_split);
+        CASE(rocsparse_spmm_alg_csr_merge_path);
         CASE(rocsparse_spmm_alg_coo_segmented_atomic);
         CASE(rocsparse_spmm_alg_bell);
         CASE(rocsparse_spmm_alg_bsr);

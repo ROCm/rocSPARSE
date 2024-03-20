@@ -183,6 +183,9 @@ Datatypes:
         rocsparse_spmm_alg_csr_merge: 5
         rocsparse_spmm_alg_coo_segmented_atomic: 6
         rocsparse_spmm_alg_bell: 7
+        rocsparse_spmm_alg_bsr: 8
+        rocsparse_spmm_alg_csr_merge_path: 9
+        rocsparse_spmm_alg_csr_nnz_split: 5 # Same as rocsparse_spmm_alg_csr_merge
 
   - rocsparse_spgemm_alg:
       bases: [c_int ]

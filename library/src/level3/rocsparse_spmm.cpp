@@ -48,7 +48,8 @@ namespace rocsparse
         case rocsparse_spmm_alg_bsr:
         case rocsparse_spmm_alg_csr:
         case rocsparse_spmm_alg_csr_row_split:
-        case rocsparse_spmm_alg_csr_merge:
+        case rocsparse_spmm_alg_csr_nnz_split:
+        case rocsparse_spmm_alg_csr_merge_path:
         case rocsparse_spmm_alg_coo_segmented:
         case rocsparse_spmm_alg_coo_atomic:
         case rocsparse_spmm_alg_coo_segmented_atomic:
@@ -76,9 +77,15 @@ namespace rocsparse
             return rocsparse_status_success;
         }
 
-        case rocsparse_spmm_alg_csr_merge:
+        case rocsparse_spmm_alg_csr_nnz_split:
         {
-            csrmm_alg = rocsparse_csrmm_alg_merge;
+            csrmm_alg = rocsparse_csrmm_alg_nnz_split;
+            return rocsparse_status_success;
+        }
+
+        case rocsparse_spmm_alg_csr_merge_path:
+        {
+            csrmm_alg = rocsparse_csrmm_alg_merge_path;
             return rocsparse_status_success;
         }
 
@@ -126,7 +133,8 @@ namespace rocsparse
         case rocsparse_spmm_alg_bsr:
         case rocsparse_spmm_alg_csr:
         case rocsparse_spmm_alg_csr_row_split:
-        case rocsparse_spmm_alg_csr_merge:
+        case rocsparse_spmm_alg_csr_nnz_split:
+        case rocsparse_spmm_alg_csr_merge_path:
         {
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
         }

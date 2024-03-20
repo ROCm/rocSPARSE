@@ -410,7 +410,7 @@ void rocsparse_arguments_config::set_description(options_description& desc)
 
     ("spmm_alg",
       value<rocsparse_int>(&this->b_spmm_alg)->default_value(rocsparse_spmm_alg_default),
-      "Indicates what algorithm to use when running SpMM. Possibly choices are default: 0, CSR: 1, COO segmented: 2, COO atomic: 3, CSR row split: 4, CSR merge: 5, COO segmented atomic: 6, BELL: 7 (default:0)")
+      "Indicates what algorithm to use when running SpMM. Possibly choices are default: 0, CSR: 1, COO segmented: 2, COO atomic: 3, CSR row split: 4, CSR merge: 5, COO segmented atomic: 6, BELL: 7, BSR: 8, CSR merge-path: 9, CSR non-zero split: 5 (default:0)")
 
     ("sddmm_alg",
       value<rocsparse_int>(&this->b_sddmm_alg)->default_value(rocsparse_sddmm_alg_default),
@@ -525,10 +525,12 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
 
   if(this->b_spmm_alg != rocsparse_spmm_alg_default
        && this->b_spmm_alg != rocsparse_spmm_alg_csr
+       && this->b_spmm_alg != rocsparse_spmm_alg_bsr
        && this->b_spmm_alg != rocsparse_spmm_alg_coo_segmented
        && this->b_spmm_alg != rocsparse_spmm_alg_coo_atomic
        && this->b_spmm_alg != rocsparse_spmm_alg_csr_row_split
-       && this->b_spmm_alg != rocsparse_spmm_alg_csr_merge
+       && this->b_spmm_alg != rocsparse_spmm_alg_csr_nnz_split
+       && this->b_spmm_alg != rocsparse_spmm_alg_csr_merge_path
        && this->b_spmm_alg != rocsparse_spmm_alg_coo_segmented_atomic
        && this->b_spmm_alg != rocsparse_spmm_alg_bell)
   {

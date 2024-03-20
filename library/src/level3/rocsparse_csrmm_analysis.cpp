@@ -33,6 +33,20 @@
 namespace rocsparse
 {
     template <typename T, typename I, typename J, typename A>
+    rocsparse_status csrmm_analysis_template_nnz_split(rocsparse_handle          handle,
+                                                       rocsparse_operation       trans_A,
+                                                       rocsparse_csrmm_alg       alg,
+                                                       J                         m,
+                                                       J                         n,
+                                                       J                         k,
+                                                       I                         nnz,
+                                                       const rocsparse_mat_descr descr,
+                                                       const A*                  csr_val,
+                                                       const I*                  csr_row_ptr,
+                                                       const J*                  csr_col_ind,
+                                                       void*                     temp_buffer);
+
+    template <typename T, typename I, typename J, typename A>
     rocsparse_status csrmm_analysis_template_merge(rocsparse_handle          handle,
                                                    rocsparse_operation       trans_A,
                                                    rocsparse_csrmm_alg       alg,
@@ -62,7 +76,24 @@ namespace rocsparse
     {
         switch(alg)
         {
-        case rocsparse_csrmm_alg_merge:
+        case rocsparse_csrmm_alg_nnz_split:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmm_analysis_template_nnz_split<T>(handle,
+                                                                                      trans_A,
+                                                                                      alg,
+                                                                                      m,
+                                                                                      n,
+                                                                                      k,
+                                                                                      nnz,
+                                                                                      descr,
+                                                                                      csr_val,
+                                                                                      csr_row_ptr,
+                                                                                      csr_col_ind,
+                                                                                      temp_buffer));
+            return rocsparse_status_success;
+        }
+
+        case rocsparse_csrmm_alg_merge_path:
         {
             RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmm_analysis_template_merge<T>(handle,
                                                                                   trans_A,

@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -81,7 +81,7 @@ Tests:
   transB: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
-  spmm_alg: [rocsparse_spmm_alg_csr, rocsparse_spmm_alg_csr_row_split, rocsparse_spmm_alg_csr_merge]
+  spmm_alg: [rocsparse_spmm_alg_csr, rocsparse_spmm_alg_csr_row_split, rocsparse_spmm_alg_csr_nnz_split, rocsparse_spmm_alg_csr_merge_path]
   orderB: [rocsparse_order_column]
   orderC: [rocsparse_order_row]
 
@@ -117,7 +117,7 @@ Tests:
   transB: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_csr]
+  spmm_alg: [rocsparse_spmm_alg_csr, rocsparse_spmm_alg_csr_merge_path]
   orderB: [rocsparse_order_column, rocsparse_order_row]
   orderC: [rocsparse_order_column]
   filename: [nos1,
@@ -138,7 +138,7 @@ Tests:
   transB: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_csr_row_split, rocsparse_spmm_alg_csr_merge]
+  spmm_alg: [rocsparse_spmm_alg_csr_row_split, rocsparse_spmm_alg_csr_nnz_split]
   orderB: [rocsparse_order_column, rocsparse_order_row]
   orderC: [rocsparse_order_column]
   filename: [nos2,
@@ -159,7 +159,7 @@ Tests:
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_csr, rocsparse_spmm_alg_csr_row_split, rocsparse_spmm_alg_csr_merge]
+  spmm_alg: [rocsparse_spmm_alg_csr, rocsparse_spmm_alg_csr_row_split, rocsparse_spmm_alg_csr_nnz_split, rocsparse_spmm_alg_csr_merge_path]
   orderB: [rocsparse_order_column]
   orderC: [rocsparse_order_row]
   filename: [Chevron2]
@@ -180,7 +180,7 @@ Tests:
   transB: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
-  spmm_alg: [rocsparse_spmm_alg_csr, rocsparse_spmm_alg_csr_row_split, rocsparse_spmm_alg_csr_merge]
+  spmm_alg: [rocsparse_spmm_alg_csr, rocsparse_spmm_alg_csr_row_split, rocsparse_spmm_alg_csr_nnz_split, rocsparse_spmm_alg_csr_merge_path]
   orderB: [rocsparse_order_row, rocsparse_order_column]
   orderC: [rocsparse_order_column]
 
@@ -251,7 +251,7 @@ Tests:
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_csr_row_split]
+  spmm_alg: [rocsparse_spmm_alg_csr_row_split, rocsparse_spmm_alg_csr_merge_path]
   orderB: [rocsparse_order_row]
   orderC: [rocsparse_order_row]
   filename: [amazon0312]
@@ -305,7 +305,7 @@ Tests:
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_csr_merge]
+  spmm_alg: [rocsparse_spmm_alg_csr_nnz_split]
   orderB: [rocsparse_order_row]
   orderC: [rocsparse_order_column]
   filename: [scircuit]
@@ -323,7 +323,7 @@ Tests:
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_csr_merge]
+  spmm_alg: [rocsparse_spmm_alg_csr_nnz_split, rocsparse_spmm_alg_csr_merge_path]
   orderB: [rocsparse_order_column]
   orderC: [rocsparse_order_column]
   filename: [bibd_22_8]
@@ -341,7 +341,7 @@ Tests:
   transB: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_csr_merge]
+  spmm_alg: [rocsparse_spmm_alg_csr_nnz_split, rocsparse_spmm_alg_csr_merge_path]
   orderB: [rocsparse_order_row]
   orderC: [rocsparse_order_row]
   filename: [Chebyshev4]
@@ -436,7 +436,7 @@ Tests:
   transB: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_csr_merge]
+  spmm_alg: [rocsparse_spmm_alg_csr_nnz_split, rocsparse_spmm_alg_csr_merge_path]
   orderB: [rocsparse_order_row]
   orderC: [rocsparse_order_column]
   filename: [ASIC_320k]
@@ -454,7 +454,7 @@ Tests:
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_csr]
+  spmm_alg: [rocsparse_spmm_alg_csr, rocsparse_spmm_alg_csr_merge_path]
   orderB: [rocsparse_order_column]
   orderC: [rocsparse_order_column]
   filename: [Chevron3, Chevron4]
@@ -472,7 +472,7 @@ Tests:
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_csr]
+  spmm_alg: [rocsparse_spmm_alg_csr, rocsparse_spmm_alg_csr_merge_path]
   orderB: [rocsparse_order_column]
   orderC: [rocsparse_order_row]
   filename: [Chevron4]

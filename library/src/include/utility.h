@@ -821,7 +821,8 @@ namespace rocsparse
         case rocsparse_spmm_alg_coo_segmented:
         case rocsparse_spmm_alg_coo_atomic:
         case rocsparse_spmm_alg_csr_row_split:
-        case rocsparse_spmm_alg_csr_merge:
+        case rocsparse_spmm_alg_csr_nnz_split:
+        case rocsparse_spmm_alg_csr_merge_path:
         case rocsparse_spmm_alg_coo_segmented_atomic:
         case rocsparse_spmm_alg_bell:
         case rocsparse_spmm_alg_bsr:
