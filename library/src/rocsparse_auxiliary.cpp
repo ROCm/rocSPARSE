@@ -3197,9 +3197,12 @@ try
 {
     ROCSPARSE_CHECKARG_POINTER(0, descr);
     ROCSPARSE_CHECKARG(0, descr, (descr->init == false), rocsparse_status_not_initialized);
+
     ROCSPARSE_CHECKARG_POINTER(1, csr_row_ptr);
-    ROCSPARSE_CHECKARG_POINTER(2, csr_col_ind);
-    ROCSPARSE_CHECKARG_POINTER(3, csr_val);
+    ROCSPARSE_CHECKARG(
+        2, csr_col_ind, descr->nnz > 0 && csr_col_ind == nullptr, rocsparse_status_invalid_pointer);
+    ROCSPARSE_CHECKARG(
+        3, csr_val, descr->nnz > 0 && csr_val == nullptr, rocsparse_status_invalid_pointer);
 
     // Sparsity structure might have changed, analysis is required before calling SpMV
     descr->analysed = false;
@@ -3230,9 +3233,13 @@ try
 {
     ROCSPARSE_CHECKARG_POINTER(0, descr);
     ROCSPARSE_CHECKARG(0, descr, (descr->init == false), rocsparse_status_not_initialized);
+
     ROCSPARSE_CHECKARG_POINTER(1, csc_col_ptr);
-    ROCSPARSE_CHECKARG_POINTER(2, csc_row_ind);
-    ROCSPARSE_CHECKARG_POINTER(3, csc_val);
+    ROCSPARSE_CHECKARG(
+        2, csc_row_ind, descr->nnz > 0 && csc_row_ind == nullptr, rocsparse_status_invalid_pointer);
+    ROCSPARSE_CHECKARG(
+        3, csc_val, descr->nnz > 0 && csc_val == nullptr, rocsparse_status_invalid_pointer);
+
     // Sparsity structure might have changed, analysis is required before calling SpMV
     descr->analysed = false;
 
@@ -3287,9 +3294,12 @@ try
 {
     ROCSPARSE_CHECKARG_POINTER(0, descr);
     ROCSPARSE_CHECKARG(0, descr, (descr->init == false), rocsparse_status_not_initialized);
+
     ROCSPARSE_CHECKARG_POINTER(1, bsr_row_ptr);
-    ROCSPARSE_CHECKARG_POINTER(2, bsr_col_ind);
-    ROCSPARSE_CHECKARG_POINTER(3, bsr_val);
+    ROCSPARSE_CHECKARG(
+        2, bsr_col_ind, descr->nnz > 0 && bsr_col_ind == nullptr, rocsparse_status_invalid_pointer);
+    ROCSPARSE_CHECKARG(
+        3, bsr_val, descr->nnz > 0 && bsr_val == nullptr, rocsparse_status_invalid_pointer);
 
     // Sparsity structure might have changed, analysis is required before calling SpMV
     descr->analysed = false;
