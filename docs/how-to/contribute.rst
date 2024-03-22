@@ -45,6 +45,7 @@ It is designed to be used from C and C++ code. The functionality of rocSPARSE is
 * Utility Functions: routines useful for checking sparse matrices for valid data
 
 In rocSPARSE we are interested in contributions that:
+
 * Fix bugs, improve documentation, enhance testing, reduce complexity.
 * Improve the performance of existing routines.
 * Add missing functionality found in one of the categories above.
