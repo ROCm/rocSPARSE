@@ -64,6 +64,46 @@ extern "C" {
 *    \right.
 *  \f]
 *
+*  \details
+*  \ref rocsparse_spmm supports multiple different algorithms. These algorithms have different trade offs depending on the sparsity
+*  pattern of the matrix, whether or not the results need to be deterministic, and how many times the sparse-matrix product will
+*  be performed.
+*
+*  <table>
+*  <caption id="spmm_csr_algorithms">CSR Algorithms</caption>
+*  <tr><th>Algorithm                              <th>Deterministic  <th>Preprocessing  <th>Notes
+*  <tr><td>rocsparse_spmm_alg_csr</td>            <td>Yes</td>       <td>No</td>        <td>Default algorithm.</td>
+*  <tr><td>rocsparse_spmm_alg_csr_row_split</td>  <td>Yes</td>       <td>No</td>        <td>Assigns a fixed number of threads per row regardless of the number of non-zeros in each row. This can perform well when each row in the matrix has roughly the same number of non-zeros</td>
+*  <tr><td>rocsparse_spmm_alg_csr_nnz_split</td>  <td>No</td>        <td>Yes</td>       <td>Distributes work by having each thread block work on a fixed number of non-zeros regardless of the number of rows that might be involved. This can perform well when the matrix has some rows with few non-zeros and some rows with many non-zeros</td>
+*  <tr><td>rocsparse_spmm_alg_csr_merge_path</td> <td>No</td>        <td>Yes</td>       <td>Attempts to combine the approaches of row-split and non-zero split by having each block work on a fixed amount of work which can be either non-zeros or rows</td>
+*  </table>
+*
+*  <table>
+*  <caption id="spmm_coo_algorithms">COO Algorithms</caption>
+*  <tr><th>Algorithm                                    <th>Deterministic   <th>Preprocessing <th>Notes
+*  <tr><td>rocsparse_spmm_alg_coo_segmented</td>        <td>Yes</td>        <td>No</td>       <td>Generally not as fast as atomic algorithm but is deterministic</td>
+*  <tr><td>rocsparse_spmm_alg_coo_atomic</td>           <td>No</td>         <td>No</td>       <td>Generally the fastest COO algorithm. Is the default algorithm</td>
+*  <tr><td>rocsparse_spmm_alg_coo_segmented_atomic</td> <td>No</td>         <td>No</td>       <td> </td>
+*  </table>
+*
+*  <table>
+*  <caption id="spmm_bell_algorithms">Blocked-ELL Algorithms</caption>
+*  <tr><th>Algorithm                     <th>Deterministic   <th>Preprocessing <th>Notes
+*  <tr><td>rocsparse_spmm_alg_bell</td>  <td>Yes</td>        <td>No</td>       <td></td>
+*  </table>
+*
+*  <table>
+*  <caption id="spmm_bsr_algorithms">BSR Algorithms</caption>
+*  <tr><th>Algorithm                     <th>Deterministic   <th>Preprocessing <th>Notes
+*  <tr><td>rocsparse_spmm_alg_bsr</td>   <td>Yes</td>        <td>No</td>       <td></td>
+*  </table>
+*
+*  \note
+*  None of the algorithms above are deterministic when A is transposed.
+*
+*  \note
+*  All algorithms perform best when using row ordering for the dense B and C matrices
+*
 *  \par Uniform Precisions:
 *  <table>
 *  <caption id="spmm_uniform">Uniform Precisions</caption>
@@ -98,7 +138,7 @@ extern "C" {
 *  support execution in a hipGraph context. The \ref rocsparse_spmm_stage_preprocess stage does not support hipGraph.
 *
 *  \note
-*  Currently, only CSR, COO and Blocked ELL sparse formats are supported.
+*  Currently, only CSR, COO, BSR and Blocked ELL sparse formats are supported.
 *
 *  \note
 *  Different algorithms are available which can provide better performance for different matrices.
