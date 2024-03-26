@@ -453,6 +453,7 @@ namespace rocsparse
                 // Workgroup scope is sufficient for this purpose, to only invalidate L1 and avoid L2
                 // invalidations.
                 __builtin_amdgcn_fence(__ATOMIC_RELEASE, "workgroup");
+                __builtin_amdgcn_s_waitcnt(0);
 
                 // Release other workgroups
                 atomicXor(&wg_flags[first_wg_in_row], 1U);
@@ -485,6 +486,7 @@ namespace rocsparse
                     while(rocsparse::atomic_max(&wg_flags[first_wg_in_row], 0U) == compare_value)
                         ;
 
+                    // __builtin_amdgcn_s_waitcnt(0);
                     // __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "workgroup");
 
                     // After you've passed the barrier, update your local flag to make sure that
@@ -990,6 +992,7 @@ namespace rocsparse
             // Workgroup scope is sufficient for this purpose, to only invalidate L1 and avoid L2
             // invalidations.
             __builtin_amdgcn_fence(__ATOMIC_RELEASE, "workgroup");
+            __builtin_amdgcn_s_waitcnt(0);
 
             // Release other workgroups
             atomicXor(&wg_flags[first_wg_in_row], 1U);
@@ -1022,6 +1025,7 @@ namespace rocsparse
                 while(rocsparse::atomic_max(&wg_flags[first_wg_in_row], 0U) == compare_value)
                     ;
 
+                // __builtin_amdgcn_s_waitcnt(0);
                 // __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "workgroup");
 
                 // After you've passed the barrier, update your local flag to make sure that
