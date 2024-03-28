@@ -158,6 +158,9 @@ namespace rocsparseio
             return "unknown";
         }
     };
+
+    constexpr file_format_t::value_type file_format_t::all[4];
+
 } // namespace rocsparseio
 
 inline std::ostream& operator<<(std::ostream& os, const rocsparseio::file_format_t& that_)
