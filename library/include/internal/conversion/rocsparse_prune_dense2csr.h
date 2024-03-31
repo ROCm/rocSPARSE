@@ -34,7 +34,7 @@ extern "C" {
 
 /*! \ingroup conv_module
 *  \brief
-*  This function computes the the size of the user allocated temporary storage buffer used when converting and pruning
+*  This function computes the size of the user allocated temporary storage buffer used when converting and pruning
 *  a dense matrix to a CSR matrix.
 *
 *  \details
