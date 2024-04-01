@@ -24,6 +24,7 @@
 #include "internal/conversion/rocsparse_inverse_permutation.h"
 #include "utility.h"
 
+#include "rocsparse_gcreate_identity_permutation.hpp"
 #include "rocsparse_identity.hpp"
 
 #include "identity_device.h"
@@ -99,6 +100,20 @@ extern "C" rocsparse_status rocsparse_create_identity_permutation(rocsparse_hand
 try
 {
     RETURN_IF_ROCSPARSE_ERROR(rocsparse::create_identity_permutation_impl(handle, n, p));
+    return rocsparse_status_success;
+}
+catch(...)
+{
+    RETURN_ROCSPARSE_EXCEPTION();
+}
+
+extern "C" rocsparse_status rocsparse_set_identity_permutation(rocsparse_handle    handle,
+                                                               int64_t             n,
+                                                               void*               p,
+                                                               rocsparse_indextype indextype)
+try
+{
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::gcreate_identity_permutation(handle, n, indextype, p));
     return rocsparse_status_success;
 }
 catch(...)
