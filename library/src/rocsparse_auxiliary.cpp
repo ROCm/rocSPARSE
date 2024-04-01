@@ -3931,7 +3931,6 @@ catch(...)
     RETURN_ROCSPARSE_EXCEPTION();
 }
 
-ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_const_dnmat_descr(rocsparse_const_dnmat_descr* descr,
                                                     int64_t                      rows,
                                                     int64_t                      cols,
@@ -4180,6 +4179,77 @@ try
     descr->batch_count  = batch_count;
     descr->batch_stride = batch_stride;
 
+    return rocsparse_status_success;
+}
+catch(...)
+{
+    RETURN_ROCSPARSE_EXCEPTION();
+}
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_create_csr_descr_SWDEV_453599(rocsparse_spmat_descr* descr,
+                                                         int64_t                rows,
+                                                         int64_t                cols,
+                                                         int64_t                nnz,
+                                                         void*                  csr_row_ptr,
+                                                         void*                  csr_col_ind,
+                                                         void*                  csr_val,
+                                                         rocsparse_indextype    row_ptr_type,
+                                                         rocsparse_indextype    col_ind_type,
+                                                         rocsparse_index_base   idx_base,
+                                                         rocsparse_datatype     data_type)
+try
+{
+    ROCSPARSE_CHECKARG_POINTER(0, descr);
+    ROCSPARSE_CHECKARG_SIZE(1, rows);
+    ROCSPARSE_CHECKARG_SIZE(2, cols);
+    ROCSPARSE_CHECKARG_SIZE(3, nnz);
+    ROCSPARSE_CHECKARG(3, nnz, (nnz > rows * cols), rocsparse_status_invalid_size);
+
+    // cusparse allows setting NULL for the pointers when nnz == 0. See SWDEV_453599 for reproducer.
+    // This function exists so that hipsparse can follow this behaviour without affecting rocsparse.
+    ROCSPARSE_CHECKARG_ARRAY(4, nnz, csr_row_ptr);
+    ROCSPARSE_CHECKARG_ARRAY(5, nnz, csr_col_ind);
+    ROCSPARSE_CHECKARG_ARRAY(6, nnz, csr_val);
+
+    ROCSPARSE_CHECKARG_ENUM(7, row_ptr_type);
+    ROCSPARSE_CHECKARG_ENUM(8, col_ind_type);
+    ROCSPARSE_CHECKARG_ENUM(9, idx_base);
+    ROCSPARSE_CHECKARG_ENUM(10, data_type);
+
+    *descr = new _rocsparse_spmat_descr;
+
+    (*descr)->init = true;
+
+    (*descr)->rows = rows;
+    (*descr)->cols = cols;
+    (*descr)->nnz  = nnz;
+
+    (*descr)->row_data = csr_row_ptr;
+    (*descr)->col_data = csr_col_ind;
+    (*descr)->val_data = csr_val;
+
+    (*descr)->const_row_data = csr_row_ptr;
+    (*descr)->const_col_data = csr_col_ind;
+    (*descr)->const_val_data = csr_val;
+
+    (*descr)->row_type  = row_ptr_type;
+    (*descr)->col_type  = col_ind_type;
+    (*descr)->data_type = data_type;
+
+    (*descr)->idx_base = idx_base;
+    (*descr)->format   = rocsparse_format_csr;
+
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&(*descr)->descr));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&(*descr)->info));
+
+    // Initialize descriptor
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base((*descr)->descr, idx_base));
+
+    (*descr)->batch_count                 = 1;
+    (*descr)->batch_stride                = 0;
+    (*descr)->offsets_batch_stride        = 0;
+    (*descr)->columns_values_batch_stride = 0;
     return rocsparse_status_success;
 }
 catch(...)
