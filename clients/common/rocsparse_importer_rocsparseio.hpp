@@ -54,8 +54,8 @@ public:
     rocsparse_status import_sparse_coo(I* m, I* n, int64_t* nnz, rocsparse_index_base* base);
 
 private:
-    size_t m_m;
-    size_t m_nnz;
+    uint64_t m_m;
+    uint64_t m_nnz;
 
 public:
     template <typename T, typename I = rocsparse_int>
@@ -73,10 +73,10 @@ public:
                                          rocsparse_index_base* base);
 
 private:
-    size_t m_mb{};
-    size_t m_nnzb{};
-    size_t m_row_block_dim{};
-    size_t m_col_block_dim{};
+    uint64_t m_mb{};
+    uint64_t m_nnzb{};
+    uint64_t m_row_block_dim{};
+    uint64_t m_col_block_dim{};
 
 public:
     template <typename T, typename I = rocsparse_int, typename J = rocsparse_int>

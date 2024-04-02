@@ -223,7 +223,7 @@ rocsparseio_status rocsparseio_read_format(rocsparseio_handle handle, rocsparsei
 //! @retval rocsparseio_status_invalid_value \p type is invalid
 //! @retval rocsparseio_status_invalid_pointer \p size is a null pointer
 
-rocsparseio_status rocsparseio_type_get_size(rocsparseio_type type, size_t* size);
+rocsparseio_status rocsparseio_type_get_size(rocsparseio_type type, uint64_t* size);
 
 //! @brief Write vector.
 //! @param[in] handle pointer to the rocSPARSEIO handle.
@@ -234,9 +234,9 @@ rocsparseio_status rocsparseio_type_get_size(rocsparseio_type type, size_t* size
 
 rocsparseio_status rocsparseio_write_dense_vector(rocsparseio_handle handle,
                                                   rocsparseio_type   data_type,
-                                                  size_t             data_nmemb,
+                                                  uint64_t           data_nmemb,
                                                   const void*        data,
-                                                  size_t             data_ld);
+                                                  uint64_t           data_ld);
 
 //! @brief Read vector.
 //! @param[in] handle pointer to the rocSPARSEIO handle.
@@ -247,7 +247,7 @@ rocsparseio_status rocsparseio_write_dense_vector(rocsparseio_handle handle,
 
 rocsparseio_status rocsparseio_read_dense_vector(rocsparseio_handle handle,
                                                  rocsparseio_type*  data_type,
-                                                 size_t*            data_nmemb,
+                                                 uint64_t*          data_nmemb,
                                                  void**             data);
 
 //! @brief Read metadata vector.
@@ -262,7 +262,7 @@ rocsparseio_status rocsparseio_read_dense_vector(rocsparseio_handle handle,
 
 rocsparseio_status rocsparseiox_read_metadata_dense_vector(rocsparseio_handle handle,
                                                            rocsparseio_type*  data_type,
-                                                           size_t*            data_nmemb);
+                                                           uint64_t*          data_nmemb);
 
 //! @brief Read vector.
 //! @param[in] handle pointer to the rocSPARSEIO handle.
@@ -270,7 +270,7 @@ rocsparseio_status rocsparseiox_read_metadata_dense_vector(rocsparseio_handle ha
 //! @param[in] data_ld leading dimension of data.
 
 rocsparseio_status
-    rocsparseiox_read_dense_vector(rocsparseio_handle handle, void* data, size_t data_ld);
+    rocsparseiox_read_dense_vector(rocsparseio_handle handle, void* data, uint64_t data_ld);
 
 //! @brief Write dense
 //! @param[in] handle pointer to the rocSPARSEIO handle.
@@ -283,11 +283,11 @@ rocsparseio_status
 
 rocsparseio_status rocsparseio_write_dense_matrix(rocsparseio_handle handle,
                                                   rocsparseio_order  order,
-                                                  size_t             m,
-                                                  size_t             n,
+                                                  uint64_t           m,
+                                                  uint64_t           n,
                                                   rocsparseio_type   data_type,
                                                   const void*        data,
-                                                  size_t             data_ld);
+                                                  uint64_t           data_ld);
 
 //! @brief Read dense
 //! @param[in] handle pointer to the rocSPARSEIO handle.
@@ -300,8 +300,8 @@ rocsparseio_status rocsparseio_write_dense_matrix(rocsparseio_handle handle,
 
 rocsparseio_status rocsparseio_read_dense_matrix(rocsparseio_handle handle,
                                                  rocsparseio_order* order,
-                                                 size_t*            m,
-                                                 size_t*            n,
+                                                 uint64_t*          m,
+                                                 uint64_t*          n,
                                                  rocsparseio_type*  data_type,
                                                  void**             data);
 
@@ -314,8 +314,8 @@ rocsparseio_status rocsparseio_read_dense_matrix(rocsparseio_handle handle,
 
 rocsparseio_status rocsparseiox_read_metadata_dense_matrix(rocsparseio_handle handle,
                                                            rocsparseio_order* order,
-                                                           size_t*            m,
-                                                           size_t*            n,
+                                                           uint64_t*          m,
+                                                           uint64_t*          n,
                                                            rocsparseio_type*  data_type);
 
 //! @brief Read metadata dense
@@ -324,7 +324,7 @@ rocsparseio_status rocsparseiox_read_metadata_dense_matrix(rocsparseio_handle ha
 //! @param[in] data_ld leading dimension..
 
 rocsparseio_status
-    rocsparseiox_read_dense_matrix(rocsparseio_handle handle, void* data, size_t data_ld);
+    rocsparseiox_read_dense_matrix(rocsparseio_handle handle, void* data, uint64_t data_ld);
 
 //! @brief Write a sparse csr/csc matrix.
 //! @param[in] handle pointer to the rocSPARSEIO handle.
@@ -344,9 +344,9 @@ rocsparseio_status
 
 rocsparseio_status rocsparseio_write_sparse_csx(rocsparseio_handle     handle,
                                                 rocsparseio_direction  dir,
-                                                size_t                 m,
-                                                size_t                 n,
-                                                size_t                 nnz,
+                                                uint64_t               m,
+                                                uint64_t               n,
+                                                uint64_t               nnz,
                                                 rocsparseio_type       ptr_type,
                                                 const void*            ptr,
                                                 rocsparseio_type       ind_type,
@@ -375,9 +375,9 @@ rocsparseio_status rocsparseio_write_sparse_csx(rocsparseio_handle     handle,
 
 rocsparseio_status rocsparseio_read_sparse_csx(rocsparseio_handle      handle,
                                                rocsparseio_direction*  dir,
-                                               size_t*                 m,
-                                               size_t*                 n,
-                                               size_t*                 nnz,
+                                               uint64_t*               m,
+                                               uint64_t*               n,
+                                               uint64_t*               nnz,
                                                rocsparseio_type*       ptr_type,
                                                void**                  ptr,
                                                rocsparseio_type*       ind_type,
@@ -400,9 +400,9 @@ rocsparseio_status rocsparseio_read_sparse_csx(rocsparseio_handle      handle,
 //! @retval rocsparseio_status
 rocsparseio_status rocsparseiox_read_metadata_sparse_csx(rocsparseio_handle      handle,
                                                          rocsparseio_direction*  dir,
-                                                         size_t*                 m,
-                                                         size_t*                 n,
-                                                         size_t*                 nnz,
+                                                         uint64_t*               m,
+                                                         uint64_t*               n,
+                                                         uint64_t*               nnz,
                                                          rocsparseio_type*       ptr_type,
                                                          rocsparseio_type*       ind_type,
                                                          rocsparseio_type*       data_type,
@@ -438,11 +438,11 @@ rocsparseio_status
 rocsparseio_status rocsparseio_write_sparse_gebsx(rocsparseio_handle     handle,
                                                   rocsparseio_direction  dir,
                                                   rocsparseio_direction  dirb,
-                                                  size_t                 mb,
-                                                  size_t                 nb,
-                                                  size_t                 nnzb,
-                                                  size_t                 row_block_dim,
-                                                  size_t                 col_block_dim,
+                                                  uint64_t               mb,
+                                                  uint64_t               nb,
+                                                  uint64_t               nnzb,
+                                                  uint64_t               row_block_dim,
+                                                  uint64_t               col_block_dim,
                                                   rocsparseio_type       ptr_type,
                                                   const void*            ptr,
                                                   rocsparseio_type       ind_type,
@@ -474,11 +474,11 @@ rocsparseio_status rocsparseio_write_sparse_gebsx(rocsparseio_handle     handle,
 rocsparseio_status rocsparseio_read_sparse_gebsx(rocsparseio_handle      handle,
                                                  rocsparseio_direction*  dir,
                                                  rocsparseio_direction*  dirb,
-                                                 size_t*                 mb,
-                                                 size_t*                 nb,
-                                                 size_t*                 nnzb,
-                                                 size_t*                 row_block_dim,
-                                                 size_t*                 col_block_dim,
+                                                 uint64_t*               mb,
+                                                 uint64_t*               nb,
+                                                 uint64_t*               nnzb,
+                                                 uint64_t*               row_block_dim,
+                                                 uint64_t*               col_block_dim,
                                                  rocsparseio_type*       ptr_type,
                                                  void**                  ptr,
                                                  rocsparseio_type*       ind_type,
@@ -505,11 +505,11 @@ rocsparseio_status rocsparseio_read_sparse_gebsx(rocsparseio_handle      handle,
 rocsparseio_status rocsparseiox_read_metadata_sparse_gebsx(rocsparseio_handle      handle,
                                                            rocsparseio_direction*  dir,
                                                            rocsparseio_direction*  dirb,
-                                                           size_t*                 mb,
-                                                           size_t*                 nb,
-                                                           size_t*                 nnzb,
-                                                           size_t*                 row_block_dim,
-                                                           size_t*                 col_block_dim,
+                                                           uint64_t*               mb,
+                                                           uint64_t*               nb,
+                                                           uint64_t*               nnzb,
+                                                           uint64_t*               row_block_dim,
+                                                           uint64_t*               col_block_dim,
                                                            rocsparseio_type*       ptr_type,
                                                            rocsparseio_type*       ind_type,
                                                            rocsparseio_type*       val_type,
@@ -539,9 +539,9 @@ rocsparseio_status
 //! @retval rocsparseio_status
 
 rocsparseio_status rocsparseio_write_sparse_coo(rocsparseio_handle     handle,
-                                                size_t                 m,
-                                                size_t                 n,
-                                                size_t                 nnz,
+                                                uint64_t               m,
+                                                uint64_t               n,
+                                                uint64_t               nnz,
                                                 rocsparseio_type       row_ind_type,
                                                 const void*            row_ind,
                                                 rocsparseio_type       col_ind_type,
@@ -569,9 +569,9 @@ rocsparseio_status rocsparseio_write_sparse_coo(rocsparseio_handle     handle,
 //! @note allocation is performed with standard malloc function, the user is
 //! responsible to the standard free function to free the memory.
 rocsparseio_status rocsparseio_read_sparse_coo(rocsparseio_handle      handle,
-                                               size_t*                 m,
-                                               size_t*                 n,
-                                               size_t*                 nnz,
+                                               uint64_t*               m,
+                                               uint64_t*               n,
+                                               uint64_t*               nnz,
                                                rocsparseio_type*       row_ind_type,
                                                void**                  row_ind,
                                                rocsparseio_type*       col_ind_type,
@@ -591,9 +591,9 @@ rocsparseio_status rocsparseio_read_sparse_coo(rocsparseio_handle      handle,
 //! @param[out] base index base used in arrays row and column indices.
 //! @retval rocsparseio_status
 rocsparseio_status rocsparseiox_read_metadata_sparse_coo(rocsparseio_handle      handle,
-                                                         size_t*                 m,
-                                                         size_t*                 n,
-                                                         size_t*                 nnz,
+                                                         uint64_t*               m,
+                                                         uint64_t*               n,
+                                                         uint64_t*               nnz,
                                                          rocsparseio_type*       row_ind_type,
                                                          rocsparseio_type*       col_ind_type,
                                                          rocsparseio_type*       val_type,

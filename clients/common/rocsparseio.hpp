@@ -368,7 +368,7 @@ namespace rocsparseio
         template <typename T>
         static constexpr type_t convert();
 
-        inline size_t size() const
+        inline uint64_t size() const
         {
             switch(this->value)
             {
@@ -599,7 +599,7 @@ namespace rocsparseio
 {
     using handle_t = rocsparseio_handle;
 
-    inline status_t fread_data(FILE* in_, size_t size_, size_t nmemb_, void* data_)
+    inline status_t fread_data(FILE* in_, uint64_t size_, uint64_t nmemb_, void* data_)
     {
         if(nmemb_ != fread(data_, size_, nmemb_, in_))
         {
@@ -735,10 +735,10 @@ namespace rocsparseio
         return status_t::success;
     };
 
-    inline status_t fwrite_array(FILE* out_, size_t size_, size_t nmemb_, const void* data_)
+    inline status_t fwrite_array(FILE* out_, uint64_t size_, uint64_t nmemb_, const void* data_)
     {
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(size_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(nmemb_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(size_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(nmemb_, out_));
         if(nmemb_ != fwrite(data_, size_, nmemb_, out_))
         {
             return status_t::invalid_file_operation;
@@ -748,10 +748,10 @@ namespace rocsparseio
 
     inline status_t fread_array(FILE* in_, void* data_)
     {
-        size_t size;
-        size_t nmemb;
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(size, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(nmemb, in_));
+        uint64_t size;
+        uint64_t nmemb;
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(size, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(nmemb, in_));
         if(nmemb != fread(data_, size, nmemb, in_))
         {
             return status_t::invalid_file_operation;
@@ -759,11 +759,11 @@ namespace rocsparseio
         return status_t::success;
     }
 
-    inline status_t fread_array_metadata(FILE* in_, size_t* size_, size_t* nmemb_)
+    inline status_t fread_array_metadata(FILE* in_, uint64_t* size_, uint64_t* nmemb_)
     {
         long pos = ftell(in_);
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(size_, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(nmemb_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(size_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(nmemb_, in_));
         if(0 != fseek(in_, pos, SEEK_SET))
         {
             return status_t::invalid_file_operation;
@@ -780,7 +780,7 @@ namespace rocsparseio
     // ////////////////////////////////////////////////
     //
     inline status_t fwrite_dense_vector(
-        FILE* out_, type_t data_type_, size_t data_nmemb_, const void* data_, size_t data_inc_)
+        FILE* out_, type_t data_type_, uint64_t data_nmemb_, const void* data_, uint64_t data_inc_)
     {
 
         ROCSPARSEIO_CHECK_ARG(out_ == nullptr, status_t::invalid_pointer);
@@ -790,10 +790,10 @@ namespace rocsparseio
         ROCSPARSEIO_CHECK_ARG(((data_nmemb_ > 0) && (data_ == nullptr)), status_t::invalid_pointer);
         ROCSPARSEIO_CHECK_ARG(((data_inc_ > 0) && (data_ == nullptr)), status_t::invalid_size);
 
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(format_t::dense_vector, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(data_type_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(data_nmemb_, out_));
-        size_t data_size = data_type_.size();
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(format_t::dense_vector, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(data_type_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(data_nmemb_, out_));
+        uint64_t data_size = data_type_.size();
         if(data_inc_ == 1)
         {
             if(data_nmemb_ != fwrite(data_, data_size, data_nmemb_, out_))
@@ -803,7 +803,7 @@ namespace rocsparseio
         }
         else
         {
-            for(size_t i = 0; i < data_nmemb_; ++i)
+            for(uint64_t i = 0; i < data_nmemb_; ++i)
             {
                 if(1
                    != fwrite(((const char*)data_) + i * data_inc_ * data_size, data_size, 1, out_))
@@ -820,7 +820,7 @@ namespace rocsparseio
         ROCSPARSEIO_CHECK_ARG(in == nullptr, status_t::invalid_pointer);
         ROCSPARSEIO_CHECK_ARG(format == nullptr, status_t::invalid_pointer);
         long pos = ftell(in);
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(format, in));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(format, in));
         if(0 != fseek(in, pos, SEEK_SET))
         {
             return status_t::invalid_file_operation;
@@ -828,22 +828,22 @@ namespace rocsparseio
         return status_t::success;
     };
 
-    inline status_t fread_metadata_dense_vector(FILE* in, type_t* type, size_t* nmemb)
+    inline status_t fread_metadata_dense_vector(FILE* in, type_t* type, uint64_t* nmemb)
     {
         ROCSPARSEIO_CHECK_ARG(in == nullptr, status_t::invalid_pointer);
         ROCSPARSEIO_CHECK_ARG(type == nullptr, status_t::invalid_pointer);
         ROCSPARSEIO_CHECK_ARG(nmemb == nullptr, status_t::invalid_pointer);
         long     pos = ftell(in);
         format_t format(0);
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(format, in));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(format, in));
         if(format != format_t::dense_vector)
         {
             std::cerr << " wrong format, not flagged as a dense_vector. " << std::endl;
             return status_t::invalid_format;
         }
 
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(type, in));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(nmemb, in));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(type, in));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(nmemb, in));
         if(0 != fseek(in, pos, SEEK_SET))
         {
             return status_t::invalid_file_operation;
@@ -851,17 +851,17 @@ namespace rocsparseio
         return status_t::success;
     };
 
-    inline status_t fread_dense_vector(FILE* in_, void* data_, size_t inc_)
+    inline status_t fread_dense_vector(FILE* in_, void* data_, uint64_t inc_)
     {
-        if(0 != fseek(in_, sizeof(size_t), SEEK_CUR))
+        if(0 != fseek(in_, sizeof(uint64_t), SEEK_CUR))
         {
             return status_t::invalid_file_operation;
         }
         type_t type;
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(type, in_));
-        size_t size = type.size();
-        size_t nmemb;
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(nmemb, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(type, in_));
+        uint64_t size = type.size();
+        uint64_t nmemb;
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(nmemb, in_));
         if(inc_ == 1)
         {
             return fread_data(in_, size, nmemb, data_);
@@ -870,8 +870,8 @@ namespace rocsparseio
         {
             void* buff = malloc(size * nmemb);
             ROCSPARSEIO_CHECK(fread_data(in_, size, nmemb, buff));
-            size_t j = 0;
-            for(size_t i = 0; i < nmemb; ++i)
+            uint64_t j = 0;
+            for(uint64_t i = 0; i < nmemb; ++i)
             {
                 memcpy(((char*)data_) + j * size, ((char*)buff) + i * size, size);
                 j += inc_;
@@ -888,11 +888,11 @@ namespace rocsparseio
 
     inline status_t fwrite_dense_matrix(FILE*       out_,
                                         order_t     order_,
-                                        size_t      m_,
-                                        size_t      n_,
+                                        uint64_t    m_,
+                                        uint64_t    n_,
                                         type_t      data_type_,
                                         const void* data_,
-                                        size_t      data_ld_)
+                                        uint64_t    data_ld_)
     {
         ROCSPARSEIO_CHECK_ARG(out_ == nullptr, status_t::invalid_pointer);
 
@@ -912,16 +912,16 @@ namespace rocsparseio
         ROCSPARSEIO_CHECK_ARG(((order_ == order_t::column) && (data_ld_ < m_)),
                               status_t::invalid_size);
 
-        size_t data_nmemb = m_ * n_;
+        uint64_t data_nmemb = m_ * n_;
 
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(format_t::dense_matrix, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(order_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(m_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(n_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(data_type_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(data_nmemb, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(format_t::dense_matrix, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(order_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(m_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(n_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(data_type_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(data_nmemb, out_));
 
-        size_t data_size = data_type_.size();
+        uint64_t data_size = data_type_.size();
         switch(order_)
         {
         case order_t::row:
@@ -935,7 +935,7 @@ namespace rocsparseio
             }
             else
             {
-                for(size_t i = 0; i < m_; ++i)
+                for(uint64_t i = 0; i < m_; ++i)
                 {
                     if(n_
                        != fwrite(
@@ -959,7 +959,7 @@ namespace rocsparseio
             }
             else
             {
-                for(size_t j = 0; j < n_; ++j)
+                for(uint64_t j = 0; j < n_; ++j)
                 {
                     if(m_
                        != fwrite(
@@ -977,34 +977,34 @@ namespace rocsparseio
 
     inline status_t fread_dense_matrix(FILE* in_, void* data_)
     {
-        if(0 != fseek(in_, sizeof(size_t) * 4, SEEK_CUR))
+        if(0 != fseek(in_, sizeof(uint64_t) * 4, SEEK_CUR))
         {
             return status_t::invalid_file_operation;
         }
         type_t type;
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(type, in_));
-        size_t size = type.size();
-        size_t nmemb;
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(nmemb, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(type, in_));
+        uint64_t size = type.size();
+        uint64_t nmemb;
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(nmemb, in_));
         return fread_data(in_, size, nmemb, data_);
     }
 
     inline status_t fread_metadata_dense_matrix(
-        FILE* in_, order_t* order_, size_t* m_, size_t* n_, type_t* type_)
+        FILE* in_, order_t* order_, uint64_t* m_, uint64_t* n_, type_t* type_)
     {
         long     pos = ftell(in_);
         format_t format(0);
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(format, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(format, in_));
         if(format != format_t::dense_matrix)
         {
             std::cerr << " wrong format, not flagged as a dense matrix. " << std::endl;
             return status_t::invalid_format;
         }
 
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(order_, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(m_, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(n_, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(type_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(order_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(m_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(n_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(type_, in_));
         if(0 != fseek(in_, pos, SEEK_SET))
         {
             return status_t::invalid_file_operation;
@@ -1021,9 +1021,9 @@ namespace rocsparseio
 {
     inline status_t fwrite_sparse_csx(FILE*       out_,
                                       direction_t dir_,
-                                      size_t      m_,
-                                      size_t      n_,
-                                      size_t      nnz_,
+                                      uint64_t    m_,
+                                      uint64_t    n_,
+                                      uint64_t    nnz_,
                                       type_t      ptr_type_,
                                       const void* __restrict__ ptr_,
                                       type_t ind_type_,
@@ -1032,15 +1032,15 @@ namespace rocsparseio
                                       const void* __restrict__ data_,
                                       index_base_t base_)
     {
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(format_t::sparse_csx, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(dir_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(m_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(n_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(nnz_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(ptr_type_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(ind_type_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(data_type_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(base_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(format_t::sparse_csx, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(dir_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(m_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(n_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(nnz_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(ptr_type_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(ind_type_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(data_type_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(base_, out_));
         switch(dir_)
         {
         case direction_t::row:
@@ -1063,9 +1063,9 @@ namespace rocsparseio
 
     inline status_t fread_metadata_sparse_csx(FILE*         in_,
                                               direction_t*  dir_,
-                                              size_t*       m_,
-                                              size_t*       n_,
-                                              size_t*       nnz_,
+                                              uint64_t*     m_,
+                                              uint64_t*     n_,
+                                              uint64_t*     nnz_,
                                               type_t*       ptr_type,
                                               type_t*       ind_type,
                                               type_t*       data_type,
@@ -1073,15 +1073,15 @@ namespace rocsparseio
     {
         long     pos = ftell(in_);
         format_t format(0);
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(format, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(dir_, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(m_, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(n_, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(nnz_, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(ptr_type, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(ind_type, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(data_type, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(base, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(format, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(dir_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(m_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(n_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(nnz_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(ptr_type, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(ind_type, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(data_type, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(base, in_));
         if(0 != fseek(in_, pos, SEEK_SET))
         {
             return status_t::invalid_file_operation;
@@ -1094,7 +1094,7 @@ namespace rocsparseio
                                      void* __restrict__ ind_,
                                      void* __restrict__ data_)
     {
-        if(0 != fseek(in_, sizeof(size_t) * 9, SEEK_CUR))
+        if(0 != fseek(in_, sizeof(uint64_t) * 9, SEEK_CUR))
         {
             return status_t::invalid_file_operation;
         }
@@ -1110,11 +1110,11 @@ namespace rocsparseio
 
 namespace rocsparseio
 {
-    inline status_t fwrite_sparse_coo(FILE*  out_,
-                                      size_t m_,
-                                      size_t n_,
-                                      size_t nnz_,
-                                      type_t row_ind_type_,
+    inline status_t fwrite_sparse_coo(FILE*    out_,
+                                      uint64_t m_,
+                                      uint64_t n_,
+                                      uint64_t nnz_,
+                                      type_t   row_ind_type_,
                                       const void* __restrict__ row_ind_,
                                       type_t col_ind_type_,
                                       const void* __restrict__ col_ind_,
@@ -1122,14 +1122,14 @@ namespace rocsparseio
                                       const void* __restrict__ data_,
                                       index_base_t base_)
     {
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(format_t::sparse_coo, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(m_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(n_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(nnz_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(row_ind_type_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(col_ind_type_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(data_type_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(base_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(format_t::sparse_coo, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(m_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(n_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(nnz_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(row_ind_type_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(col_ind_type_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(data_type_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(base_, out_));
         ROCSPARSEIO_CHECK(fwrite_array(out_, row_ind_type_.size(), nnz_, row_ind_));
         ROCSPARSEIO_CHECK(fwrite_array(out_, col_ind_type_.size(), nnz_, col_ind_));
         ROCSPARSEIO_CHECK(fwrite_array(out_, data_type_.size(), nnz_, data_));
@@ -1137,9 +1137,9 @@ namespace rocsparseio
     };
 
     inline status_t fread_metadata_sparse_coo(FILE*         in_,
-                                              size_t*       m_,
-                                              size_t*       n_,
-                                              size_t*       nnz_,
+                                              uint64_t*     m_,
+                                              uint64_t*     n_,
+                                              uint64_t*     nnz_,
                                               type_t*       row_ind_type,
                                               type_t*       col_ind_type,
                                               type_t*       data_type,
@@ -1147,14 +1147,14 @@ namespace rocsparseio
     {
         long     pos = ftell(in_);
         format_t format(0);
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(format, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(m_, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(n_, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(nnz_, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(row_ind_type, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(col_ind_type, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(data_type, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(base, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(format, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(m_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(n_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(nnz_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(row_ind_type, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(col_ind_type, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(data_type, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(base, in_));
         if(0 != fseek(in_, pos, SEEK_SET))
         {
             return status_t::invalid_file_operation;
@@ -1167,7 +1167,7 @@ namespace rocsparseio
                                      void* __restrict__ col_ind_,
                                      void* __restrict__ data_)
     {
-        if(0 != fseek(in_, sizeof(size_t) * 8, SEEK_CUR))
+        if(0 != fseek(in_, sizeof(uint64_t) * 8, SEEK_CUR))
         {
             return status_t::invalid_file_operation;
         }
@@ -1187,11 +1187,11 @@ namespace rocsparseio
     inline status_t fwrite_sparse_gebsx(FILE*       out_,
                                         direction_t dir_,
                                         direction_t dirb_,
-                                        size_t      mb_,
-                                        size_t      nb_,
-                                        size_t      nnzb_,
-                                        size_t      row_block_dim_,
-                                        size_t      col_block_dim_,
+                                        uint64_t    mb_,
+                                        uint64_t    nb_,
+                                        uint64_t    nnzb_,
+                                        uint64_t    row_block_dim_,
+                                        uint64_t    col_block_dim_,
                                         type_t      ptr_type_,
                                         const void* __restrict__ ptr_,
                                         type_t ind_type_,
@@ -1201,18 +1201,18 @@ namespace rocsparseio
                                         index_base_t base_)
     {
 
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(format_t::sparse_gebsx, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(dir_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(dirb_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(mb_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(nb_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(nnzb_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(row_block_dim_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(col_block_dim_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(ptr_type_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(ind_type_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(data_type_, out_));
-        ROCSPARSEIO_CHECK(fwrite_scalar<size_t>(base_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(format_t::sparse_gebsx, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(dir_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(dirb_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(mb_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(nb_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(nnzb_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(row_block_dim_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(col_block_dim_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(ptr_type_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(ind_type_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(data_type_, out_));
+        ROCSPARSEIO_CHECK(fwrite_scalar<uint64_t>(base_, out_));
 
         switch(dir_)
         {
@@ -1238,11 +1238,11 @@ namespace rocsparseio
     inline status_t fread_metadata_sparse_gebsx(FILE*         in_,
                                                 direction_t*  dir_,
                                                 direction_t*  dirb_,
-                                                size_t*       mb_,
-                                                size_t*       nb_,
-                                                size_t*       nnzb_,
-                                                size_t*       row_block_dim_,
-                                                size_t*       col_block_dim_,
+                                                uint64_t*     mb_,
+                                                uint64_t*     nb_,
+                                                uint64_t*     nnzb_,
+                                                uint64_t*     row_block_dim_,
+                                                uint64_t*     col_block_dim_,
                                                 type_t*       ptr_type,
                                                 type_t*       ind_type,
                                                 type_t*       data_type,
@@ -1250,18 +1250,18 @@ namespace rocsparseio
     {
         long     pos = ftell(in_);
         format_t format(0);
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(format, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(dir_, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(dirb_, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(mb_, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(nb_, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(nnzb_, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(row_block_dim_, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(col_block_dim_, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(ptr_type, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(ind_type, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(data_type, in_));
-        ROCSPARSEIO_CHECK(fread_scalar<size_t>(base, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(format, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(dir_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(dirb_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(mb_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(nb_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(nnzb_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(row_block_dim_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(col_block_dim_, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(ptr_type, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(ind_type, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(data_type, in_));
+        ROCSPARSEIO_CHECK(fread_scalar<uint64_t>(base, in_));
         if(0 != fseek(in_, pos, SEEK_SET))
         {
             return status_t::invalid_file_operation;
@@ -1274,7 +1274,7 @@ namespace rocsparseio
                                        void* __restrict__ ind_,
                                        void* __restrict__ data_)
     {
-        if(0 != fseek(in_, sizeof(size_t) * 12, SEEK_CUR))
+        if(0 != fseek(in_, sizeof(uint64_t) * 12, SEEK_CUR))
         {
             return status_t::invalid_file_operation;
         }
@@ -1348,11 +1348,11 @@ namespace rocsparseio
             }
 
             {
-                size_t ref_value[2]{};
-                char*  p = (char*)&ref_value[0];
+                uint64_t ref_value[2]{};
+                char*    p = (char*)&ref_value[0];
                 sprintf(p, "ROCSPARSEIO.%d", ROCSPARSEIO_VERSION_MAJOR);
-                size_t value[2]{};
-                if(2 != fread(&value[0], sizeof(size_t), 2, h->f))
+                uint64_t value[2]{};
+                if(2 != fread(&value[0], sizeof(uint64_t), 2, h->f))
                 {
                     return status_t::invalid_file_operation;
                 }
@@ -1384,10 +1384,10 @@ namespace rocsparseio
             // WRITE HEADER
             //
             {
-                size_t value[2]{};
-                char*  p = (char*)&value;
+                uint64_t value[2]{};
+                char*    p = (char*)&value;
                 sprintf(p, "ROCSPARSEIO.%d", ROCSPARSEIO_VERSION_MAJOR);
-                if(2 != fwrite(&value[0], sizeof(size_t), 2, h->f))
+                if(2 != fwrite(&value[0], sizeof(uint64_t), 2, h->f))
                 {
                     return status_t::invalid_file_operation;
                 }
@@ -1463,12 +1463,12 @@ namespace rocsparseio
         ROCSPARSEIO_CHECK_ARG(handle->mode != rwmode_t::write, status_t::invalid_mode);
         return fwrite_dense_matrix(handle->f,
                                    order_,
-                                   static_cast<size_t>(m_),
-                                   static_cast<size_t>(n_),
+                                   static_cast<uint64_t>(m_),
+                                   static_cast<uint64_t>(n_),
                                    type_t::convert<T>(),
                                    data_,
-                                   (order_ == ROCSPARSEIO_ORDER_ROW) ? static_cast<size_t>(n_)
-                                                                     : static_cast<size_t>(m_));
+                                   (order_ == ROCSPARSEIO_ORDER_ROW) ? static_cast<uint64_t>(n_)
+                                                                     : static_cast<uint64_t>(m_));
     };
 
     template <typename... Ts>

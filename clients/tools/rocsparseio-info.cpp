@@ -33,13 +33,13 @@ using rocsparseio_double_complex = std::complex<double>;
 typedef struct
 {
 
-    size_t mean_nnz_per_seq;
-    size_t min_nnz_per_seq;
-    size_t max_nnz_per_seq;
-    size_t median_nnz_per_seq;
-    bool   full_diagonal;
-    bool   symbolic_symetric;
-    bool   numeric_symetric;
+    uint64_t mean_nnz_per_seq;
+    uint64_t min_nnz_per_seq;
+    uint64_t max_nnz_per_seq;
+    uint64_t median_nnz_per_seq;
+    bool     full_diagonal;
+    bool     symbolic_symetric;
+    bool     numeric_symetric;
 
 } rocsparseio_statistics_csx;
 
@@ -63,16 +63,16 @@ struct transpose_pair_t
 
 template <typename I, typename J, typename T>
 rocsparseio_status rocsparseio_csx_statistics(rocsparseio_direction dir,
-                                              size_t                M,
-                                              size_t                N,
-                                              size_t                nnz,
+                                              uint64_t              M,
+                                              uint64_t              N,
+                                              uint64_t              nnz,
                                               const I* __restrict__ ptr_,
                                               const J* __restrict__ ind_,
                                               const T* __restrict__ val_,
                                               rocsparseio_index_base base)
 {
-    size_t K         = M;
-    size_t len_trseq = N;
+    uint64_t K         = M;
+    uint64_t len_trseq = N;
     switch(base)
     {
     case rocsparseio_index_base_zero:
@@ -111,17 +111,17 @@ rocsparseio_status rocsparseio_csx_statistics(rocsparseio_direction dir,
 
     using tr_t    = transpose_pair_t<J, T>;
     tr_t** trseqs = new tr_t*[len_trseq];
-    for(size_t i = 0; i < len_trseq; ++i)
+    for(uint64_t i = 0; i < len_trseq; ++i)
     {
         trseqs[i] = nullptr;
     }
 
     {
-        size_t k = K;
+        uint64_t k = K;
         do
         {
             --k;
-            for(size_t l = ptr_[k] - base; l < ptr_[k + 1] - base; ++l)
+            for(uint64_t l = ptr_[k] - base; l < ptr_[k + 1] - base; ++l)
             {
                 J ind = ind_[l] - base;
                 if(ind < 0 || ind > len_trseq)
@@ -144,8 +144,8 @@ rocsparseio_status rocsparseio_csx_statistics(rocsparseio_direction dir,
     }
 
     {
-        size_t* count = new size_t[K];
-        for(size_t k = 0; k < K; ++k)
+        uint64_t* count = new uint64_t[K];
+        for(uint64_t k = 0; k < K; ++k)
         {
             count[k] = ptr_[k + 1] - ptr_[k];
         }
@@ -164,17 +164,17 @@ rocsparseio_status rocsparseio_csx_statistics(rocsparseio_direction dir,
         }
     }
 
-    size_t b_min   = N;
-    size_t b_max   = 0;
-    double sym_val = static_cast<double>(0);
-    bool   sym     = true;
-    for(size_t k = 0; k < K; ++k)
+    uint64_t b_min   = N;
+    uint64_t b_max   = 0;
+    double   sym_val = static_cast<double>(0);
+    bool     sym     = true;
+    for(uint64_t k = 0; k < K; ++k)
     {
-        for(size_t l = ptr_[k] - base; l < ptr_[k + 1] - base; ++l)
+        for(uint64_t l = ptr_[k] - base; l < ptr_[k + 1] - base; ++l)
         {
-            J      ind = ind_[l] - base;
-            T      v   = val_[l];
-            size_t s   = (ind > k) ? (ind - k) : (k - ind);
+            J        ind = ind_[l] - base;
+            T        v   = val_[l];
+            uint64_t s   = (ind > k) ? (ind - k) : (k - ind);
             if(k != ind)
             {
                 b_max     = std::max(s, b_max);
@@ -205,7 +205,7 @@ rocsparseio_status rocsparseio_csx_statistics(rocsparseio_direction dir,
     std::cout << "numerical symmetry " << (sym_val > 0.0 ? "false" : "true") << std::endl;
     std::cout << "b_min " << b_min << std::endl;
     std::cout << "b_max " << b_max << std::endl;
-    for(size_t i = 0; i < len_trseq; ++i)
+    for(uint64_t i = 0; i < len_trseq; ++i)
     {
         auto* p = trseqs[i];
         do
@@ -221,9 +221,9 @@ rocsparseio_status rocsparseio_csx_statistics(rocsparseio_direction dir,
 
 template <typename I, typename J, typename T>
 rocsparseio_status rocsparseio_csx_statistics(rocsparseio_direction dir,
-                                              size_t                M,
-                                              size_t                N,
-                                              size_t                nnz,
+                                              uint64_t              M,
+                                              uint64_t              N,
+                                              uint64_t              nnz,
                                               const void* __restrict__ ptr_,
                                               const void* __restrict__ ind_,
                                               const void* __restrict__ val_,
@@ -382,7 +382,7 @@ int main(int argc, char** argv)
     case rocsparseio_format_dense_vector:
     {
         rocsparseio_type data_type;
-        size_t           data_nmemb;
+        uint64_t         data_nmemb;
         status = rocsparseiox_read_metadata_dense_vector(handle, &data_type, &data_nmemb);
         ROCSPARSEIO_CHECK(status);
         std::cout << "data_type : " << data_type << std::endl;
@@ -395,7 +395,7 @@ int main(int argc, char** argv)
     {
         rocsparseio_order order;
         rocsparseio_type  data_type;
-        size_t            m, n;
+        uint64_t          m, n;
         status = rocsparseiox_read_metadata_dense_matrix(handle, &order, &m, &n, &data_type);
         ROCSPARSEIO_CHECK(status);
         std::cout << "data_type : " << data_type << std::endl;
@@ -407,7 +407,7 @@ int main(int argc, char** argv)
     case rocsparseio_format_sparse_csx:
     {
         rocsparseio_type       ptr_type, ind_type, val_type;
-        size_t                 m, n, nnz;
+        uint64_t               m, n, nnz;
         rocsparseio_direction  dir;
         rocsparseio_index_base base;
 
@@ -422,7 +422,7 @@ int main(int argc, char** argv)
         std::cout << "val_type : " << val_type << std::endl;
         std::cout << "base      : " << base << std::endl;
 
-        size_t val_type_size, ind_type_size, ptr_type_size;
+        uint64_t val_type_size, ind_type_size, ptr_type_size;
 
         status = rocsparseio_type_get_size(val_type, &val_type_size);
         ROCSPARSEIO_CHECK(status);
@@ -433,22 +433,22 @@ int main(int argc, char** argv)
         status = rocsparseio_type_get_size(ind_type, &ind_type_size);
         ROCSPARSEIO_CHECK(status);
 
-        size_t s = (val_type_size + ind_type_size) * nnz + (m + 1) * ptr_type_size;
+        uint64_t s = (val_type_size + ind_type_size) * nnz + (m + 1) * ptr_type_size;
 
-        size_t nmb = s / (1024 * 1024);
-        size_t ngb = nmb / 1024;
+        uint64_t nmb = s / (1024 * 1024);
+        uint64_t ngb = nmb / 1024;
 
         nmb += nmb % 1024;
         std::cout << "memory: " << ngb << " Go," << nmb << " Mb " << s % 1024 << " kb" << std::endl;
 
-        size_t ptr_size = (dir == rocsparseio_direction_row) ? (m + 1) : (n + 1);
-        void*  ptr      = malloc(ptr_type_size * ptr_size);
+        uint64_t ptr_size = (dir == rocsparseio_direction_row) ? (m + 1) : (n + 1);
+        void*    ptr      = malloc(ptr_type_size * ptr_size);
 
-        size_t ind_size = nnz;
-        void*  ind      = malloc(ind_type_size * ind_size);
+        uint64_t ind_size = nnz;
+        void*    ind      = malloc(ind_type_size * ind_size);
 
-        size_t val_size = nnz;
-        void*  val      = malloc(val_type_size * val_size);
+        uint64_t val_size = nnz;
+        void*    val      = malloc(val_type_size * val_size);
 
         status = rocsparseiox_read_sparse_csx(handle, ptr, ind, val);
 
