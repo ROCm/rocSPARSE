@@ -632,9 +632,9 @@ int csr2ascii(const char* ifilename, const char* ofilename)
 
 template <typename I0, typename I1, typename T>
 rocsparseio_status write_ascii_sparse_coo_template(const char*            ofilename,
-                                                   size_t                 m,
-                                                   size_t                 n,
-                                                   size_t                 nnz,
+                                                   uint64_t               m,
+                                                   uint64_t               n,
+                                                   uint64_t               nnz,
                                                    const void*            row_ind_,
                                                    const void*            col_ind_,
                                                    const void*            val_,
@@ -648,7 +648,7 @@ rocsparseio_status write_ascii_sparse_coo_template(const char*            ofilen
     out << "n: " << n << std::endl;
     out << "nnz: " << nnz << std::endl;
     out << "base: " << index_base << std::endl;
-    for(size_t i = 0; i < nnz; ++i)
+    for(uint64_t i = 0; i < nnz; ++i)
     {
         out << "row = " << row_ind[i] << ", col = " << col_ind[i] << ", val =  " << val[i]
             << std::endl;
@@ -660,12 +660,12 @@ rocsparseio_status write_ascii_sparse_coo_template(const char*            ofilen
 
 template <typename T>
 rocsparseio_status
-    write_ascii_dense_vector_template(const char* ofilename, size_t m, const void* val_)
+    write_ascii_dense_vector_template(const char* ofilename, uint64_t m, const void* val_)
 {
     const T*      val = (const T*)val_;
     std::ofstream out(ofilename);
     out << "m: " << m << std::endl;
-    for(size_t i = 0; i < m; ++i)
+    for(uint64_t i = 0; i < m; ++i)
     {
         out << "val[" << i << "] = " << val[i] << std::endl;
     }
@@ -689,11 +689,15 @@ rocsparseio_status write_ascii_sparse_coo_dispatch_t(rocsparseio_type t, P... pa
     }
     case rocsparseio_type_complex32:
     {
-        //	return write_ascii_sparse_coo_template<I,J,rocsparseio_float_complex>(params...);
+        return write_ascii_sparse_coo_template<I, J, std::complex<float>>(params...);
     }
     case rocsparseio_type_complex64:
     {
-        //	return write_ascii_sparse_coo_template<I,J,rocsparseio_double_complex>(params...);
+        return write_ascii_sparse_coo_template<I, J, std::complex<double>>(params...);
+    }
+    case rocsparseio_type_int8:
+    {
+        return write_ascii_sparse_coo_template<I, J, int8_t>(params...);
     }
     case rocsparseio_type_int32:
     case rocsparseio_type_int64:
@@ -717,6 +721,7 @@ rocsparseio_status
     {
         return write_ascii_sparse_coo_dispatch_t<I, int64_t, P...>(t, params...);
     }
+    case rocsparseio_type_int8:
     case rocsparseio_type_float32:
     case rocsparseio_type_float64:
     case rocsparseio_type_complex32:
@@ -741,6 +746,7 @@ rocsparseio_status
     {
         return write_ascii_sparse_coo_dispatch_jt<int64_t, P...>(j, t, params...);
     }
+    case rocsparseio_type_int8:
     case rocsparseio_type_float32:
     case rocsparseio_type_float64:
     case rocsparseio_type_complex32:
@@ -757,11 +763,16 @@ rocsparseio_status write_ascii_dense_vector(rocsparseio_type t, P... params)
     switch(t)
     {
     case rocsparseio_type_int32:
-    case rocsparseio_type_int64:
-    case rocsparseio_type_complex32:
-    case rocsparseio_type_complex64:
     {
-        return rocsparseio_status_invalid_value;
+        return write_ascii_dense_vector_template<int32_t>(params...);
+    }
+    case rocsparseio_type_int64:
+    {
+        return write_ascii_dense_vector_template<int64_t>(params...);
+    }
+    case rocsparseio_type_int8:
+    {
+        return write_ascii_dense_vector_template<int8_t>(params...);
     }
     case rocsparseio_type_float32:
     {
@@ -770,6 +781,14 @@ rocsparseio_status write_ascii_dense_vector(rocsparseio_type t, P... params)
     case rocsparseio_type_float64:
     {
         return write_ascii_dense_vector_template<double>(params...);
+    }
+    case rocsparseio_type_complex32:
+    {
+        return write_ascii_dense_vector_template<std::complex<float>>(params...);
+    }
+    case rocsparseio_type_complex64:
+    {
+        return write_ascii_dense_vector_template<std::complex<double>>(params...);
     }
     }
 }
@@ -789,14 +808,14 @@ rocsparseio_status rocsparseio2ascii(const char* ifilename, const char* ofilenam
     case rocsparseio_format_dense_vector:
     {
         rocsparseio_type data_type;
-        size_t           m;
+        uint64_t         m;
         void*            data;
         status = rocsparseiox_read_metadata_dense_vector(handle, &data_type, &m);
         // ROCSPARSEIO_CHECK(status);
-        size_t data_type_size;
+        uint64_t data_type_size;
         status = rocsparseio_type_get_size(data_type, &data_type_size);
         data   = (m > 0) ? malloc(data_type_size * m) : nullptr;
-        status = rocsparseiox_read_dense_vector(handle, data, (size_t)1);
+        status = rocsparseiox_read_dense_vector(handle, data, (uint64_t)1);
         // ROCSPARSEIO_CHECK(status);
         write_ascii_dense_vector(data_type, ofilename, m, data);
         break;
@@ -806,7 +825,7 @@ rocsparseio_status rocsparseio2ascii(const char* ifilename, const char* ofilenam
 #if 0
 	rocsparseio_order_t order_type;
 	rocsparseio_type data_type;
-	size_t m, n;
+	uint64_t m, n;
 	void  *data;
 	status = rocsparseiox_read_metadata_sparse_csx(handle,
 						       &order_type,
@@ -814,7 +833,7 @@ rocsparseio_status rocsparseio2ascii(const char* ifilename, const char* ofilenam
 						       &n,
 						       &data_type);
 	// ROCSPARSEIO_CHECK(status);
-	size_t data_type_size;
+	uint64_t data_type_size;
 	status =  rocsparseio_type_get_size(data_type, &data_type_size);
 	data = (m * n > 0) ? malloc(data_type_size * m*n) : nullptr;
 	status = rocsparseiox_read_sparse_csx(handle, data);
@@ -826,7 +845,7 @@ rocsparseio_status rocsparseio2ascii(const char* ifilename, const char* ofilenam
     {
         rocsparseio_type       ptr_type, ind_type, data_type;
         rocsparseio_index_base base;
-        size_t                 m, n, nnz;
+        uint64_t               m, n, nnz;
         rocsparseio_direction  dir;
         void *                 ptr, *ind, *data;
         status = rocsparseiox_read_metadata_sparse_csx(
@@ -834,18 +853,18 @@ rocsparseio_status rocsparseio2ascii(const char* ifilename, const char* ofilenam
         // ROCSPARSEIO_CHECK(status);
 
         {
-            size_t size;
+            uint64_t size;
             status = rocsparseio_type_get_size(ptr_type, &size);
             ptr    = (m > 0) ? malloc(size * (m + 1)) : nullptr;
         }
 
         {
-            size_t size;
+            uint64_t size;
             status = rocsparseio_type_get_size(ind_type, &size);
             ind    = (nnz > 0) ? malloc(size * nnz) : nullptr;
         }
         {
-            size_t size;
+            uint64_t size;
             status = rocsparseio_type_get_size(data_type, &size);
             data   = (nnz > 0) ? malloc(size * nnz) : nullptr;
         }
@@ -858,7 +877,7 @@ rocsparseio_status rocsparseio2ascii(const char* ifilename, const char* ofilenam
 #if 0
 	rocsparseio_type ptr_type, ind_type, data_type;
 	rocsparseio_index_base base;
-	size_t mb, nb, nnzb,bm,bn;
+	uint64_t mb, nb, nnzb,bm,bn;
 	rocsparseio_direction dir, dirb;
 	void *ptr, *ind, *data;
 	status = rocsparseiox_read_metadata_sparse_gebsx(handle,
@@ -874,19 +893,19 @@ rocsparseio_status rocsparseio2ascii(const char* ifilename, const char* ofilenam
 							 &data_type,
 							 &base);
 	// ROCSPARSEIO_CHECK(status);
-	size_t ob = dir == rocsparseio_direction_row ? mb : nb;
+	uint64_t ob = dir == rocsparseio_direction_row ? mb : nb;
 
-	{ size_t size;
+	{ uint64_t size;
 	  status =  rocsparseio_type_get_size(ptr_type, &size);
 	  ptr = (ob > 0) ? malloc(size * (ob + 1)) : nullptr;
 	}
 
-	{ size_t size;
+	{ uint64_t size;
 	  status =  rocsparseio_type_get_size(ind_type, &size);
 	  ind = (nnzb > 0) ? malloc(size * nnzb) : nullptr;
 	}
 
-	{ size_t size;
+	{ uint64_t size;
 	  status =  rocsparseio_type_get_size(data_type, &size);
 	  data = (nnzb > 0) ? malloc(size * nnzb * bm * bn) : nullptr;
 	}
@@ -900,7 +919,7 @@ rocsparseio_status rocsparseio2ascii(const char* ifilename, const char* ofilenam
     {
         rocsparseio_type       row_ind_type, col_ind_type, data_type;
         rocsparseio_index_base base;
-        size_t                 m, n, nnz;
+        uint64_t               m, n, nnz;
         rocsparseio_direction  dir;
         void *                 row_ind, *col_ind, *data;
         status = rocsparseiox_read_metadata_sparse_coo(
@@ -908,19 +927,19 @@ rocsparseio_status rocsparseio2ascii(const char* ifilename, const char* ofilenam
         // ROCSPARSEIO_CHECK(status);
 
         {
-            size_t size;
+            uint64_t size;
             status  = rocsparseio_type_get_size(row_ind_type, &size);
             row_ind = (nnz > 0) ? malloc(size * nnz) : nullptr;
         }
 
         {
-            size_t size;
+            uint64_t size;
             status  = rocsparseio_type_get_size(col_ind_type, &size);
             col_ind = (nnz > 0) ? malloc(size * nnz) : nullptr;
         }
 
         {
-            size_t size;
+            uint64_t size;
             status = rocsparseio_type_get_size(data_type, &size);
             data   = (nnz > 0) ? malloc(size * nnz) : nullptr;
         }
@@ -958,7 +977,7 @@ rocsparseio_status rocsparseio2csr(const char* ifilename, const char* ofilename)
 
     rocsparseio_type       ptr_type, ind_type, data_type;
     rocsparseio_index_base base;
-    size_t                 m, n, nnz;
+    uint64_t               m, n, nnz;
     rocsparseio_direction  dir;
     void *                 ptr, *ind, *data;
     status = rocsparseiox_read_metadata_sparse_csx(
@@ -985,19 +1004,19 @@ rocsparseio_status rocsparseio2csr(const char* ifilename, const char* ofilename)
     }
 
     {
-        size_t size;
+        uint64_t size;
         status = rocsparseio_type_get_size(ptr_type, &size);
         ptr    = (m > 0) ? malloc(size * (m + 1)) : nullptr;
     }
 
     {
-        size_t size;
+        uint64_t size;
         status = rocsparseio_type_get_size(ind_type, &size);
         ind    = (nnz > 0) ? malloc(size * nnz) : nullptr;
     }
 
     {
-        size_t size;
+        uint64_t size;
         status = rocsparseio_type_get_size(data_type, &size);
         data   = (nnz > 0) ? malloc(size * nnz) : nullptr;
     }
@@ -1023,12 +1042,13 @@ rocsparseio_status rocsparseio2csr(const char* ifilename, const char* ofilename)
         {
             iptr       = (int32_t*)malloc(sizeof(int32_t) * (m + 1));
             int64_t* p = (int64_t*)ptr;
-            for(size_t i = 0; i < m + 1; ++i)
+            for(uint64_t i = 0; i < m + 1; ++i)
             {
                 iptr[i] = p[i];
             }
             break;
         }
+        case rocsparseio_type_int8:
         case rocsparseio_type_float32:
         case rocsparseio_type_float64:
         case rocsparseio_type_complex32:
@@ -1051,12 +1071,13 @@ rocsparseio_status rocsparseio2csr(const char* ifilename, const char* ofilename)
         {
             iind       = (int32_t*)malloc(sizeof(int32_t) * nnz);
             int64_t* p = (int64_t*)ind;
-            for(size_t i = 0; i < nnz; ++i)
+            for(uint64_t i = 0; i < nnz; ++i)
             {
                 iind[i] = p[i];
             }
             break;
         }
+        case rocsparseio_type_int8:
         case rocsparseio_type_float32:
         case rocsparseio_type_float64:
         case rocsparseio_type_complex32:
@@ -1079,12 +1100,13 @@ rocsparseio_status rocsparseio2csr(const char* ifilename, const char* ofilename)
         {
             idata    = (double*)malloc(sizeof(double) * (nnz));
             float* p = (float*)data;
-            for(size_t i = 0; i < nnz; ++i)
+            for(uint64_t i = 0; i < nnz; ++i)
             {
                 idata[i] = p[i];
             }
             break;
         }
+        case rocsparseio_type_int8:
         case rocsparseio_type_int32:
         case rocsparseio_type_int64:
         case rocsparseio_type_complex32:

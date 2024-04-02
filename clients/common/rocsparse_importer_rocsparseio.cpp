@@ -175,9 +175,9 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_coo(I*           
                                                                    rocsparse_index_base* base)
 {
 
-    size_t                 iM;
-    size_t                 iN;
-    size_t                 innz;
+    uint64_t               iM;
+    uint64_t               iN;
+    uint64_t               innz;
     rocsparseio_index_base ibase;
     rocsparseio_status     istatus;
     istatus = rocsparseiox_read_metadata_sparse_coo(this->m_handle,
@@ -214,7 +214,7 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_coo(I* row_ind, I
     rocsparseio_status     istatus;
     const rocsparseio_type csr_ind_type = type_tconvert<I>(), csr_val_type = type_tconvert<T>();
 
-    const size_t NNZ = this->m_nnz;
+    const uint64_t NNZ = this->m_nnz;
 
     const bool same_ind_type = (this->m_ind_type == csr_ind_type);
     const bool same_val_type = (this->m_val_type == csr_val_type);
@@ -236,7 +236,7 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_coo(I* row_ind, I
 
         host_dense_vector<char> tmp_row_indv, tmp_col_indv, tmp_valv;
 
-        size_t sizeof_ind_type, sizeof_val_type;
+        uint64_t sizeof_ind_type, sizeof_val_type;
 
         istatus = rocsparseio_type_get_size(this->m_ind_type, &sizeof_ind_type);
         ROCSPARSE_CHECK_ROCSPARSEIO(istatus);
@@ -357,10 +357,10 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_gebsx(rocsparse_d
     istatus = rocsparseio_open(&this->m_handle, rocsparseio_rwmode_read, this->m_filename.c_str());
     ROCSPARSE_CHECK_ROCSPARSEIO(istatus);
 
-    size_t iMb;
-    size_t iNb;
-    size_t innzb;
-    size_t irow_block_dim, icol_block_dim;
+    uint64_t iMb;
+    uint64_t iNb;
+    uint64_t innzb;
+    uint64_t irow_block_dim, icol_block_dim;
 
     istatus = rocsparseiox_read_metadata_sparse_gebsx(this->m_handle,
                                                       &idir,
@@ -413,10 +413,10 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_gebsx(I* ptr, J* 
     const rocsparseio_type csr_ptr_type = type_tconvert<I>(), csr_ind_type = type_tconvert<J>(),
                            csr_val_type = type_tconvert<T>();
 
-    const size_t MB            = this->m_mb;
-    const size_t NNZB          = this->m_nnzb;
-    const size_t row_block_dim = this->m_row_block_dim;
-    const size_t col_block_dim = this->m_col_block_dim;
+    const uint64_t MB            = this->m_mb;
+    const uint64_t NNZB          = this->m_nnzb;
+    const uint64_t row_block_dim = this->m_row_block_dim;
+    const uint64_t col_block_dim = this->m_col_block_dim;
 
     const bool same_ptr_type = (this->m_ptr_type == csr_ptr_type);
     const bool same_ind_type = (this->m_ind_type == csr_ind_type);
@@ -439,7 +439,7 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_gebsx(I* ptr, J* 
 
         host_dense_vector<char> tmp_ptrv, tmp_indv, tmp_valv;
 
-        size_t sizeof_ptr_type, sizeof_ind_type, sizeof_val_type;
+        uint64_t sizeof_ptr_type, sizeof_ind_type, sizeof_val_type;
 
         istatus = rocsparseio_type_get_size(this->m_ptr_type, &sizeof_ptr_type);
         ROCSPARSE_CHECK_ROCSPARSEIO(istatus);
@@ -583,9 +583,9 @@ rocsparse_status
     rocsparseio_index_base ibase;
     istatus = rocsparseio_open(&this->m_handle, rocsparseio_rwmode_read, this->m_filename.c_str());
     ROCSPARSE_CHECK_ROCSPARSEIO(istatus);
-    size_t iM;
-    size_t iN;
-    size_t innz;
+    uint64_t iM;
+    uint64_t iN;
+    uint64_t innz;
 
     istatus = rocsparseiox_read_metadata_sparse_csx(this->m_handle,
                                                     &io_dir,
@@ -624,8 +624,8 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_csx(I* ptr, J* in
     const rocsparseio_type csr_ptr_type = type_tconvert<I>(), csr_ind_type = type_tconvert<J>(),
                            csr_val_type = type_tconvert<T>();
 
-    const size_t M   = this->m_m;
-    const size_t NNZ = this->m_nnz;
+    const uint64_t M   = this->m_m;
+    const uint64_t NNZ = this->m_nnz;
 
     const bool same_ptr_type = (this->m_ptr_type == csr_ptr_type);
     const bool same_ind_type = (this->m_ind_type == csr_ind_type);
@@ -648,7 +648,7 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_csx(I* ptr, J* in
 
         host_dense_vector<char> tmp_ptrv, tmp_indv, tmp_valv;
 
-        size_t sizeof_ptr_type, sizeof_ind_type, sizeof_val_type;
+        uint64_t sizeof_ptr_type, sizeof_ind_type, sizeof_val_type;
 
         istatus = rocsparseio_type_get_size(this->m_ptr_type, &sizeof_ptr_type);
         ROCSPARSE_CHECK_ROCSPARSEIO(istatus);

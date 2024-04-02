@@ -172,9 +172,9 @@ rocsparse_status rocsparse_exporter_rocsparseio::write_sparse_csx(rocsparse_dire
     const rocsparseio_type val_type = rocsparseio_type_convert<T>();
 
     rocsparseio_direction  dir;
-    size_t                 m;
-    size_t                 n;
-    size_t                 nnz;
+    uint64_t               m;
+    uint64_t               n;
+    uint64_t               nnz;
     rocsparseio_index_base base;
 
     rocsparse_status status;
@@ -240,11 +240,11 @@ rocsparse_status rocsparse_exporter_rocsparseio::write_sparse_gebsx(rocsparse_di
 
     rocsparseio_direction  dir;
     rocsparseio_direction  dirb;
-    size_t                 mb;
-    size_t                 nb;
-    size_t                 nnzb;
-    size_t                 block_dim_row;
-    size_t                 block_dim_column;
+    uint64_t               mb;
+    uint64_t               nb;
+    uint64_t               nnzb;
+    uint64_t               block_dim_row;
+    uint64_t               block_dim_column;
     rocsparseio_index_base base;
 
     rocsparse_status status;
@@ -328,7 +328,7 @@ rocsparse_status
 {
 
     const rocsparseio_type val_type = rocsparseio_type_convert<T>();
-    size_t                 nmemb, incx;
+    uint64_t               nmemb, incx;
     rocsparse_status       status;
     status = rocsparse_type_conversion(nmemb_, nmemb);
     if(status != rocsparse_status_success)
@@ -357,7 +357,7 @@ rocsparse_status rocsparse_exporter_rocsparseio::write_dense_matrix(
 {
 
     rocsparseio_order      order;
-    size_t                 m, n, ld;
+    uint64_t               m, n, ld;
     rocsparse_status       status;
     const rocsparseio_type val_type = rocsparseio_type_convert<T>();
 
@@ -409,7 +409,7 @@ rocsparse_status rocsparse_exporter_rocsparseio::write_sparse_coo(I m_,
     const rocsparseio_type ind_type = rocsparseio_type_convert<I>();
     const rocsparseio_type val_type = rocsparseio_type_convert<T>();
 
-    size_t                 m, n, nnz;
+    uint64_t               m, n, nnz;
     rocsparseio_index_base base;
 
     rocsparse_status status;
