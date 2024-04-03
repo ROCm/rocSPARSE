@@ -156,8 +156,7 @@ rocsparse_status rocsparse::check_matrix_gebsr_core(rocsparse_handle       handl
 
         if(avg_row_nnzb < 64)
         {
-            using config
-                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 1>>;
+            using config = rocprim::segmented_radix_sort_config<6, 5, 64, 1>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(tmp_rocprim,
                                                                            size,
                                                                            keys,
@@ -171,8 +170,7 @@ rocsparse_status rocsparse::check_matrix_gebsr_core(rocsparse_handle       handl
         }
         else if(avg_row_nnzb < 128)
         {
-            using config
-                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 2>>;
+            using config = rocprim::segmented_radix_sort_config<6, 5, 64, 2>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(tmp_rocprim,
                                                                            size,
                                                                            keys,
@@ -186,8 +184,7 @@ rocsparse_status rocsparse::check_matrix_gebsr_core(rocsparse_handle       handl
         }
         else if(avg_row_nnzb < 256)
         {
-            using config
-                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 4>>;
+            using config = rocprim::segmented_radix_sort_config<6, 5, 64, 4>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(tmp_rocprim,
                                                                            size,
                                                                            keys,
