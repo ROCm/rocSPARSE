@@ -198,7 +198,7 @@ namespace rocsparse
         // know when the first workgroup for that row has finished initializing the output
         // value. While this bit is the same as the first workgroup's flag bit, this
         // workgroup will spin-loop.
-        I       row      = row_blocks[gid];
+        const I row      = row_blocks[gid];
         const I stop_row = row_blocks[gid + 1];
         const J num_rows = stop_row - row;
 
@@ -207,6 +207,7 @@ namespace rocsparse
 
         // Any workgroup only calculates, at most, BLOCK_MULTIPLIER*BLOCKSIZE items in a row.
         // If there are more items in this row, we assign more workgroups.
+        const I row_offset = rocsparse::nontemporal_load(csr_row_ptr + row);
 
         T temp_sum = static_cast<T>(0);
 
@@ -244,7 +245,7 @@ namespace rocsparse
 
             // Stream all of this row block's matrix values into local memory.
             // Perform the matvec in parallel with this work.
-            const I col = csr_row_ptr[row] + lid - idx_base;
+            const I col = row_offset + lid - idx_base;
             if(col + BLOCKSIZE - WG_SIZE < nnz)
             {
                 for(J i = 0; i < BLOCKSIZE; i += WG_SIZE)
@@ -284,8 +285,8 @@ namespace rocsparse
                 // avoids an integer divide.
                 // size_t st = lid/numThreadsForRed;
                 const I local_row       = row + (lid >> (31 - __clz(numThreadsForRed)));
-                const J local_first_val = csr_row_ptr[local_row] - csr_row_ptr[row];
-                const J local_last_val  = csr_row_ptr[local_row + 1] - csr_row_ptr[row];
+                const J local_first_val = csr_row_ptr[local_row] - row_offset;
+                const J local_last_val  = csr_row_ptr[local_row + 1] - row_offset;
                 const J threadInBlock   = lid & (numThreadsForRed - 1);
 
                 // Not all row blocks are full -- they may have an odd number of rows. As such,
@@ -340,8 +341,8 @@ namespace rocsparse
                 I local_row = row + lid;
                 while(local_row < stop_row)
                 {
-                    const J local_first_val = (csr_row_ptr[local_row] - csr_row_ptr[row]);
-                    const J local_last_val  = csr_row_ptr[local_row + 1] - csr_row_ptr[row];
+                    const J local_first_val = (csr_row_ptr[local_row] - row_offset);
+                    const J local_last_val  = csr_row_ptr[local_row + 1] - row_offset;
                     temp_sum                = static_cast<T>(0);
                     for(J local_cur_val = local_first_val; local_cur_val < local_last_val;
                         ++local_cur_val)
@@ -372,13 +373,14 @@ namespace rocsparse
             // If this workgroup is operating on multiple rows (because CSR-Stream is poor for small
             // numbers of rows), then it needs to iterate until it reaches the stop_row.
             // We don't check <= stop_row because of the potential for unsigned overflow.
-            while(row < stop_row)
+            I r = row;
+            while(r < stop_row)
             {
                 // Any workgroup only calculates, at most, BLOCKSIZE items in this row.
                 // If there are more items in this row, we use CSR-LongRows.
                 temp_sum         = static_cast<T>(0);
-                const I vecStart = csr_row_ptr[row] - idx_base;
-                const I vecEnd   = csr_row_ptr[row + 1] - idx_base;
+                const I vecStart = csr_row_ptr[r] - idx_base;
+                const I vecEnd   = csr_row_ptr[r + 1] - idx_base;
 
                 // Load in a bunch of partial results into your register space, rather than LDS (no
                 // contention)
@@ -405,20 +407,16 @@ namespace rocsparse
 
                     if(beta != static_cast<T>(0))
                     {
-                        temp_sum = rocsparse::fma<T>(beta, y[row], temp_sum);
+                        temp_sum = rocsparse::fma<T>(beta, y[r], temp_sum);
                     }
 
-                    y[row] = temp_sum;
+                    y[r] = temp_sum;
                 }
-                ++row;
+                ++r;
             }
         }
         else
         {
-            const I vecStart
-                = (I)wg * (I)BLOCK_MULTIPLIER * BLOCKSIZE + csr_row_ptr[row] - idx_base;
-            const I vecEnd = rocsparse::min(csr_row_ptr[row + 1] - idx_base,
-                                            vecStart + BLOCK_MULTIPLIER * BLOCKSIZE);
             // In CSR-LongRows, we have more than one workgroup calculating this row.
             // The output values for those types of rows are stored using atomic_add, because
             // more than one parallel workgroup's value makes up the final answer.
@@ -458,6 +456,10 @@ namespace rocsparse
                 // Release other workgroups
                 atomicXor(&wg_flags[first_wg_in_row], 1U);
             }
+
+            const I vecStart = (I)wg * (I)BLOCK_MULTIPLIER * BLOCKSIZE + row_offset - idx_base;
+            const I vecEnd
+                = min(csr_row_ptr[row + 1] - idx_base, vecStart + BLOCK_MULTIPLIER * BLOCKSIZE);
 
             // Load in a bunch of partial results into your register space, rather than LDS (no
             // contention)
