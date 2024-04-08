@@ -72,7 +72,7 @@ extern "C" {
 *  @param[in]
 *  alpha           scalar \f$\alpha\f$.
 *  @param[in]
-*  descr_A         descriptor of the sparse CSR matrix \f$A\f$. Currenty, only
+*  descr_A         descriptor of the sparse CSR matrix \f$A\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnz_A           number of non-zero entries of the sparse CSR matrix \f$A\f$.
@@ -84,7 +84,7 @@ extern "C" {
 *  csr_col_ind_A   array of \p nnz_A elements containing the column indices of the
 *                  sparse CSR matrix \f$A\f$.
 *  @param[in]
-*  descr_B         descriptor of the sparse CSR matrix \f$B\f$. Currenty, only
+*  descr_B         descriptor of the sparse CSR matrix \f$B\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnz_B           number of non-zero entries of the sparse CSR matrix \f$B\f$.
@@ -98,7 +98,7 @@ extern "C" {
 *  @param[in]
 *  beta            scalar \f$\beta\f$.
 *  @param[in]
-*  descr_D         descriptor of the sparse CSR matrix \f$D\f$. Currenty, only
+*  descr_D         descriptor of the sparse CSR matrix \f$D\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnz_D           number of non-zero entries of the sparse CSR matrix \f$D\f$.
@@ -272,7 +272,7 @@ rocsparse_status rocsparse_zcsrgemm_buffer_size(rocsparse_handle                
 *  k               number of columns of the sparse CSR matrix \f$op(A)\f$ and number of
 *                  rows of the sparse CSR matrix \f$op(B)\f$.
 *  @param[in]
-*  descr_A         descriptor of the sparse CSR matrix \f$A\f$. Currenty, only
+*  descr_A         descriptor of the sparse CSR matrix \f$A\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnz_A           number of non-zero entries of the sparse CSR matrix \f$A\f$.
@@ -284,7 +284,7 @@ rocsparse_status rocsparse_zcsrgemm_buffer_size(rocsparse_handle                
 *  csr_col_ind_A   array of \p nnz_A elements containing the column indices of the
 *                  sparse CSR matrix \f$A\f$.
 *  @param[in]
-*  descr_B         descriptor of the sparse CSR matrix \f$B\f$. Currenty, only
+*  descr_B         descriptor of the sparse CSR matrix \f$B\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnz_B           number of non-zero entries of the sparse CSR matrix \f$B\f$.
@@ -296,7 +296,7 @@ rocsparse_status rocsparse_zcsrgemm_buffer_size(rocsparse_handle                
 *  csr_col_ind_B   array of \p nnz_B elements containing the column indices of the
 *                  sparse CSR matrix \f$B\f$.
 *  @param[in]
-*  descr_D         descriptor of the sparse CSR matrix \f$D\f$. Currenty, only
+*  descr_D         descriptor of the sparse CSR matrix \f$D\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnz_D           number of non-zero entries of the sparse CSR matrix \f$D\f$.
@@ -307,7 +307,7 @@ rocsparse_status rocsparse_zcsrgemm_buffer_size(rocsparse_handle                
 *  csr_col_ind_D   array of \p nnz_D elements containing the column indices of the sparse
 *                  CSR matrix \f$D\f$.
 *  @param[in]
-*  descr_C         descriptor of the sparse CSR matrix \f$C\f$. Currenty, only
+*  descr_C         descriptor of the sparse CSR matrix \f$C\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[out]
 *  csr_row_ptr_C   array of \p m+1 elements that point to the start of every row of the
@@ -444,7 +444,7 @@ rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle          handle,
 *  @param[in]
 *  alpha           scalar \f$\alpha\f$.
 *  @param[in]
-*  descr_A         descriptor of the sparse CSR matrix \f$A\f$. Currenty, only
+*  descr_A         descriptor of the sparse CSR matrix \f$A\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnz_A           number of non-zero entries of the sparse CSR matrix \f$A\f$.
@@ -458,7 +458,7 @@ rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle          handle,
 *  csr_col_ind_A   array of \p nnz_A elements containing the column indices of the
 *                  sparse CSR matrix \f$A\f$.
 *  @param[in]
-*  descr_B         descriptor of the sparse CSR matrix \f$B\f$. Currenty, only
+*  descr_B         descriptor of the sparse CSR matrix \f$B\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnz_B           number of non-zero entries of the sparse CSR matrix \f$B\f$.
@@ -474,7 +474,7 @@ rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle          handle,
 *  @param[in]
 *  beta            scalar \f$\beta\f$.
 *  @param[in]
-*  descr_D         descriptor of the sparse CSR matrix \f$D\f$. Currenty, only
+*  descr_D         descriptor of the sparse CSR matrix \f$D\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnz_D           number of non-zero entries of the sparse CSR matrix \f$D\f$.
@@ -487,7 +487,7 @@ rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle          handle,
 *  csr_col_ind_D   array of \p nnz_D elements containing the column indices of the
 *                  sparse CSR matrix \f$D\f$.
 *  @param[in]
-*  descr_C         descriptor of the sparse CSR matrix \f$C\f$. Currenty, only
+*  descr_C         descriptor of the sparse CSR matrix \f$C\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[out]
 *  csr_val_C       array of \p nnz_C elements of the sparse CSR matrix \f$C\f$.
@@ -833,7 +833,7 @@ rocsparse_status rocsparse_zcsrgemm(rocsparse_handle                handle,
 *  k               number of columns of the sparse CSR matrix \f$op(A)\f$ and number of
 *                  rows of the sparse CSR matrix \f$op(B)\f$.
 *  @param[in]
-*  descr_A         descriptor of the sparse CSR matrix \f$A\f$. Currenty, only
+*  descr_A         descriptor of the sparse CSR matrix \f$A\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnz_A           number of non-zero entries of the sparse CSR matrix \f$A\f$.
@@ -845,7 +845,7 @@ rocsparse_status rocsparse_zcsrgemm(rocsparse_handle                handle,
 *  csr_col_ind_A   array of \p nnz_A elements containing the column indices of the
 *                  sparse CSR matrix \f$A\f$.
 *  @param[in]
-*  descr_B         descriptor of the sparse CSR matrix \f$B\f$. Currenty, only
+*  descr_B         descriptor of the sparse CSR matrix \f$B\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnz_B           number of non-zero entries of the sparse CSR matrix \f$B\f$.
@@ -857,7 +857,7 @@ rocsparse_status rocsparse_zcsrgemm(rocsparse_handle                handle,
 *  csr_col_ind_B   array of \p nnz_B elements containing the column indices of the
 *                  sparse CSR matrix \f$B\f$.
 *  @param[in]
-*  descr_D         descriptor of the sparse CSR matrix \f$D\f$. Currenty, only
+*  descr_D         descriptor of the sparse CSR matrix \f$D\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnz_D           number of non-zero entries of the sparse CSR matrix \f$D\f$.
@@ -868,7 +868,7 @@ rocsparse_status rocsparse_zcsrgemm(rocsparse_handle                handle,
 *  csr_col_ind_D   array of \p nnz_D elements containing the column indices of the
 *                  sparse CSR matrix \f$D\f$.
 *  @param[in]
-*  descr_C         descriptor of the sparse CSR matrix \f$C\f$. Currenty, only
+*  descr_C         descriptor of the sparse CSR matrix \f$C\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnz_C           number of non-zero entries of the sparse CSR matrix \f$C\f$.
@@ -1118,7 +1118,7 @@ rocsparse_status rocsparse_csrgemm_symbolic(rocsparse_handle          handle,
 *  @param[in]
 *  alpha           scalar \f$\alpha\f$.
 *  @param[in]
-*  descr_A         descriptor of the sparse CSR matrix \f$A\f$. Currenty, only
+*  descr_A         descriptor of the sparse CSR matrix \f$A\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnz_A           number of non-zero entries of the sparse CSR matrix \f$A\f$.
@@ -1132,7 +1132,7 @@ rocsparse_status rocsparse_csrgemm_symbolic(rocsparse_handle          handle,
 *  csr_col_ind_A   array of \p nnz_A elements containing the column indices of the
 *                  sparse CSR matrix \f$A\f$.
 *  @param[in]
-*  descr_B         descriptor of the sparse CSR matrix \f$B\f$. Currenty, only
+*  descr_B         descriptor of the sparse CSR matrix \f$B\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnz_B           number of non-zero entries of the sparse CSR matrix \f$B\f$.
@@ -1148,7 +1148,7 @@ rocsparse_status rocsparse_csrgemm_symbolic(rocsparse_handle          handle,
 *  @param[in]
 *  beta            scalar \f$\beta\f$.
 *  @param[in]
-*  descr_D         descriptor of the sparse CSR matrix \f$D\f$. Currenty, only
+*  descr_D         descriptor of the sparse CSR matrix \f$D\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnz_D           number of non-zero entries of the sparse CSR matrix \f$D\f$.
@@ -1161,7 +1161,7 @@ rocsparse_status rocsparse_csrgemm_symbolic(rocsparse_handle          handle,
 *  csr_col_ind_D   array of \p nnz_D elements containing the column indices of the
 *                  sparse CSR matrix \f$D\f$.
 *  @param[in]
-*  descr_C         descriptor of the sparse CSR matrix \f$C\f$. Currenty, only
+*  descr_C         descriptor of the sparse CSR matrix \f$C\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnz_C           number of non-zero entries of the sparse CSR matrix \f$C\f$.

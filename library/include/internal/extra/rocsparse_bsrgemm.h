@@ -73,7 +73,7 @@ extern "C" {
 *  @param[in]
 *  alpha           scalar \f$\alpha\f$.
 *  @param[in]
-*  descr_A         descriptor of the sparse BSR matrix \f$A\f$. Currenty, only
+*  descr_A         descriptor of the sparse BSR matrix \f$A\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnzb_A          number of non-zero block entries of the sparse BSR matrix \f$A\f$.
@@ -85,7 +85,7 @@ extern "C" {
 *  bsr_col_ind_A   array of \p nnzb_A elements containing the block column indices of the
 *                  sparse BSR matrix \f$A\f$.
 *  @param[in]
-*  descr_B         descriptor of the sparse BSR matrix \f$B\f$. Currenty, only
+*  descr_B         descriptor of the sparse BSR matrix \f$B\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnzb_B          number of non-zero block entries of the sparse BSR matrix \f$B\f$.
@@ -99,7 +99,7 @@ extern "C" {
 *  @param[in]
 *  beta            scalar \f$\beta\f$.
 *  @param[in]
-*  descr_D         descriptor of the sparse BSR matrix \f$D\f$. Currenty, only
+*  descr_D         descriptor of the sparse BSR matrix \f$D\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnzb_D          number of non-zero block entries of the sparse BSR matrix \f$D\f$.
@@ -278,7 +278,7 @@ rocsparse_status rocsparse_zbsrgemm_buffer_size(rocsparse_handle                
 *  @param[in]
 *  block_dim       the block dimension of the BSR matrix \f$A\f$, \f$B\f$, \f$C\f$, and \f$D\f$.
 *  @param[in]
-*  descr_A         descriptor of the sparse BSR matrix \f$A\f$. Currenty, only
+*  descr_A         descriptor of the sparse BSR matrix \f$A\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnzb_A          number of non-zero block entries of the sparse BSR matrix \f$A\f$.
@@ -290,7 +290,7 @@ rocsparse_status rocsparse_zbsrgemm_buffer_size(rocsparse_handle                
 *  bsr_col_ind_A   array of \p nnzb_A block elements containing the block column indices of the
 *                  sparse BSR matrix \f$A\f$.
 *  @param[in]
-*  descr_B         descriptor of the sparse BSR matrix \f$B\f$. Currenty, only
+*  descr_B         descriptor of the sparse BSR matrix \f$B\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnzb_B          number of non-zero block entries of the sparse BSR matrix \f$B\f$.
@@ -302,7 +302,7 @@ rocsparse_status rocsparse_zbsrgemm_buffer_size(rocsparse_handle                
 *  bsr_col_ind_B   array of \p nnzb_B block elements containing the block column indices of the
 *                  sparse BSR matrix \f$B\f$.
 *  @param[in]
-*  descr_D         descriptor of the sparse BSR matrix \f$D\f$. Currenty, only
+*  descr_D         descriptor of the sparse BSR matrix \f$D\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnzb_D          number of non-zero block entries of the sparse BSR matrix \f$D\f$.
@@ -313,7 +313,7 @@ rocsparse_status rocsparse_zbsrgemm_buffer_size(rocsparse_handle                
 *  bsr_col_ind_D   array of \p nnzb_D block elements containing the block column indices of the sparse
 *                  BSR matrix \f$D\f$.
 *  @param[in]
-*  descr_C         descriptor of the sparse BSR matrix \f$C\f$. Currenty, only
+*  descr_C         descriptor of the sparse BSR matrix \f$C\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[out]
 *  bsr_row_ptr_C   array of \p mb+1 block elements that point to the start of every block row of the
@@ -449,7 +449,7 @@ rocsparse_status rocsparse_bsrgemm_nnzb(rocsparse_handle          handle,
 *  @param[in]
 *  alpha           scalar \f$\alpha\f$.
 *  @param[in]
-*  descr_A         descriptor of the sparse BSR matrix \f$A\f$. Currenty, only
+*  descr_A         descriptor of the sparse BSR matrix \f$A\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnzb_A          number of non-zero block entries of the sparse BSR matrix \f$A\f$.
@@ -463,7 +463,7 @@ rocsparse_status rocsparse_bsrgemm_nnzb(rocsparse_handle          handle,
 *  bsr_col_ind_A   array of \p nnzb_A block elements containing the block column indices of the
 *                  sparse BSR matrix \f$A\f$.
 *  @param[in]
-*  descr_B         descriptor of the sparse BSR matrix \f$B\f$. Currenty, only
+*  descr_B         descriptor of the sparse BSR matrix \f$B\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnzb_B          number of non-zero block entries of the sparse BSR matrix \f$B\f$.
@@ -479,7 +479,7 @@ rocsparse_status rocsparse_bsrgemm_nnzb(rocsparse_handle          handle,
 *  @param[in]
 *  beta            scalar \f$\beta\f$.
 *  @param[in]
-*  descr_D         descriptor of the sparse BSR matrix \f$D\f$. Currenty, only
+*  descr_D         descriptor of the sparse BSR matrix \f$D\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[in]
 *  nnzb_D          number of non-zero block entries of the sparse BSR matrix \f$D\f$.
@@ -492,7 +492,7 @@ rocsparse_status rocsparse_bsrgemm_nnzb(rocsparse_handle          handle,
 *  bsr_col_ind_D   array of \p nnzb_D block elements containing the block column indices of the
 *                  sparse BSR matrix \f$D\f$.
 *  @param[in]
-*  descr_C         descriptor of the sparse BSR matrix \f$C\f$. Currenty, only
+*  descr_C         descriptor of the sparse BSR matrix \f$C\f$. Currently, only
 *                  \ref rocsparse_matrix_type_general is supported.
 *  @param[out]
 *  bsr_val_C       array of \p nnzb_C elements of the sparse BSR matrix \f$C\f$.

@@ -34,7 +34,7 @@ extern "C" {
 
 /*! \ingroup conv_module
 *  \brief
-*  This function computes the the size of the user allocated temporary storage buffer used when converting a sparse
+*  This function computes the size of the user allocated temporary storage buffer used when converting a sparse
 *  general BSR matrix to another sparse general BSR matrix.
 *
 *  \details
