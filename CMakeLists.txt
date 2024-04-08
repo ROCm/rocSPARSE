@@ -257,7 +257,12 @@ if(BUILD_DOCS)
 endif()
 
 # Package specific CPACK vars
-rocm_package_add_dependencies(DEPENDS "hip-rocclr >= 3.5.0")
+if(BUILD_ADDRESS_SANITIZER)
+  set(DEPENDS_HIP_RUNTIME "hip-runtime-amd-asan" )
+else()
+  set(DEPENDS_HIP_RUNTIME "hip-runtime-amd" )
+endif()
+rocm_package_add_dependencies(DEPENDS "${DEPENDS_HIP_RUNTIME} >= 4.5.0")
 if (rocblas_FOUND)
   rocm_package_add_dependencies(DEPENDS "rocblas >= 4.1.0")
 else()
