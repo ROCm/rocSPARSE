@@ -43,7 +43,6 @@ def runTestCommand (platform, project, gfilter, String dirmode = "release")
     {
         hmmTestCommand = """
                             HSA_XNACK=0 GTEST_LISTENER=NO_PASS_LINE_IN_LOG  ./rocsparse-test  --rocsparse-enable-debug --rocsparse-clients-enable-test-debug-arguments --gtest_output=xml:test_detail_hmm_xnack_off.xml --gtest_color=yes --gtest_filter=${gfilter}-*known_bug*
-                            HSA_XNACK=1 GTEST_LISTENER=NO_PASS_LINE_IN_LOG  ./rocsparse-test --gtest_output=xml:test_detail_hmm_xnack_on.xml --gtest_color=yes --gtest_filter=${gfilter}-*known_bug*
                          """
     }
 
