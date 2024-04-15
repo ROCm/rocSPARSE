@@ -170,6 +170,9 @@ namespace
                 {
                     size_t available_memory;
                     size_t total_memory;
+
+                    hipDeviceSynchronize();
+
                     if(hipMemGetInfo(&available_memory, &total_memory) != hipSuccess)
                     {
                         return false;
