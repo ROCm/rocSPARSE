@@ -178,7 +178,7 @@ namespace rocsparse
         }
     }
 
-    template <rocsparse_direction DIRECTION, rocsparse_int BLOCK_SIZE, rocsparse_int WF_SIZE>
+    template <rocsparse_int BLOCK_SIZE, rocsparse_int WF_SIZE>
     ROCSPARSE_KERNEL(BLOCK_SIZE)
     void gebsr2csr_nnz_kernel(rocsparse_int        mb,
                               rocsparse_int        nb,

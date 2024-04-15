@@ -30,14 +30,10 @@
 
 namespace rocsparse
 {
-    template <rocsparse_direction DIRECTION,
-              uint32_t            BLOCK_SIZE,
-              uint32_t            BLOCK_DIM,
-              typename T,
-              typename I,
-              typename J>
+    template <uint32_t BLOCK_SIZE, uint32_t BLOCK_DIM, typename T, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCK_SIZE)
-    void bsr2csr_block_per_row_2_7_kernel(J                    mb,
+    void bsr2csr_block_per_row_2_7_kernel(rocsparse_direction  direction,
+                                          J                    mb,
                                           J                    nb,
                                           rocsparse_index_base bsr_base,
                                           const T* __restrict__ bsr_val,
@@ -87,7 +83,7 @@ namespace rocsparse
             {
                 csr_col_ind[offset + j] = BLOCK_DIM * col + j + csr_base;
 
-                if(DIRECTION == rocsparse_direction_row)
+                if(direction == rocsparse_direction_row)
                 {
                     csr_val[offset + j] = bsr_val[BLOCK_DIM * BLOCK_DIM * i + r * BLOCK_DIM + j];
                 }
@@ -99,14 +95,10 @@ namespace rocsparse
         }
     }
 
-    template <rocsparse_direction DIRECTION,
-              uint32_t            BLOCK_SIZE,
-              uint32_t            BLOCK_DIM,
-              typename T,
-              typename I,
-              typename J>
+    template <uint32_t BLOCK_SIZE, uint32_t BLOCK_DIM, typename T, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCK_SIZE)
-    void bsr2csr_block_per_row_8_32_kernel(J                    mb,
+    void bsr2csr_block_per_row_8_32_kernel(rocsparse_direction  direction,
+                                           J                    mb,
                                            J                    nb,
                                            rocsparse_index_base bsr_base,
                                            const T* __restrict__ bsr_val,
@@ -152,7 +144,7 @@ namespace rocsparse
 
             csr_col_ind[offset] = block_dim * col + c + csr_base;
 
-            if(DIRECTION == rocsparse_direction_row)
+            if(direction == rocsparse_direction_row)
             {
                 csr_val[offset] = bsr_val[block_dim * block_dim * i + block_dim * r + c];
             }
@@ -163,15 +155,15 @@ namespace rocsparse
         }
     }
 
-    template <rocsparse_direction DIRECTION,
-              uint32_t            BLOCK_SIZE,
-              uint32_t            BLOCK_DIM,
-              uint32_t            SUB_BLOCK_DIM,
+    template <uint32_t BLOCK_SIZE,
+              uint32_t BLOCK_DIM,
+              uint32_t SUB_BLOCK_DIM,
               typename T,
               typename I,
               typename J>
     ROCSPARSE_KERNEL(BLOCK_SIZE)
-    void bsr2csr_block_per_row_33_256_kernel(J                    mb,
+    void bsr2csr_block_per_row_33_256_kernel(rocsparse_direction  direction,
+                                             J                    mb,
                                              J                    nb,
                                              rocsparse_index_base bsr_base,
                                              const T* __restrict__ bsr_val,
@@ -226,7 +218,7 @@ namespace rocsparse
 
                         csr_col_ind[offset] = block_dim * col + c + csr_base;
 
-                        if(DIRECTION == rocsparse_direction_row)
+                        if(direction == rocsparse_direction_row)
                         {
                             csr_val[offset]
                                 = bsr_val[block_dim * block_dim * i + block_dim * r + c];
