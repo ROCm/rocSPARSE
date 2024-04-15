@@ -448,13 +448,7 @@ namespace rocsparse
         }
     }
 
-    template <rocsparse_int MAX_ROWS,
-              typename I,
-              typename J,
-              typename A,
-              typename X,
-              typename Y,
-              typename U>
+    template <typename I, typename J, typename A, typename X, typename Y, typename U>
     ROCSPARSE_KERNEL(WG_SIZE)
     void csrmvn_symm_adaptive_kernel(bool conj,
                                      I    nnz,
@@ -473,18 +467,18 @@ namespace rocsparse
         auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
         if(alpha != 0 || beta != 1)
         {
-            rocsparse::csrmvn_symm_adaptive_device<BLOCK_SIZE, MAX_ROWS, WG_SIZE>(conj,
-                                                                                  nnz,
-                                                                                  max_rows,
-                                                                                  row_blocks,
-                                                                                  alpha,
-                                                                                  csr_row_ptr,
-                                                                                  csr_col_ind,
-                                                                                  csr_val,
-                                                                                  x,
-                                                                                  beta,
-                                                                                  y,
-                                                                                  idx_base);
+            rocsparse::csrmvn_symm_adaptive_device<BLOCK_SIZE, WG_SIZE>(conj,
+                                                                        nnz,
+                                                                        max_rows,
+                                                                        row_blocks,
+                                                                        alpha,
+                                                                        csr_row_ptr,
+                                                                        csr_col_ind,
+                                                                        csr_val,
+                                                                        x,
+                                                                        beta,
+                                                                        y,
+                                                                        idx_base);
         }
     }
 }
@@ -596,112 +590,21 @@ rocsparse_status rocsparse::csrmv_adaptive_template_dispatch(rocsparse_handle   
         dim3 csrmvn_threads(WG_SIZE);
 
         I max_rows = static_cast<I>(info->max_rows);
-        if(max_rows <= 64)
+
+        uint32_t lds_size = 64;
+        while(lds_size < max_rows)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmvn_symm_adaptive_kernel<64>),
-                                               csrmvn_blocks,
-                                               csrmvn_threads,
-                                               0,
-                                               stream,
-                                               conj,
-                                               nnz,
-                                               max_rows,
-                                               static_cast<I*>(info->adaptive.row_blocks),
-                                               alpha_device_host,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               csr_val,
-                                               x,
-                                               beta_device_host,
-                                               y,
-                                               descr->base);
+            lds_size *= 2;
         }
-        else if(max_rows <= 128)
+
+        lds_size *= sizeof(T);
+
+        if(lds_size <= 2048 * sizeof(T))
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmvn_symm_adaptive_kernel<128>),
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmvn_symm_adaptive_kernel),
                                                csrmvn_blocks,
                                                csrmvn_threads,
-                                               0,
-                                               stream,
-                                               conj,
-                                               nnz,
-                                               max_rows,
-                                               static_cast<I*>(info->adaptive.row_blocks),
-                                               alpha_device_host,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               csr_val,
-                                               x,
-                                               beta_device_host,
-                                               y,
-                                               descr->base);
-        }
-        else if(max_rows <= 256)
-        {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmvn_symm_adaptive_kernel<256>),
-                                               csrmvn_blocks,
-                                               csrmvn_threads,
-                                               0,
-                                               stream,
-                                               conj,
-                                               nnz,
-                                               max_rows,
-                                               static_cast<I*>(info->adaptive.row_blocks),
-                                               alpha_device_host,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               csr_val,
-                                               x,
-                                               beta_device_host,
-                                               y,
-                                               descr->base);
-        }
-        else if(max_rows <= 512)
-        {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmvn_symm_adaptive_kernel<512>),
-                                               csrmvn_blocks,
-                                               csrmvn_threads,
-                                               0,
-                                               stream,
-                                               conj,
-                                               nnz,
-                                               max_rows,
-                                               static_cast<I*>(info->adaptive.row_blocks),
-                                               alpha_device_host,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               csr_val,
-                                               x,
-                                               beta_device_host,
-                                               y,
-                                               descr->base);
-        }
-        else if(max_rows <= 1024)
-        {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmvn_symm_adaptive_kernel<1024>),
-                                               csrmvn_blocks,
-                                               csrmvn_threads,
-                                               0,
-                                               stream,
-                                               conj,
-                                               nnz,
-                                               max_rows,
-                                               static_cast<I*>(info->adaptive.row_blocks),
-                                               alpha_device_host,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               csr_val,
-                                               x,
-                                               beta_device_host,
-                                               y,
-                                               descr->base);
-        }
-        else if(max_rows <= 2048)
-        {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmvn_symm_adaptive_kernel<2048>),
-                                               csrmvn_blocks,
-                                               csrmvn_threads,
-                                               0,
+                                               lds_size,
                                                stream,
                                                conj,
                                                nnz,

@@ -178,7 +178,6 @@ namespace rocsparse
     }
 
     template <rocsparse_int BLOCKSIZE,
-              rocsparse_int MAX_ROWS,
               rocsparse_int WG_SIZE,
               typename I,
               typename J,
@@ -199,8 +198,10 @@ namespace rocsparse
                                                           Y*                   y,
                                                           rocsparse_index_base idx_base)
     {
-        __shared__ T partial_sums[BLOCKSIZE];
-        __shared__ T cols_in_rows[MAX_ROWS];
+        __shared__ T           partial_sums[BLOCKSIZE];
+        extern __shared__ char cols_in_rows[];
+
+        T* scols_in_rows = reinterpret_cast<T*>(&cols_in_rows[0]);
 
         const int gid = hipBlockIdx_x;
         const int lid = hipThreadIdx_x;
@@ -289,16 +290,16 @@ namespace rocsparse
             }
 
             // Upper triangular
-            // Initialize the cols_in_rows
+            // Initialize the scols_in_rows
             for(I l = lid; l < max_rows; l += WG_SIZE)
             {
-                cols_in_rows[l] = static_cast<T>(0);
+                scols_in_rows[l] = static_cast<T>(0);
             }
 
             __syncthreads();
 
             // max_rows is the maximum number of rows any block will handle
-            // It is used to size the local memory for cols_in_rows, so once your
+            // It is used to size the local memory for scols_in_rows, so once your
             // stop row for this block is more than this value, we need to make
             // sure we can offset it. Otherwise, we would blow past the end of
             // the local memory.
@@ -317,7 +318,7 @@ namespace rocsparse
                     if((myCol != myRow) && (col + i) < (csr_row_ptr[stop_row] - idx_base))
                     {
                         if(myCol >= (stop_cols_idx) && myCol < stop_row)
-                            rocsparse::atomic_add(&cols_in_rows[myCol - (stop_cols_idx)],
+                            rocsparse::atomic_add(&scols_in_rows[myCol - (stop_cols_idx)],
                                                   (partial_sums[lid + i] * x[myRow]));
                         else
                             rocsparse::atomic_add(&y[myCol], (partial_sums[lid + i] * x[myRow]));
@@ -344,7 +345,7 @@ namespace rocsparse
                     if((myCol != myRow) && (col + i) < (csr_row_ptr[stop_row] - idx_base))
                     {
                         if(myCol >= (stop_cols_idx) && myCol < stop_row)
-                            rocsparse::atomic_add(&cols_in_rows[myCol - (stop_cols_idx)],
+                            rocsparse::atomic_add(&scols_in_rows[myCol - (stop_cols_idx)],
                                                   (partial_sums[lid + i] * x[myRow]));
                         else
                             rocsparse::atomic_add(&y[myCol], (partial_sums[lid + i] * x[myRow]));
@@ -363,7 +364,7 @@ namespace rocsparse
 
             for(I l = lid; l < (end_cols_idx - (stop_row - row)); l += WG_SIZE)
             {
-                rocsparse::atomic_add(&y[stop_cols_idx + l], cols_in_rows[l]);
+                rocsparse::atomic_add(&y[stop_cols_idx + l], scols_in_rows[l]);
             }
 
             __syncthreads();
@@ -418,10 +419,9 @@ namespace rocsparse
                     {
                         temp += partial_sums[lid * numThreadsForRed + i];
                     }
-                    temp
-                        += cols_in_rows[lid
-                                        + (end_cols_idx
-                                           - (stop_row - row))]; // sum from upper triangular matrix
+                    temp += scols_in_rows
+                        [lid
+                         + (end_cols_idx - (stop_row - row))]; // sum from upper triangular matrix
                     rocsparse::atomic_add(&y[row + lid], temp);
                 }
             }
@@ -445,8 +445,8 @@ namespace rocsparse
 
                     // After you've done the reduction into the temp register,
                     // put that into the output for each row.
-                    temp += cols_in_rows[end_cols_idx - stop_row
-                                         + local_row]; // sum from upper triangular matrix
+                    temp += scols_in_rows[end_cols_idx - stop_row
+                                          + local_row]; // sum from upper triangular matrix
                     rocsparse::atomic_add(&y[local_row], temp);
                     local_row += hipBlockDim_x;
                 }
