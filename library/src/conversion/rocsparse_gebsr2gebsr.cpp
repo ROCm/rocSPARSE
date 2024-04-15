@@ -584,86 +584,40 @@ try
 
     if(wavefront_size == 32)
     {
-        if(direction == rocsparse_direction_row)
-        {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (rocsparse::gebsr2csr_nnz_kernel<rocsparse_direction_row, block_size, 32>),
-                blocks,
-                threads,
-                0,
-                stream,
-                mb,
-                nb,
-                bsr_descr->base,
-                bsr_row_ptr,
-                bsr_col_ind,
-                row_block_dim,
-                col_block_dim,
-                csr_descr->base,
-                csr_row_ptr,
-                csr_col_ind);
-        }
-        else
-        {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (rocsparse::gebsr2csr_nnz_kernel<rocsparse_direction_column, block_size, 32>),
-                blocks,
-                threads,
-                0,
-                stream,
-                mb,
-                nb,
-                bsr_descr->base,
-                bsr_row_ptr,
-                bsr_col_ind,
-                row_block_dim,
-                col_block_dim,
-                csr_descr->base,
-                csr_row_ptr,
-                csr_col_ind);
-        }
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::gebsr2csr_nnz_kernel<block_size, 32>),
+                                           blocks,
+                                           threads,
+                                           0,
+                                           stream,
+                                           mb,
+                                           nb,
+                                           bsr_descr->base,
+                                           bsr_row_ptr,
+                                           bsr_col_ind,
+                                           row_block_dim,
+                                           col_block_dim,
+                                           csr_descr->base,
+                                           csr_row_ptr,
+                                           csr_col_ind);
     }
     else
     {
         rocsparse_host_assert(wavefront_size == 64, "Wrong wavefront size dispatch.");
-        if(direction == rocsparse_direction_row)
-        {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (rocsparse::gebsr2csr_nnz_kernel<rocsparse_direction_row, block_size, 64>),
-                blocks,
-                threads,
-                0,
-                stream,
-                mb,
-                nb,
-                bsr_descr->base,
-                bsr_row_ptr,
-                bsr_col_ind,
-                row_block_dim,
-                col_block_dim,
-                csr_descr->base,
-                csr_row_ptr,
-                csr_col_ind);
-        }
-        else
-        {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (rocsparse::gebsr2csr_nnz_kernel<rocsparse_direction_column, block_size, 64>),
-                blocks,
-                threads,
-                0,
-                stream,
-                mb,
-                nb,
-                bsr_descr->base,
-                bsr_row_ptr,
-                bsr_col_ind,
-                row_block_dim,
-                col_block_dim,
-                csr_descr->base,
-                csr_row_ptr,
-                csr_col_ind);
-        }
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::gebsr2csr_nnz_kernel<block_size, 64>),
+                                           blocks,
+                                           threads,
+                                           0,
+                                           stream,
+                                           mb,
+                                           nb,
+                                           bsr_descr->base,
+                                           bsr_row_ptr,
+                                           bsr_col_ind,
+                                           row_block_dim,
+                                           col_block_dim,
+                                           csr_descr->base,
+                                           csr_row_ptr,
+                                           csr_col_ind);
     }
 
     return rocsparse_status_success;

@@ -29,13 +29,55 @@
 
 #include "bsr2csr_device.h"
 
-#define launch_bsr2csr_block_per_row_2_7_kernel(direction, block_size, bsr_block_dim)        \
+#define launch_bsr2csr_block_per_row_2_7_kernel(block_size, bsr_block_dim)        \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                           \
+        (rocsparse::bsr2csr_block_per_row_2_7_kernel<block_size, bsr_block_dim>), \
+        dim3(mb),                                                                 \
+        dim3(block_size),                                                         \
+        0,                                                                        \
+        stream,                                                                   \
+        direction,                                                                \
+        mb,                                                                       \
+        nb,                                                                       \
+        bsr_descr->base,                                                          \
+        bsr_val,                                                                  \
+        bsr_row_ptr,                                                              \
+        bsr_col_ind,                                                              \
+        block_dim,                                                                \
+        csr_descr->base,                                                          \
+        csr_val,                                                                  \
+        csr_row_ptr,                                                              \
+        csr_col_ind);
+
+#define launch_bsr2csr_block_per_row_8_32_kernel(block_size, bsr_block_dim)        \
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                            \
+        (rocsparse::bsr2csr_block_per_row_8_32_kernel<block_size, bsr_block_dim>), \
+        dim3(mb),                                                                  \
+        dim3(block_size),                                                          \
+        0,                                                                         \
+        stream,                                                                    \
+        direction,                                                                 \
+        mb,                                                                        \
+        nb,                                                                        \
+        bsr_descr->base,                                                           \
+        bsr_val,                                                                   \
+        bsr_row_ptr,                                                               \
+        bsr_col_ind,                                                               \
+        block_dim,                                                                 \
+        csr_descr->base,                                                           \
+        csr_val,                                                                   \
+        csr_row_ptr,                                                               \
+        csr_col_ind);
+
+#define launch_bsr2csr_block_per_row_33_256_kernel(block_size, bsr_block_dim, sub_block_dim) \
     RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                                      \
-        (rocsparse::bsr2csr_block_per_row_2_7_kernel<direction, block_size, bsr_block_dim>), \
+        (rocsparse::                                                                         \
+             bsr2csr_block_per_row_33_256_kernel<block_size, bsr_block_dim, sub_block_dim>), \
         dim3(mb),                                                                            \
         dim3(block_size),                                                                    \
         0,                                                                                   \
         stream,                                                                              \
+        direction,                                                                           \
         mb,                                                                                  \
         nb,                                                                                  \
         bsr_descr->base,                                                                     \
@@ -46,48 +88,6 @@
         csr_descr->base,                                                                     \
         csr_val,                                                                             \
         csr_row_ptr,                                                                         \
-        csr_col_ind);
-
-#define launch_bsr2csr_block_per_row_8_32_kernel(direction, block_size, bsr_block_dim)        \
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                                       \
-        (rocsparse::bsr2csr_block_per_row_8_32_kernel<direction, block_size, bsr_block_dim>), \
-        dim3(mb),                                                                             \
-        dim3(block_size),                                                                     \
-        0,                                                                                    \
-        stream,                                                                               \
-        mb,                                                                                   \
-        nb,                                                                                   \
-        bsr_descr->base,                                                                      \
-        bsr_val,                                                                              \
-        bsr_row_ptr,                                                                          \
-        bsr_col_ind,                                                                          \
-        block_dim,                                                                            \
-        csr_descr->base,                                                                      \
-        csr_val,                                                                              \
-        csr_row_ptr,                                                                          \
-        csr_col_ind);
-
-#define launch_bsr2csr_block_per_row_33_256_kernel(                      \
-    direction, block_size, bsr_block_dim, sub_block_dim)                 \
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                  \
-        (rocsparse::bsr2csr_block_per_row_33_256_kernel<direction,       \
-                                                        block_size,      \
-                                                        bsr_block_dim,   \
-                                                        sub_block_dim>), \
-        dim3(mb),                                                        \
-        dim3(block_size),                                                \
-        0,                                                               \
-        stream,                                                          \
-        mb,                                                              \
-        nb,                                                              \
-        bsr_descr->base,                                                 \
-        bsr_val,                                                         \
-        bsr_row_ptr,                                                     \
-        bsr_col_ind,                                                     \
-        block_dim,                                                       \
-        csr_descr->base,                                                 \
-        csr_val,                                                         \
-        csr_row_ptr,                                                     \
         csr_col_ind);
 
 template <typename T, typename I, typename J>
@@ -129,115 +129,57 @@ rocsparse_status rocsparse::bsr2csr_core(rocsparse_handle          handle,
         return rocsparse_status_success;
     }
 
-    if(direction == rocsparse_direction_row)
+    if(block_dim == 2)
     {
-        if(block_dim == 2)
-        {
-            launch_bsr2csr_block_per_row_2_7_kernel(rocsparse_direction_row, 256, 2);
-        }
-        else if(block_dim == 3)
-        {
-            launch_bsr2csr_block_per_row_2_7_kernel(rocsparse_direction_row, 256, 3);
-        }
-        else if(block_dim == 4)
-        {
-            launch_bsr2csr_block_per_row_2_7_kernel(rocsparse_direction_row, 256, 4);
-        }
-        else if(block_dim == 5)
-        {
-            launch_bsr2csr_block_per_row_2_7_kernel(rocsparse_direction_row, 256, 5);
-        }
-        else if(block_dim == 6)
-        {
-            launch_bsr2csr_block_per_row_2_7_kernel(rocsparse_direction_row, 256, 6);
-        }
-        else if(block_dim == 7)
-        {
-            launch_bsr2csr_block_per_row_2_7_kernel(rocsparse_direction_row, 256, 7);
-        }
-        else if(block_dim <= 8)
-        {
-            launch_bsr2csr_block_per_row_8_32_kernel(rocsparse_direction_row, 1024, 8);
-        }
-        else if(block_dim <= 16)
-        {
-            launch_bsr2csr_block_per_row_8_32_kernel(rocsparse_direction_row, 1024, 16);
-        }
-        else if(block_dim <= 32)
-        {
-            launch_bsr2csr_block_per_row_8_32_kernel(rocsparse_direction_row, 1024, 32);
-        }
-        else if(block_dim <= 64)
-        {
-            launch_bsr2csr_block_per_row_33_256_kernel(rocsparse_direction_row, 1024, 64, 32);
-        }
-        else if(block_dim <= 128)
-        {
-            launch_bsr2csr_block_per_row_33_256_kernel(rocsparse_direction_row, 1024, 128, 32);
-        }
-        else if(block_dim <= 256)
-        {
-            launch_bsr2csr_block_per_row_33_256_kernel(rocsparse_direction_row, 1024, 256, 32);
-        }
-        else
-        {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
-        }
+        launch_bsr2csr_block_per_row_2_7_kernel(256, 2);
+    }
+    else if(block_dim == 3)
+    {
+        launch_bsr2csr_block_per_row_2_7_kernel(256, 3);
+    }
+    else if(block_dim == 4)
+    {
+        launch_bsr2csr_block_per_row_2_7_kernel(256, 4);
+    }
+    else if(block_dim == 5)
+    {
+        launch_bsr2csr_block_per_row_2_7_kernel(256, 5);
+    }
+    else if(block_dim == 6)
+    {
+        launch_bsr2csr_block_per_row_2_7_kernel(256, 6);
+    }
+    else if(block_dim == 7)
+    {
+        launch_bsr2csr_block_per_row_2_7_kernel(256, 7);
+    }
+    else if(block_dim <= 8)
+    {
+        launch_bsr2csr_block_per_row_8_32_kernel(1024, 8);
+    }
+    else if(block_dim <= 16)
+    {
+        launch_bsr2csr_block_per_row_8_32_kernel(1024, 16);
+    }
+    else if(block_dim <= 32)
+    {
+        launch_bsr2csr_block_per_row_8_32_kernel(1024, 32);
+    }
+    else if(block_dim <= 64)
+    {
+        launch_bsr2csr_block_per_row_33_256_kernel(1024, 64, 32);
+    }
+    else if(block_dim <= 128)
+    {
+        launch_bsr2csr_block_per_row_33_256_kernel(1024, 128, 32);
+    }
+    else if(block_dim <= 256)
+    {
+        launch_bsr2csr_block_per_row_33_256_kernel(1024, 256, 32);
     }
     else
     {
-        if(block_dim == 2)
-        {
-            launch_bsr2csr_block_per_row_2_7_kernel(rocsparse_direction_column, 256, 2);
-        }
-        else if(block_dim == 3)
-        {
-            launch_bsr2csr_block_per_row_2_7_kernel(rocsparse_direction_column, 256, 3);
-        }
-        else if(block_dim == 4)
-        {
-            launch_bsr2csr_block_per_row_2_7_kernel(rocsparse_direction_column, 256, 4);
-        }
-        else if(block_dim == 5)
-        {
-            launch_bsr2csr_block_per_row_2_7_kernel(rocsparse_direction_column, 256, 5);
-        }
-        else if(block_dim == 6)
-        {
-            launch_bsr2csr_block_per_row_2_7_kernel(rocsparse_direction_column, 256, 6);
-        }
-        else if(block_dim == 7)
-        {
-            launch_bsr2csr_block_per_row_2_7_kernel(rocsparse_direction_column, 256, 7);
-        }
-        else if(block_dim <= 8)
-        {
-            launch_bsr2csr_block_per_row_8_32_kernel(rocsparse_direction_column, 1024, 8);
-        }
-        else if(block_dim <= 16)
-        {
-            launch_bsr2csr_block_per_row_8_32_kernel(rocsparse_direction_column, 1024, 16);
-        }
-        else if(block_dim <= 32)
-        {
-            launch_bsr2csr_block_per_row_8_32_kernel(rocsparse_direction_column, 1024, 32);
-        }
-        else if(block_dim <= 64)
-        {
-            launch_bsr2csr_block_per_row_33_256_kernel(rocsparse_direction_column, 1024, 64, 32);
-        }
-        else if(block_dim <= 128)
-        {
-            launch_bsr2csr_block_per_row_33_256_kernel(rocsparse_direction_column, 1024, 128, 32);
-        }
-        else if(block_dim <= 256)
-        {
-            launch_bsr2csr_block_per_row_33_256_kernel(rocsparse_direction_column, 1024, 256, 32);
-        }
-        else
-        {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
-        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
     }
 
     return rocsparse_status_success;
