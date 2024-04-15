@@ -109,7 +109,8 @@ namespace rocsparse
               typename X,
               typename Y,
               typename T>
-    ROCSPARSE_DEVICE_ILF void csrmvt_general_device(bool                 conj,
+    ROCSPARSE_DEVICE_ILF void csrmvt_general_device(bool                 skip_diag,
+                                                    bool                 conj,
                                                     J                    m,
                                                     T                    alpha,
                                                     const I*             csr_row_ptr_begin,
@@ -125,18 +126,41 @@ namespace rocsparse
         const J gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
         const J inc = hipGridDim_x * (BLOCKSIZE / WF_SIZE);
 
-        for(J row = gid / WF_SIZE; row < m; row += inc)
+        if(skip_diag)
         {
-            const I row_begin = csr_row_ptr_begin[row] - idx_base;
-            const I row_end   = csr_row_ptr_end[row] - idx_base;
-            const T row_val   = alpha * x[row];
-
-            for(I j = row_begin + lid; j < row_end; j += WF_SIZE)
+            for(J row = gid / WF_SIZE; row < m; row += inc)
             {
-                const J col = csr_col_ind[j] - idx_base;
-                const A val = rocsparse::conj_val(csr_val[j], conj);
+                const I row_begin = csr_row_ptr_begin[row] - idx_base;
+                const I row_end   = csr_row_ptr_end[row] - idx_base;
+                const T row_val   = alpha * x[row];
 
-                rocsparse::atomic_add(&y[col], row_val * val);
+                for(I j = row_begin + lid; j < row_end; j += WF_SIZE)
+                {
+                    const J col = csr_col_ind[j] - idx_base;
+
+                    if(col != row)
+                    {
+                        const A val = rocsparse::conj_val(csr_val[j], conj);
+                        rocsparse::atomic_add(&y[col], row_val * val);
+                    }
+                }
+            }
+        }
+        else
+        {
+            for(J row = gid / WF_SIZE; row < m; row += inc)
+            {
+                const I row_begin = csr_row_ptr_begin[row] - idx_base;
+                const I row_end   = csr_row_ptr_end[row] - idx_base;
+                const T row_val   = alpha * x[row];
+
+                for(I j = row_begin + lid; j < row_end; j += WF_SIZE)
+                {
+                    const J col = csr_col_ind[j] - idx_base;
+
+                    const A val = rocsparse::conj_val(csr_val[j], conj);
+                    rocsparse::atomic_add(&y[col], row_val * val);
+                }
             }
         }
     }
