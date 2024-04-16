@@ -25,15 +25,15 @@ The rocSPARSE documentation is structured as follows:
 
   .. grid-item-card:: How to
 
-    * :ref:`rocsparse-docs`
-    * :ref:`rocsparse-logging`
+    * :ref:`rocsparse_docs`
+    * :ref:`rocsparse_logging`
     * :ref:`design`
     * :ref:`contributing-to`
 
   .. grid-item-card:: API reference
 
     * :ref:`api`
-    * :ref:`rocsparse-types`
+    * :ref:`rocsparse_types`
     * :ref:`rocsparse_auxiliary_functions_`
     * :ref:`rocsparse_level1_functions_` 
     * :ref:`rocsparse_level2_functions_` 
