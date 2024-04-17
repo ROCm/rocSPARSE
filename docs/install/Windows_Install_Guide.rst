@@ -16,7 +16,7 @@ Prerequisites
 - As the AMD HIP SDK is new and quickly evolving it will have more up-to-date information regarding the SDK's internal contents. Thus it may overrule statements found in this section on installing and building for Windows.
 
 Installing Prebuilt Packages
-=============================
+============================
 
 rocSPARSE can be installed on Windows 11 or Windows 10 using the AMD HIP SDK installer.
 
@@ -49,24 +49,26 @@ Find other rocSPARSE included files in HIP SDK ``\\include\\rocsparse\\internal`
 do not include these files directly in your source code.
 
 Building and Installing rocSPARSE
-=====================================
+=================================
 
 Building from source is not necessary, as rocSPARSE can be used after installing the pre-built packages as described above.
 If desired, the following instructions can be used to build rocSPARSE from source.
 
 Requirements
----------------
+------------
 
 - `git <https://git-scm.com/>`_
 - `CMake <https://cmake.org/>`_ 3.5 or later
 - `AMD ROCm <https://github.com/ROCm/ROCm>`_
 - `rocPRIM <https://github.com/ROCm/rocPRIM>`_
+- `rocBLAS <https://github.com/ROCm/rocBLAS>`_ (optional, for library)
 - `vcpkg <https://github.com/Microsoft/vcpkg.git>`_
 - `googletest <https://github.com/google/googletest>`_ (optional, for clients)
-
+- `python <https://www.python.org/>`_
+- `PyYaml <https://pypi.org/project/PyYAML/>`_
 
 Download rocSPARSE
---------------------
+------------------
 
 The rocSPARSE source code, which is the same as for the ROCm linux distributions, is available at the `rocSPARSE github page <https://github.com/ROCm/rocSPARSE>`_.
 The version of the ROCm HIP SDK may be shown in the path of default installation, but
@@ -93,8 +95,8 @@ You can can add the SDK tools to your path with an entry like:
 
    %HIP_PATH%\bin
 
-Building
--------------
+Building from source
+--------------------
 
 Below are steps to build using the ``rmake.py`` script. The user can build either:
 
@@ -106,8 +108,8 @@ The client contains testing and benchmark tools.  ``rmake.py`` will print to the
 This full ``cmake`` command can be used in your own build scripts if you want to bypass the python helper script for a fixed set of build options.
 
 
-Build Library
------------------
+Build Library from source
+-------------------------
 
 Common uses of ``rmake.py`` to build (library) are
 in the table below:
@@ -115,25 +117,41 @@ in the table below:
 .. tabularcolumns::
    |\X{1}{4}|\X{3}{4}|
 
-+--------------------+--------------------------+
-| Command            | Description              |
-+====================+==========================+
-| ``./rmake.py -h``  | Help information.        |
-+--------------------+--------------------------+
-| ``./rmake.py``     | Build library.           |
-+--------------------+--------------------------+
-| ``./rmake.py -i``  | Build library, then      |
-|                    | build and install        |
-|                    | rocSPARSE package.       |
-|                    | If you want to keep      |
-|                    | rocSPARSE in your local  |
-|                    | tree, you do not         |
-|                    | need the -i flag.        |
-+--------------------+--------------------------+
++------------------------------+--------------------------+
+| Command                      | Description              |
++==============================+==========================+
+| ``./rmake.py -h``            | Help information.        |
++------------------------------+--------------------------+
+| ``./rmake.py``               | Build library.           |
++------------------------------+--------------------------+
+| ``./rmake.py -i``            | Build library, then      |
+|                              | build and install        |
+|                              | rocSPARSE package.       |
+|                              | If you want to keep      |
+|                              | rocSPARSE in your local  |
+|                              | tree, you do not         |
+|                              | need the -i flag.        |
++------------------------------+--------------------------+
+| ``./rmake.py -in``           | Build library without    |
+|                              | rocblas, then build and  |
+|                              | install rocSPARSE        |
+|                              | package. If you want to  |
+|                              | keep rocSPARSE in your   |
+|                              | local tree, you do not   |
+|                              | need the -i flag.        |
++------------------------------+--------------------------+
+| ``./rmake.py -i -a gfx900``  | Build library using only |
+|                              | gfx900 arch, then build  |
+|                              | and install rocSPARSE    |
+|                              | package. If you want to  |
+|                              | keep rocSPARSE in your   |
+|                              | local tree, you do not   |
+|                              | need the -i flag.        |
++------------------------------+--------------------------+
 
 
-Build Library + Client
------------------------
+Build Library + Client from source
+----------------------------------
 
 Some client executables (.exe) are listed in the table below:
 
@@ -151,19 +169,35 @@ in the table below:
 .. tabularcolumns::
    |\X{1}{4}|\X{3}{4}|
 
-+------------------------+--------------------------+
-| Command                | Description              |
-+========================+==========================+
-| ``./rmake.py -h``      | Help information.        |
-+------------------------+--------------------------+
-| ``./rmake.py -c``      | Build library and client |
-|                        | in your local directory. |
-+------------------------+--------------------------+
-| ``./rmake.py -ic``     | Build and install        |
-|                        | rocSPARSE package, and   |
-|                        | build the client.        |
-|                        | If you want to keep      |
-|                        | rocSPARSE in your local  |
-|                        | directory, you do not    |
-|                        | need the -i flag.        |
-+------------------------+--------------------------+
++------------------------------+--------------------------+
+| Command                      | Description              |
++==============================+==========================+
+| ``./rmake.py -h``            | Help information.        |
++------------------------------+--------------------------+
+| ``./rmake.py -c``            | Build library and client |
+|                              | in your local directory. |
++------------------------------+--------------------------+
+| ``./rmake.py -ic``           | Build and install        |
+|                              | rocSPARSE package, and   |
+|                              | build the client.        |
+|                              | If you want to keep      |
+|                              | rocSPARSE in your local  |
+|                              | directory, you do not    |
+|                              | need the -i flag.        |
++------------------------------+--------------------------+
+| ``./rmake.py -icn``          | Build and install        |
+|                              | rocSPARSE package        |
+|                              | without rocblas, and     |
+|                              | build the client. If you |
+|                              | want to keep rocSPARSE   |
+|                              | in your local tree, you  |
+|                              | do not need the -i flag. |
++------------------------------+--------------------------+
+| ``./rmake.py -ic -a gfx900`` | Build and install        |
+|                              | rocSPARSE package using  |
+|                              | only gfx900 arch, and    |
+|                              | build the client. If you |
+|                              | want to keep rocSPARSE   |
+|                              | in your local tree, you  |
+|                              | do not need the -i flag. |
++------------------------------+--------------------------+
