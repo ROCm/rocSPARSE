@@ -44,10 +44,13 @@ Requirements
 - `CMake <https://cmake.org/>`_ 3.5 or later
 - `AMD ROCm <https://github.com/ROCm/ROCm>`_
 - `rocPRIM <https://github.com/ROCm/rocPRIM>`_
+- `rocBLAS <https://github.com/ROCm/rocBLAS>`_ (optional, for library)
 - `googletest <https://github.com/google/googletest>`_ (optional, for clients)
+- `python <https://www.python.org/>`_
+- `PyYaml <https://pypi.org/project/PyYAML/>`_
 
 Download rocSPARSE
--------------------
+------------------
 The rocSPARSE source code is available at the `rocSPARSE GitHub page <https://github.com/ROCm/rocSPARSE>`_.
 Download the master branch using:
 
@@ -60,7 +63,7 @@ Below are steps to build different packages of the library, including dependenci
 It is recommended to install rocSPARSE using the ``install.sh`` script.
 
 Using ``install.sh`` to build rocSPARSE with dependencies
-----------------------------------------------------------
+---------------------------------------------------------
 The following table lists common uses of ``install.sh`` to build dependencies + library.
 
 .. tabularcolumns::
@@ -77,7 +80,7 @@ Command                     Description
 =========================== ====
 
 Using ``install.sh`` to build rocSPARSE with dependencies and clients
-----------------------------------------------------------------------
+---------------------------------------------------------------------
 The client contains example code, unit tests and benchmarks. Common uses of ``install.sh`` to build them are listed in the table below.
 
 .. tabularcolumns::
