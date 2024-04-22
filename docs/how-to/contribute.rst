@@ -34,15 +34,16 @@ Acceptance Criteria
 rocSPARSE is a library that contains basic linear algebra subroutines for sparse matrices and vectors written in HIP for GPU devices.
 It is designed to be used from C and C++ code. The functionality of rocSPARSE is organized in the following categories:
 
-* Sparse Auxiliary Functions: helper functions that are required for subsequent library calls.
-* Sparse Level 1 Functions: operations between a vector in sparse format and a vector in dense format.
-* Sparse Level 2 Functions: operations between a matrix in sparse format and a vector in dense format.
-* Sparse Level 3 Functions: operations between a matrix in sparse format and multiple vectors in dense format.
-* Sparse Extra Functions: operations that manipulate sparse matrices.
-* Preconditioner Functions: manipulations on a matrix in sparse format to obtain a preconditioner.
-* Sparse Conversion Functions: operations on a matrix in sparse format to obtain a different matrix in sparse format.
-* Reordering Functions: operations on a matrix in sparse format to obtain a reordering.
-* Utility Functions: routines useful for checking sparse matrices for valid data
+* :ref:`rocsparse_auxiliary_functions_`: helper functions that are required for subsequent library calls.
+* :ref:`rocsparse_level1_functions_`: operations between a vector in sparse format and a vector in dense format.
+* :ref:`rocsparse_level2_functions_`: operations between a matrix in sparse format and a vector in dense format.
+* :ref:`rocsparse_level3_functions_`: operations between a matrix in sparse format and multiple vectors in dense format.
+* :ref:`rocsparse_extra_functions_`: operations that manipulate sparse matrices.
+* :ref:`rocsparse_precond_functions_`: manipulations on a matrix in sparse format to obtain a preconditioner.
+* :ref:`rocsparse_conversion_functions_`: operations on a matrix in sparse format to obtain a different matrix in sparse format.
+* :ref:`rocsparse_reordering_functions_`: operations on a matrix in sparse format to obtain a reordering.
+* :ref:`rocsparse_utility_functions_`: routines useful for checking sparse matrices for valid data
+* :ref:`rocsparse_generic_functions_`: generic routines that allow using different index and data types
 
 In rocSPARSE we are interested in contributions that:
 
