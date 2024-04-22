@@ -44,6 +44,8 @@ typedef long long int int64_t;
 
 #include <stdarg.h>
 
+typedef char rocsparseio_string[512];
+
 /*! \ingroup types_module
  *  \brief Info structure to hold all matrix meta data.
  *
@@ -114,6 +116,10 @@ typedef rocsparseio_enum_t rocsparseio_index_base_t;
 #define ROCSPARSEIO_FORMAT_SPARSE_CSX 2
 #define ROCSPARSEIO_FORMAT_SPARSE_GEBSX 3
 #define ROCSPARSEIO_FORMAT_SPARSE_COO 4
+#define ROCSPARSEIO_FORMAT_SPARSE_DIA 5
+#define ROCSPARSEIO_FORMAT_SPARSE_ELL 6
+#define ROCSPARSEIO_FORMAT_SPARSE_HYB 7
+#define ROCSPARSEIO_FORMAT_SPARSE_MCSX 8
 
 typedef enum rocsparseio_index_base_
 {
@@ -144,7 +150,11 @@ typedef enum rocsparseio_format_
     rocsparseio_format_dense_matrix = ROCSPARSEIO_FORMAT_DENSE_MATRIX,
     rocsparseio_format_sparse_csx   = ROCSPARSEIO_FORMAT_SPARSE_CSX,
     rocsparseio_format_sparse_gebsx = ROCSPARSEIO_FORMAT_SPARSE_GEBSX,
-    rocsparseio_format_sparse_coo   = ROCSPARSEIO_FORMAT_SPARSE_COO
+    rocsparseio_format_sparse_coo   = ROCSPARSEIO_FORMAT_SPARSE_COO,
+    rocsparseio_format_sparse_dia   = ROCSPARSEIO_FORMAT_SPARSE_DIA,
+    rocsparseio_format_sparse_ell   = ROCSPARSEIO_FORMAT_SPARSE_ELL,
+    rocsparseio_format_sparse_hyb   = ROCSPARSEIO_FORMAT_SPARSE_HYB,
+    rocsparseio_format_sparse_mcsx  = ROCSPARSEIO_FORMAT_SPARSE_MCSX
 } rocsparseio_format;
 
 typedef enum rocsparseio_direction_
@@ -186,8 +196,8 @@ typedef struct _rocsparseio_handle* rocsparseio_handle;
 extern "C" {
 #endif
 
-//! @brief Open a rocSPARSEIO file
-//! @param[out] p_handle pointer to the rocSPARSEIO handle to be created.
+//! @brief Open a rocsparseio file
+//! @param[out] p_handle pointer to the rocsparseio handle to be created.
 //! @param[in] mode indicates how to handle the file.
 //! @param[in] filename flexible C-printf style file name.
 //! @retval rocsparseio_status_success the operation completed successfully.
@@ -200,15 +210,34 @@ rocsparseio_status rocsparseio_open(rocsparseio_handle* p_handle,
                                     const char*         filename,
                                     ...);
 
-//! @brief Close the rocSPARSEIO file.
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @brief Close the rocsparseio file.
+//! @param[in] handle pointer to the rocsparseio handle.
 //! @retval rocsparseio_status_success the operation completed successfully.
 //! @retval rocsparseio_status_invalid_handle \p handle is a null pointer.
 
 rocsparseio_status rocsparseio_close(rocsparseio_handle handle);
 
+//! @brief Get the description of a \ref rocsparseio_status.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[in] status status to get the description from.
+//! @param[out] description.
+//! @retval rocsparseio_status_success the operation completed successfully.
+//! @retval rocsparseio_status_invalid_handle \p handle is a null pointer.
+//! @retval rocsparseio_status_invalid_pointer \p description is a null pointer.
+rocsparseio_status rocsparseio_status_description(rocsparseio_handle handle,
+                                                  rocsparseio_status status,
+                                                  rocsparseio_string description);
+
+//! @brief Read the name of the object.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name of object.
+//! @retval rocsparseio_status_success the operation completed successfully.
+//! @retval rocsparseio_status_invalid_handle \p handle is a null pointer.
+//! @retval rocsparseio_status_invalid_pointer \p format is a null pointer
+rocsparseio_status rocsparseio_read_name(rocsparseio_handle handle, rocsparseio_string name);
+
 //! @brief Read what kind of object is recorded.
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
 //! @param[out] format of object.
 //! @retval rocsparseio_status_success the operation completed successfully.
 //! @retval rocsparseio_status_invalid_handle \p handle is a null pointer.
@@ -226,46 +255,49 @@ rocsparseio_status rocsparseio_read_format(rocsparseio_handle handle, rocsparsei
 rocsparseio_status rocsparseio_type_get_size(rocsparseio_type type, uint64_t* size);
 
 //! @brief Write vector.
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
 //! @param[in] data_type rocsparseio data type.
 //! @param[in] data_nmemb length of the vector with respect to the data type.
 //! @param[in] data values
 //! @param[in] data_ld leading dimension of data.
-
+//! @param[in] name flexible C-printf style name.
 rocsparseio_status rocsparseio_write_dense_vector(rocsparseio_handle handle,
                                                   rocsparseio_type   data_type,
                                                   uint64_t           data_nmemb,
                                                   const void*        data,
-                                                  uint64_t           data_ld);
+                                                  uint64_t           data_ld,
+                                                  const char*        name,
+                                                  ...);
 
 //! @brief Read vector.
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
 //! @param[out] data_type rocsparseio data type.
 //! @param[out] data_nmemb length of the vector with respect to the data type.
 //! @param[out] data array of values internally created with malloc, the user is
 //! responsible to free.
-
 rocsparseio_status rocsparseio_read_dense_vector(rocsparseio_handle handle,
                                                  rocsparseio_type*  data_type,
                                                  uint64_t*          data_nmemb,
                                                  void**             data);
 
 //! @brief Read metadata vector.
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
 //! @param[out] data_type rocsparseio data type.
 //! @param[out] data_nmemb length of the vector with respect to the data type.
 //! @note
 //! - This method is useful if the user wants to have control over the memory
 //! allocation.
 //! - It is expected \ref rocsparseiox_read_dense_vector to be the next
-//! rocSPARSEIO routine being called.
+//! rocsparseio routine being called.
 
 rocsparseio_status rocsparseiox_read_metadata_dense_vector(rocsparseio_handle handle,
                                                            rocsparseio_type*  data_type,
                                                            uint64_t*          data_nmemb);
 
 //! @brief Read vector.
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
 //! @param[out] data array of values to be filled.
 //! @param[in] data_ld leading dimension of data.
 
@@ -273,13 +305,14 @@ rocsparseio_status
     rocsparseiox_read_dense_vector(rocsparseio_handle handle, void* data, uint64_t data_ld);
 
 //! @brief Write dense
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
 //! @param[in] order indicates if memory layout is row- or column-oriented.
 //! @param[in] m number of rows
 //! @param[in] n number of columns
 //! @param[in] data_type rocsparseio data type.
 //! @param[in] data
 //! @param[in] data_ld leading dimension of data.
+//! @param[in] name flexible C-printf style name.
 
 rocsparseio_status rocsparseio_write_dense_matrix(rocsparseio_handle handle,
                                                   rocsparseio_order  order,
@@ -287,17 +320,19 @@ rocsparseio_status rocsparseio_write_dense_matrix(rocsparseio_handle handle,
                                                   uint64_t           n,
                                                   rocsparseio_type   data_type,
                                                   const void*        data,
-                                                  uint64_t           data_ld);
+                                                  uint64_t           data_ld,
+                                                  const char*        name,
+                                                  ...);
 
 //! @brief Read dense
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
 //! @param[out] order indicates if memory layout is row- or column-oriented.
 //! @param[out] m number of rows
 //! @param[out] n number of columns
 //! @param[out] data_type rocsparseio data type.
 //! @param[out] data array of values filled but created with malloc, the user is
 //! responsible to free.
-
 rocsparseio_status rocsparseio_read_dense_matrix(rocsparseio_handle handle,
                                                  rocsparseio_order* order,
                                                  uint64_t*          m,
@@ -306,7 +341,8 @@ rocsparseio_status rocsparseio_read_dense_matrix(rocsparseio_handle handle,
                                                  void**             data);
 
 //! @brief Read metadata dense
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
 //! @param[out] order indicates if memory layout is row- or column-oriented.
 //! @param[out] m number of rows
 //! @param[out] n number of columns
@@ -319,7 +355,7 @@ rocsparseio_status rocsparseiox_read_metadata_dense_matrix(rocsparseio_handle ha
                                                            rocsparseio_type*  data_type);
 
 //! @brief Read metadata dense
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
 //! @param[in] data array of values to be filled.
 //! @param[in] data_ld leading dimension..
 
@@ -327,7 +363,7 @@ rocsparseio_status
     rocsparseiox_read_dense_matrix(rocsparseio_handle handle, void* data, uint64_t data_ld);
 
 //! @brief Write a sparse csr/csc matrix.
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
 //! @param[in] dir indicates if the matrix is using a Compressed Sparse Row or
 //! Column storage.
 //! @param[in] m number of rows.
@@ -340,6 +376,7 @@ rocsparseio_status
 //! @param[in] val_type type of elements of the array \p val.
 //! @param[in] val array of values.
 //! @param[in] base index base used in arrays \p ptr and \p ind.
+//! @param[in] name flexible C-printf style name.
 //! @retval rocsparseio_status
 
 rocsparseio_status rocsparseio_write_sparse_csx(rocsparseio_handle     handle,
@@ -353,10 +390,13 @@ rocsparseio_status rocsparseio_write_sparse_csx(rocsparseio_handle     handle,
                                                 const void*            ind,
                                                 rocsparseio_type       val_type,
                                                 const void*            val,
-                                                rocsparseio_index_base base);
+                                                rocsparseio_index_base base,
+                                                const char*            name,
+                                                ...);
 
 //! @brief Read a sparse csr/csc matrix.
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
 //! @param[out] dir indicates if the matrix is using with a Compressed Sparse
 //! Row or Column storage.
 //! @param[out] m number of rows.
@@ -387,7 +427,8 @@ rocsparseio_status rocsparseio_read_sparse_csx(rocsparseio_handle      handle,
                                                rocsparseio_index_base* base);
 
 //! @brief Read metadata information of the sparse csr/csc matrix.
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
 //! @param[out] dir indicates if the matrix is using with a Compressed Sparse
 //! Row or Column storage.
 //! @param[out] m number of rows.
@@ -409,7 +450,7 @@ rocsparseio_status rocsparseiox_read_metadata_sparse_csx(rocsparseio_handle     
                                                          rocsparseio_index_base* base);
 
 //! @brief Read sparse csr/csc matrix data arrays.
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
 //! @param[in] ptr array of offsets to fill.
 //! @param[in] ind array of column/row indices to fill.
 //! @param[in] val array of values to fill.
@@ -417,8 +458,104 @@ rocsparseio_status rocsparseiox_read_metadata_sparse_csx(rocsparseio_handle     
 rocsparseio_status
     rocsparseiox_read_sparse_csx(rocsparseio_handle handle, void* ptr, void* ind, void* data);
 
+//! @brief Write a sparse modified csr/csc matrix.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[in] dir indicates if the matrix is using a Modified Compressed Sparse Row or
+//! Column storage.
+//! @param[in] m number of rows.
+//! @param[in] n number of columns.
+//! @param[in] nnz number of non-zeros.
+//! @param[in] ptr_type type of elements of the array \p ptr.
+//! @param[in] ptr array of offsets.
+//! @param[in] ind_type type of elements of the array \p ind.
+//! @param[in] ind array of column/row indices.
+//! @param[in] val_type type of elements of the array \p val.
+//! @param[in] val array of values.
+//! @param[in] base index base used in arrays \p ptr and \p ind.
+//! @param[in] name flexible C-printf style name.
+//! @retval rocsparseio_status
+
+rocsparseio_status rocsparseio_write_sparse_mcsx(rocsparseio_handle     handle,
+                                                 rocsparseio_direction  dir,
+                                                 uint64_t               m,
+                                                 uint64_t               n,
+                                                 uint64_t               nnz,
+                                                 rocsparseio_type       ptr_type,
+                                                 const void*            ptr,
+                                                 rocsparseio_type       ind_type,
+                                                 const void*            ind,
+                                                 rocsparseio_type       val_type,
+                                                 const void*            val,
+                                                 rocsparseio_index_base base,
+                                                 const char*            name,
+                                                 ...);
+
+//! @brief Read a sparse modified csr/csc matrix.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
+//! @param[out] dir indicates if the matrix is using with a Modified Compressed Sparse
+//! Row or Column storage.
+//! @param[out] m number of rows.
+//! @param[out] n number of columns.
+//! @param[out] nnz number of non-zeros.
+//! @param[out] ptr_type type of elements of the array \p ptr.
+//! @param[out] ptr array of offsets.
+//! @param[out] ind_type type of elements of the array \p ind.
+//! @param[out] ind array of column/row indices.
+//! @param[out] val_type type of elements of the array \p val.
+//! @param[out] val array of values.
+//! @param[out] base index base used in arrays \p ptr and \p ind.
+//! @retval rocsparseio_status
+//! @note allocation is performed with standard malloc function, the user is
+//! responsible to the standard free function to free the memory.
+
+rocsparseio_status rocsparseio_read_sparse_mcsx(rocsparseio_handle      handle,
+                                                rocsparseio_direction*  dir,
+                                                uint64_t*               m,
+                                                uint64_t*               n,
+                                                uint64_t*               nnz,
+                                                rocsparseio_type*       ptr_type,
+                                                void**                  ptr,
+                                                rocsparseio_type*       ind_type,
+                                                void**                  ind,
+                                                rocsparseio_type*       val_type,
+                                                void**                  val,
+                                                rocsparseio_index_base* base);
+
+//! @brief Read metadata information of the sparse modified csr/csc matrix.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
+//! @param[out] dir indicates if the matrix is using with a Modifed Compressed Sparse
+//! Row or Column storage.
+//! @param[out] m number of rows.
+//! @param[out] n number of columns.
+//! @param[out] nnz number of non-zeros.
+//! @param[out] ptr_type type of elements of the array \p ptr.
+//! @param[out] ind_type type of elements of the array \p ind.
+//! @param[out] val_type type of elements of the array \p val.
+//! @param[out] base index base used in arrays \p ptr and \p ind.
+//! @retval rocsparseio_status
+rocsparseio_status rocsparseiox_read_metadata_sparse_mcsx(rocsparseio_handle      handle,
+                                                          rocsparseio_direction*  dir,
+                                                          uint64_t*               m,
+                                                          uint64_t*               n,
+                                                          uint64_t*               nnz,
+                                                          rocsparseio_type*       ptr_type,
+                                                          rocsparseio_type*       ind_type,
+                                                          rocsparseio_type*       data_type,
+                                                          rocsparseio_index_base* base);
+
+//! @brief Read sparse modified csr/csc matrix data arrays.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[in] ptr array of offsets to fill.
+//! @param[in] ind array of column/row indices to fill.
+//! @param[in] val array of values to fill.
+//! @retval rocsparseio_status
+rocsparseio_status
+    rocsparseiox_read_sparse_mcsx(rocsparseio_handle handle, void* ptr, void* ind, void* data);
+
 //! @brief Write a sparse gebsr/gebsc matrix.
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
 //! @param[in] dir indicates if the matrix is using a GEneral Block Sparse Row
 //! or Column storage.
 //! @param[in] dirb indicates storage ordering of dense block matrices.
@@ -434,6 +571,7 @@ rocsparseio_status
 //! @param[in] val_type type of elements of the array \p val.
 //! @param[in] val array of values.
 //! @param[in] base index base used in arrays \p ptr and \p ind.
+//! @param[in] name flexible C-printf style name.
 //! @retval rocsparseio_status
 rocsparseio_status rocsparseio_write_sparse_gebsx(rocsparseio_handle     handle,
                                                   rocsparseio_direction  dir,
@@ -449,10 +587,13 @@ rocsparseio_status rocsparseio_write_sparse_gebsx(rocsparseio_handle     handle,
                                                   const void*            ind,
                                                   rocsparseio_type       val_type,
                                                   const void*            val,
-                                                  rocsparseio_index_base base);
+                                                  rocsparseio_index_base base,
+                                                  const char*            name,
+                                                  ...);
 
 //! @brief Read a sparse gebsr/gebsc matrix.
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
 //! @param[out] dir indicates if the matrix is using a GEneral Block Sparse Row
 //! or Column storage.
 //! @param[out] dirb indicates storage ordering of dense block matrices.
@@ -488,7 +629,8 @@ rocsparseio_status rocsparseio_read_sparse_gebsx(rocsparseio_handle      handle,
                                                  rocsparseio_index_base* base);
 
 //! @brief Read metadata information of a sparse gebsr/gebsc matrix.
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
 //! @param[out] dir indicates if the matrix is using a GEneral Block Sparse Row
 //! or Column storage.
 //! @param[out] dirb indicates storage ordering of dense block matrices.
@@ -516,7 +658,7 @@ rocsparseio_status rocsparseiox_read_metadata_sparse_gebsx(rocsparseio_handle   
                                                            rocsparseio_index_base* base);
 
 //! @brief Read a sparse gebsr/gebsc matrix.
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
 //! @param[out] ptr array of offsets.
 //! @param[out] ind array of column/row indices.
 //! @param[out] val array of values.
@@ -525,7 +667,7 @@ rocsparseio_status
     rocsparseiox_read_sparse_gebsx(rocsparseio_handle handle, void* ptr, void* ind, void* val);
 
 //! @brief Write a sparse matrix with coordinates format.
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
 //! @param[in] m number of rows.
 //! @param[in] n number of columns.
 //! @param[in] nnz number of non-zeros.
@@ -536,6 +678,7 @@ rocsparseio_status
 //! @param[in] val_type type of elements of the array \p val.
 //! @param[in] val array of values.
 //! @param[in] base index base used in arrays \p row_ind and \p col_ind.
+//! @param[in] name flexible C-printf style name.
 //! @retval rocsparseio_status
 
 rocsparseio_status rocsparseio_write_sparse_coo(rocsparseio_handle     handle,
@@ -548,13 +691,13 @@ rocsparseio_status rocsparseio_write_sparse_coo(rocsparseio_handle     handle,
                                                 const void*            col_ind,
                                                 rocsparseio_type       val_type,
                                                 const void*            val,
-                                                rocsparseio_index_base base);
+                                                rocsparseio_index_base base,
+                                                const char*            name,
+                                                ...);
 
 //! @brief Read a sparse matrix with coordinates format.
-//! @param[in] handle pointer to the rocSPARSEIO handle.
-//! @param[out] dir indicates if the matrix is using a GEneral Block Sparse Row
-//! or Column storage.
-//! @param[out] dirb indicates storage ordering of dense block matrices.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
 //! @param[out] m number of rows.
 //! @param[out] n number of columns.
 //! @param[out] nnz number of non-zeros.
@@ -581,7 +724,8 @@ rocsparseio_status rocsparseio_read_sparse_coo(rocsparseio_handle      handle,
                                                rocsparseio_index_base* base);
 
 //! @brief Read metadata information of a sparse matrix with coordinates format.
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
 //! @param[out] m number of rows.
 //! @param[out] n number of columns.
 //! @param[out] nnz number of non-zeros.
@@ -600,7 +744,7 @@ rocsparseio_status rocsparseiox_read_metadata_sparse_coo(rocsparseio_handle     
                                                          rocsparseio_index_base* base);
 
 //! @brief Read a sparse matrix with coordinates format.
-//! @param[in] handle pointer to the rocSPARSEIO handle.
+//! @param[in] handle pointer to the rocsparseio handle.
 //! @param[out] row_ind array of row indices.
 //! @param[out] col_ind array of column indices.
 //! @param[out] val     array of values.
@@ -609,6 +753,278 @@ rocsparseio_status rocsparseiox_read_sparse_coo(rocsparseio_handle handle,
                                                 void*              row_ind,
                                                 void*              col_ind,
                                                 void*              val);
+
+//! @brief Write a sparse ell matrix.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
+//! @param[in] m number of rows.
+//! @param[in] n number of columns.
+//! @param[in] width width of the matrix.
+//! @param[in] ind_type type of elements of the array \p ind.
+//! @param[in] ind array of column/row indices.
+//! @param[in] val_type type of elements of the array \p val.
+//! @param[in] val array of values.
+//! @param[in] base index base used in arrays and \p ind.
+//! @param[in] name flexible C-printf style name.
+//! @retval rocsparseio_status
+rocsparseio_status rocsparseio_write_sparse_ell(rocsparseio_handle     handle,
+                                                uint64_t               m,
+                                                uint64_t               n,
+                                                uint64_t               width,
+                                                rocsparseio_type       ind_type,
+                                                const void*            ind,
+                                                rocsparseio_type       val_type,
+                                                const void*            val,
+                                                rocsparseio_index_base base,
+                                                const char*            name,
+                                                ...);
+
+//! @brief Read a sparse ell matrix.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
+//! @param[out] m number of rows.
+//! @param[out] n number of columns.
+//! @param[out] width width of the matrix.
+//! @param[out] ind_type type of elements of the array \p ind.
+//! @param[out] ind array of column/row indices.
+//! @param[out] val_type type of elements of the array \p val.
+//! @param[out] val array of values.
+//! @param[out] base index base used in arrays \p ptr and \p ind.
+//! @retval rocsparseio_status
+//! @note allocation is performed with standard malloc function, the user is
+//! responsible to the standard free function to free the memory.
+rocsparseio_status rocsparseio_read_sparse_ell(rocsparseio_handle      handle,
+                                               uint64_t*               m,
+                                               uint64_t*               n,
+                                               uint64_t*               width,
+                                               rocsparseio_type*       ind_type,
+                                               void**                  ind,
+                                               rocsparseio_type*       val_type,
+                                               void**                  val,
+                                               rocsparseio_index_base* base);
+
+//! @brief Read metadata information of a sparse ell matrix.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
+//! @param[out] m number of rows.
+//! @param[out] n number of columns.
+//! @param[out] width witdh of the matrix.
+//! @param[out] ind_type type of elements of the array \p ind.
+//! @param[out] val_type type of elements of the array \p val.
+//! @param[out] base index base used in arrays \p ptr and \p ind.
+//! @retval rocsparseio_status
+rocsparseio_status rocsparseiox_read_metadata_sparse_ell(rocsparseio_handle      handle,
+                                                         uint64_t*               m,
+                                                         uint64_t*               n,
+                                                         uint64_t*               width,
+                                                         rocsparseio_type*       ind_type,
+                                                         rocsparseio_type*       val_type,
+                                                         rocsparseio_index_base* base);
+
+//! @brief Read a sparse ell matrix.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] ind array of column indices.
+//! @param[out] val array of values.
+//! @retval rocsparseio_status
+rocsparseio_status rocsparseiox_read_sparse_ell(rocsparseio_handle handle, void* ind, void* val);
+
+//! @brief Write a sparse dia matrix.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
+//! @param[in] m number of rows.
+//! @param[in] n number of columns.
+//! @param[in] ndiag number of diagonals.
+//! @param[in] ind_type type of elements of the array \p ind.
+//! @param[in] ind array of diagonal indices.
+//! @param[in] val_type type of elements of the array \p val.
+//! @param[in] val array of values.
+//! @param[in] base index base used in arrays and \p ind.
+//! @param[in] name flexible C-printf style name.
+//! @retval rocsparseio_status
+rocsparseio_status rocsparseio_write_sparse_dia(rocsparseio_handle     handle,
+                                                uint64_t               m,
+                                                uint64_t               n,
+                                                uint64_t               ndiag,
+                                                rocsparseio_type       ind_type,
+                                                const void*            ind,
+                                                rocsparseio_type       val_type,
+                                                const void*            val,
+                                                rocsparseio_index_base base,
+                                                const char*            name,
+                                                ...);
+
+//! @brief Read a sparse dia matrix.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
+//! @param[out] m number of rows.
+//! @param[out] n number of columns.
+//! @param[out] ndiag number of diagonals.
+//! @param[out] ind_type type of elements of the array \p ind.
+//! @param[out] ind array of diagonal indices.
+//! @param[out] val_type type of elements of the array \p val.
+//! @param[out] val array of values.
+//! @param[out] base index base used in arrays \p ptr and \p ind.
+//! @retval rocsparseio_status
+//! @note allocation is performed with standard malloc function, the user is
+//! responsible to the standard free function to free the memory.
+rocsparseio_status rocsparseio_read_sparse_dia(rocsparseio_handle      handle,
+                                               uint64_t*               m,
+                                               uint64_t*               n,
+                                               uint64_t*               ndiag,
+                                               rocsparseio_type*       ind_type,
+                                               void**                  ind,
+                                               rocsparseio_type*       val_type,
+                                               void**                  val,
+                                               rocsparseio_index_base* base);
+
+//! @brief Read metadata information of a sparse dia matrix.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
+//! @param[out] m number of rows.
+//! @param[out] n number of columns.
+//! @param[in] ndiag number of diagonals.
+//! @param[out] ind_type type of elements of the array \p ind.
+//! @param[out] val_type type of elements of the array \p val.
+//! @param[out] base index base used in arrays \p ptr and \p ind.
+//! @retval rocsparseio_status
+rocsparseio_status rocsparseiox_read_metadata_sparse_dia(rocsparseio_handle      handle,
+                                                         uint64_t*               m,
+                                                         uint64_t*               n,
+                                                         uint64_t*               ndiag,
+                                                         rocsparseio_type*       ind_type,
+                                                         rocsparseio_type*       val_type,
+                                                         rocsparseio_index_base* base);
+
+//! @brief Read a sparse ell matrix.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] ind array of diagonal indices.
+//! @param[out] val array of values.
+//! @retval rocsparseio_status
+rocsparseio_status rocsparseiox_read_sparse_dia(rocsparseio_handle handle, void* ind, void* val);
+
+//! @brief Write a sparse matrix with hyb format.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[in] m number of rows.
+//! @param[in] n number of columns.
+//! @param[in] coo_nnz number of non-zeros.
+//! @param[in] coo_row_ind_type type of elements of the array \p row_ind.
+//! @param[in] coo_row_ind array of row indices.
+//! @param[in] coo_col_ind_type type of elements of the array \p col_ind.
+//! @param[in] coo_col_ind array of column indices.
+//! @param[in] coo_val_type type of elements of the array \p val.
+//! @param[in] coo_val array of values.
+//! @param[in] coo_base index base used in arrays \p row_ind and \p col_ind.
+//! @param[in] ell_width width of the matrix.
+//! @param[in] ell_ind_type type of elements of the array \p ind.
+//! @param[in] ell_ind array of column/row indices.
+//! @param[in] ell_val_type type of elements of the array \p val.
+//! @param[in] ell_val array of values.
+//! @param[in] ell_base index base used in arrays and \p ind.
+//! @param[in] name flexible C-printf style name.
+//! @retval rocsparseio_status
+rocsparseio_status rocsparseio_write_sparse_hyb(rocsparseio_handle     handle,
+                                                uint64_t               m,
+                                                uint64_t               n,
+                                                uint64_t               coo_nnz,
+                                                rocsparseio_type       coo_row_ind_type,
+                                                const void*            coo_row_ind,
+                                                rocsparseio_type       coo_col_ind_type,
+                                                const void*            coo_col_ind,
+                                                rocsparseio_type       coo_val_type,
+                                                const void*            coo_val,
+                                                rocsparseio_index_base coo_base,
+
+                                                uint64_t               ell_width,
+                                                rocsparseio_type       ell_col_ind_type,
+                                                const void*            ell_col_ind,
+                                                rocsparseio_type       ell_val_type,
+                                                const void*            ell_val,
+                                                rocsparseio_index_base ell_base,
+                                                const char*            name,
+                                                ...);
+
+//! @brief Read a sparse matrix with coordinates format.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
+//! @param[out] m number of rows.
+//! @param[out] n number of columns.
+//! @param[out] coo_nnz number of non-zeros.
+//! @param[out] coo_row_ind_type type of elements of the array \p row_ind.
+//! @param[out] coo_row_ind array of offsets.
+//! @param[out] coo_col_ind_type type of elements of the array \p col_ind.
+//! @param[out] coo_col_ind array of column/row indices.
+//! @param[out] coo_val_type type of elements of the array \p val.
+//! @param[out] coo_val array of values.
+//! @param[out] coo_base index base used in arrays \p row_ind and \p col_ind.
+//! @param[out] ell_width width of the matrix.
+//! @param[out] ell_ind_type type of elements of the array \p ind.
+//! @param[out] ell_ind array of column/row indices.
+//! @param[out] ell_val_type type of elements of the array \p val.
+//! @param[out] ell_val array of values.
+//! @param[out] ell_base index base used in arrays \p ptr and \p ind.
+//! @retval rocsparseio_status
+//! @note allocation is performed with standard malloc function, the user is
+//! responsible to the standard free function to free the memory.
+rocsparseio_status rocsparseio_read_sparse_hyb(rocsparseio_handle      handle,
+                                               uint64_t*               m,
+                                               uint64_t*               n,
+                                               uint64_t*               coo_nnz,
+                                               rocsparseio_type*       coo_row_ind_type,
+                                               void**                  coo_row_ind,
+                                               rocsparseio_type*       coo_col_ind_type,
+                                               void**                  coo_col_ind,
+                                               rocsparseio_type*       coo_val_type,
+                                               void**                  coo_val,
+                                               rocsparseio_index_base* coo_base,
+                                               uint64_t*               ell_width,
+                                               rocsparseio_type*       ell_col_ind_type,
+                                               void**                  ell_col_ind,
+                                               rocsparseio_type*       ell_val_type,
+                                               void**                  ell_val,
+                                               rocsparseio_index_base* ell_base);
+
+//! @brief Read metadata information of a sparse matrix with coordinates format.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] name name of the matrix.
+//! @param[out] m number of rows.
+//! @param[out] n number of columns.
+//! @param[out] coo_nnz number of non-zeros.
+//! @param[out] coo_row_ind_type type of elements of the array of row indices.
+//! @param[out] coo_col_ind_type type of elements of the array of column indices.
+//! @param[out] coo_val_type type of elements of the array.
+//! @param[out] coo_base index base used in arrays row and column indices.
+//! @param[out] ell_width witdh of the matrix.
+//! @param[out] ell_ind_type type of elements of the array \p ind.
+//! @param[out] ell_val_type type of elements of the array \p val.
+//! @param[out] ell_base index base used in arrays \p ptr and \p ind.
+//! @retval rocsparseio_status
+rocsparseio_status rocsparseiox_read_metadata_sparse_hyb(rocsparseio_handle      handle,
+                                                         uint64_t*               m,
+                                                         uint64_t*               n,
+                                                         uint64_t*               coo_nnz,
+                                                         rocsparseio_type*       coo_row_ind_type,
+                                                         rocsparseio_type*       coo_col_ind_type,
+                                                         rocsparseio_type*       coo_val_type,
+                                                         rocsparseio_index_base* coo_base,
+                                                         uint64_t*               ell_width,
+                                                         rocsparseio_type*       ell_col_ind_type,
+                                                         rocsparseio_type*       ell_val_type,
+                                                         rocsparseio_index_base* ell_base);
+
+//! @brief Read a sparse matrix with coordinates format.
+//! @param[in] handle pointer to the rocsparseio handle.
+//! @param[out] coo_row_ind array of row indices.
+//! @param[out] coo_col_ind array of column indices.
+//! @param[out] coo_val     array of values.
+//! @param[out] ell_col_ind array of column indices.
+//! @param[out] ell_val     array of values.
+//! @retval rocsparseio_status
+rocsparseio_status rocsparseiox_read_sparse_hyb(rocsparseio_handle handle,
+                                                void*              coo_row_ind,
+                                                void*              coo_col_ind,
+                                                void*              coo_val,
+                                                void*              ell_col_ind,
+                                                void*              ell_val);
 
 #ifdef __cplusplus
 }

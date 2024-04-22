@@ -562,7 +562,8 @@ int csr2rocsparseio(const char* ifilename, const char* ofilename)
                                               hcsr_col_ind.data(),
                                               rocsparseio_type_float64,
                                               hcsr_val.data(),
-                                              rocsparseio_index_base_zero);
+                                              rocsparseio_index_base_zero,
+                                              nullptr);
         //        // ROCSPARSEIO_CHECK(status);
 
         status = rocsparseio_close(handle);
@@ -820,6 +821,14 @@ rocsparseio_status rocsparseio2ascii(const char* ifilename, const char* ofilenam
         write_ascii_dense_vector(data_type, ofilename, m, data);
         break;
     }
+    case rocsparseio_format_sparse_dia:
+    case rocsparseio_format_sparse_hyb:
+    case rocsparseio_format_sparse_ell:
+    case rocsparseio_format_sparse_mcsx:
+    {
+        break;
+    }
+
     case rocsparseio_format_dense_matrix:
     {
 #if 0
@@ -1197,6 +1206,7 @@ int mtx2rocsparseio(const char* ifilename, const char* ofilename)
         rocsparseio_handle handle;
         status = rocsparseio_open(&handle, rocsparseio_rwmode_write, ofilename);
 
+        const char* name = nullptr;
         if(is_complex)
         {
             status = rocsparseio_write_sparse_csx(handle,
@@ -1210,7 +1220,8 @@ int mtx2rocsparseio(const char* ifilename, const char* ofilename)
                                                   col_ind.data(),
                                                   rocsparseio_type_complex64,
                                                   cval.data(),
-                                                  rocsparseio_index_base_zero);
+                                                  rocsparseio_index_base_zero,
+                                                  name);
         }
         else
         {
@@ -1225,7 +1236,8 @@ int mtx2rocsparseio(const char* ifilename, const char* ofilename)
                                                   col_ind.data(),
                                                   rocsparseio_type_float64,
                                                   rval.data(),
-                                                  rocsparseio_index_base_zero);
+                                                  rocsparseio_index_base_zero,
+                                                  name);
         }
         // ROCSPARSEIO_CHECK(status);
 
