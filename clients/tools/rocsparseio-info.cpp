@@ -374,7 +374,10 @@ int main(int argc, char** argv)
     rocsparseio_rwmode mode = rocsparseio_rwmode_read;
     status                  = rocsparseio_open(&handle, mode, argv[1]);
 
+    rocsparseio_string name;
     rocsparseio_format format;
+    status = rocsparseio_read_name(handle, name);
+    std::cout << "name       : " << name << std::endl;
 
     status = rocsparseio_read_format(handle, &format);
     switch(format)
@@ -385,9 +388,8 @@ int main(int argc, char** argv)
         uint64_t         data_nmemb;
         status = rocsparseiox_read_metadata_dense_vector(handle, &data_type, &data_nmemb);
         ROCSPARSEIO_CHECK(status);
-        std::cout << "data_type : " << data_type << std::endl;
+        std::cout << "data_type  : " << data_type << std::endl;
         std::cout << "data_nmemb : " << data_nmemb << std::endl;
-
         break;
     }
 
@@ -398,29 +400,29 @@ int main(int argc, char** argv)
         uint64_t          m, n;
         status = rocsparseiox_read_metadata_dense_matrix(handle, &order, &m, &n, &data_type);
         ROCSPARSEIO_CHECK(status);
-        std::cout << "data_type : " << data_type << std::endl;
-        std::cout << "order : " << order << std::endl;
-        std::cout << "m : " << m << std::endl;
-        std::cout << "n : " << n << std::endl;
+        std::cout << "data_type  : " << data_type << std::endl;
+        std::cout << "order      : " << order << std::endl;
+        std::cout << "m          : " << m << std::endl;
+        std::cout << "n          : " << n << std::endl;
         break;
     }
-    case rocsparseio_format_sparse_csx:
+    case rocsparseio_format_sparse_mcsx:
     {
         rocsparseio_type       ptr_type, ind_type, val_type;
         uint64_t               m, n, nnz;
         rocsparseio_direction  dir;
         rocsparseio_index_base base;
 
-        status = rocsparseiox_read_metadata_sparse_csx(
+        status = rocsparseiox_read_metadata_sparse_mcsx(
             handle, &dir, &m, &n, &nnz, &ptr_type, &ind_type, &val_type, &base);
         ROCSPARSEIO_CHECK(status);
-        std::cout << "m         : " << m << std::endl;
-        std::cout << "n         : " << n << std::endl;
-        std::cout << "nnz       : " << nnz << std::endl;
-        std::cout << "ptr_type  : " << ptr_type << std::endl;
-        std::cout << "ind_type  : " << ind_type << std::endl;
-        std::cout << "val_type : " << val_type << std::endl;
-        std::cout << "base      : " << base << std::endl;
+        std::cout << "m          : " << m << std::endl;
+        std::cout << "n          : " << n << std::endl;
+        std::cout << "nnz        : " << nnz << std::endl;
+        std::cout << "ptr_type   : " << ptr_type << std::endl;
+        std::cout << "ind_type   : " << ind_type << std::endl;
+        std::cout << "val_type   : " << val_type << std::endl;
+        std::cout << "base       : " << base << std::endl;
 
         uint64_t val_type_size, ind_type_size, ptr_type_size;
 
@@ -439,7 +441,47 @@ int main(int argc, char** argv)
         uint64_t ngb = nmb / 1024;
 
         nmb += nmb % 1024;
-        std::cout << "memory: " << ngb << " Go," << nmb << " Mb " << s % 1024 << " kb" << std::endl;
+        std::cout << "memory     : " << ngb << " Go," << nmb << " Mb " << s % 1024 << " kb"
+                  << std::endl;
+        break;
+    }
+    case rocsparseio_format_sparse_csx:
+    {
+        rocsparseio_type       ptr_type, ind_type, val_type;
+        uint64_t               m, n, nnz;
+        rocsparseio_direction  dir;
+        rocsparseio_index_base base;
+
+        status = rocsparseiox_read_metadata_sparse_csx(
+            handle, &dir, &m, &n, &nnz, &ptr_type, &ind_type, &val_type, &base);
+        ROCSPARSEIO_CHECK(status);
+        std::cout << "m          : " << m << std::endl;
+        std::cout << "n          : " << n << std::endl;
+        std::cout << "nnz        : " << nnz << std::endl;
+        std::cout << "ptr_type   : " << ptr_type << std::endl;
+        std::cout << "ind_type   : " << ind_type << std::endl;
+        std::cout << "val_type   : " << val_type << std::endl;
+        std::cout << "base       : " << base << std::endl;
+
+        uint64_t val_type_size, ind_type_size, ptr_type_size;
+
+        status = rocsparseio_type_get_size(val_type, &val_type_size);
+        ROCSPARSEIO_CHECK(status);
+
+        status = rocsparseio_type_get_size(ptr_type, &ptr_type_size);
+        ROCSPARSEIO_CHECK(status);
+
+        status = rocsparseio_type_get_size(ind_type, &ind_type_size);
+        ROCSPARSEIO_CHECK(status);
+
+        uint64_t s = (val_type_size + ind_type_size) * nnz + (m + 1) * ptr_type_size;
+
+        uint64_t nmb = s / (1024 * 1024);
+        uint64_t ngb = nmb / 1024;
+
+        nmb += nmb % 1024;
+        std::cout << "memory     : " << ngb << " Go," << nmb << " Mb " << s % 1024 << " kb"
+                  << std::endl;
 
         uint64_t ptr_size = (dir == rocsparseio_direction_row) ? (m + 1) : (n + 1);
         void*    ptr      = malloc(ptr_type_size * ptr_size);
@@ -458,10 +500,10 @@ int main(int argc, char** argv)
         break;
     }
     case rocsparseio_format_sparse_gebsx:
-    {
-        break;
-    }
     case rocsparseio_format_sparse_coo:
+    case rocsparseio_format_sparse_dia:
+    case rocsparseio_format_sparse_ell:
+    case rocsparseio_format_sparse_hyb:
     {
         break;
     }

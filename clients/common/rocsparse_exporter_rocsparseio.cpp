@@ -211,8 +211,9 @@ rocsparse_status rocsparse_exporter_rocsparseio::write_sparse_csx(rocsparse_dire
         return status;
     }
 
+    const char*        name      = nullptr;
     rocsparseio_status io_status = rocsparseio_write_sparse_csx(
-        this->m_handle, dir, m, n, nnz, ptr_type, ptr_, ind_type, ind_, val_type, val_, base);
+        this->m_handle, dir, m, n, nnz, ptr_type, ptr_, ind_type, ind_, val_type, val_, base, name);
     if(io_status != rocsparseio_status_success)
     {
         return rocsparse_status_internal_error;
@@ -300,6 +301,8 @@ rocsparse_status rocsparse_exporter_rocsparseio::write_sparse_gebsx(rocsparse_di
     {
         return status;
     }
+
+    const char*        name      = nullptr;
     rocsparseio_status io_status = rocsparseio_write_sparse_gebsx(this->m_handle,
                                                                   dir,
                                                                   dirb,
@@ -314,7 +317,8 @@ rocsparse_status rocsparse_exporter_rocsparseio::write_sparse_gebsx(rocsparse_di
                                                                   ind_,
                                                                   val_type,
                                                                   val_,
-                                                                  base);
+                                                                  base,
+                                                                  name);
     if(io_status != rocsparseio_status_success)
     {
         return rocsparse_status_internal_error;
@@ -342,8 +346,9 @@ rocsparse_status
         return status;
     }
 
+    const char*        name = nullptr;
     rocsparseio_status io_status
-        = rocsparseio_write_dense_vector(this->m_handle, val_type, nmemb, x_, incx);
+        = rocsparseio_write_dense_vector(this->m_handle, val_type, nmemb, x_, incx, name);
     if(io_status != rocsparseio_status_success)
     {
         return rocsparse_status_internal_error;
@@ -387,8 +392,9 @@ rocsparse_status rocsparse_exporter_rocsparseio::write_dense_matrix(
         return status;
     }
 
+    const char*        name = nullptr;
     rocsparseio_status io_status
-        = rocsparseio_write_dense_matrix(this->m_handle, order, m, n, val_type, x_, ld);
+        = rocsparseio_write_dense_matrix(this->m_handle, order, m, n, val_type, x_, ld, name);
     if(io_status != rocsparseio_status_success)
     {
         return rocsparse_status_internal_error;
@@ -438,8 +444,19 @@ rocsparse_status rocsparse_exporter_rocsparseio::write_sparse_coo(I m_,
         return status;
     }
 
-    rocsparseio_status io_status = rocsparseio_write_sparse_coo(
-        this->m_handle, m, n, nnz, ind_type, row_ind_, ind_type, col_ind_, val_type, val_, base);
+    const char*        name      = nullptr;
+    rocsparseio_status io_status = rocsparseio_write_sparse_coo(this->m_handle,
+                                                                m,
+                                                                n,
+                                                                nnz,
+                                                                ind_type,
+                                                                row_ind_,
+                                                                ind_type,
+                                                                col_ind_,
+                                                                val_type,
+                                                                val_,
+                                                                base,
+                                                                name);
     if(io_status != rocsparseio_status_success)
     {
         return rocsparse_status_internal_error;

@@ -328,6 +328,7 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_coo(I* row_ind, I
             {
                 rocsparse_importer_copy_mixed_arrays(
                     NNZ, val, (const rocsparse_float_complex*)tmp_val);
+                break;
             }
             case rocsparseio_type_complex64:
             {
@@ -361,7 +362,6 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_gebsx(rocsparse_d
     uint64_t iNb;
     uint64_t innzb;
     uint64_t irow_block_dim, icol_block_dim;
-
     istatus = rocsparseiox_read_metadata_sparse_gebsx(this->m_handle,
                                                       &idir,
                                                       &idirb,
@@ -556,6 +556,7 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_gebsx(I* ptr, J* 
                 rocsparse_importer_copy_mixed_arrays(NNZB * row_block_dim * col_block_dim,
                                                      val,
                                                      (const rocsparse_float_complex*)tmp_val);
+                break;
             }
 
             case rocsparseio_type_complex64:
@@ -586,7 +587,6 @@ rocsparse_status
     uint64_t iM;
     uint64_t iN;
     uint64_t innz;
-
     istatus = rocsparseiox_read_metadata_sparse_csx(this->m_handle,
                                                     &io_dir,
                                                     &iM,
@@ -761,6 +761,7 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_csx(I* ptr, J* in
             {
                 rocsparse_importer_copy_mixed_arrays(
                     NNZ, val, (const rocsparse_float_complex*)tmp_val);
+                break;
             }
 
             case rocsparseio_type_complex64:
