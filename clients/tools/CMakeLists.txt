@@ -42,7 +42,11 @@ foreach(app ${ROCSPARSEIO_TOOLS_SOURCES})
 
   # Add OpenMP if available
   if(OPENMP_FOUND)
-    target_link_libraries(${app} PRIVATE OpenMP::OpenMP_CXX -Wl,-rpath=${HIP_CLANG_ROOT}/lib)
+    if (NOT WIN32)
+        target_link_libraries(${app} PRIVATE OpenMP::OpenMP_CXX -Wl,-rpath=${HIP_CLANG_ROOT}/lib)
+    else()
+        target_link_libraries(${app} PRIVATE libomp)
+    endif()
   endif()
 
   # Set benchmark output directory
