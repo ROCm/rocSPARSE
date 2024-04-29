@@ -3,6 +3,34 @@
 Documentation for rocSPARSE is available at
 [https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/](https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/).
 
+## rocSPARSE 3.2.0 for ROCm 6.2.0
+
+### Additions
+
+* New Merge-Path algorithm to SpMM, supporting CSR format
+* SpSM now supports row order
+* rocsparseio I/O functionality has been added to the library
+* `rocsparse_set_identity_permutation` has been added
+
+### Changes
+
+* Adjusted rocSPARSE dependencies to related HIP packages
+* Binary size has been reduced
+* A namespace has been wrapped around internal rocSPARSE functions and kernels
+* `rocsparse_csr_set_pointers`, `rocsparse_csc_set_pointers`, and `rocsparse_bsr_set_pointers` do now allow the column indices and values arrays to be nullptr if `nnz` is 0
+* gfx803 target has been removed from address sanitizer builds
+
+### Optimizations
+
+* Improved user manual
+* Improved contribution guidelines
+* SpMV adaptive and LRB algorithms have been further optimized on CSR format
+* Improved performance of SpMV adaptive with symmetrically stored matrices on CSR format
+
+### Fixes
+
+* Compilation errors with `BUILD_ROCSPARSE_ILP64=ON` have been resolved
+
 ## rocSPARSE 3.1.1 for ROCm 6.1.0
 
 ### Additions
