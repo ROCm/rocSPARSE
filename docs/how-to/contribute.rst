@@ -74,7 +74,7 @@ Additionally, when adding new routines, these routines must offer enough value t
 Code Structure
 ==============
 
-The following is the structure of the rocSPARSE library in the GitHub repository. A more detailed description of the directory structure can be found in the `rocSPARSE documentation <https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/design.html>`_.
+The following is the structure of the rocSPARSE library in the GitHub repository. A more detailed description of the directory structure can be found in the :doc:`rocSPARSE documentation <rocsparse:how-to/design>`.
 
 The ``library/include/`` directory contains the rocsparse.h header (which itself includes headers defining the public API of rocSPARSE). The ``library/include/`` directory also contains the headers for all the rocSPARSE public types.
 
@@ -84,7 +84,7 @@ The ``clients/`` directory contains the testing and benchmarking code as well as
 
 The ``docs/`` directory contains all of the documentation files.
 
-The ``scripts/`` directory contains potentially useful python and shell scripts for downloading test matrices (see ``scripts/performance/matrices/``) as well as plotting tools. See `rocSPARSE documentation <https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/design.html>`_ for more details.
+The ``scripts/`` directory contains potentially useful python and shell scripts for downloading test matrices (see ``scripts/performance/matrices/``) as well as plotting tools. See :doc:`rocSPARSE documentation <rocsparse:how-to/design>` for more details.
 
 Coding Style
 ============
@@ -150,7 +150,7 @@ When raising a PR in rocSPARSE here are some important things to include:
 
 and adjust the date to the current year. When simply modifying a file, the date should automatically be updated when using the pre-commit script.
 
-2. When adding a new routine, please make sure you are also adding appropriate testing code. These new unit tests should integrate within the existing `googletest framework <https://github.com/google/googletest/blob/master/googletest/docs/primer.md>`_. This typically involves adding the following files:
+2. When adding a new routine, please make sure you are also adding appropriate testing code. These new unit tests should integrate within the existing `googletest framework <https://github.com/google/googletest/blob/main/docs/primer.md>`_. This typically involves adding the following files:
 
 * testing_<routine_name>.cpp file in the directory ``clients/testing/``
 * test_<routine_name>.cpp file in directory ``clients/tests/``
