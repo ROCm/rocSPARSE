@@ -1,5 +1,5 @@
 /* ************************************************************************
-* Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -216,6 +216,12 @@ void testing_spmm_bell(const Arguments& arg)
                                                       rocsparse_spmm_stage_compute,
                                                       &buffer_size,
                                                       dbuffer));
+
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("C pointer mode host", dC);
+        }
+
         {
             host_dense_matrix<T> hC_copy(hC);
 
@@ -327,6 +333,10 @@ void testing_spmm_bell(const Arguments& arg)
                                                           rocsparse_spmm_stage_compute,
                                                           &buffer_size,
                                                           dbuffer));
+            if(ROCSPARSE_REPRODUCIBILITY)
+            {
+                rocsparse_reproducibility::save("C pointer mode device", dC);
+            }
         }
     }
 

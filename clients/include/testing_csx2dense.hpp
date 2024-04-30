@@ -266,6 +266,11 @@ void testing_csx2dense(const Arguments& arg, FUNC1& csx2dense, FUNC2& dense2csx)
                                         (T*)d_dense_val,
                                         LD));
 
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("d_dense_val", d_dense_val);
+        }
+
         host_vector<T> temp(LD * N);
         temp.transfer_from(d_dense_val);
 

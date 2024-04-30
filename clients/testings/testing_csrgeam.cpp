@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -401,6 +401,17 @@ void testing_csrgeam(const Arguments& arg)
                         baseA,
                         baseB,
                         baseC);
+
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("hcsr_row_ptr_C_1", hcsr_row_ptr_C_1);
+            rocsparse_reproducibility::save("hcsr_col_ind_C_1", hcsr_col_ind_C_1);
+            rocsparse_reproducibility::save("hcsr_val_C_1", hcsr_val_C_1);
+
+            rocsparse_reproducibility::save("hcsr_row_ptr_C_2", hcsr_row_ptr_C_2);
+            rocsparse_reproducibility::save("hcsr_col_ind_C_2", hcsr_col_ind_C_2);
+            rocsparse_reproducibility::save("hcsr_val_C_2", hcsr_val_C_2);
+        }
 
         // Check C
         hcsr_col_ind_C_gold.unit_check(hcsr_col_ind_C_1);

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -84,6 +84,11 @@ void testing_csr2coo(const Arguments& arg)
 
         CHECK_ROCSPARSE_ERROR(
             testing::rocsparse_csr2coo(handle, dcsr_row_ptr, nnz, M, dcoo_row_ind, base));
+
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("dcoo_row_ind", dcoo_row_ind);
+        }
 
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(

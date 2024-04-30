@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -176,6 +176,11 @@ void testing_csr2bsr(const Arguments& arg)
                                                    dC.val,
                                                    dC.ptr,
                                                    dC.ind));
+
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("dC", dC);
+        }
 
         // Host solution
         host_gebsr_matrix<T> hC_gold(direction, Mb, Nb, *hbsr_nnzb, block_dim, block_dim, bsr_base);

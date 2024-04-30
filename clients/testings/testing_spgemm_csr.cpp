@@ -456,6 +456,11 @@ void testing_spgemm_csr(const Arguments& arg)
                 CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
             }
 
+            if(ROCSPARSE_REPRODUCIBILITY)
+            {
+                rocsparse_reproducibility::save("dC pointer mode host", dC);
+            }
+
             //
             // Check
             //
@@ -514,6 +519,11 @@ void testing_spgemm_csr(const Arguments& arg)
                     CHECK_ROCSPARSE_ERROR(rocsparse_spgemm(
                         PARAMS_COMPUTE(d_alpha_ptr, A, B, D, d_beta_ptr, C, dbuffer)));
                     CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
+                }
+
+                if(ROCSPARSE_REPRODUCIBILITY)
+                {
+                    rocsparse_reproducibility::save("dC pointer mode device", dC);
                 }
 
                 if((!h_alpha_ptr || std::abs(*h_alpha_ptr) == ((I)std::abs(*h_alpha_ptr)))

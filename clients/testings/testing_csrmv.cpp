@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -186,6 +186,10 @@ void testing_csrmv(const Arguments& arg)
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(testing::rocsparse_csrmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)));
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("Y pointer mode host", dy);
+        }
 
         host_dense_matrix<T> hy_copy(hy);
         host_csrmv<T, rocsparse_int, rocsparse_int, T, T, T>(trans,
@@ -210,6 +214,10 @@ void testing_csrmv(const Arguments& arg)
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(testing::rocsparse_csrmv<T>(PARAMS(d_alpha, dA, dx, d_beta, dy)));
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("Y pointer mode device", dy);
+        }
 
         hy.near_check(dy, tol);
     }

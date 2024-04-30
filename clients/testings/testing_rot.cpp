@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -122,6 +122,18 @@ void testing_rot(const Arguments& arg)
         hx_val_gold.unit_check(hx_val_2);
         hy_gold.unit_check(hy_1);
         hy_gold.unit_check(hy_2);
+
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("X pointer mode host",
+                                            hx_val_1,
+                                            "Y pointer mode host",
+                                            hy_1,
+                                            "X pointer mode device",
+                                            hx_val_2,
+                                            "Y pointer mode device",
+                                            hy_2);
+        }
     }
 
     if(arg.timing)

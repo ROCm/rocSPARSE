@@ -382,11 +382,12 @@ void testing_csritilu0(const Arguments& arg)
         //
         // Compute CSRILU0 with gaussian elimination.
         //
-        device_csr_matrix<T> dA_csrilu0(dA);
-        rocsparse_int        pivot = 0;
-        rocsparse_status     status_csrilu0_buffer_size;
-        rocsparse_status     status_csrilu0_analysis;
-        rocsparse_status     status_csrilu0;
+        device_csr_matrix<T>       dA_csrilu0(dA);
+        host_scalar<rocsparse_int> pivot;
+        pivot[0] = 0;
+        rocsparse_status status_csrilu0_buffer_size;
+        rocsparse_status status_csrilu0_analysis;
+        rocsparse_status status_csrilu0;
         {
             rocsparse_analysis_policy apol = rocsparse_analysis_policy_force;
             rocsparse_solve_policy    spol = arg.spol;
@@ -406,7 +407,7 @@ void testing_csritilu0(const Arguments& arg)
                              apol,
                              spol,
                              info,
-                             &pivot,
+                             pivot,
                              status_csrilu0_buffer_size,
                              status_csrilu0_analysis,
                              status_csrilu0);
@@ -601,12 +602,16 @@ void testing_csritilu0(const Arguments& arg)
             }
             delete[] history;
         }
-        if(pivot != -1)
+        if(pivot[0] != -1)
         {
             std::cerr << "rocsparse_status_zero_pivot is detected, we don't compare" << std::endl;
         }
         else
         {
+            if(ROCSPARSE_REPRODUCIBILITY)
+            {
+                rocsparse_reproducibility::save("dA_csrilu0", dA_csrilu0.val);
+            }
             if(sizeof(floating_data_t<T>) == sizeof(double))
             {
                 ilu0.near_check(dA_csrilu0.val, 1.0e-5);

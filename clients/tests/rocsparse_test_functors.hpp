@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,14 @@
 * ************************************************************************ */
 #pragma once
 
+#include "rocsparse_reproducibility.hpp"
 #include "rocsparse_test_enum.hpp"
 #include "rocsparse_test_utility.hpp"
 
 template <rocsparse_test_enum::value_type ROUTINE>
 struct rocsparse_test_functors
 {
+    static void        set_reproducibility_test(const Arguments&                            arg,
+                                                rocsparse_reproducibility_t::results_test_t results_test);
     static std::string name_suffix(const Arguments& arg);
 };

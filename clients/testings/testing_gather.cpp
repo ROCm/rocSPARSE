@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -84,6 +84,11 @@ void testing_gather(const Arguments& arg)
         host_gthr<I, T>(nnz, hy, hx_val_gold, hx_ind, base);
 
         hx_val_gold.unit_check(hx_val);
+
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("X", hx_val);
+        }
     }
 
     if(arg.timing)

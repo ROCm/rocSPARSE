@@ -145,6 +145,7 @@ struct Arguments
     double tolm;
 
     bool graph_test;
+    bool skip_reproducibility;
 
     char filename[128];
     char function[64];
@@ -280,6 +281,7 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(boostvali);
         ROCSPARSE_FORMAT_CHECK(tolm);
         ROCSPARSE_FORMAT_CHECK(graph_test);
+        ROCSPARSE_FORMAT_CHECK(skip_reproducibility);
         ROCSPARSE_FORMAT_CHECK(filename);
         ROCSPARSE_FORMAT_CHECK(function);
         ROCSPARSE_FORMAT_CHECK(name);
@@ -490,6 +492,7 @@ private:
         print("boost_vali", arg.boostvali);
         print("tolm", arg.tolm);
         print("graph_test", arg.graph_test);
+        print("skip_reproducibility", arg.skip_reproducibility);
         print("name", arg.name);
         print("category", arg.category);
         print("hardware", arg.hardware);
