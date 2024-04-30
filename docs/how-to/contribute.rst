@@ -8,14 +8,14 @@
 Contributing to rocSPARSE
 *************************
 
-AMD welcomes contributions to rocSPARSE from the community. Whether those contributions are bug reports, bug fixes, documentation additions, performance notes, or other improvements, we value collaboration with our users. We can build better solutions together. Please follow these details to help ensure your contributions will be successfully accepted.
+AMD welcomes contributions to rocSPARSE from the community. Whether those contributions are bug reports, bug fixes, documentation additions, performance notes, or other improvements, we value collaboration with our users. We can build better solutions together. Follow these details to help ensure your contributions will be successfully accepted.
 
 Our code contriubtion guidelines closely follow the model of `GitHub pull-requests <https://help.github.com/articles/using-pull-requests/>`_.  This repository follows the `git-flow <http://nvie.com/posts/a-successful-git-branching-model/>`_ workflow, which dictates a /master branch where releases are cut, and a /develop branch which serves as an integration branch for new code.
 
-Issue Discussion
+Issue discussion
 ================
 
-Please use the GitHub Issues tab to notify us of issues.
+Use the GitHub Issues tab to notify us of issues.
 
 * Use your best judgement for issue creation. If your issue is already listed, upvote the issue and
   comment or post to provide additional details, such as how you reproduced this issue.
@@ -28,7 +28,7 @@ Please use the GitHub Issues tab to notify us of issues.
 * You may also open an issue to ask questions to the maintainers about whether a proposed change
   meets the acceptance criteria, or to discuss an idea pertaining to the library.
 
-Acceptance Criteria
+Acceptance criteria
 ===================
 
 rocSPARSE is a library that contains basic linear algebra subroutines for sparse matrices and vectors written in HIP for GPU devices.
@@ -71,10 +71,10 @@ rocSPARSE places a heavy emphasis on being high performance. Because of this, co
 
 Additionally, when adding new routines, these routines must offer enough value to enough users to be deemed worth including. Because compile times, binary sizes, and general library complexity are important considerations, we reserve the right to make decisions on whether a proposed routine is too niche or specialized to be worth including.
 
-Code Structure
+Code structure
 ==============
 
-The following is the structure of the rocSPARSE library in the GitHub repository. A more detailed description of the directory structure can be found in the `rocSPARSE documentation <https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/design.html>`_.
+The following is the structure of the rocSPARSE library in the GitHub repository. A more detailed description of the directory structure can be found in the :doc:`rocSPARSE documentation <rocsparse:how-to/design>`.
 
 The ``library/include/`` directory contains the rocsparse.h header (which itself includes headers defining the public API of rocSPARSE). The ``library/include/`` directory also contains the headers for all the rocSPARSE public types.
 
@@ -84,12 +84,12 @@ The ``clients/`` directory contains the testing and benchmarking code as well as
 
 The ``docs/`` directory contains all of the documentation files.
 
-The ``scripts/`` directory contains potentially useful python and shell scripts for downloading test matrices (see ``scripts/performance/matrices/``) as well as plotting tools. See `rocSPARSE documentation <https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/design.html>`_ for more details.
+The ``scripts/`` directory contains potentially useful python and shell scripts for downloading test matrices (see ``scripts/performance/matrices/``) as well as plotting tools. See :doc:`rocSPARSE documentation <rocsparse:how-to/design>` for more details.
 
-Coding Style
+Coding style
 ============
 
-In general, follow the style of the surrounding code. C and C++ code is formatted using ``clang-format``. Use the clang-format version installed with ROCm (found in the ``/opt/rocm/llvm/bin`` directory). Please do not use your system's built-in ``clang-format``, as this is a different version that may result in incorrect results.
+In general, follow the style of the surrounding code. C and C++ code is formatted using ``clang-format``. Use the clang-format version installed with ROCm (found in the ``/opt/rocm/llvm/bin`` directory). Do not use your system's built-in ``clang-format``, as this is a different version that may result in incorrect results.
 
 To format a file, use:
 
@@ -110,7 +110,7 @@ Also, githooks can be installed to format the code per-commit:
 ./.githooks/install
 ```
 
-Pull Request Guidelines
+Pull request guidelines
 =======================
 
 When you create a pull request, you should target the default branch. Our current default branch is the **develop** branch, which serves as our integration branch.
@@ -120,7 +120,7 @@ Deliverables
 
 When raising a PR in rocSPARSE here are some important things to include:
 
-1. For each new file in the repository, Please include the licensing header
+1. For each new file in the repository, include the licensing header
 
 .. code-block:: cpp
     :caption: rocsparse_file_header
@@ -150,7 +150,7 @@ When raising a PR in rocSPARSE here are some important things to include:
 
 and adjust the date to the current year. When simply modifying a file, the date should automatically be updated when using the pre-commit script.
 
-2. When adding a new routine, please make sure you are also adding appropriate testing code. These new unit tests should integrate within the existing `googletest framework <https://github.com/google/googletest/blob/master/googletest/docs/primer.md>`_. This typically involves adding the following files:
+2. When adding a new routine, make sure you are also adding appropriate testing code. These new unit tests should integrate within the existing `GoogleTest framework <https://github.com/google/googletest/blob/main/docs/primer.md>`_. This typically involves adding the following files:
 
 * testing_<routine_name>.cpp file in the directory ``clients/testing/``
 * test_<routine_name>.cpp file in directory ``clients/tests/``
@@ -169,7 +169,7 @@ See existing tests for guidance when adding your own.
 * ``rocsparse_float_complex``
 * ``rocsparse_double_complex``
 
-So when adding a new routine that uses data/compute values please support at least these four types.
+So when adding a new routine that uses data/compute values, support at least these four types.
 
 6. Ensure code builds successfully. This includes making sure that the code can compile, that the code is properly formatted, and that all tests pass.
 
