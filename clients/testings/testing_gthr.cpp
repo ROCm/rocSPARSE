@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -84,6 +84,12 @@ void testing_gthr(const Arguments& arg)
 
         hx_val_gold.unit_check(dx_val_1);
         hx_val_gold.unit_check(dx_val_2);
+
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save(
+                "X pointer mode host", dx_val_1, "X pointer mode device", dx_val_2);
+        }
     }
 
     if(arg.timing)

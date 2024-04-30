@@ -293,7 +293,6 @@ namespace
                         }
                     }
                 }
-
                 return RocSPARSE_TestName<PROXY>{} << s.str();
             }
         };

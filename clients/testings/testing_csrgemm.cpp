@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -685,6 +685,11 @@ void testing_csrgemm(const Arguments& arg)
             d_C.define(d_C.m, d_C.n, *h_out_nnz, d_C.base);
             CHECK_ROCSPARSE_ERROR(
                 rocsparse_csrgemm<T>(PARAMS(h_alpha, h_beta, d_A, d_B, d_C, d_D)));
+            if(ROCSPARSE_REPRODUCIBILITY)
+            {
+                rocsparse_reproducibility::save("d_C pointer mode host", d_C);
+            }
+
             h_C.near_check(d_C);
         }
         {
@@ -700,6 +705,12 @@ void testing_csrgemm(const Arguments& arg)
             d_C.define(d_C.m, d_C.n, *h_out_nnz, d_C.base);
             CHECK_ROCSPARSE_ERROR(
                 rocsparse_csrgemm<T>(PARAMS(d_alpha, d_beta, d_A, d_B, d_C, d_D)));
+
+            if(ROCSPARSE_REPRODUCIBILITY)
+            {
+                rocsparse_reproducibility::save("d_C pointer mode device", d_C);
+            }
+
             h_C.near_check(d_C);
         }
     }

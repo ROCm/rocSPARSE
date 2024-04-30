@@ -263,6 +263,10 @@ void testing_spmm_coo(const Arguments& arg)
                                                       rocsparse_spmm_stage_compute,
                                                       &buffer_size,
                                                       dbuffer));
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("dC_1", dC_1);
+        }
 
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
@@ -279,6 +283,11 @@ void testing_spmm_coo(const Arguments& arg)
                                                       rocsparse_spmm_stage_compute,
                                                       &buffer_size,
                                                       dbuffer));
+
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("dC_2", dC_2);
+        }
 
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(hC_1, dC_1, sizeof(T) * nnz_C, hipMemcpyDeviceToHost));

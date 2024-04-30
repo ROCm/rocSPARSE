@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 #include "rocsparse_parse_data.hpp"
 #include "rocsparse_clients_matrices_dir.hpp"
 #include "rocsparse_data.hpp"
+#include "rocsparse_reproducibility.hpp"
 #include "utility.hpp"
 
 #include <fcntl.h>
@@ -98,6 +99,7 @@ static std::string rocsparse_parse_yaml(const std::string& yaml)
 }
 
 // Parse --data and --yaml command-line arguments, -- matrices-dir and optionally memstat-report
+
 bool rocsparse_parse_data(int& argc, char** argv, const std::string& default_file)
 {
     std::string filename;
@@ -106,7 +108,15 @@ bool rocsparse_parse_data(int& argc, char** argv, const std::string& default_fil
 #ifdef ROCSPARSE_WITH_MEMSTAT
     const char* memory_report_filename = nullptr;
 #endif
+    std::string reproducibility_filename("rocsparse_reproducibility.json");
+
     // Scan, process and remove any --yaml or --data options
+    std::string command = argv[0];
+    for(int i = 1; i < argc; ++i)
+    {
+        command += std::string(" ") + argv[i];
+    }
+    rocsparse_reproducibility_t::instance().config().set_command(command);
     for(int i = 1; argv[i]; ++i)
     {
         if(!strcmp(argv[i], "--data") || (yaml |= !strcmp(argv[i], "--yaml")))
@@ -144,6 +154,75 @@ bool rocsparse_parse_data(int& argc, char** argv, const std::string& default_fil
                 exit(EXIT_FAILURE);
             }
             rocsparse_clients_matrices_dir_set(argv[++i]);
+        }
+        else if(!strcmp(argv[i], "--r-o"))
+        {
+            if(!argv[i + 1] || !argv[i + 1][0])
+            {
+                std::cerr << "The " << argv[i] << " option requires an argument" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            rocsparse_reproducibility_t::instance().config().set_filename(argv[++i]);
+        }
+        else if(!strcmp(argv[i], "--r"))
+        {
+            rocsparse_reproducibility_t::instance().enable();
+        }
+        else if(!strcmp(argv[i], "--r-niter"))
+        {
+            if(rocsparse_reproducibility_t::instance().is_enabled() == false)
+            {
+                std::cerr
+                    << "--r-niter cannot be used if the reproducibility is not enabled with '--r'"
+                    << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            if(!argv[i + 1] || !argv[i + 1][0])
+            {
+                std::cerr << "The " << argv[i] << " option requires an argument" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            for(int j = 0; argv[i + 1][j] != '\0'; ++j)
+            {
+                if(argv[i + 1][j] < '0' || argv[i + 1][j] > '9')
+                {
+                    std::cerr << "The " << argv[i] << " option requires an integer as an argument"
+                              << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+            }
+            int32_t num_iterations = atoi(argv[++i]);
+            if(num_iterations < 2)
+            {
+                std::cerr << "The " << argv[i - 1]
+                          << " option requires a positive value greater or equal to 2."
+                          << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            rocsparse_reproducibility_t::instance().set_num_iterations(num_iterations);
+        }
+        else if(!strcmp(argv[i], "--r-level"))
+        {
+            if(rocsparse_reproducibility_t::instance().is_enabled() == false)
+            {
+                std::cerr
+                    << "--r-level cannot be used if the reproducibility is not enabled with '--r'"
+                    << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            if(!argv[i + 1] || !argv[i + 1][0])
+            {
+                std::cerr << "The " << argv[i] << " option requires an argument" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            int32_t r_level = atoi(argv[++i]);
+            if(r_level < 0)
+            {
+                std::cerr << "The " << argv[i - 1] << " option requires a positive value"
+                          << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            rocsparse_reproducibility_t::instance().config().set_info_level(r_level);
         }
         else if(!strcmp(argv[i], "--rocsparse-clients-enable-test-debug-arguments"))
         {
@@ -196,9 +275,19 @@ bool rocsparse_parse_data(int& argc, char** argv, const std::string& default_fil
                 std::cout
                     << "\n"
                     << argv[0]
-                    << " [ --data <path> | --yaml <path> ] [--matrices-dir <path>] <options> ...\n"
+                    << " [ --data <path> | --yaml <path> ] [--matrices-dir <path>]<options> ...\n"
                     << std::endl;
 
+                std::cout << "" << std::endl;
+                std::cout << "Rocsparse reproducibility options:" << std::endl;
+                std::cout << "--r          enable rocsparse reproducibility testing" << std::endl;
+                std::cout << "--r-niter    set the number of "
+                             "reproducibility iterations."
+                          << std::endl;
+                std::cout << "--r-o        file results for reproducibility." << std::endl;
+                std::cout << "--r-level    level of information shrinking in the reproducibility "
+                             "json file."
+                          << std::endl;
                 std::cout << "" << std::endl;
                 std::cout << "Rocsparse clients debug options:" << std::endl;
                 std::cout << "--rocsparse-clients-enable-test-debug-arguments   enable rocsparse "

@@ -326,9 +326,15 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 set(ROCSPARSE_CLIENTS_COMMON
   ../common/utility.cpp
   ../common/rocsparse_random.cpp
+  ../common/rocsparse_reproducibility.cpp
+  ../common/rocsparse_reproducibility_test.cpp
+  ../common/rocsparse_reproducibility_test_data.cpp
+  ../common/rocsparse_reproducibility_results.cpp
   ../common/rocsparse_check.cpp
   ../common/rocsparse_parse_data.cpp
   ../common/rocsparse_enum.cpp
+  ../common/rocsparse_enum_name.cpp
+  ../common/rocsparse_enum_from_name.cpp
   ../common/rocsparse_init.cpp
   ../common/rocsparse_host.cpp
   ../common/rocsparse_vector_utils.cpp

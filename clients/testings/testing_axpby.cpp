@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
  * ************************************************************************ */
 
 #include "testing.hpp"
+
 template <typename I, typename T>
 void testing_axpby_bad_arg(const Arguments& arg)
 {
@@ -106,6 +107,12 @@ void testing_axpby(const Arguments& arg)
         host_axpby<I, T>(size, nnz, h_alpha, hx_val, hx_ind, h_beta, hy_gold, base);
 
         hy_gold.unit_check(hy_2);
+
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save(
+                "Y with host pointer", dy_1, "Y with device pointer", dy_2);
+        }
     }
 
     if(arg.timing)

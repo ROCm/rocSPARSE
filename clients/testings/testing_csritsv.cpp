@@ -1209,58 +1209,66 @@ void testing_csritsv(const Arguments& arg)
             std::cout << " - compute device iterative" << std::endl;
         }
 
-        {
-            device_scalar<rocsparse_int> d_analysis_pivot;
-            device_scalar<rocsparse_int> d_solve_pivot;
-            device_scalar<T>             d_alpha(h_alpha);
+        device_scalar<rocsparse_int> d_analysis_pivot;
+        device_scalar<rocsparse_int> d_solve_pivot;
+        device_scalar<T>             d_alpha(h_alpha);
 
-            //
-            // POINTER MODE DEVICE
-            //
-            CHECK_ROCSPARSE_ERROR(
-                rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
+        //
+        // POINTER MODE DEVICE
+        //
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
 
-            //
-            // CHECK IF DEFAULT ZERO PIVOT IS -1
-            //
-            EXPECT_ROCSPARSE_STATUS(
-                rocsparse_csritsv_zero_pivot(handle, descr, info, d_analysis_pivot),
-                rocsparse_status_success);
-            analysis_no_pivot.unit_check(d_analysis_pivot);
+        //
+        // CHECK IF DEFAULT ZERO PIVOT IS -1
+        //
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csritsv_zero_pivot(handle, descr, info, d_analysis_pivot),
+                                rocsparse_status_success);
+        analysis_no_pivot.unit_check(d_analysis_pivot);
 
-            //
-            // Call before analysis
-            //
-            host_nmaxiter[0] = s_nmaxiter;
-            EXPECT_ROCSPARSE_STATUS(rocsparse_csritsv_solve<T>(PARAMS_SOLVE(h_alpha, dA, dx, dy)),
-                                    rocsparse_status_invalid_pointer);
+        //
+        // Call before analysis
+        //
+        host_nmaxiter[0] = s_nmaxiter;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csritsv_solve<T>(PARAMS_SOLVE(h_alpha, dA, dx, dy)),
+                                rocsparse_status_invalid_pointer);
 
-            //
-            // Call it twice.
-            //
-            CHECK_ROCSPARSE_ERROR(rocsparse_csritsv_analysis<T>(PARAMS_ANALYSIS(dA)));
-            CHECK_ROCSPARSE_ERROR(rocsparse_csritsv_analysis<T>(PARAMS_ANALYSIS(dA)));
-            EXPECT_ROCSPARSE_STATUS(
-                rocsparse_csritsv_zero_pivot(handle, descr, info, d_analysis_pivot),
-                (*h_analysis_pivot != -1) ? rocsparse_status_zero_pivot : rocsparse_status_success);
-            CHECK_HIP_ERROR(hipDeviceSynchronize());
+        //
+        // Call it twice.
+        //
+        CHECK_ROCSPARSE_ERROR(rocsparse_csritsv_analysis<T>(PARAMS_ANALYSIS(dA)));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csritsv_analysis<T>(PARAMS_ANALYSIS(dA)));
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csritsv_zero_pivot(handle, descr, info, d_analysis_pivot),
+                                (*h_analysis_pivot != -1) ? rocsparse_status_zero_pivot
+                                                          : rocsparse_status_success);
+        CHECK_HIP_ERROR(hipDeviceSynchronize());
 
-            CHECK_HIP_ERROR(hipMemset(dy, 0, sizeof(T) * M));
-            host_nmaxiter[0] = s_nmaxiter;
-            CHECK_ROCSPARSE_ERROR(rocsparse_csritsv_solve<T>(PARAMS_SOLVE(d_alpha, dA, dx, dy)));
-            EXPECT_ROCSPARSE_STATUS(
-                rocsparse_csritsv_zero_pivot(handle, descr, info, d_solve_pivot),
-                (*h_solve_pivot != -1) ? rocsparse_status_zero_pivot : rocsparse_status_success);
-            CHECK_HIP_ERROR(hipDeviceSynchronize());
-            h_analysis_pivot.unit_check(d_analysis_pivot);
-            h_solve_pivot.unit_check(d_solve_pivot);
-        }
+        CHECK_HIP_ERROR(hipMemset(dy, 0, sizeof(T) * M));
+        host_nmaxiter[0] = s_nmaxiter;
+        CHECK_ROCSPARSE_ERROR(rocsparse_csritsv_solve<T>(PARAMS_SOLVE(d_alpha, dA, dx, dy)));
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csritsv_zero_pivot(handle, descr, info, d_solve_pivot),
+                                (*h_solve_pivot != -1) ? rocsparse_status_zero_pivot
+                                                       : rocsparse_status_success);
+        CHECK_HIP_ERROR(hipDeviceSynchronize());
+        h_analysis_pivot.unit_check(d_analysis_pivot);
+        h_solve_pivot.unit_check(d_solve_pivot);
 
         if(*h_analysis_pivot == -1 && *h_solve_pivot == -1)
         {
+            if(ROCSPARSE_REPRODUCIBILITY)
+            {
+                rocsparse_reproducibility::save("Y", dy);
+            }
             if(host_iterative_convergence)
             {
                 hy_iterative.near_check(dy, tol_compare);
+            }
+        }
+        else
+        {
+            if(ROCSPARSE_REPRODUCIBILITY)
+            {
+                rocsparse_reproducibility::save(
+                    "analysis_pivot", d_analysis_pivot, "solve_pivot", d_solve_pivot);
             }
         }
 

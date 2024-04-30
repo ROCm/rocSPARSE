@@ -23,6 +23,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_parse_data.hpp"
+#include "rocsparse_reproducibility.hpp"
 #include "utility.hpp"
 
 #include <gtest/gtest.h>
@@ -293,6 +294,21 @@ int main(int argc, char** argv)
 
     // Run all tests
     int ret = RUN_ALL_TESTS();
+
+    {
+        static hipDeviceProp_t prop;
+        static int             dev;
+        if(hipGetDevice(&dev) != hipSuccess)
+        {
+            return -1;
+        }
+        if(hipGetDeviceProperties(&prop, dev) != hipSuccess)
+        {
+            return -1;
+        }
+        rocsparse_reproducibility_t::instance().config().set_gpu_name(prop.gcnArchName);
+        rocsparse_reproducibility_write_report(rocsparse_reproducibility_t::instance());
+    }
 
     // Reset HIP device
     hipDeviceReset();

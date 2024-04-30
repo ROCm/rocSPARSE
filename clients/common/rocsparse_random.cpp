@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_random.hpp"
-
+#include "rocsparse_reproducibility.hpp"
 #include <iostream>
 
 // Random number generator
@@ -33,6 +33,16 @@
 rocsparse_rng_t rocsparse_rng(69069);
 rocsparse_rng_t rocsparse_rng_nan(69069);
 rocsparse_rng_t rocsparse_seed(rocsparse_rng);
+
+void rocsparse_seedrand()
+{
+    rocsparse_rng_set(rocsparse_seed_get());
+    rocsparse_rng_nan_set(rocsparse_seed_get());
+
+    rocsparse_rand_uniform_float_idx  = 0;
+    rocsparse_rand_uniform_double_idx = 0;
+    rocsparse_rand_normal_double_idx  = 0;
+}
 
 void rocsparse_rng_set(rocsparse_rng_t a)
 {
@@ -91,6 +101,8 @@ float rocsparse_uniform_float(float a, float b)
                 = std::uniform_real_distribution<float>(0.0f, 1.0f)(rocsparse_rng_get());
         }
         s_rand_uniform_float_init = 1;
+        if(rocsparse_reproducibility_t::instance().is_enabled())
+            rocsparse_seedrand();
     }
 
     rocsparse_rand_uniform_float_idx
@@ -109,6 +121,8 @@ double rocsparse_uniform_double(double a, double b)
                 = std::uniform_real_distribution<double>(0.0, 1.0)(rocsparse_rng_get());
         }
         s_rand_uniform_double_init = 1;
+        if(rocsparse_reproducibility_t::instance().is_enabled())
+            rocsparse_seedrand();
     }
 
     rocsparse_rand_uniform_double_idx
@@ -132,6 +146,8 @@ double rocsparse_normal_double()
                 = std::normal_distribution<double>(0.0, 1.0)(rocsparse_rng_get());
         }
         s_rand_normal_double_init = 1;
+        if(rocsparse_reproducibility_t::instance().is_enabled())
+            rocsparse_seedrand();
     }
 
     rocsparse_rand_normal_double_idx

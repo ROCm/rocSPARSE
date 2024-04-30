@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -718,8 +718,13 @@ public:
             traits::host_calculation(trans, h_alpha, hA, hx, h_beta, hy, alg, matrix_type);
 
             hy.near_check(dy);
-            dy.transfer_from(hy_copy);
 
+            if(ROCSPARSE_REPRODUCIBILITY)
+            {
+                rocsparse_reproducibility::save("Y_pointer_mode_host", dy);
+            }
+
+            dy.transfer_from(hy_copy);
             CHECK_ROCSPARSE_ERROR(
                 rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
             CHECK_ROCSPARSE_ERROR(testing::rocsparse_spmv(
@@ -727,6 +732,10 @@ public:
             CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
             hy.near_check(dy);
+            if(ROCSPARSE_REPRODUCIBILITY)
+            {
+                rocsparse_reproducibility::save("Y_pointer_mode_device", dy);
+            }
         }
 
         if(arg.timing)

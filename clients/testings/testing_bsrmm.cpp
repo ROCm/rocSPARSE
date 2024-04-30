@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -389,6 +389,10 @@ void testing_bsrmm(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(testing::rocsparse_bsrmm<T>(PARAMS(h_alpha, dA, dB, h_beta, dC)));
 
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("C pointer mode host", dC);
+        }
         //
         // Compute on host.
         //
@@ -404,6 +408,10 @@ void testing_bsrmm(const Arguments& arg)
         //
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(testing::rocsparse_bsrmm<T>(PARAMS(d_alpha, dA, dB, d_beta, dC)));
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("C pointer mode device", dC);
+        }
 
         hC.near_check(dC);
     }

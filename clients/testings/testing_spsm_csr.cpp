@@ -457,6 +457,15 @@ void testing_spsm_csr(const Arguments& arg)
 
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("dC_1", dC_1);
+        }
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("dC_2", dC_2);
+        }
+
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(hC_1, dC_1, sizeof(T) * nrowC * ncolC, hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(hipMemcpy(hC_2, dC_2, sizeof(T) * nrowC * ncolC, hipMemcpyDeviceToHost));

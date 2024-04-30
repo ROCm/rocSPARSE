@@ -208,6 +208,12 @@ void testing_spsv_csr(const Arguments& arg)
 
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save(
+                "Y pointer mode host", dy_1, "Y pointer mode device", dy_2);
+        }
+
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(hy_1, dy_1, sizeof(T) * M, hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(hipMemcpy(hy_2, dy_2, sizeof(T) * M, hipMemcpyDeviceToHost));

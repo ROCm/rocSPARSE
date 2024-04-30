@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -479,6 +479,11 @@ void testing_spgemm_bsr(const Arguments& arg)
                                                  dbuffer),
                                 rocsparse_status_success);
 
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("dC pointer mode host", dC);
+        }
+
         // Check
         hC.near_check(dC);
 
@@ -499,6 +504,11 @@ void testing_spgemm_bsr(const Arguments& arg)
                                                  &buffer_size,
                                                  dbuffer),
                                 rocsparse_status_success);
+
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("dC pointer mode device", dC);
+        }
 
         // Check
         hC.near_check(dC);

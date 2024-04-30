@@ -238,6 +238,11 @@ void testing_bsrmv(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(testing::rocsparse_bsrmv_ex<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)));
 
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("Y pointer mode host", dy);
+        }
+
         {
             host_dense_matrix<T> hy_copy(hy);
             // CPU bsrmv
@@ -263,6 +268,11 @@ void testing_bsrmv(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(testing::rocsparse_bsrmv_ex<T>(PARAMS(d_alpha, dA, dx, d_beta, dy)));
         hy.near_check(dy);
+
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("Y pointer mode device", dy);
+        }
     }
 
     if(arg.timing)

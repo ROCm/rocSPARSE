@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -659,6 +659,10 @@ void testing_bsrgemm(const Arguments& arg)
         d_C.define(
             d_C.dir, d_C.mb, d_C.nb, *h_out_nnz, d_C.row_block_dim, d_C.col_block_dim, d_C.base);
         CHECK_ROCSPARSE_ERROR(rocsparse_bsrgemm<T>(PARAMS(h_alpha, h_beta, d_A, d_B, d_C, d_D)));
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("C pointer mode host", d_C);
+        }
         h_C.near_check(d_C);
 
         // GPU with pointer mode host
@@ -669,6 +673,10 @@ void testing_bsrgemm(const Arguments& arg)
         d_C.define(
             d_C.dir, d_C.mb, d_C.nb, *h_out_nnz2, d_C.row_block_dim, d_C.col_block_dim, d_C.base);
         CHECK_ROCSPARSE_ERROR(rocsparse_bsrgemm<T>(PARAMS(d_alpha, d_beta, d_A, d_B, d_C, d_D)));
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("C pointer mode device", d_C);
+        }
         h_C.near_check(d_C);
     }
 

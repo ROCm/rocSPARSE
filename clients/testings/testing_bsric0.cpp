@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -387,8 +387,27 @@ void testing_bsric0(const Arguments& arg)
         // Check solution vector if no pivot has been found
         if(hanalysis_pivot_gold[0] == -1 && hsolve_pivot_gold[0] == -1)
         {
+            if(ROCSPARSE_REPRODUCIBILITY)
+            {
+                rocsparse_reproducibility::save(
+                    "P pointer mode host", hbsr_val_1, "P pointer mode device", hbsr_val_2);
+            }
             hbsr_val_gold.near_check(hbsr_val_1);
             hbsr_val_gold.near_check(hbsr_val_2);
+        }
+        else
+        {
+            if(ROCSPARSE_REPRODUCIBILITY)
+            {
+                rocsparse_reproducibility::save("Pivot analysis pointer mode host",
+                                                hanalysis_pivot_1,
+                                                "Pivot analysis pointer mode device",
+                                                hanalysis_pivot_2,
+                                                "Pivot solve pointer mode host",
+                                                hsolve_pivot_1,
+                                                "Pivot solve pointer mode device",
+                                                hsolve_pivot_2);
+            }
         }
     }
 

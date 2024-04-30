@@ -325,6 +325,11 @@ void testing_spitsv_csr(const Arguments& arg)
 
         if(analysis_pivot == -1 && solve_pivot == -1)
         {
+            if(ROCSPARSE_REPRODUCIBILITY)
+            {
+                rocsparse_reproducibility::save(
+                    "Y pointe mode host", hy_1, "Y pointe mode device", hy_2);
+            }
             hy_gold.near_check(hy_1);
             hy_gold.near_check(hy_2);
         }

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -187,6 +187,11 @@ void testing_csrcolor(const Arguments& arg)
                                                     dcoloring,
                                                     dreordering,
                                                     mat_info));
+
+        if(ROCSPARSE_REPRODUCIBILITY)
+        {
+            rocsparse_reproducibility::save("dcoloring", dcoloring, "dreordering", dreordering);
+        }
 
         //
         // CHECK CONSISTENCY: COUNT NUMBER OF COLORS IN HCOLORING
