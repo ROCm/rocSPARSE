@@ -44,6 +44,7 @@ The rocSPARSE documentation is structured as follows:
     * :ref:`rocsparse_reordering_functions_`
     * :ref:`rocsparse_utility_functions_`
     * :ref:`rocsparse_generic_functions_`
+    * :ref:`reproducibility`
 
 To contribute to the documentation refer to `Contributing to ROCm  <https://rocm.docs.amd.com/en/latest/contribute/contributing.html>`_.
 
