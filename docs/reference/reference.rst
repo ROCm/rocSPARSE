@@ -22,3 +22,4 @@ The *rocSPARSE API Reference Guide* presents an index of rocSPARSE functions, da
   * :ref:`rocsparse_reordering_functions_` for reordering sparse matrices
   * :ref:`rocsparse_utility_functions_` for checking sparse matrices for valid data
   * :ref:`rocsparse_generic_functions_` for manipulating sparse matrices
+  * :ref:`reproducibility`
