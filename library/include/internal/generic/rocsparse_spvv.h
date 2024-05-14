@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -36,7 +36,7 @@ extern "C" {
 *  \brief Sparse vector inner dot product
 *
 *  \details
-*  \ref rocsparse_spvv computes the inner dot product of the sparse vecotr \f$x\f$ with the
+*  \p rocsparse_spvv computes the inner dot product of the sparse vecotr \f$x\f$ with the
 *  dense vector \f$y\f$, such that
 *  \f[
 *    \text{result} := x^{'} \cdot y,

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -36,7 +36,7 @@ extern "C" {
 *  \brief Sparse matrix sparse matrix multiplication
 *
 *  \details
-*  \ref rocsparse_spgemm multiplies the scalar \f$\alpha\f$ with the sparse
+*  \p rocsparse_spgemm multiplies the scalar \f$\alpha\f$ with the sparse
 *  \f$m \times k\f$ matrix \f$A\f$ and the sparse \f$k \times n\f$ matrix \f$B\f$ and
 *  adds the result to the sparse \f$m \times n\f$ matrix \f$D\f$ that is multiplied by
 *  \f$\beta\f$. The final result is stored in the sparse \f$m \times n\f$ matrix \f$C\f$,
@@ -227,7 +227,7 @@ extern "C" {
 *                       itype, jtype,
 *                       index_base, ttype);
 *
-*   Determine buffer size
+*   // Determine buffer size
 *   rocsparse_spgemm(handle,
 *                    trans_A,
 *                    trans_B,
@@ -245,7 +245,7 @@ extern "C" {
 *
 *   hipMalloc(&temp_buffer, buffer_size);
 *
-*   Determine number of non-zeros in C matrix
+*   // Determine number of non-zeros in C matrix
 *   rocsparse_spgemm(handle,
 *                    trans_A,
 *                    trans_B,

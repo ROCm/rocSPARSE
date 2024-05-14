@@ -36,7 +36,7 @@ extern "C" {
 *  \brief Calculate the size in bytes of the required buffer for the use of \ref rocsparse_sddmm and \ref rocsparse_sddmm_preprocess
 *
 *  \details
-*  \ref rocsparse_sddmm_buffer_size returns the size of the required buffer to execute the SDDMM operation from a given configuration.
+*  \p rocsparse_sddmm_buffer_size returns the size of the required buffer to execute the SDDMM operation from a given configuration.
 *
 *  \note
 *  This routine does not support execution in a hipGraph context.
@@ -90,7 +90,7 @@ rocsparse_status rocsparse_sddmm_buffer_size(rocsparse_handle            handle,
 *  \brief Preprocess data before the use of \ref rocsparse_sddmm.
 *
 *  \details
-*  \ref rocsparse_sddmm_preprocess executes a part of the algorithm that can be calculated once in the context of multiple
+*  \p rocsparse_sddmm_preprocess executes a part of the algorithm that can be calculated once in the context of multiple
 *  calls of the \ref rocsparse_sddmm with the same sparsity pattern.
 *
 *  \note
@@ -146,7 +146,7 @@ rocsparse_status rocsparse_sddmm_preprocess(rocsparse_handle            handle,
 *  \brief  Sampled Dense-Dense Matrix Multiplication.
 *
 *  \details
-*  \ref rocsparse_sddmm multiplies the scalar \f$\alpha\f$ with the dense
+*  \p rocsparse_sddmm multiplies the scalar \f$\alpha\f$ with the dense
 *  \f$m \times k\f$ matrix \f$A\f$, the dense \f$k \times n\f$ matrix \f$B\f$, filtered by the sparsity pattern of the \f$m \times n\f$ sparse matrix \f$C\f$ and
 *  adds the result to \f$C\f$ scaled by
 *  \f$\beta\f$. The final result is stored in the sparse \f$m \times n\f$ matrix \f$C\f$,

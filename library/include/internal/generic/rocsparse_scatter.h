@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -36,7 +36,7 @@ extern "C" {
 *  \brief Scatter elements from a sparse vector into a dense vector.
 *
 *  \details
-*  \ref rocsparse_scatter scatters the elements from the sparse vector \f$x\f$ in the dense
+*  \p rocsparse_scatter scatters the elements from the sparse vector \f$x\f$ in the dense
 *  vector \f$y\f$.
 *
 *  \code{.c}

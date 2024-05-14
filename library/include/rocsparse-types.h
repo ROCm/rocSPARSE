@@ -207,6 +207,14 @@ typedef struct _rocsparse_dnmat_descr const* rocsparse_const_dnmat_descr;
  */
 typedef struct _rocsparse_color_info* rocsparse_color_info;
 
+/*! \ingroup types_module
+ * \brief rocsparse_sparse_to_sparse_descr is a structure holding the rocsparse sparse_to_sparse
+ * descr data. It must be initialized using
+ * the rocsparse_create_sparse_to_sparse_descr() routine. It should be destroyed at the
+ * end using rocsparse_destroy_sparse_to_sparse_descr().
+ */
+typedef struct _rocsparse_sparse_to_sparse_descr* rocsparse_sparse_to_sparse_descr;
+
 #ifdef __cplusplus
 extern "C" {
 #endif

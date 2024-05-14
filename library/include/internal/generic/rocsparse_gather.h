@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -36,7 +36,7 @@ extern "C" {
 *  \brief Gather elements from a dense vector and store them into a sparse vector.
 *
 *  \details
-*  \ref rocsparse_gather gathers the elements from the dense vector \f$y\f$ and stores
+*  \p rocsparse_gather gathers the elements from the dense vector \f$y\f$ and stores
 *  them in the sparse vector \f$x\f$.
 *
 *  \code{.c}
