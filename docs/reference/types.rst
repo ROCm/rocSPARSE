@@ -18,9 +18,6 @@ rocsparse_mat_descr
 
 .. doxygentypedef:: rocsparse_mat_descr
 
-
-.. _rocsparse_mat_info_:
-
 rocsparse_mat_info
 ------------------
 
@@ -32,6 +29,57 @@ rocsparse_hyb_mat
 .. doxygentypedef:: rocsparse_hyb_mat
 
 For more details on the HYB format, see :ref:`HYB storage format`.
+
+rocsparse_spvec_descr
+---------------------
+
+.. doxygentypedef:: rocsparse_spvec_descr
+
+rocsparse_const_spvec_descr
+---------------------------
+
+.. doxygentypedef:: rocsparse_const_spvec_descr
+
+rocsparse_spmat_descr
+---------------------
+
+.. doxygentypedef:: rocsparse_spmat_descr
+
+rocsparse_const_spmat_descr
+---------------------------
+
+.. doxygentypedef:: rocsparse_const_spmat_descr
+
+rocsparse_dnvec_descr
+---------------------
+
+.. doxygentypedef:: rocsparse_dnvec_descr
+
+rocsparse_const_dnvec_descr
+---------------------------
+
+.. doxygentypedef:: rocsparse_const_dnvec_descr
+
+rocsparse_dnmat_descr
+---------------------
+
+.. doxygentypedef:: rocsparse_dnmat_descr
+
+rocsparse_const_dnmat_descr
+---------------------------
+
+.. doxygentypedef:: rocsparse_const_dnmat_descr
+
+rocsparse_color_info
+--------------------
+
+.. doxygentypedef:: rocsparse_color_info
+
+rocsparse_sparse_to_sparse_descr
+--------------------------------
+
+.. doxygentypedef:: rocsparse_sparse_to_sparse_descr
+
 
 .. _rocsparse_action_:
 

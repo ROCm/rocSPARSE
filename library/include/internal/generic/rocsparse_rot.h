@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -35,7 +35,7 @@ extern "C" {
 *  \brief Apply Givens rotation to a dense and a sparse vector.
 *
 *  \details
-*  \ref rocsparse_rot applies the Givens rotation matrix \f$G\f$ to the sparse vector
+*  \p rocsparse_rot applies the Givens rotation matrix \f$G\f$ to the sparse vector
 *  \f$x\f$ and the dense vector \f$y\f$, where
 *  \f[
 *    G = \begin{pmatrix} c & s \\ -s & c \end{pmatrix}

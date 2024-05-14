@@ -239,6 +239,21 @@ rocsparse_destroy_spmat_descr
 
 .. doxygenfunction:: rocsparse_destroy_spmat_descr
 
+rocsparse_create_sparse_to_sparse_descr
+---------------------------------------
+
+.. doxygenfunction:: rocsparse_create_sparse_to_sparse_descr
+
+rocsparse_destroy_sparse_to_sparse_descr
+----------------------------------------
+
+.. doxygenfunction:: rocsparse_destroy_sparse_to_sparse_descr
+
+rocsparse_sparse_to_sparse_permissive
+-------------------------------------
+
+.. doxygenfunction:: rocsparse_sparse_to_sparse_permissive
+
 rocsparse_coo_get
 -----------------
 

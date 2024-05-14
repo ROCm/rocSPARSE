@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -33,73 +33,9 @@ extern "C" {
 #endif
 
 /*! \ingroup generic_module
- * \brief rocsparse_sparse_to_sparse_descr is a structure holding the rocsparse sparse_to_sparse
- * descr data. It must be initialized using
- * the rocsparse_create_sparse_to_sparse_descr() routine. It should be destroyed at the
- * end using rocsparse_destroy_sparse_to_sparse_descr().
- */
-typedef struct _rocsparse_sparse_to_sparse_descr* rocsparse_sparse_to_sparse_descr;
-
-/*! \ingroup generic_module
 *  \brief Sparse matrix to sparse matrix conversion.
 *
 *  \details
-*  \p rocsparse_create_sparse_to_sparse_descr
-*  \p rocsparse_create_sparse_to_sparse_descr creates the descriptor of the sparse_to_sparse algorithm.
-
-*  @param[out]
-*  descr        pointer to the descriptor of the sparse_to_sparse algorithm.
-*  @param[in]
-*  source       source sparse matrix descriptor.
-*  @param[in]
-*  target       target sparse matrix descriptor.
-*  @param[in]
-*  alg          algorithm for the sparse_to_sparse computation.
-*
-*  \retval      rocsparse_status_success the operation completed successfully.
-*  \retval      rocsparse_status_invalid_value if any required enumeration is invalid.
-*  \retval      rocsparse_status_invalid_pointer \p descr, \p source, or \p target
-*               pointer is invalid.
-*/
-ROCSPARSE_EXPORT
-rocsparse_status rocsparse_create_sparse_to_sparse_descr(rocsparse_sparse_to_sparse_descr* descr,
-                                                         rocsparse_const_spmat_descr       source,
-                                                         rocsparse_spmat_descr             target,
-                                                         rocsparse_sparse_to_sparse_alg    alg);
-
-/*! \ingroup generic_module
-*  \brief Sparse matrix to sparse matrix conversion.
-*
-*  \details
-*  \p rocsparse_sparse_to_sparse_permissive
-*  \p rocsparse_sparse_to_sparse_permissive allows the routine to allocate an intermediate sparse matrix
-*  in order to perform the conversion. By default, the routine is not permissive.
-*  @param[in]
-*  descr        descriptor of the sparse_to_sparse algorithm.
-*  \retval      rocsparse_status_success the operation completed successfully.
-*/
-ROCSPARSE_EXPORT
-rocsparse_status rocsparse_sparse_to_sparse_permissive(rocsparse_sparse_to_sparse_descr descr);
-
-/*! \ingroup generic_module
-*  \brief Sparse matrix to sparse matrix conversion.
-*
-*  \details
-*  \p rocsparse_destroy_sparse_to_sparse_descr
-*  \p rocsparse_destroy_sparse_to_sparse_descr destroys the descriptor of the sparse_to_sparse algorithm.
-*
-*  @param[in]
-*  descr        descriptor of the sparse_to_sparse algorithm.
-*  \retval      rocsparse_status_success the operation completed successfully.
-*/
-ROCSPARSE_EXPORT
-rocsparse_status rocsparse_destroy_sparse_to_sparse_descr(rocsparse_sparse_to_sparse_descr descr);
-
-/*! \ingroup generic_module
-*  \brief Sparse matrix to sparse matrix conversion.
-*
-*  \details
-*  \p rocsparse_sparse_to_sparse_buffer_size
 *  \p rocsparse_sparse_to_sparse_buffer_size calculates the required buffer size in bytes for a given stage \p stage.
 *
 *  @param[in]
@@ -133,7 +69,6 @@ rocsparse_status rocsparse_sparse_to_sparse_buffer_size(rocsparse_handle        
 *  \brief Sparse matrix to sparse matrix conversion.
 *
 *  \details
-*  \p rocsparse_sparse_to_sparse
 *  \p rocsparse_sparse_to_sparse performs the conversion of a sparse matrix to a sparse matrix.
 *
 *  \note

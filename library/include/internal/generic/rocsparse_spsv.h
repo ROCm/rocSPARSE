@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -36,7 +36,7 @@ extern "C" {
 *  \brief Sparse triangular solve
 *
 *  \details
-*  \p rocsparse_spsv_solve solves a sparse triangular linear system of a sparse
+*  \p rocsparse_spsv solves a sparse triangular linear system of a sparse
 *  \f$m \times m\f$ matrix, defined in CSR or COO storage format, a dense solution vector
 *  \f$y\f$ and the right-hand side \f$x\f$ that is multiplied by \f$\alpha\f$, such that
 *  \f[
