@@ -29,7 +29,7 @@
 namespace rocsparse
 {
     template <uint32_t BLOCKSIZE, typename T>
-    ROCSPARSE_DEVICE_ILF void gemmi_scale_kernel(rocsparse_int size, T alpha, T* __restrict__ data)
+    ROCSPARSE_DEVICE_ILF void gemmi_scale_device(rocsparse_int size, T alpha, T* __restrict__ data)
     {
         rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
@@ -42,7 +42,8 @@ namespace rocsparse
     }
 
     template <uint32_t BLOCKSIZE, typename T>
-    ROCSPARSE_DEVICE_ILF void gemmit_kernel(rocsparse_int m,
+    ROCSPARSE_DEVICE_ILF void gemmit_device(rocsparse_int m,
+                                            rocsparse_int n,
                                             T             alpha,
                                             const T* __restrict__ A,
                                             int64_t lda,
@@ -63,31 +64,38 @@ namespace rocsparse
             return;
         }
 
-        // Row entry into B
-        rocsparse_int row_begin = csr_row_ptr[row] - base;
-        rocsparse_int row_end   = csr_row_ptr[row + 1] - base;
-
-        // Accumulator
-        T sum = static_cast<T>(0);
-
-        // Loop over the column indices of B of the current row
-        for(rocsparse_int k = row_begin; k < row_end; ++k)
+        for(rocsparse_int i = 0; i < n; i += 65535)
         {
-            rocsparse_int col_B = csr_col_ind[k] - base;
-            T             val_B = csr_val[k];
-            T             val_A = A[col_B * lda + col];
+            if((row + i) < n)
+            {
+                // Row entry into B
+                rocsparse_int row_begin = csr_row_ptr[row + i] - base;
+                rocsparse_int row_end   = csr_row_ptr[row + i + 1] - base;
 
-            sum = rocsparse::fma(val_A, val_B, sum);
-        }
+                // Accumulator
+                T sum = static_cast<T>(0);
 
-        // Write result back to C
-        if(beta != static_cast<T>(0))
-        {
-            C[row * ldc + col] = rocsparse::fma(beta, C[row * ldc + col], alpha * sum);
-        }
-        else
-        {
-            C[row * ldc + col] = alpha * sum;
+                // Loop over the column indices of B of the current row
+                for(rocsparse_int k = row_begin; k < row_end; ++k)
+                {
+                    rocsparse_int col_B = csr_col_ind[k] - base;
+                    T             val_B = csr_val[k];
+                    T             val_A = A[col_B * lda + col];
+
+                    sum = rocsparse::fma(val_A, val_B, sum);
+                }
+
+                // Write result back to C
+                if(beta != static_cast<T>(0))
+                {
+                    C[(row + i) * ldc + col]
+                        = rocsparse::fma(beta, C[(row + i) * ldc + col], alpha * sum);
+                }
+                else
+                {
+                    C[(row + i) * ldc + col] = alpha * sum;
+                }
+            }
         }
     }
 }
