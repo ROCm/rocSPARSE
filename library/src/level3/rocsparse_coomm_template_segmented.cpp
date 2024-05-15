@@ -501,18 +501,15 @@ namespace rocsparse
         __shared__ I shared_row[BLOCKSIZE];
         __shared__ T shared_val[BLOCKSIZE];
 
-        shared_row[tid] = -1;
-        shared_val[tid] = static_cast<T>(0);
-
-        __syncthreads();
-
         const I col = hipBlockIdx_x;
 
-        for(I i = tid; i < nblocks; i += BLOCKSIZE)
+        for(I i = 0; i < nblocks; i += BLOCKSIZE)
         {
             // Copy data to reduction buffers
-            shared_row[tid] = row_block_red[i + nblocks * batch];
-            shared_val[tid] = val_block_red[i + nblocks * col + nblocks * n * batch];
+            shared_row[tid] = (tid + i < nblocks) ? row_block_red[tid + i + nblocks * batch] : -1;
+            shared_val[tid] = (tid + i < nblocks)
+                                  ? val_block_red[tid + i + nblocks * col + nblocks * n * batch]
+                                  : static_cast<T>(0);
 
             __syncthreads();
 

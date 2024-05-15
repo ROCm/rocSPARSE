@@ -33,12 +33,13 @@ namespace rocsparse
     void gemmi_scale_kernel(rocsparse_int size, U alpha_device_host, T* __restrict__ data)
     {
         auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
-        rocsparse::gemmi_scale_kernel<BLOCKSIZE>(size, alpha, data);
+        rocsparse::gemmi_scale_device<BLOCKSIZE>(size, alpha, data);
     }
 
     template <uint32_t BLOCKSIZE, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gemmit_kernel(rocsparse_int m,
+                       rocsparse_int n,
                        U             alpha_device_host,
                        const T* __restrict__ A,
                        rocsparse_int lda,
@@ -52,8 +53,8 @@ namespace rocsparse
     {
         auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         auto beta  = rocsparse::load_scalar_device_host(beta_device_host);
-        rocsparse::gemmit_kernel<BLOCKSIZE>(
-            m, alpha, A, lda, csr_row_ptr, csr_col_ind, csr_val, beta, C, ldc, base);
+        rocsparse::gemmit_device<BLOCKSIZE>(
+            m, n, alpha, A, lda, csr_row_ptr, csr_col_ind, csr_val, beta, C, ldc, base);
     }
 
     template <typename T>
@@ -121,7 +122,7 @@ namespace rocsparse
         }
 
 #define GEMMIT_DIM 256
-        dim3 gemmit_blocks((m - 1) / GEMMIT_DIM + 1, n);
+        dim3 gemmit_blocks((m - 1) / GEMMIT_DIM + 1, std::min(n, 65535));
         dim3 gemmit_threads(GEMMIT_DIM);
 
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
@@ -132,6 +133,7 @@ namespace rocsparse
                                                0,
                                                stream,
                                                m,
+                                               n,
                                                alpha,
                                                A,
                                                lda,
@@ -182,6 +184,7 @@ namespace rocsparse
                                                0,
                                                stream,
                                                m,
+                                               n,
                                                *alpha,
                                                A,
                                                lda,
