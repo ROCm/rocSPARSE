@@ -9,6 +9,7 @@ build:
       python: "3.10"
    apt_packages:
      - "doxygen"
+     - "graphviz" # For dot graphs in doxygen
 
 python:
    install:
