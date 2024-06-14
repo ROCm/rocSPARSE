@@ -44,6 +44,8 @@ namespace rocsparse
                                         J*                        csx_col_row_ind_A, //9
                                         rocsparse_order           order) //10
     {
+        static constexpr bool is_row_oriented = (rocsparse_direction_row == DIRA);
+
         ROCSPARSE_CHECKARG_HANDLE(0, handle);
         ROCSPARSE_CHECKARG_SIZE(1, m);
         ROCSPARSE_CHECKARG_SIZE(2, n);
@@ -54,6 +56,20 @@ namespace rocsparse
 
         if(m == 0 || n == 0)
         {
+            if(csx_row_col_ptr_A != nullptr)
+            {
+                J dimdir = is_row_oriented ? m : n;
+
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
+                                                   dim3(dimdir / 256 + 1),
+                                                   dim3(256),
+                                                   0,
+                                                   handle->stream,
+                                                   (dimdir + 1),
+                                                   csx_row_col_ptr_A,
+                                                   static_cast<I>(descr->base));
+            }
+
             return rocsparse_status_success;
         }
 

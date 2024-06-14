@@ -282,25 +282,4 @@ namespace rocsparse
             *nnz_total_dev_host_ptr = bsr_row_ptr[mb] - bsr_row_ptr[0];
         }
     }
-
-    template <rocsparse_int BLOCK_SIZE>
-    ROCSPARSE_KERNEL(BLOCK_SIZE)
-    void gebsr2gebsr_fill_row_ptr_kernel(rocsparse_int        mb,
-                                         rocsparse_index_base base_C,
-                                         rocsparse_int* __restrict__ bsr_row_ptr_C)
-    {
-        rocsparse_int thread_id = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
-
-        if(thread_id >= mb)
-        {
-            return;
-        }
-
-        bsr_row_ptr_C[thread_id + 1] = base_C;
-
-        if(thread_id == 0)
-        {
-            bsr_row_ptr_C[0] = base_C;
-        }
-    }
 }

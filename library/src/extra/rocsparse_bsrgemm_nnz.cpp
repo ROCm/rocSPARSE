@@ -317,19 +317,18 @@ namespace rocsparse
                 *nnzb_C = 0;
             }
 
-            if(mb > 0)
+            if(bsr_row_ptr_C != nullptr)
             {
-#define BSRGEMM_DIM 1024
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrgemm_set_base<BSRGEMM_DIM>),
-                                                   dim3((mb + 1) / BSRGEMM_DIM + 1),
-                                                   dim3(BSRGEMM_DIM),
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<1024>),
+                                                   dim3(mb / 1024 + 1),
+                                                   dim3(1024),
                                                    0,
                                                    handle->stream,
-                                                   mb + 1,
+                                                   (mb + 1),
                                                    bsr_row_ptr_C,
-                                                   descr_C->base);
-#undef BSRGEMM_DIM
+                                                   static_cast<I>(descr_C->base));
             }
+
             return rocsparse_status_success;
         }
     }

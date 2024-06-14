@@ -833,19 +833,18 @@ namespace rocsparse
                 *nnz_C = 0;
             }
 
-            if(m > 0)
+            if(csr_row_ptr_C != nullptr)
             {
-#define CSRGEMM_DIM 1024
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrgemm_set_base<CSRGEMM_DIM>),
-                                                   dim3((m + 1) / CSRGEMM_DIM + 1),
-                                                   dim3(CSRGEMM_DIM),
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<1024>),
+                                                   dim3(m / 1024 + 1),
+                                                   dim3(1024),
                                                    0,
                                                    handle->stream,
-                                                   m + 1,
+                                                   (m + 1),
                                                    csr_row_ptr_C,
-                                                   descr_C->base);
-#undef CSRGEMM_DIM
+                                                   static_cast<I>(descr_C->base));
             }
+
             return rocsparse_status_success;
         }
     }
@@ -961,18 +960,16 @@ rocsparse_status rocsparse::csrgemm_nnz_template(rocsparse_handle          handl
         {
             *nnz_C = 0;
         }
-        if(m > 0)
+        if(csr_row_ptr_C != nullptr)
         {
-#define CSRGEMM_DIM 1024
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrgemm_set_base<CSRGEMM_DIM>),
-                                               dim3((m + 1) / CSRGEMM_DIM + 1),
-                                               dim3(CSRGEMM_DIM),
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<1024>),
+                                               dim3(m / 1024 + 1),
+                                               dim3(1024),
                                                0,
                                                handle->stream,
-                                               m + 1,
+                                               (m + 1),
                                                csr_row_ptr_C,
-                                               descr_C->base);
-#undef CSRGEMM_DIM
+                                               static_cast<I>(descr_C->base));
         }
         return rocsparse_status_success;
     }

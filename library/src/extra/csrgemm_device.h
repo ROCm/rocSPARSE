@@ -28,19 +28,6 @@
 
 namespace rocsparse
 {
-    template <uint32_t BLOCKSIZE, typename I, typename J>
-    ROCSPARSE_KERNEL(BLOCKSIZE)
-    void csrgemm_set_base(I size, J* __restrict__ out, rocsparse_index_base idx_base_out)
-    {
-        I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-        if(idx >= size)
-        {
-            return;
-        }
-
-        out[idx] = idx_base_out;
-    }
-
     // Decrement
     template <uint32_t BLOCKSIZE, typename I>
     ROCSPARSE_KERNEL(BLOCKSIZE)

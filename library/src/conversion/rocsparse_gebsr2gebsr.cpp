@@ -29,6 +29,7 @@
 #include "rocsparse_gebsr2gebsr.hpp"
 #include "utility.h"
 
+#include "common.h"
 #include "gebsr2csr_device.h"
 #include "gebsr2gebsr_device.h"
 #include "rocsparse_csr2gebsr.hpp"
@@ -725,27 +726,25 @@ try
     {
         if(nullptr != nnz_total_dev_host_ptr)
         {
+            if(bsr_row_ptr_C != nullptr)
+            {
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
+                                                   dim3(mb_c / 256 + 1),
+                                                   dim3(256),
+                                                   0,
+                                                   stream,
+                                                   (mb_c + 1),
+                                                   bsr_row_ptr_C,
+                                                   static_cast<rocsparse_int>(descr_C->base));
+            }
+
             rocsparse_pointer_mode mode;
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_get_pointer_mode(handle, &mode));
-            if(mb_c > 0)
-            {
-                constexpr rocsparse_int block_size = 1024;
-                const rocsparse_int     grid_size  = (mb_c + block_size - 1) / block_size;
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                    (rocsparse::gebsr2gebsr_fill_row_ptr_kernel<block_size>),
-                    dim3(grid_size),
-                    dim3(block_size),
-                    0,
-                    stream,
-                    mb_c,
-                    descr_C->base,
-                    bsr_row_ptr_C);
-            }
 
             if(rocsparse_pointer_mode_device == mode)
             {
-                RETURN_IF_HIP_ERROR(hipMemsetAsync(
-                    nnz_total_dev_host_ptr, 0, sizeof(rocsparse_int), handle->stream));
+                RETURN_IF_HIP_ERROR(
+                    hipMemsetAsync(nnz_total_dev_host_ptr, 0, sizeof(rocsparse_int), stream));
             }
             else
             {
