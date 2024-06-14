@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -122,20 +122,6 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
 
     rocsparse_local_mat_descr descr;
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, baseA));
-    //
-    // Argument sanity check before allocating invalid memory
-    //
-    if(M <= 0 || N <= 0 || LD < M)
-    {
-        rocsparse_status expected_status = (((M == 0 && N >= 0) || (M >= 0 && N == 0)) && (LD >= M))
-                                               ? rocsparse_status_success
-                                               : rocsparse_status_invalid_size;
-
-        EXPECT_ROCSPARSE_STATUS(
-            dense2csx(handle, M, N, descr, nullptr, LD, nullptr, (T*)nullptr, nullptr, nullptr),
-            expected_status);
-        return;
-    }
 
     //
     // Allocate memory.
@@ -145,16 +131,10 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
 
     host_vector<rocsparse_int>   h_nnz_per_row_columns(DIMDIR);
     device_vector<rocsparse_int> d_nnz_per_row_columns(DIMDIR);
-    if(!d_nnz_per_row_columns || !d_dense_val || !h_nnz_per_row_columns || !h_dense_val)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     //
     // Initialize the dense matrix.
     //
-
     {
         //
         // Initialize the random generator.
@@ -205,20 +185,10 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
     device_vector<rocsparse_int> d_csx_row_col_ptr(DIMDIR + 1);
     device_vector<T>             d_csx_val(nnz);
     device_vector<rocsparse_int> d_csx_col_row_ind(nnz);
-    if(!d_csx_row_col_ptr || !d_csx_val || !d_csx_col_row_ind)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     host_vector<rocsparse_int> cpu_csx_row_col_ptr(DIMDIR + 1);
     host_vector<T>             cpu_csx_val(nnz);
     host_vector<rocsparse_int> cpu_csx_col_row_ind(nnz);
-    if(!cpu_csx_row_col_ptr || !cpu_csx_val || !cpu_csx_col_row_ind)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     if(arg.unit_check)
     {
@@ -258,10 +228,7 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
         int number_cold_calls = 2;
         int number_hot_calls  = arg.iters;
 
-        //
         // Warm-up
-        //
-
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
             CHECK_ROCSPARSE_ERROR(dense2csx(handle,
@@ -277,23 +244,20 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
         }
 
         double gpu_time_used = get_time_us();
+
+        // Performance run
+        for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            //
-            // Performance run
-            //
-            for(int iter = 0; iter < number_hot_calls; ++iter)
-            {
-                CHECK_ROCSPARSE_ERROR(dense2csx(handle,
-                                                M,
-                                                N,
-                                                descr,
-                                                d_dense_val,
-                                                LD,
-                                                d_nnz_per_row_columns,
-                                                (T*)d_csx_val,
-                                                d_csx_row_col_ptr,
-                                                d_csx_col_row_ind));
-            }
+            CHECK_ROCSPARSE_ERROR(dense2csx(handle,
+                                            M,
+                                            N,
+                                            descr,
+                                            d_dense_val,
+                                            LD,
+                                            d_nnz_per_row_columns,
+                                            (T*)d_csx_val,
+                                            d_csx_row_col_ptr,
+                                            d_csx_col_row_ind));
         }
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
