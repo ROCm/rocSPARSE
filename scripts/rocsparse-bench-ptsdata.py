@@ -53,21 +53,23 @@ def export_ptsdata(ibasename, obasename,xargs, yargs, results,verbose = False):
             tg = results[isample]["timing"]
             tg_raw_legend = ','.join(tg["raw_legend"].split())
             tg_raw = ','.join(tg["raw_data"].split())
-            if verbose:
-                print('//rocsparse-bench-ptsdata  -  write pts data file : \'' + obasename + '.csv\'')
-            if one_only:
-                one_only = False
-                datafile.write("test_name , " + tg_raw_legend + ",time, time_low, time_high, flops, flops_low, flops_high, bandwidth, bandwidth_low, bandwidth_high\n")
-            datafile.write(ibasename + ", " + tg_raw + ", " +
-                           tg["time"][0] + ", " +
-                           tg["time"][1] + ", " +
-                           tg["time"][2] + ", " +
-                           tg["flops"][0] + ", " +
-                           tg["flops"][1] + ", " +
-                           tg["flops"][2] + ", " +
-                           tg["bandwidth"][0] + ", " +
-                           tg["bandwidth"][1] + ", "+
-                           tg["bandwidth"][2] + "\n")
+        
+            if len(tg_raw_legend) != 0:
+                if verbose:
+                    print('//rocsparse-bench-ptsdata  -  write pts data file : \'' + obasename + '.csv\'')
+                if one_only:
+                    one_only = False
+                    datafile.write("test_name , " + tg_raw_legend + ",time, time_low, time_high, flops, flops_low, flops_high, bandwidth, bandwidth_low, bandwidth_high\n")
+                datafile.write(ibasename + ", " + tg_raw + ", " +
+                               tg["time"][0] + ", " +
+                               tg["time"][1] + ", " +
+                               tg["time"][2] + ", " +
+                               tg["flops"][0] + ", " +
+                               tg["flops"][1] + ", " +
+                               tg["flops"][2] + ", " +
+                               tg["bandwidth"][0] + ", " +
+                               tg["bandwidth"][1] + ", "+
+                               tg["bandwidth"][2] + "\n")
     datafile.close()
 
 
