@@ -29,6 +29,7 @@
 template <typename T>
 void testing_hybmv_bad_arg(const Arguments& arg)
 {
+    static const size_t safe_size = 100;
 
     const T h_alpha = static_cast<T>(1);
     const T h_beta  = static_cast<T>(1);
@@ -39,6 +40,18 @@ void testing_hybmv_bad_arg(const Arguments& arg)
     // Create matrix descriptor
     rocsparse_local_mat_descr local_descr;
     rocsparse_local_hyb_mat   local_hyb;
+
+    rocsparse_hyb_mat ptr  = local_hyb;
+    test_hyb*         thyb = reinterpret_cast<test_hyb*>(ptr);
+    thyb->m                = safe_size;
+    thyb->n                = safe_size;
+    thyb->ell_nnz          = safe_size;
+    thyb->coo_nnz          = safe_size;
+    thyb->ell_col_ind      = (rocsparse_int*)0x4;
+    thyb->ell_val          = (T*)0x4;
+    thyb->coo_row_ind      = (rocsparse_int*)0x4;
+    thyb->coo_col_ind      = (rocsparse_int*)0x4;
+    thyb->coo_val          = (T*)0x4;
 
     rocsparse_handle          handle            = local_handle;
     rocsparse_operation       trans             = rocsparse_operation_none;
@@ -65,6 +78,16 @@ void testing_hybmv_bad_arg(const Arguments& arg)
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
     EXPECT_ROCSPARSE_STATUS(rocsparse_hybmv<T>(PARAMS), rocsparse_status_requires_sorted_storage);
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_sorted));
+
+    // Check negative m and n
+    thyb->m = -1;
+    thyb->n = safe_size;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_hybmv<T>(PARAMS), rocsparse_status_invalid_size);
+
+    thyb->m = safe_size;
+    thyb->n = -1;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_hybmv<T>(PARAMS), rocsparse_status_invalid_size);
 
 #undef PARAMS
 }
@@ -98,27 +121,6 @@ void testing_hybmv(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
 
 #define PARAMS(alpha_, x_, beta_, y_) handle, trans, alpha_, descr, hyb, x_, beta_, y_
-
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0)
-    {
-        static const size_t safe_size = 100;
-
-        // Allocate memory on device
-        device_vector<T> dx(safe_size);
-        device_vector<T> dy(safe_size);
-
-        if(!dx || !dy)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(
-            rocsparse_hybmv<T>(handle, trans, h_alpha, descr, hyb, dx, h_beta, dy));
-        return;
-    }
 
     rocsparse_matrix_factory<T> matrix_factory(arg, arg.timing ? false : true, false);
 

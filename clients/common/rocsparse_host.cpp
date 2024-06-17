@@ -2392,6 +2392,21 @@ void host_hybmv(rocsparse_operation  trans,
                 T*                   y,
                 rocsparse_index_base base)
 {
+    if(M == 0 || N == 0)
+    {
+        rocsparse_int ysize = (trans == rocsparse_operation_none) ? M : N;
+
+        if(ysize > 0)
+        {
+            for(rocsparse_int i = 0; i < ysize; i++)
+            {
+                y[i] = beta * y[i];
+            }
+        }
+
+        return;
+    }
+
     T coo_beta = beta;
 
     // ELL part
@@ -7839,6 +7854,7 @@ void host_bsr_to_bsc(rocsparse_int               mb,
 
 template <typename T>
 void host_csr_to_hyb(rocsparse_int                     M,
+                     rocsparse_int                     N,
                      rocsparse_int                     nnz,
                      const std::vector<rocsparse_int>& csr_row_ptr,
                      const std::vector<rocsparse_int>& csr_col_ind,
@@ -7856,6 +7872,12 @@ void host_csr_to_hyb(rocsparse_int                     M,
 {
     ell_nnz = 0;
     coo_nnz = 0;
+
+    if(M == 0 || N == 0)
+    {
+        ell_width = 0;
+        return;
+    }
 
     // Auto and user width
     if(part == rocsparse_hyb_partition_auto || part == rocsparse_hyb_partition_user)
@@ -8713,6 +8735,7 @@ template struct rocsparse_host<rocsparse_double_complex, int64_t, int64_t>;
                                         rocsparse_index_base        bsr_base,                     \
                                         rocsparse_index_base        bsc_base);                           \
     template void             host_csr_to_hyb<TYPE>(rocsparse_int                     M,                      \
+                                        rocsparse_int                     N,                      \
                                         rocsparse_int                     nnz,                    \
                                         const std::vector<rocsparse_int>& csr_row_ptr,            \
                                         const std::vector<rocsparse_int>& csr_col_ind,            \

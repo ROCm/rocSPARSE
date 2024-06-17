@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -52,8 +52,8 @@ Tests:
   category: pre_checkin
   function: hybmv
   precision: *single_double_precisions_complex_real
-  M: [-1, 0, 16, 32, 111]
-  N: [-1, 0, 16, 32, 441]
+  M: [0, 16, 32, 111]
+  N: [0, 16, 32, 441]
   alpha_beta: *alpha_beta_range_checkin
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]

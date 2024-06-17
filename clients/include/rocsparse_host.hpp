@@ -1167,6 +1167,7 @@ void host_csr_to_ell(J                     M,
 
 template <typename T>
 void host_csr_to_hyb(rocsparse_int                     M,
+                     rocsparse_int                     N,
                      rocsparse_int                     nnz,
                      const std::vector<rocsparse_int>& csr_row_ptr,
                      const std::vector<rocsparse_int>& csr_col_ind,
