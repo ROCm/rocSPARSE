@@ -45,6 +45,18 @@ namespace rocsparse
         // Quick return if possible
         if(hyb->m == 0 || hyb->n == 0 || (hyb->ell_nnz == 0 && hyb->coo_nnz == 0))
         {
+            if(hyb->m >= 0 && csr_row_ptr != nullptr)
+            {
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
+                                                   dim3(hyb->m / 256 + 1),
+                                                   dim3(256),
+                                                   0,
+                                                   handle->stream,
+                                                   hyb->m + 1,
+                                                   csr_row_ptr,
+                                                   static_cast<rocsparse_int>(descr->base));
+            }
+
             return rocsparse_status_success;
         }
         return rocsparse_status_continue;

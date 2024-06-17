@@ -88,44 +88,6 @@ void testing_hyb2csr(const Arguments& arg)
     // Create HYB structure
     rocsparse_local_hyb_mat hyb;
 
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0)
-    {
-        static const size_t safe_size = 100;
-
-        // Initialize pseudo HYB matrix
-        rocsparse_hyb_mat ptr  = hyb;
-        test_hyb*         dhyb = reinterpret_cast<test_hyb*>(ptr);
-
-        dhyb->m       = M;
-        dhyb->n       = N;
-        dhyb->ell_nnz = safe_size;
-        dhyb->coo_nnz = safe_size;
-
-        // Allocate memory on device
-        device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
-        device_vector<rocsparse_int> dcsr_col_ind(safe_size);
-        device_vector<T>             dcsr_val(safe_size);
-        device_vector<rocsparse_int> dbuffer(safe_size);
-
-        if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dbuffer)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
-        size_t buffer_size;
-
-        EXPECT_ROCSPARSE_STATUS(
-            rocsparse_hyb2csr_buffer_size(handle, descr, hyb, dcsr_row_ptr, &buffer_size),
-            (M < 0 || N < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
-        EXPECT_ROCSPARSE_STATUS(
-            rocsparse_hyb2csr<T>(handle, descr, hyb, dcsr_val, dcsr_row_ptr, dcsr_col_ind, dbuffer),
-            (M < 0 || N < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
-
-        return;
-    }
-
     // Allocate host memory for CSR matrix
     host_vector<rocsparse_int> hcsr_row_ptr_gold;
     host_vector<rocsparse_int> hcsr_col_ind_gold;
@@ -139,12 +101,6 @@ void testing_hyb2csr(const Arguments& arg)
     device_vector<rocsparse_int> dcsr_row_ptr(M + 1);
     device_vector<rocsparse_int> dcsr_col_ind(nnz);
     device_vector<T>             dcsr_val(nnz);
-
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(
