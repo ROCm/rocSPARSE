@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -85,38 +85,6 @@ void testing_csr2hyb(const Arguments& arg)
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
 
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0)
-    {
-        static const size_t safe_size = 100;
-
-        // Allocate memory on device
-        device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
-        device_vector<rocsparse_int> dcsr_col_ind(safe_size);
-        device_vector<T>             dcsr_val(safe_size);
-
-        if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csr2hyb<T>(handle,
-                                                     M,
-                                                     N,
-                                                     descr,
-                                                     dcsr_val,
-                                                     dcsr_row_ptr,
-                                                     dcsr_col_ind,
-                                                     hyb,
-                                                     user_ell_width,
-                                                     part),
-                                (M < 0 || N < 0) ? rocsparse_status_invalid_size
-                                                 : rocsparse_status_success);
-
-        return;
-    }
-
     // Allocate host memory for CSR matrix
     host_vector<rocsparse_int> hcsr_row_ptr;
     host_vector<rocsparse_int> hcsr_col_ind;
@@ -135,12 +103,6 @@ void testing_csr2hyb(const Arguments& arg)
     device_vector<rocsparse_int> dcsr_col_ind(nnz);
     device_vector<T>             dcsr_val(nnz);
 
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(
         dcsr_row_ptr, hcsr_row_ptr, sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
@@ -148,16 +110,19 @@ void testing_csr2hyb(const Arguments& arg)
         hipMemcpy(dcsr_col_ind, hcsr_col_ind, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dcsr_val, hcsr_val, sizeof(T) * nnz, hipMemcpyHostToDevice));
 
-    // User width check
+    // Use a user supplied ELL width.
     if(part == rocsparse_hyb_partition_user)
     {
         // ELL width -33 means we take a reasonable pre-computed width
-        user_ell_width = (user_ell_width == -33) ? nnz / M : user_ell_width;
+        if(user_ell_width == -33)
+        {
+            user_ell_width = (M == 0) ? 0 : nnz / M;
+        }
 
         // Test invalid user_ell_width
-        rocsparse_int max_allowed = (2 * nnz - 1) / M + 1;
+        rocsparse_int max_allowed = (M == 0) ? 0 : ((2 * nnz - 1) / M + 1);
 
-        if(user_ell_width < 0 || user_ell_width > max_allowed)
+        if(user_ell_width > max_allowed)
         {
             EXPECT_ROCSPARSE_STATUS(rocsparse_csr2hyb<T>(handle,
                                                          M,
@@ -169,13 +134,14 @@ void testing_csr2hyb(const Arguments& arg)
                                                          hyb,
                                                          user_ell_width,
                                                          part),
-                                    rocsparse_status_invalid_value);
+                                    (M == 0 || N == 0) ? rocsparse_status_success
+                                                       : rocsparse_status_invalid_value);
 
             return;
         }
     }
 
-    // Max width check
+    // Max ELL width, no COO part
     if(part == rocsparse_hyb_partition_max)
     {
         // Compute max ELL width
@@ -185,9 +151,9 @@ void testing_csr2hyb(const Arguments& arg)
             ell_max_width = std::max(hcsr_row_ptr[i + 1] - hcsr_row_ptr[i], ell_max_width);
         }
 
-        rocsparse_int width_limit = (2 * nnz - 1) / M + 1;
+        rocsparse_int max_allowed = (M == 0) ? 0 : ((2 * nnz - 1) / M + 1);
 
-        if(ell_max_width > width_limit)
+        if(ell_max_width > max_allowed)
         {
             EXPECT_ROCSPARSE_STATUS(rocsparse_csr2hyb<T>(handle,
                                                          M,
@@ -199,7 +165,8 @@ void testing_csr2hyb(const Arguments& arg)
                                                          hyb,
                                                          user_ell_width,
                                                          part),
-                                    rocsparse_status_invalid_value);
+                                    (M == 0 || N == 0) ? rocsparse_status_success
+                                                       : rocsparse_status_invalid_value);
 
             return;
         }
@@ -247,6 +214,7 @@ void testing_csr2hyb(const Arguments& arg)
         rocsparse_int coo_nnz_gold;
 
         host_csr_to_hyb<T>(M,
+                           N,
                            nnz,
                            hcsr_row_ptr,
                            hcsr_col_ind,

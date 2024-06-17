@@ -32,6 +32,64 @@
 
 #include <rocprim/rocprim.hpp>
 
+namespace rocsparse
+{
+    template <typename T>
+    static rocsparse_status clear_hyb_mat(rocsparse_handle        handle,
+                                          rocsparse_int           m,
+                                          rocsparse_int           n,
+                                          rocsparse_hyb_mat       hyb,
+                                          rocsparse_hyb_partition partition_type)
+    {
+        hyb->m         = m;
+        hyb->n         = n;
+        hyb->partition = partition_type;
+        hyb->ell_nnz   = 0;
+        hyb->ell_width = 0;
+        hyb->coo_nnz   = 0;
+
+        if(std::is_same<T, float>{})
+        {
+            hyb->data_type_T = rocsparse_datatype_f32_r;
+        }
+        else if(std::is_same<T, double>{})
+        {
+            hyb->data_type_T = rocsparse_datatype_f64_r;
+        }
+        else if(std::is_same<T, rocsparse_float_complex>{})
+        {
+            hyb->data_type_T = rocsparse_datatype_f32_c;
+        }
+        else if(std::is_same<T, rocsparse_double_complex>{})
+        {
+            hyb->data_type_T = rocsparse_datatype_f64_c;
+        }
+
+        if(hyb->ell_col_ind)
+        {
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(hyb->ell_col_ind, handle->stream));
+        }
+        if(hyb->ell_val)
+        {
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(hyb->ell_val, handle->stream));
+        }
+        if(hyb->coo_row_ind)
+        {
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(hyb->coo_row_ind, handle->stream));
+        }
+        if(hyb->coo_col_ind)
+        {
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(hyb->coo_col_ind, handle->stream));
+        }
+        if(hyb->coo_val)
+        {
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(hyb->coo_val, handle->stream));
+        }
+
+        return rocsparse_status_success;
+    }
+}
+
 template <typename T>
 rocsparse_status rocsparse::csr2hyb_template(rocsparse_handle          handle,
                                              rocsparse_int             m,
@@ -76,6 +134,9 @@ rocsparse_status rocsparse::csr2hyb_template(rocsparse_handle          handle,
     // Quick return if possible
     if(m == 0 || n == 0)
     {
+        // Clear HYB structure if already allocated
+        RETURN_IF_ROCSPARSE_ERROR(clear_hyb_mat<T>(handle, m, n, hyb, partition_type));
+
         return rocsparse_status_success;
     }
 
@@ -116,50 +177,7 @@ rocsparse_status rocsparse::csr2hyb_template(rocsparse_handle          handle,
     }
 
     // Clear HYB structure if already allocated
-    hyb->m         = m;
-    hyb->n         = n;
-    hyb->partition = partition_type;
-    hyb->ell_nnz   = 0;
-    hyb->ell_width = 0;
-    hyb->coo_nnz   = 0;
-
-    if(std::is_same<T, float>{})
-    {
-        hyb->data_type_T = rocsparse_datatype_f32_r;
-    }
-    else if(std::is_same<T, double>{})
-    {
-        hyb->data_type_T = rocsparse_datatype_f64_r;
-    }
-    else if(std::is_same<T, rocsparse_float_complex>{})
-    {
-        hyb->data_type_T = rocsparse_datatype_f32_c;
-    }
-    else if(std::is_same<T, rocsparse_double_complex>{})
-    {
-        hyb->data_type_T = rocsparse_datatype_f64_c;
-    }
-
-    if(hyb->ell_col_ind)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(hyb->ell_col_ind, handle->stream));
-    }
-    if(hyb->ell_val)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(hyb->ell_val, handle->stream));
-    }
-    if(hyb->coo_row_ind)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(hyb->coo_row_ind, handle->stream));
-    }
-    if(hyb->coo_col_ind)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(hyb->coo_col_ind, handle->stream));
-    }
-    if(hyb->coo_val)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(hyb->coo_val, handle->stream));
-    }
+    RETURN_IF_ROCSPARSE_ERROR(clear_hyb_mat<T>(handle, m, n, hyb, partition_type));
 
     // Determine ELL width
 

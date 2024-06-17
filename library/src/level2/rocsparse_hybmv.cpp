@@ -55,31 +55,17 @@ rocsparse_status rocsparse::hybmv_template(rocsparse_handle          handle,
                          LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
                          (const void*&)y);
 
+    ROCSPARSE_CHECKARG_ENUM(1, trans);
+
     // Check matrix type
     ROCSPARSE_CHECKARG(
         3, descr, (descr->type != rocsparse_matrix_type_general), rocsparse_status_not_implemented);
-    // Check matrix sorting mode
 
+    // Check matrix sorting mode
     ROCSPARSE_CHECKARG(3,
                        descr,
                        (descr->storage_mode != rocsparse_storage_mode_sorted),
                        rocsparse_status_requires_sorted_storage);
-
-    ROCSPARSE_CHECKARG_ENUM(1, trans);
-
-    // Check pointer arguments
-    ROCSPARSE_CHECKARG_POINTER(2, alpha_device_host);
-    ROCSPARSE_CHECKARG_POINTER(6, beta_device_host);
-
-    if(handle->pointer_mode == rocsparse_pointer_mode_host
-       && *alpha_device_host == static_cast<T>(0) && *beta_device_host == static_cast<T>(1))
-    {
-        return rocsparse_status_success;
-    }
-
-    // Check the rest of pointer arguments
-    ROCSPARSE_CHECKARG_POINTER(5, x);
-    ROCSPARSE_CHECKARG_POINTER(7, y);
 
     // LCOV_EXCL_START
     // Check sizes
@@ -96,6 +82,7 @@ rocsparse_status rocsparse::hybmv_template(rocsparse_handle          handle,
         hyb,
         ((hyb->ell_nnz > 0) && (hyb->ell_col_ind == nullptr || hyb->ell_val == nullptr)),
         rocsparse_status_invalid_pointer);
+
     // Check COO-HYB structure
     ROCSPARSE_CHECKARG(4,
                        hyb,
@@ -109,8 +96,56 @@ rocsparse_status rocsparse::hybmv_template(rocsparse_handle          handle,
     // Quick return if possible
     if(hyb->m == 0 || hyb->n == 0 || hyb->ell_nnz + hyb->coo_nnz == 0)
     {
+        // matrix never accessed however still need to update y vector
+        rocsparse_int ysize = (trans == rocsparse_operation_none) ? hyb->m : hyb->n;
+
+        if(ysize > 0)
+        {
+            if(y == nullptr && beta_device_host == nullptr)
+            {
+                return rocsparse_status_invalid_pointer;
+            }
+
+            if(handle->pointer_mode == rocsparse_pointer_mode_device)
+            {
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array<256>),
+                                                   dim3((ysize - 1) / 256 + 1),
+                                                   dim3(256),
+                                                   0,
+                                                   handle->stream,
+                                                   ysize,
+                                                   y,
+                                                   beta_device_host);
+            }
+            else
+            {
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array<256>),
+                                                   dim3((ysize - 1) / 256 + 1),
+                                                   dim3(256),
+                                                   0,
+                                                   handle->stream,
+                                                   ysize,
+                                                   y,
+                                                   *beta_device_host);
+            }
+        }
+
         return rocsparse_status_success;
     }
+
+    // Check pointer arguments
+    ROCSPARSE_CHECKARG_POINTER(2, alpha_device_host);
+    ROCSPARSE_CHECKARG_POINTER(6, beta_device_host);
+
+    if(handle->pointer_mode == rocsparse_pointer_mode_host
+       && *alpha_device_host == static_cast<T>(0) && *beta_device_host == static_cast<T>(1))
+    {
+        return rocsparse_status_success;
+    }
+
+    // Check the rest of pointer arguments
+    ROCSPARSE_CHECKARG_POINTER(5, x);
+    ROCSPARSE_CHECKARG_POINTER(7, y);
 
     // ELL part
     if(hyb->ell_nnz > 0)
