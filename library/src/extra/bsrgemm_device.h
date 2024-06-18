@@ -1274,6 +1274,7 @@ namespace rocsparse
 
                     __syncthreads();
 
+                    I next_k = 0;
                     if(j < row_end_A)
                     {
                         // Column of A in current row
@@ -1286,10 +1287,10 @@ namespace rocsparse
 
                         // Keep track of the first k where the column index of B is exceeding
                         // the current chunks end point
-                        I next_k = row_begin_B;
+                        next_k = row_begin_B;
 
                         // Loop over columns of B in row col_A
-                        for(I k = next_k; k < row_end_B; k++)
+                        for(I k = row_begin_B; k < row_end_B; k++)
                         {
                             // Column of B in row col_A
                             J col_B = bsr_col_ind_B[k] - idx_base_B;
@@ -1345,7 +1346,11 @@ namespace rocsparse
                                 break;
                             }
                         }
+                    }
 
+                    __syncthreads();
+                    if(j < row_end_A)
+                    {
                         workspace_B[j] = next_k;
                     }
                 }
