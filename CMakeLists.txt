@@ -213,6 +213,8 @@ if( BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS )
     set(GFORTRAN_DEB "libgfortran5")
   elseif(CLIENTS_OS STREQUAL "sles" AND OPENMP_FOUND)
     set(OPENMP_RPM "libgomp1")
+  elseif(CLIENTS_OS STREQUAL "mariner")
+    set(GFORTRAN_RPM "gfortran")
   endif()
 
   rocm_package_setup_component(clients)
