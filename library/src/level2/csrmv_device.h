@@ -474,8 +474,15 @@ namespace rocsparse
                 // To force the compiler to stick to the order of operations, we need acquire/release fences.
                 // Workgroup scope is sufficient for this purpose, to only invalidate L1 and avoid L2
                 // invalidations.
+#if defined(__gfx1200__) || defined(__gfx1201__)
+#define __gfx12__
+#endif
+#if defined(__gfx12__)
+                __threadfence();
+#else
                 __builtin_amdgcn_fence(__ATOMIC_RELEASE, "workgroup");
                 __builtin_amdgcn_s_waitcnt(0);
+#endif
 
                 // Release other workgroups
                 atomicXor(&wg_flags[first_wg_in_row], 1U);
@@ -1017,8 +1024,15 @@ namespace rocsparse
             // To force the compiler to stick to the order of operations, we need acquire/release fences.
             // Workgroup scope is sufficient for this purpose, to only invalidate L1 and avoid L2
             // invalidations.
+#if defined(__gfx1200__) || defined(__gfx1201__)
+#define __gfx12__
+#endif
+#if defined(__gfx12__)
+            __threadfence();
+#else
             __builtin_amdgcn_fence(__ATOMIC_RELEASE, "workgroup");
             __builtin_amdgcn_s_waitcnt(0);
+#endif
 
             // Release other workgroups
             atomicXor(&wg_flags[first_wg_in_row], 1U);
