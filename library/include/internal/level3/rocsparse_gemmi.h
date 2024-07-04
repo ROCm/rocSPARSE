@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -37,7 +37,7 @@ extern "C" {
 *
 *  \details
 *  \p rocsparse_gemmi multiplies the scalar \f$\alpha\f$ with a dense \f$m \times k\f$
-*  matrix \f$A\f$ and the sparse \f$k \times n\f$ matrix \f$B\f$, defined in CSR
+*  matrix \f$op(A)\f$ and the sparse \f$k \times n\f$ matrix \f$op(B)\f$, defined in CSR
 *  storage format and adds the result to the dense \f$m \times n\f$ matrix \f$C\f$ that
 *  is multiplied by the scalar \f$\beta\f$, such that
 *  \f[
@@ -63,6 +63,13 @@ extern "C" {
 *    \end{array}
 *    \right.
 *  \f]
+*  The dense matrices A and C are stored using column ordering.
+*
+*  \note
+*  Currently, only \p trans_A == \ref rocsparse_operation_none is supported.
+*
+*  \note
+*  Currently, only \p trans_B == \ref rocsparse_operation_transpose is supported.
 *
 *  \note
 *  This function is non blocking and executed asynchronously with respect to the host.

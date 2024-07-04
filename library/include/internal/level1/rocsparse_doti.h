@@ -41,6 +41,7 @@ extern "C" {
 *  \f]
 *
 *  \code{.c}
+*      result = 0
 *      for(i = 0; i < nnz; ++i)
 *      {
 *          result += x_val[i] * y[x_ind[i]];
