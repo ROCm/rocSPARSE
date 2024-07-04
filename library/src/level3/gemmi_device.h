@@ -38,7 +38,14 @@ namespace rocsparse
             return;
         }
 
-        data[idx] *= alpha;
+        if(alpha == static_cast<T>(0))
+        {
+            data[idx] = static_cast<T>(0);
+        }
+        else
+        {
+            data[idx] *= alpha;
+        }
     }
 
     template <uint32_t BLOCKSIZE, typename T>
