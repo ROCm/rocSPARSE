@@ -45,9 +45,13 @@ extern "C" {
 *  \f]
 *
 *  \code{.c}
+*      for(i = 0; i < size; ++i)
+*      {
+*          y[i] = beta * y[i]
+*      }
 *      for(i = 0; i < nnz; ++i)
 *      {
-*          y[x_ind[i]] = alpha * x_val[i] + beta * y[x_ind[i]]
+*          y[x_ind[i]] += alpha * x_val[i]
 *      }
 *  \endcode
 *

@@ -39,6 +39,13 @@ namespace rocsparse
             return;
         }
 
-        x[i] *= alpha;
+        if(alpha == static_cast<T>(0))
+        {
+            x[i] = static_cast<T>(0);
+        }
+        else
+        {
+            x[i] *= alpha;
+        }
     }
 }
