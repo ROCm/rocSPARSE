@@ -123,8 +123,9 @@ void host_csr_to_ell(J                     M,
     int64_t ell_nnz = (int64_t)ell_width * M;
 
     size_t required_memory  = sizeof(J) * ell_nnz + sizeof(T) * ell_nnz;
+    size_t total_memory     = 0;
     size_t available_memory = 0;
-    hipDeviceGetLimit(&available_memory, hipLimit_t::hipLimitMallocHeapSize);
+    hipMemGetInfo(&available_memory, &total_memory);
 
     if(required_memory > available_memory)
     {
