@@ -49,12 +49,14 @@ foreach(app ${ROCSPARSEIO_TOOLS_SOURCES})
     endif()
   endif()
 
-  # Set benchmark output directory
+  # Set tools output directory
   set_target_properties(${app} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
 
-endforeach()
+  # Install
+  if(WIN32)
+    rocm_install(PROGRAMS $<TARGET_FILE:${app}> DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT clients)
+  else()
+    rocm_install(PROGRAMS $<TARGET_FILE:${app}> DESTINATION ${CMAKE_INSTALL_LIBDIR}/rocsparse COMPONENT clients)
+  endif()
 
-#
-# targets
-#
-rocm_install_targets(TARGETS ${ROCSPARSEIO_TOOLS_SOURCES} PREFIX rocsparseio EXPORT ${PROJECT_BINARY_DIR}/staging)
+endforeach()
