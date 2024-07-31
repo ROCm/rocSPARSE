@@ -54,6 +54,9 @@ namespace rocsparse
               typename C,
               typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
+#if defined(__gfx908__)
+    __attribute__((amdgpu_waves_per_eu(6, 6)))
+#endif
     void csrmmnn_general_kernel(bool    conj_A,
                                 bool    conj_B,
                                 J       m,
