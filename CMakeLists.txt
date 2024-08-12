@@ -57,7 +57,7 @@ project(rocsparse LANGUAGES CXX C)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   message(STATUS "Using hip-clang to build for amdgpu backend")
 else()
-  message(FATAL_ERROR "'hipcc' compiler required to compile for ROCm platform.")
+  message(FATAL_ERROR "'hip-clang' compiler required to compile for ROCm platform.")
 endif()
 
 # Build flags
@@ -123,7 +123,7 @@ if(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY AND NOT WIN32)
 endif()
 
 # Detect compiler support for target ID
-if(CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")
+if(CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" OR CMAKE_CXX_COMPILER MATCHES ".*clang\\+\\+")
   execute_process(COMMAND ${CMAKE_CXX_COMPILER} "--help"
     OUTPUT_VARIABLE CXX_OUTPUT
     OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -133,7 +133,7 @@ endif()
 
 # Detect compiler support for target ID
 # This section is deprecated. Please use rocm_check_target_ids for future use.
-if( CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" )
+if( CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" OR CMAKE_CXX_COMPILER MATCHES ".*clang\\+\\+")
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} "--help"
         OUTPUT_VARIABLE CXX_OUTPUT
         OUTPUT_STRIP_TRAILING_WHITESPACE

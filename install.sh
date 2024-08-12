@@ -396,11 +396,24 @@ while true; do
     esac
 done
 
+
+if [[ -n "$CXX" ]]; then
+    cxx_compiler="${CXX}"
+else
+    cxx_compiler="${rocm_path}/bin/amdclang++"
+fi
+
+if [[ -n "$CC" ]]; then
+    cc_compiler="${CC}"
+else
+    cc_compiler="${rocm_path}/bin/amdclang"
+fi
+
 #
 # If matrices_dir_install has been set up then install matrices dir and exit.
 #
 if ! [[ "${matrices_dir_install}" == "" ]];then
-    cmake -DCMAKE_CXX_COMPILER="${rocm_path}/bin/hipcc" -DCMAKE_C_COMPILER="${rocm_path}/bin/hipcc"  -DPROJECT_BINARY_DIR=${matrices_dir_install} -DCMAKE_MATRICES_DIR=${matrices_dir_install} -DROCM_PATH=${rocm_path} -DCMAKE_INSTALL_LIBDIR=lib -P ./cmake/ClientMatrices.cmake
+    cmake -DCMAKE_CXX_COMPILER=${cxx_compiler}  -DCMAKE_C_COMPILER=${cc_compiler} -DPROJECT_BINARY_DIR=${matrices_dir_install} -DCMAKE_MATRICES_DIR=${matrices_dir_install} -DROCM_PATH=${rocm_path} -DCMAKE_INSTALL_LIBDIR=lib -P ./cmake/ClientMatrices.cmake
     exit 0
 fi
 
@@ -417,7 +430,7 @@ if ! [[ "${matrices_dir}" == "" ]];then
     # Let's 'reinstall' to the specified location to check if all good
     # Will be fast if everything already exists as expected.
     # This is to prevent any empty directory.
-    cmake -DCMAKE_CXX_COMPILER="${rocm_path}/bin/hipcc" -DCMAKE_C_COMPILER="${rocm_path}/bin/hipcc" -DPROJECT_BINARY_DIR=${matrices_dir} -DCMAKE_MATRICES_DIR=${matrices_dir} -DROCM_PATH=${rocm_path} -DCMAKE_INSTALL_LIBDIR=lib -P ./cmake/ClientMatrices.cmake
+    cmake -DCMAKE_CXX_COMPILER=${cxx_compiler}  -DCMAKE_C_COMPILER=${cc_compiler}  -DPROJECT_BINARY_DIR=${matrices_dir} -DCMAKE_MATRICES_DIR=${matrices_dir} -DROCM_PATH=${rocm_path} -DCMAKE_INSTALL_LIBDIR=lib -P ./cmake/ClientMatrices.cmake
 fi
 
 build_dir=./build
@@ -479,10 +492,14 @@ if [[ "${build_relocatable}" == true ]]; then
     if ! [ -z ${ROCM_PATH+x} ]; then
         rocm_path=${ROCM_PATH}
     fi
-
-    rocm_rpath=" -Wl,--enable-new-dtags -Wl,--rpath,/opt/rocm/lib:/opt/rocm/lib64"
+    if [[ "${cxx_compiler}" =~ .*amdclang\+\+ ]]; then
+        rpath_sep="="
+    else
+        rpath_sep=","
+    fi
+    rocm_rpath=" -Wl,--enable-new-dtags -Wl,--rpath${rpath_sep}/opt/rocm/lib:/opt/rocm/lib64"
     if ! [ -z ${ROCM_RPATH+x} ]; then
-        rocm_rpath=" -Wl,--enable-new-dtags -Wl,--rpath,${ROCM_RPATH}"
+        rocm_rpath=" -Wl,--enable-new-dtags -Wl,--rpath${rpath_sep}${ROCM_RPATH}"
     fi
 fi
 
@@ -498,7 +515,7 @@ pushd .
   # #################################################
   # configure & build
   # #################################################
-  cmake_common_options+=("-DAMDGPU_TARGETS=${gpu_architecture}")
+  cmake_common_options+=("--toolchain=toolchain-linux.cmake -DAMDGPU_TARGETS=${gpu_architecture}")
 
   # build type
   if [[ "${build_release}" == true ]]; then
@@ -567,11 +584,6 @@ pushd .
       fi
   fi
 
-  compiler="hcc"
-  if [[ "${build_hip_clang}" == true ]]; then
-    compiler="${rocm_path}/bin/hipcc"
-  fi
-
   # custom rocprim
   if [[ ${rocprim_path+foo} ]]; then
     cmake_common_options+=("-Drocprim_DIR=${rocprim_path}/rocprim")
@@ -584,7 +596,7 @@ pushd .
 
   # Build library with AMD toolchain because of existence of device kernels
   if [[ "${build_relocatable}" == true ]]; then
-    FC=gfortran CXX=${compiler} CC=${compiler} ${cmake_executable} ${cmake_common_options[@]} ${cmake_client_options[@]} -DCPACK_SET_DESTDIR=OFF \
+    FC=gfortran ${cmake_executable} ${cmake_common_options[@]} ${cmake_client_options[@]} -DCPACK_SET_DESTDIR=OFF \
       -DCMAKE_INSTALL_PREFIX=${install_prefix} \
       -DCPACK_PACKAGING_INSTALL_PREFIX=${rocm_path} \
       -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" \
@@ -593,7 +605,7 @@ pushd .
       -DROCM_DISABLE_LDCONFIG=ON \
       -DROCM_PATH="${rocm_path}" ../..
   else
-    FC=gfortran CXX=${compiler} CC=${compiler} ${cmake_executable} ${cmake_common_options[@]} ${cmake_client_options[@]} -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${install_prefix} -DCPACK_PACKAGING_INSTALL_PREFIX=${rocm_path} -DROCM_PATH="${rocm_path}" ../..
+    FC=gfortran ${cmake_executable} ${cmake_common_options[@]} ${cmake_client_options[@]} -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${install_prefix} -DCPACK_PACKAGING_INSTALL_PREFIX=${rocm_path} -DROCM_PATH="${rocm_path}" ../..
   fi
   check_exit_code "$?"
 

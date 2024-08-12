@@ -5,7 +5,7 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=true)
 {
     project.paths.construct_build_prefix()
 
-    String compiler = jobName.contains('hipclang') ? 'hipcc' : 'hcc'
+    String compiler = 'amdclang++'
     String hipClangArgs = jobName.contains('hipclang') ? ' --hip-clang' : ''
     String staticArgs = jobName.contains('static') ? ' -s' : ''
     //Temporary workaround due to bug in container
