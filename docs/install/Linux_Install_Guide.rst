@@ -111,7 +111,7 @@ rocSPARSE can be built using the following commands:
   $ mkdir -p build/release ; cd build/release
 
   # Default install path is /opt/rocm, use -DCMAKE_INSTALL_PREFIX=<path> to adjust it
-  $ CXX=/opt/rocm/bin/hipcc cmake ../..
+  $ CXX=/opt/rocm/bin/amdclang++ cmake ../..
 
   # Compile rocSPARSE library
   $ make -j$(nproc)
@@ -134,7 +134,7 @@ rocSPARSE with dependencies and clients can be built using the following command
   $ cd ..
 
   # Default install path is /opt/rocm, use -DCMAKE_INSTALL_PREFIX=<path> to adjust it
-  $ CXX=/opt/rocm/bin/hipcc cmake ../.. -DBUILD_CLIENTS_TESTS=ON \
+  $ CXX=/opt/rocm/bin/amdclang++ cmake ../.. -DBUILD_CLIENTS_TESTS=ON \
                                         -DBUILD_CLIENTS_BENCHMARKS=ON \
                                         -DBUILD_CLIENTS_SAMPLES=ON
 
