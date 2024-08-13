@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -442,16 +442,76 @@ rocsparse_status rocsparse_csrsm_clear(rocsparse_handle handle, rocsparse_mat_in
 *    \right.
 *  \f]
 *
-*  \p rocsparse_csrsm_solve requires a user allocated temporary buffer. Its size is
-*  returned by rocsparse_scsrsm_buffer_size(), rocsparse_dcsrsm_buffer_size(),
-*  rocsparse_ccsrsm_buffer_size() or rocsparse_zcsrsm_buffer_size(). Furthermore,
-*  analysis meta data is required. It can be obtained by rocsparse_scsrsm_analysis(),
-*  rocsparse_dcsrsm_analysis(), rocsparse_ccsrsm_analysis() or
-*  rocsparse_zcsrsm_analysis(). \p rocsparse_csrsm_solve reports the first zero pivot
-*  (either numerical or structural zero). The zero pivot status can be checked calling
-*  rocsparse_csrsm_zero_pivot(). If
-*  \ref rocsparse_diag_type == \ref rocsparse_diag_type_unit, no zero pivot will be
-*  reported, even if \f$A_{j,j} = 0\f$ for some \f$j\f$.
+*  The solution is performed inplace meaning that the matrix B is overwritten with the solution
+*  X after calling \p rocsparse_csrsm_solve. Given that the sparse matrix A is a square matrix, its
+*  size is \f$m \times m\f$ regardless of whether A is transposed or not. The size of the dense, column
+*  ordered, matrices B and X have size that depends on the value of \p trans_B:
+*
+*  \f[
+*    op(B)/op(X) = \left\{
+*    \begin{array}{ll}
+*        ldb \times nrhs, \text{ } ldb \ge m, & \text{if trans_B == rocsparse_operation_none} \\
+*        ldb \times m, \text{ } ldb \ge nrhs,  & \text{if trans_B == rocsparse_operation_transpose} \\
+*        ldb \times m, \text{ } ldb \ge nrhs, & \text{if trans_B == rocsparse_operation_conjugate_transpose}
+*    \end{array}
+*    \right.
+*  \f]
+*
+*  \p rocsparse_csrsm_solve requires a user allocated temporary buffer. Its size is returned by
+*  rocsparse_scsrsm_buffer_size(), rocsparse_dcsrsm_buffer_size(), rocsparse_ccsrsm_buffer_size() or
+*  rocsparse_zcsrsm_buffer_size(). The size of the required buffer is larger when \p trans_A equals
+*  \ref rocsparse_operation_transpose or \ref rocsparse_operation_conjugate_transpose and when
+*  \p trans_B is \ref rocsparse_operation_none. The subsequent solve will also be faster when \f$A\f$
+*  is non-transposed and \f$B\f$ is transposed (or conjugate transposed). For example, instead of solving:
+*
+*  \f[
+*    \begin{bmatrix}
+*    a_{00} & 0 & 0 \\
+*    a_{10} & a_{11} & 0 \\
+*    a_{20} & a_{21} & a_{22} \\
+*    \end{bmatrix}
+*    \cdot
+*    \begin{bmatrix}
+*    x_{00} & x_{01} \\
+*    x_{10} & x_{11} \\
+*    x_{20} & x_{21} \\
+*    \end{bmatrix}
+*    =
+*    \begin{bmatrix}
+*    b_{00} & b_{01} \\
+*    b_{10} & b_{11} \\
+*    b_{20} & b_{21} \\
+*    \end{bmatrix}
+*  \f]
+*
+*  Consider solving:
+*
+*  \f[
+*    \begin{bmatrix}
+*    a_{00} & 0 & 0 \\
+*    a_{10} & a_{11} & 0 \\
+*    a_{20} & a_{21} & a_{22}
+*    \end{bmatrix}
+*    \cdot
+*    \begin{bmatrix}
+*    x_{00} & x_{10} & x_{20} \\
+*    x_{01} & x_{11} & x_{21}
+*    \end{bmatrix}^{T}
+*    =
+*    \begin{bmatrix}
+*    b_{00} & b_{10} & b_{20} \\
+*    b_{01} & b_{11} & b_{21}
+*    \end{bmatrix}^{T}
+*  \f]
+*
+*  Once the temporary storage buffer has been allocated, analysis meta data is required.
+*  It can be obtained by rocsparse_scsrsm_analysis(), rocsparse_dcsrsm_analysis(),
+*  rocsparse_ccsrsm_analysis() or rocsparse_zcsrsm_analysis().
+*
+*  \p rocsparse_csrsm_solve reports the first zero pivot (either numerical or structural zero).
+*  The zero pivot status can be checked calling rocsparse_csrsm_zero_pivot(). If
+*  \ref rocsparse_diag_type == \ref rocsparse_diag_type_unit, no zero pivot will be reported,
+*  even if \f$A_{j,j} = 0\f$ for some \f$j\f$.
 *
 *  \note
 *  The sparse CSR matrix has to be sorted. This can be achieved by calling
