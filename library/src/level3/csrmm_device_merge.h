@@ -75,7 +75,7 @@ namespace rocsparse
 
         // Search starting/ending coordinates of the range for this block.
         const I diagonal0 = (bid + 0) * ITEMS_PER_THREAD;
-        const I diagonal1 = (bid + 1) * ITEMS_PER_THREAD;
+        const I diagonal1 = rocsparse::min((I)(M + nnz), (I)((bid + 1) * ITEMS_PER_THREAD));
 
         rocprim::counting_iterator<I> nnz_indices0(idx_base);
         rocprim::counting_iterator<I> nnz_indices1(idx_base);
