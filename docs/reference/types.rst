@@ -80,6 +80,11 @@ rocsparse_sparse_to_sparse_descr
 
 .. doxygentypedef:: rocsparse_sparse_to_sparse_descr
 
+rocsparse_extract_descr
+-----------------------
+
+.. doxygentypedef:: rocsparse_extract_descr
+
 
 .. _rocsparse_action_:
 
@@ -272,6 +277,16 @@ rocsparse_sparse_to_sparse_stage
 --------------------------------
 
 .. doxygenenum:: rocsparse_sparse_to_sparse_stage
+
+rocsparse_extract_alg
+---------------------
+
+.. doxygenenum:: rocsparse_extract_alg
+
+rocsparse_extract_stage
+-----------------------
+
+.. doxygenenum:: rocsparse_extract_stage
 
 rocsparse_dense_to_sparse_alg
 -----------------------------

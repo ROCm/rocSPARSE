@@ -1241,6 +1241,45 @@ ROCSPARSE_EXPORT
 rocsparse_status rocsparse_destroy_sparse_to_sparse_descr(rocsparse_sparse_to_sparse_descr descr);
 
 /*! \ingroup aux_module
+*  \brief Sparse matrix extraction.
+*
+*  \details
+*  \p rocsparse_create_extract_descr creates the descriptor of the extract algorithm.
+
+*  @param[out]
+*  descr        pointer to the descriptor of the extract algorithm.
+*  @param[in]
+*  source       source sparse matrix descriptor.
+*  @param[in]
+*  target       target sparse matrix descriptor.
+*  @param[in]
+*  alg          algorithm for the extract computation.
+*
+*  \retval      rocsparse_status_success the operation completed successfully.
+*  \retval      rocsparse_status_invalid_value if any required enumeration is invalid.
+*  \retval      rocsparse_status_invalid_pointer \p descr, \p source, or \p target
+*               pointer is invalid.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_create_extract_descr(rocsparse_extract_descr*    descr,
+                                                rocsparse_const_spmat_descr source,
+                                                rocsparse_spmat_descr       target,
+                                                rocsparse_extract_alg       alg);
+
+/*! \ingroup aux_module
+*  \brief Sparse matrix extraction.
+*
+*  \details
+*  \p rocsparse_destroy_extract_descr destroys the descriptor of the extract algorithm.
+*
+*  @param[in]
+*  descr        descriptor of the extract algorithm.
+*  \retval      rocsparse_status_success the operation completed successfully.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_destroy_extract_descr(rocsparse_extract_descr descr);
+
+/*! \ingroup aux_module
  *  \brief Get the fields of the sparse COO matrix descriptor
  *  \details
  *  \p rocsparse_coo_get gets the fields of the sparse COO matrix descriptor

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 #include "generic/rocsparse_axpby.h"
 #include "generic/rocsparse_check_spmat.h"
 #include "generic/rocsparse_dense_to_sparse.h"
+#include "generic/rocsparse_extract.h"
 #include "generic/rocsparse_gather.h"
 #include "generic/rocsparse_rot.h"
 #include "generic/rocsparse_scatter.h"

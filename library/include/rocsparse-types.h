@@ -215,6 +215,14 @@ typedef struct _rocsparse_color_info* rocsparse_color_info;
  */
 typedef struct _rocsparse_sparse_to_sparse_descr* rocsparse_sparse_to_sparse_descr;
 
+/*! \ingroup types_module
+ * \brief rocsparse_extract_descr is a structure holding the rocsparse extract
+ * descr data. It must be initialized using
+ * the rocsparse_create_extract_descr() routine. It should be destroyed at the
+ * end using rocsparse_destroy_extract_descr().
+ */
+typedef struct _rocsparse_extract_descr* rocsparse_extract_descr;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -550,6 +558,30 @@ typedef enum rocsparse_sparse_to_sparse_stage_
     rocsparse_sparse_to_sparse_stage_analysis = 0, /**< Data analysis. */
     rocsparse_sparse_to_sparse_stage_compute  = 1 /**< Performs the actual conversion. */
 } rocsparse_sparse_to_sparse_stage;
+
+/*! \ingroup types_module
+   *  \brief List of extract algorithms.
+   *
+   *  \details
+   *  This is a list of supported \ref rocsparse_extract_alg types that are used to perform
+   *  the submatrix extraction.
+   */
+typedef enum rocsparse_extract_alg_
+{
+    rocsparse_extract_alg_default = 0, /**< Default extract algorithm for the given format. */
+} rocsparse_extract_alg;
+
+/*! \ingroup types_module
+   *  \brief List of extract stages.
+   *
+   *  \details
+   *  The analysis \ref rocsparse_extract_stage_analysis must be done before the first call of the calculation \ref rocsparse_extract_stage_compute.
+   */
+typedef enum rocsparse_extract_stage_
+{
+    rocsparse_extract_stage_analysis = 0, /**< Data analysis. */
+    rocsparse_extract_stage_compute  = 1 /**< Performs the actual extraction. */
+} rocsparse_extract_stage;
 
 /*! \ingroup types_module
  *  \brief List of Iterative ILU0 algorithms.

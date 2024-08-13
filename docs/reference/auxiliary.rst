@@ -254,6 +254,16 @@ rocsparse_sparse_to_sparse_permissive
 
 .. doxygenfunction:: rocsparse_sparse_to_sparse_permissive
 
+rocsparse_create_extract_descr
+------------------------------
+
+.. doxygenfunction:: rocsparse_create_extract_descr
+
+rocsparse_destroy_extract_descr
+-------------------------------
+
+.. doxygenfunction:: rocsparse_destroy_extract_descr
+
 rocsparse_coo_get
 -----------------
 

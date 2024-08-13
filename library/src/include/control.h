@@ -217,6 +217,20 @@ namespace rocsparse
 //
 //
 //
+#define THROW_WITH_MESSAGE_IF_ROCSPARSE_ERROR(INPUT_STATUS_FOR_CHECK, MESSAGE)  \
+    do                                                                          \
+    {                                                                           \
+        const rocsparse_status TMP_STATUS_FOR_CHECK = (INPUT_STATUS_FOR_CHECK); \
+        if(TMP_STATUS_FOR_CHECK != rocsparse_status_success)                    \
+        {                                                                       \
+            ROCSPARSE_ERROR_MESSAGE(TMP_STATUS_FOR_CHECK, MESSAGE);             \
+            throw TMP_STATUS_FOR_CHECK;                                         \
+        }                                                                       \
+    } while(false)
+
+//
+//
+//
 #define RETURN_ROCSPARSE_EXCEPTION()                                                    \
     do                                                                                  \
     {                                                                                   \
