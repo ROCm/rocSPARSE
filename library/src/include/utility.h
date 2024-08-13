@@ -381,6 +381,19 @@ namespace rocsparse
         }
         return true;
     };
+    template <>
+    inline bool enum_utils::is_invalid(rocsparse_extract_stage value)
+    {
+        switch(value)
+        {
+        case rocsparse_extract_stage_analysis:
+        case rocsparse_extract_stage_compute:
+        {
+            return false;
+        }
+        }
+        return true;
+    };
 
     template <>
     inline bool enum_utils::is_invalid(rocsparse::blas_impl value)
@@ -403,6 +416,19 @@ namespace rocsparse
         switch(value)
         {
         case rocsparse_sparse_to_sparse_alg_default:
+        {
+            return false;
+        }
+        }
+        return true;
+    };
+
+    template <>
+    inline bool enum_utils::is_invalid(rocsparse_extract_alg value)
+    {
+        switch(value)
+        {
+        case rocsparse_extract_alg_default:
         {
             return false;
         }

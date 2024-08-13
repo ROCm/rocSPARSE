@@ -95,6 +95,12 @@ Auxiliary Functions
 +-----------------------------------------------------+
 |:cpp:func:`rocsparse_destroy_spmat_descr`            |
 +-----------------------------------------------------+
+|:cpp:func:`rocsparse_create_extract_descr`           |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_destroy_extract_descr`          |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_extract_nnz`                    |
++-----------------------------------------------------+
 |:cpp:func:`rocsparse_create_sparse_to_sparse_descr`  |
 +-----------------------------------------------------+
 |:cpp:func:`rocsparse_destroy_sparse_to_sparse_descr` |
@@ -427,4 +433,6 @@ Function name                                        single double single comple
 :cpp:func:`rocsparse_sddmm()`                        x      x      x              x
 :cpp:func:`rocsparse_sparse_to_sparse_buffer_size()` x      x      x              x
 :cpp:func:`rocsparse_sparse_to_sparse()`             x      x      x              x
+:cpp:func:`rocsparse_extract_buffer_size()`          x      x      x              x
+:cpp:func:`rocsparse_extract()`                      x      x      x              x
 ==================================================== ====== ====== ============== ==============

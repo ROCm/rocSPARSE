@@ -300,6 +300,8 @@ Function name                                        yes no
 :cpp:func:`rocsparse_sddmm()`                        x
 :cpp:func:`rocsparse_sparse_to_sparse_buffer_size()` x
 :cpp:func:`rocsparse_sparse_to_sparse()`             x
+:cpp:func:`rocsparse_extract_buffer_size()`          x
+:cpp:func:`rocsparse_extract()`                      x
 ==================================================== === ==
 
 The reproducibility of :cpp:func:`rocsparse_spmv()` is more complicated because this generic routine

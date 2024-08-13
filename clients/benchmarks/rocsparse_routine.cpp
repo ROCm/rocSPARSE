@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -287,6 +287,7 @@ constexpr const char* rocsparse_routine::to_string() const
 #include "testing_dense_to_sparse_csc.hpp"
 #include "testing_dense_to_sparse_csr.hpp"
 #include "testing_ell2csr.hpp"
+#include "testing_extract.hpp"
 #include "testing_gebsr2csr.hpp"
 #include "testing_gebsr2gebsc.hpp"
 #include "testing_gebsr2gebsr.hpp"
@@ -579,6 +580,7 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
         DEFINE_CASE_IJT(sparse_to_dense_csc);
         DEFINE_CASE_IJT(sparse_to_dense_csr);
         DEFINE_CASE_IJT(sparse_to_sparse);
+        DEFINE_CASE_IJT(extract);
     }
 
 #undef DEFINE_CASE_IT_X

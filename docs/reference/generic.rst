@@ -102,3 +102,18 @@ rocsparse_sparse_to_sparse()
 
 .. doxygenfunction:: rocsparse_sparse_to_sparse
 
+rocsparse_extract_buffer_size()
+-------------------------------
+
+.. doxygenfunction:: rocsparse_extract_buffer_size
+
+rocsparse_extract()
+-------------------
+
+.. doxygenfunction:: rocsparse_extract
+
+
+rocsparse_extract_nnz
+---------------------
+
+.. doxygenfunction:: rocsparse_extract_nnz
