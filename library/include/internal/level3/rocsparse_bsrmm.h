@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -37,8 +37,8 @@ extern "C" {
  *
  *  \details
  *  \p rocsparse_bsrmm multiplies the scalar \f$\alpha\f$ with a sparse \f$mb \times kb\f$
- *  matrix \f$A\f$, defined in BSR storage format, and the dense \f$k \times n\f$
- *  matrix \f$B\f$ (where \f$k = block\_dim \times kb\f$) and adds the result to the dense
+ *  matrix \f$A\f$, defined in BSR storage format, and the column-oriented dense \f$k \times n\f$
+ *  matrix \f$B\f$ (where \f$k = block\_dim \times kb\f$) and adds the result to the column-oriented dense
  *  \f$m \times n\f$ matrix \f$C\f$ (where \f$m = block\_dim \times mb\f$) that
  *  is multiplied by the scalar \f$\beta\f$, such that
  *  \f[
@@ -84,7 +84,7 @@ extern "C" {
  *  @param[in]
  *  mb          number of block rows of the sparse BSR matrix \f$A\f$.
  *  @param[in]
- *  n           number of columns of the dense matrix \f$op(B)\f$ and \f$C\f$.
+ *  n           number of columns of the column-oriented dense matrix \f$op(B)\f$ and \f$C\f$.
  *  @param[in]
  *  kb          number of block columns of the sparse BSR matrix \f$A\f$.
  *  @param[in]
@@ -105,7 +105,7 @@ extern "C" {
  *  @param[in]
  *  block_dim   size of the blocks in the sparse BSR matrix.
  *  @param[in]
- *  B           array of dimension \f$ldb \times n\f$ (\f$op(B) == B\f$),
+ *  B           column-oriented dense matrix of dimension \f$ldb \times n\f$ (\f$op(B) == B\f$),
  *              \f$ldb \times k\f$ otherwise.
  *  @param[in]
  *  ldb         leading dimension of \f$B\f$, must be at least \f$\max{(1, k)}\f$ (\f$ op(B) == B\f$) where \f$k = block\_dim \times kb\f$,
@@ -113,7 +113,7 @@ extern "C" {
  *  @param[in]
  *  beta        scalar \f$\beta\f$.
  *  @param[inout]
- *  C           array of dimension \f$ldc \times n\f$.
+ *  C           column-oriented dense matrix of  dimension \f$ldc \times n\f$.
  *  @param[in]
  *  ldc         leading dimension of \f$C\f$, must be at least \f$\max{(1, m)}\f$ (\f$ op(A) == A\f$) where \f$m = block\_dim \times mb\f$,
  *  \f$\max{(1, k)}\f$ where \f$k = block\_dim \times kb\f$ otherwise.
@@ -131,7 +131,7 @@ extern "C" {
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  *
  *  \par Example
- *  This example multiplies a BSR matrix with a dense matrix.
+ *  This example multiplies a BSR matrix with a column-oriented dense matrix.
  *  \code{.c}
  *      //     1 2 0 3 0 0
  *      // A = 0 4 5 0 0 0
@@ -153,7 +153,7 @@ extern "C" {
  *      rocsparse_int m = mb * block_dim;
  *      rocsparse_int k = kb * block_dim;
  *
- *      // Allocate and generate dense matrix B
+ *      // Allocate and generate column-oriented dense matrix B
  *      std::vector<float> hB(k * n);
  *      for(rocsparse_int i = 0; i < k * n; ++i)
  *      {

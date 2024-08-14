@@ -36,9 +36,9 @@ extern "C" {
 *  \brief Dense matrix sparse matrix multiplication using CSR storage format
 *
 *  \details
-*  \p rocsparse_gemmi multiplies the scalar \f$\alpha\f$ with a dense \f$m \times k\f$
+*  \p rocsparse_gemmi multiplies the scalar \f$\alpha\f$ with a column-oriented dense \f$m \times k\f$
 *  matrix \f$op(A)\f$ and the sparse \f$k \times n\f$ matrix \f$op(B)\f$, defined in CSR
-*  storage format and adds the result to the dense \f$m \times n\f$ matrix \f$C\f$ that
+*  storage format and adds the result to the column-oriented dense \f$m \times n\f$ matrix \f$C\f$ that
 *  is multiplied by the scalar \f$\beta\f$, such that
 *  \f[
 *    C := \alpha \cdot op(A) \cdot op(B) + \beta \cdot C
@@ -63,7 +63,6 @@ extern "C" {
 *    \end{array}
 *    \right.
 *  \f]
-*  The dense matrices A and C are stored using column ordering.
 *
 *  \note
 *  Currently, only \p trans_A == \ref rocsparse_operation_none is supported.
@@ -85,11 +84,11 @@ extern "C" {
 *  @param[in]
 *  trans_B     matrix \f$B\f$ operation type.
 *  @param[in]
-*  m           number of rows of the dense matrix \f$A\f$.
+*  m           number of rows of the column-oriented dense matrix \f$A\f$.
 *  @param[in]
 *  n           number of columns of the sparse CSR matrix \f$op(B)\f$ and \f$C\f$.
 *  @param[in]
-*  k           number of columns of the dense matrix \f$A\f$.
+*  k           number of columns of the column-oriented dense matrix \f$A\f$.
 *  @param[in]
 *  nnz         number of non-zero entries of the sparse CSR matrix \f$B\f$.
 *  @param[in]
@@ -115,7 +114,7 @@ extern "C" {
 *  @param[in]
 *  beta        scalar \f$\beta\f$.
 *  @param[inout]
-*  C           array of dimension \f$ldc \times n\f$ that holds the values of \f$C\f$.
+*  C           column-oriented dense matrix of dimension \f$ldc \times n\f$ that holds the values of \f$C\f$.
 *  @param[in]
 *  ldc         leading dimension of \f$C\f$, must be at least \f$m\f$.
 *
@@ -127,7 +126,7 @@ extern "C" {
 *              \p csr_row_ptr, \p csr_col_ind, \p beta or \p C pointer is invalid.
 *
 *  \par Example
-*  This example multiplies a dense matrix with a CSC matrix.
+*  This example multiplies a column-oriented dense matrix with a CSC matrix.
 *  \code{.c}
 *      rocsparse_int m   = 2;
 *      rocsparse_int n   = 5;

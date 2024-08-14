@@ -98,7 +98,7 @@ rocsparse_status rocsparse_bsrsm_zero_pivot(rocsparse_handle   handle,
 *  @param[in]
 *  mb          number of block rows of the sparse BSR matrix A.
 *  @param[in]
-*  nrhs        number of columns of the dense matrix op(X).
+*  nrhs        number of columns of the column-oriented dense matrix op(X).
 *  @param[in]
 *  nnzb        number of non-zero blocks of the sparse BSR matrix A.
 *  @param[in]
@@ -432,7 +432,7 @@ rocsparse_status rocsparse_zbsrsm_buffer_size(rocsparse_handle                ha
 *  @param[in]
 *  mb          number of block rows of the sparse BSR matrix A.
 *  @param[in]
-*  nrhs        number of columns of the dense matrix op(X).
+*  nrhs        number of columns of the column-oriented dense matrix op(X).
 *  @param[in]
 *  nnzb        number of non-zero blocks of the sparse BSR matrix A.
 *  @param[in]
@@ -577,7 +577,7 @@ rocsparse_status rocsparse_bsrsm_clear(rocsparse_handle handle, rocsparse_mat_in
 *
 *  \details
 *  \p rocsparse_bsrsm_solve solves a sparse triangular linear system of a sparse
-*  \f$m \times m\f$ matrix, defined in BSR storage format, a dense solution matrix
+*  \f$m \times m\f$ matrix, defined in BSR storage format, a column-oriented dense solution matrix
 *  \f$X\f$ and the right-hand side matrix \f$B\f$ that is multiplied by \f$\alpha\f$, such that
 *  \f[
 *    op(A) \cdot op(X) = \alpha \cdot op(B),
@@ -642,7 +642,7 @@ rocsparse_status rocsparse_bsrsm_clear(rocsparse_handle handle, rocsparse_mat_in
 *  @param[in]
 *  mb          number of block rows of the sparse BSR matrix A.
 *  @param[in]
-*  nrhs        number of columns of the dense matrix op(X).
+*  nrhs        number of columns of the column-oriented dense matrix op(X).
 *  @param[in]
 *  nnzb        number of non-zero blocks of the sparse BSR matrix A.
 *  @param[in]
@@ -662,11 +662,11 @@ rocsparse_status rocsparse_bsrsm_clear(rocsparse_handle handle, rocsparse_mat_in
 *  @param[in]
 *  info        structure that holds the information collected during the analysis step.
 *  @param[in]
-*  B           rhs matrix B with leading dimension \p ldb.
+*  B           column-oriented dense matrix B with leading dimension \p ldb.
 *  @param[in]
 *  ldb         leading dimension of rhs matrix B.
 *  @param[out]
-*  X           solution matrix X with leading dimension \p ldx.
+*  X           column-oriented dense solution matrix X with leading dimension \p ldx.
 *  @param[in]
 *  ldx         leading dimension of solution matrix X.
 *  @param[in]
