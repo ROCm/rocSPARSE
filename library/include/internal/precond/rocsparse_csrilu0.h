@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -76,7 +76,7 @@ rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle   handle,
 *  storage format
 *
 *  \details
-*  \p rocsparse_csrilu0_set_tolerance() sets the numerical tolerance for detecting a 
+*  \p rocsparse_csrilu0_set_tolerance() sets the numerical tolerance for detecting a
 *  near numerical zero entry during rocsparse_scsrilu0(),
 *  rocsparse_dcsrilu0(), rocsparse_ccsrilu0() or rocsparse_zcsrilu0() computation. The
 *  first singular pivot \f$j\f$ at \f$|A_{j,j}| \leq \text{tolerance}\f$.
@@ -93,12 +93,12 @@ rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle   handle,
 *  @param[in]
 *  info        structure that holds the information collected during the analysis step.
 *  @param[in]
-*  tolerance    tolerance value to determine singular pivot \f$|A_{j,j}| \leq \text{tolerance}\f$, 
+*  tolerance    tolerance value to determine singular pivot \f$|A_{j,j}| \leq \text{tolerance}\f$,
 *               where variable tolerance is in host memory.
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval     rocsparse_status_invalid_pointer \p info pointer is invalid. 
+*  \retval     rocsparse_status_invalid_pointer \p info pointer is invalid.
 *  \retval     rocsparse_status_internal_error an internal error occurred.
 */
 ROCSPARSE_EXPORT
@@ -114,7 +114,7 @@ rocsparse_status rocsparse_csrilu0_set_tolerance(rocsparse_handle   handle,
 *  \p rocsparse_csrilu0_get_tolerance() returns the numerical tolerance for detecing
 *  a near numerical zero entry during rocsparse_scsrilu0(),
 *  rocsparse_dcsrilu0(), rocsparse_ccsrilu0() or rocsparse_zcsrilu0() computation. The
-*  first singular pivot \f$j\f$ at \f$|A_{j,j}| \leq \text{tolerance}\f$. 
+*  first singular pivot \f$j\f$ at \f$|A_{j,j}| \leq \text{tolerance}\f$.
 *
 *
 *  \note \p rocsparse_csrilu0_get_tolerance() is a blocking function. It might influence
@@ -128,7 +128,7 @@ rocsparse_status rocsparse_csrilu0_set_tolerance(rocsparse_handle   handle,
 *  @param[in]
 *  info        structure that holds the information collected during the analysis step.
 *  @param[out]
-*  tolerance   obtain tolerance value to determine singular pivot \f$|A_{j,j}| \leq \text{tolerance}\f$, 
+*  tolerance   obtain tolerance value to determine singular pivot \f$|A_{j,j}| \leq \text{tolerance}\f$,
 *              where variable tolerance is in host memory.
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
@@ -148,11 +148,11 @@ rocsparse_status rocsparse_csrilu0_get_tolerance(rocsparse_handle   handle,
 *  \p rocsparse_csrilu0_singular_pivot() returns the position of a
 *  near numerical zero entry that has been found during rocsparse_scsrilu0(),
 *  rocsparse_dcsrilu0(), rocsparse_ccsrilu0() or rocsparse_zcsrilu0() computation. The
-*  first singular pivot \f$j\f$ at \f$|A_{j,j}| \leq \text{tolerance}\f$  is stored in \p position, 
+*  first singular pivot \f$j\f$ at \f$|A_{j,j}| \leq \text{tolerance}\f$  is stored in \p position,
 *  using same index base as the CSR matrix.
 *
 *  \p position can be in host or device memory. If no singular pivot has been found,
-*  \p position is set to -1. 
+*  \p position is set to -1.
 *
 *  \note \p rocsparse_csrilu0_singular_pivot() is a blocking function. It might influence
 *  performance negatively.
@@ -315,7 +315,6 @@ rocsparse_status rocsparse_dccsrilu0_numeric_boost(rocsparse_handle             
 *              \p csr_col_ind, \p info or \p buffer_size pointer is invalid.
 *  \retval     rocsparse_status_internal_error an internal error occurred.
 *  \retval     rocsparse_status_not_implemented
-*              \p trans != \ref rocsparse_operation_none or
 *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
 */
 /**@{*/
@@ -429,7 +428,6 @@ rocsparse_status rocsparse_zcsrilu0_buffer_size(rocsparse_handle                
 *              \p csr_col_ind, \p info or \p temp_buffer pointer is invalid.
 *  \retval     rocsparse_status_internal_error an internal error occurred.
 *  \retval     rocsparse_status_not_implemented
-*              \p trans != \ref rocsparse_operation_none or
 *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
 */
 /**@{*/
@@ -582,7 +580,6 @@ rocsparse_status rocsparse_csrilu0_clear(rocsparse_handle handle, rocsparse_mat_
 *  \retval     rocsparse_status_arch_mismatch the device is not supported.
 *  \retval     rocsparse_status_internal_error an internal error occurred.
 *  \retval     rocsparse_status_not_implemented
-*              \p trans != \ref rocsparse_operation_none or
 *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
 *
 *  \par Example

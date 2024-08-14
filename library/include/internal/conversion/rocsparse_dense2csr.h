@@ -68,10 +68,10 @@ extern "C" {
 *              array of nnz ( = \p csr_row_ptr[m] - \p csr_row_ptr[0] ) nonzero elements of matrix \p A.
 *  @param[out]
 *  csr_row_ptr
-*              integer array of m+1 elements that contains the start of every row and the end of the last row plus one.
+*              integer array of \p m+1 elements that contains the start of every row and the end of the last row plus one.
 *  @param[out]
 *  csr_col_ind
-*              integer array of nnz ( = \p csr_row_ptr[m] - csr_row_ptr[0] ) column indices of the non-zero elements of matrix \p A.
+*              integer array of nnz ( = \p csr_row_ptr[m] - \p csr_row_ptr[0] ) column indices of the non-zero elements of matrix \p A.
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.

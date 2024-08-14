@@ -58,9 +58,9 @@ extern "C" {
 *  @param[in]
 *  csr_val     array of nnz ( = \p csr_row_ptr[m] - \p csr_row_ptr[0] ) nonzero elements of matrix \p A.
 *  @param[in]
-*  csr_row_ptr integer array of m+1 elements that contains the start of every row and the end of the last row plus one.
+*  csr_row_ptr integer array of \p m+1 elements that contains the start of every row and the end of the last row plus one.
 *  @param[in]
-*  csr_col_ind integer array of nnz ( = \p csr_row_ptr[m] - csr_row_ptr[0] ) column indices of the non-zero elements of matrix \p A.
+*  csr_col_ind integer array of nnz ( = \p csr_row_ptr[m] - \p csr_row_ptr[0] ) column indices of the non-zero elements of matrix \p A.
 *
 *  @param[out]
 *  A           array of dimensions (\p ld, \p n)

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -54,7 +54,7 @@ extern "C" {
 *
 *  @param[in]
 *  dir         direction that specified whether to count nonzero elements by \ref rocsparse_direction_row or by
-*              \ref rocsparse_direction_row.
+*              \ref rocsparse_direction_column.
 *
 *  @param[in]
 *  m           number of rows of the sparse CSR matrix.
@@ -157,7 +157,7 @@ rocsparse_status rocsparse_zcsr2gebsr_buffer_size(rocsparse_handle              
 *
 *  @param[in]
 *  dir         direction that specified whether to count nonzero elements by \ref rocsparse_direction_row or by
-*              \ref rocsparse_direction_row.
+*              \ref rocsparse_direction_column.
 *
 *  @param[in]
 *  m           number of rows of the sparse CSR matrix.

@@ -44,7 +44,7 @@ extern "C" {
 *  handle      handle to the rocsparse library context queue.
 *
 *  @param[in]
-*  dir        direction that specified whether to count nonzero elements by \ref rocsparse_direction_row or by \ref rocsparse_direction_row.
+*  dir        direction that specified whether to count nonzero elements by \ref rocsparse_direction_row or by \ref rocsparse_direction_column.
 *
 *  @param[in]
 *  m           number of rows of the dense matrix \p A.
