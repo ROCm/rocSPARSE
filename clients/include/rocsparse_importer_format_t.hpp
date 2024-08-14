@@ -25,6 +25,7 @@
 #pragma once
 #ifndef ROCSPARSE_IMPORTER_FORMAT_T_HPP
 #define ROCSPARSE_IMPORTER_FORMAT_T_HPP
+#include <string.h>
 
 struct rocsparse_importer_format_t
 {

@@ -25,6 +25,7 @@
 #pragma once
 #ifndef ROCSPARSE_EXPORTER_FORMAT_T_HPP
 #define ROCSPARSE_EXPORTER_FORMAT_T_HPP
+#include <string.h>
 
 struct rocsparse_exporter_format_t
 {

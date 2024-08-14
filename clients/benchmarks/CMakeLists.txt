@@ -65,12 +65,14 @@ set(ROCSPARSE_CLIENTS_COMMON
   ../common/rocsparse_exporter_rocalution.cpp
   ../common/rocsparse_exporter_matrixmarket.cpp
   ../common/rocsparse_exporter_ascii.cpp
+  ../common/rocsparse_exporter_format_t.cpp
   ../common/rocsparse_type_conversion.cpp
   ../common/rocsparse_importer_rocalution.cpp
   ../common/rocsparse_importer_rocsparseio.cpp
   ../common/rocsparse_importer_matrixmarket.cpp
   ../common/rocsparse_importer_mlbsr.cpp
   ../common/rocsparse_importer_mlcsr.cpp
+  ../common/rocsparse_importer_format_t.cpp
   ../common/rocsparse_clients_envariables.cpp
   ../common/rocsparse_clients_matrices_dir.cpp
   ../common/rocsparseio.cpp
