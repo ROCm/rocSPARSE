@@ -96,7 +96,7 @@ rocsparse_status rocsparse_csrsm_zero_pivot(rocsparse_handle   handle,
 *  @param[in]
 *  m           number of rows of the sparse CSR matrix A.
 *  @param[in]
-*  nrhs        number of columns of the dense matrix op(B).
+*  nrhs        number of columns of the column-oriented dense matrix op(B).
 *  @param[in]
 *  nnz         number of non-zero entries of the sparse CSR matrix A.
 *  @param[in]
@@ -112,7 +112,7 @@ rocsparse_status rocsparse_csrsm_zero_pivot(rocsparse_handle   handle,
 *  csr_col_ind array of \p nnz elements containing the column indices of the sparse
 *              CSR matrix A.
 *  @param[in]
-*  B           array of \p m \f$\times\f$ \p nrhs elements of the rhs matrix B.
+*  B           column-oriented dense matrix of dimension \p m \f$\times\f$ \p nrhs elements of the rhs matrix B.
 *  @param[in]
 *  ldb         leading dimension of rhs matrix B.
 *  @param[in]
@@ -252,7 +252,7 @@ rocsparse_status rocsparse_zcsrsm_buffer_size(rocsparse_handle                ha
 *  @param[in]
 *  m           number of rows of the sparse CSR matrix A.
 *  @param[in]
-*  nrhs        number of columns of the dense matrix op(B).
+*  nrhs        number of columns of the column-oriented dense matrix op(B).
 *  @param[in]
 *  nnz         number of non-zero entries of the sparse CSR matrix A.
 *  @param[in]
@@ -268,7 +268,7 @@ rocsparse_status rocsparse_zcsrsm_buffer_size(rocsparse_handle                ha
 *  csr_col_ind array of \p nnz elements containing the column indices of the sparse
 *              CSR matrix A.
 *  @param[in]
-*  B           array of \p m \f$\times\f$ \p nrhs elements of the rhs matrix B.
+*  B           column-oriented dense matrix of dimension \p m \f$\times\f$ \p nrhs elements of the rhs matrix B.
 *  @param[in]
 *  ldb         leading dimension of rhs matrix B.
 *  @param[out]
@@ -406,7 +406,7 @@ rocsparse_status rocsparse_csrsm_clear(rocsparse_handle handle, rocsparse_mat_in
 *
 *  \details
 *  \p rocsparse_csrsm_solve solves a sparse triangular linear system of a sparse
-*  \f$m \times m\f$ matrix, defined in CSR storage format, a dense solution matrix
+*  \f$m \times m\f$ matrix, defined in CSR storage format, a column-oriented dense solution matrix
 *  \f$X\f$ and the right-hand side matrix \f$B\f$ that is multiplied by \f$\alpha\f$, such that
 *  \f[
 *    op(A) \cdot op(X) = \alpha \cdot op(B),
@@ -444,8 +444,8 @@ rocsparse_status rocsparse_csrsm_clear(rocsparse_handle handle, rocsparse_mat_in
 *
 *  The solution is performed inplace meaning that the matrix B is overwritten with the solution
 *  X after calling \p rocsparse_csrsm_solve. Given that the sparse matrix A is a square matrix, its
-*  size is \f$m \times m\f$ regardless of whether A is transposed or not. The size of the dense, column
-*  ordered, matrices B and X have size that depends on the value of \p trans_B:
+*  size is \f$m \times m\f$ regardless of whether A is transposed or not. The size of the column-oriented dense
+*  matrices B and X have size that depends on the value of \p trans_B:
 *
 *  \f[
 *    op(B)/op(X) = \left\{
@@ -537,7 +537,7 @@ rocsparse_status rocsparse_csrsm_clear(rocsparse_handle handle, rocsparse_mat_in
 *  @param[in]
 *  m           number of rows of the sparse CSR matrix A.
 *  @param[in]
-*  nrhs        number of columns of the dense matrix op(B).
+*  nrhs        number of columns of the column-oriented dense matrix op(B).
 *  @param[in]
 *  nnz         number of non-zero entries of the sparse CSR matrix A.
 *  @param[in]
@@ -553,7 +553,7 @@ rocsparse_status rocsparse_csrsm_clear(rocsparse_handle handle, rocsparse_mat_in
 *  csr_col_ind array of \p nnz elements containing the column indices of the sparse
 *              CSR matrix A.
 *  @param[inout]
-*  B           array of \p m \f$\times\f$ \p nrhs elements of the rhs matrix B.
+*  B           column-oriented dense matrix of dimension \p m \f$\times\f$ \p nrhs elements of the rhs matrix B.
 *  @param[in]
 *  ldb         leading dimension of rhs matrix B.
 *  @param[in]

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -35,7 +35,7 @@ extern "C" {
 /*! \ingroup conv_module
 *  \brief
 *
-*  This function converts the matrix A in dense format into a sparse matrix in CSC format.
+*  This function converts the matrix A in column-oriented dense format into a sparse matrix in CSC format.
 *  All the parameters are assumed to have been pre-allocated by the user and the arrays are
 *  filled in based on nnz_per_columns, which can be pre-computed with rocsparse_xnnz().
 *
@@ -49,19 +49,19 @@ extern "C" {
 *  handle      handle to the rocsparse library context queue.
 *
 *  @param[in]
-*  m           number of rows of the dense matrix \p A.
+*  m           number of rows of the column-oriented dense matrix \p A.
 *
 *  @param[in]
-*  n           number of columns of the dense matrix \p A.
+*  n           number of columns of the column-oriented dense matrix \p A.
 *
 *  @param[in]
-*  descr      the descriptor of the dense matrix \p A, the supported matrix type is rocsparse_matrix_type_general and also any valid value of the \ref rocsparse_index_base.
+*  descr      the descriptor of the column-oriented dense matrix \p A, the supported matrix type is rocsparse_matrix_type_general and also any valid value of the \ref rocsparse_index_base.
 *
 *  @param[in]
-*  A           array of dimensions (\p ld, \p n)
+*  A           column-oriented dense matrix of dimensions (\p ld, \p n)
 *
 *  @param[in]
-*  ld         leading dimension of dense array \p A.
+*  ld         leading dimension of the column-oriented dense matrix \p A.
 *
 *  @param[in]
 *  nnz_per_columns   array of size \p n containing the number of non-zero elements per column.
