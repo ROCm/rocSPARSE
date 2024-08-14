@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -67,7 +67,7 @@ extern "C" {
  *  @param[in]
  *  csr_col_ind_A array of \p nnz_A elements containing the column indices of the sparse CSR matrix A.
  *  @param[in]
- *  percentage     percentage >= 0 and percentage <= 100.
+ *  percentage     \p percentage>=0 and \p percentage<=100.
  *  @param[in]
  *  csr_descr_C   descriptor of the sparse CSR matrix C. Currently, only
  *                \ref rocsparse_matrix_type_general is supported.
@@ -161,7 +161,7 @@ rocsparse_status
  *  @param[in]
  *  csr_col_ind_A array of \p nnz_A elements containing the column indices of the sparse CSR matrix A.
  *  @param[in]
- *  percentage    percentage >= 0 and percentage <= 100.
+ *  percentage    \p percentage>=0 and \p percentage<=100.
  *  @param[in]
  *  csr_descr_C   descriptor of the sparse CSR matrix C. Currently, only
  *                \ref rocsparse_matrix_type_general is supported.
@@ -255,7 +255,7 @@ rocsparse_status rocsparse_dprune_csr2csr_nnz_by_percentage(rocsparse_handle    
  *  @param[in]
  *  csr_col_ind_A array of \p nnz_A elements containing the column indices of the sparse CSR matrix A.
  *  @param[in]
- *  percentage    percentage >= 0 and percentage <= 100.
+ *  percentage    \p percentage>=0 and \p percentage<=100.
  *  @param[in]
  *  csr_descr_C   descriptor of the sparse CSR matrix C. Currently, only
  *                \ref rocsparse_matrix_type_general is supported.

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -79,7 +79,7 @@ extern "C" {
 *              integer array of \p m+1 elements that contains the start of every row and the end of the last row plus one.
 *  @param[in]
 *  csr_col_ind
-*              integer array of nnz ( = \p csr_row_ptr[m] - csr_row_ptr[0] ) column indices of the non-zero elements of matrix \p A.
+*              integer array of nnz ( = \p csr_row_ptr[m] - \p csr_row_ptr[0] ) column indices of the non-zero elements of matrix \p A.
 *
 *  @param[out]
 *  buffer_size number of bytes of the temporary storage buffer required by
@@ -242,7 +242,7 @@ rocsparse_status rocsparse_dprune_dense2csr_nnz(rocsparse_handle          handle
 *              integer array of \p m+1 elements that contains the start of every row and the end of the last row plus one.
 *  @param[out]
 *  csr_col_ind
-*              integer array of nnz ( = \p csr_row_ptr[m] - csr_row_ptr[0] ) column indices of the non-zero elements of matrix \p A.
+*              integer array of nnz ( = \p csr_row_ptr[m] - \p csr_row_ptr[0] ) column indices of the non-zero elements of matrix \p A.
 *
 *  @param[in]
 *  temp_buffer temporary storage buffer allocated by the user, size is returned by

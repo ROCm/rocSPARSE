@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -76,13 +76,13 @@ rocsparse_status rocsparse_csric0_zero_pivot(rocsparse_handle   handle,
 *
 *  \details
 *  \p rocsparse_csric0_singular_pivot() returns the position of a
-*  numerical singular pivot (where \f$|L_{j,j}| \leq \text{tolerance}\f$) 
+*  numerical singular pivot (where \f$|L_{j,j}| \leq \text{tolerance}\f$)
 *  that has been found during rocsparse_scsric0() or
 *  rocsparse_dcsric0() computation. The first singular pivot \f$j\f$ at \f$L_{j,j}\f$
 *  is stored in \p position, using same index base as the CSR matrix.
 *
 *  \p position can be in host or device memory. If no singular pivot has been found,
-*  \p position is set to -1. 
+*  \p position is set to -1.
 *
 *  \note \p rocsparse_csric0_singular_pivot() is a blocking function. It might influence
 *  performance negatively.
@@ -114,9 +114,9 @@ rocsparse_status rocsparse_csric0_singular_pivot(rocsparse_handle   handle,
 *
 *  \details
 *  \p rocsparse_csric0_set_tolerance()  sets the numerical tolerance for detecting a
-*  numerical singular pivot (where \f$|L_{j,j}|  \leq \text{tolerance}\f$) 
+*  numerical singular pivot (where \f$|L_{j,j}|  \leq \text{tolerance}\f$)
 *  that might be found during rocsparse_scsric0() or
-*  rocsparse_dcsric0()  computation.  
+*  rocsparse_dcsric0()  computation.
 *
 *
 *  \note \p rocsparse_csric0_set_tolerance() is a blocking function. It might influence
@@ -130,11 +130,11 @@ rocsparse_status rocsparse_csric0_singular_pivot(rocsparse_handle   handle,
 *  @param[in]
 *  info        structure that holds the information collected during the analysis step.
 *  @param[in]
-*  tolerance    tolerance for detecting singular pivot (\f$|L_{j,j}|  \leq \text{tolerance}\f$) 
+*  tolerance    tolerance for detecting singular pivot (\f$|L_{j,j}|  \leq \text{tolerance}\f$)
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval     rocsparse_status_invalid_pointer if \p info tolerance pointer is 
+*  \retval     rocsparse_status_invalid_pointer if \p info tolerance pointer is
 *              invalid
 */
 ROCSPARSE_EXPORT
@@ -148,9 +148,9 @@ rocsparse_status rocsparse_csric0_set_tolerance(rocsparse_handle   handle,
 *
 *  \details
 *  \p rocsparse_csric0_get_tolerance() returns the numerical tolerance for detecting a
-*  numerical singular pivot (where \f$|L_{j,j}|  \leq \text{tolerance}\f$) 
+*  numerical singular pivot (where \f$|L_{j,j}|  \leq \text{tolerance}\f$)
 *  that might be found during rocsparse_scsric0() or
-*  rocsparse_dcsric0() computation. 
+*  rocsparse_dcsric0() computation.
 *
 *
 *  \note \p rocsparse_csric0_get_tolerance() is a blocking function. It might influence
@@ -168,7 +168,7 @@ rocsparse_status rocsparse_csric0_set_tolerance(rocsparse_handle   handle,
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval     rocsparse_status_invalid_pointer if \p info or \p tolerance pointer is 
+*  \retval     rocsparse_status_invalid_pointer if \p info or \p tolerance pointer is
 *              invalid
 */
 ROCSPARSE_EXPORT
@@ -227,7 +227,6 @@ rocsparse_status rocsparse_csric0_get_tolerance(rocsparse_handle   handle,
 *              \p csr_col_ind, \p info or \p buffer_size pointer is invalid.
 *  \retval     rocsparse_status_internal_error an internal error occurred.
 *  \retval     rocsparse_status_not_implemented
-*              \p trans != \ref rocsparse_operation_none or
 *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
 */
 /**@{*/
@@ -341,7 +340,6 @@ rocsparse_status rocsparse_zcsric0_buffer_size(rocsparse_handle                h
 *              \p csr_col_ind, \p info or \p temp_buffer pointer is invalid.
 *  \retval     rocsparse_status_internal_error an internal error occurred.
 *  \retval     rocsparse_status_not_implemented
-*              \p trans != \ref rocsparse_operation_none or
 *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
 */
 /**@{*/
@@ -491,7 +489,6 @@ rocsparse_status rocsparse_csric0_clear(rocsparse_handle handle, rocsparse_mat_i
 *  \retval     rocsparse_status_arch_mismatch the device is not supported.
 *  \retval     rocsparse_status_internal_error an internal error occurred.
 *  \retval     rocsparse_status_not_implemented
-*              \p trans != \ref rocsparse_operation_none or
 *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
 *
 *  \par Example

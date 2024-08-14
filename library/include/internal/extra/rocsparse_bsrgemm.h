@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -55,7 +55,7 @@ extern "C" {
 *  handle          handle to the rocsparse library context queue.
 *  @param[in]
 *  dir             direction that specifies whether to count nonzero elements by \ref rocsparse_direction_row or by
-*                  \ref rocsparse_direction_row in the BSR matrices \f$A\f$, \f$B\f$, \f$C\f$, and \f$D\f$.
+*                  \ref rocsparse_direction_column in the BSR matrices \f$A\f$, \f$B\f$, \f$C\f$, and \f$D\f$.
 *  @param[in]
 *  trans_A         matrix \f$A\f$ operation type.
 *  @param[in]
@@ -262,7 +262,7 @@ rocsparse_status rocsparse_zbsrgemm_buffer_size(rocsparse_handle                
 *  handle          handle to the rocsparse library context queue.
 *  @param[in]
 *  dir             direction that specifies whether to count nonzero elements by \ref rocsparse_direction_row or by
-*                  \ref rocsparse_direction_row in the BSR matrices \f$A\f$, \f$B\f$, \f$C\f$, and \f$D\f$.
+*                  \ref rocsparse_direction_column in the BSR matrices \f$A\f$, \f$B\f$, \f$C\f$, and \f$D\f$.
 *  @param[in]
 *  trans_A         matrix \f$A\f$ operation type.
 *  @param[in]
@@ -431,7 +431,7 @@ rocsparse_status rocsparse_bsrgemm_nnzb(rocsparse_handle          handle,
 *  handle          handle to the rocsparse library context queue.
 *  @param[in]
 *  dir             direction that specifies whether to count nonzero elements by \ref rocsparse_direction_row or by
-*                  \ref rocsparse_direction_row in the BSR matrices \f$A\f$, \f$B\f$, \f$C\f$, and \f$D\f$.
+*                  \ref rocsparse_direction_column in the BSR matrices \f$A\f$, \f$B\f$, \f$C\f$, and \f$D\f$.
 *  @param[in]
 *  trans_A         matrix \f$A\f$ operation type.
 *  @param[in]

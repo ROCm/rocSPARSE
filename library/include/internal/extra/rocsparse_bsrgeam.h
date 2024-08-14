@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -54,7 +54,7 @@ extern "C" {
 *  handle          handle to the rocsparse library context queue.
 *  @param[in]
 *  dir             direction that specifies whether to count nonzero elements by \ref rocsparse_direction_row or by
-*                  \ref rocsparse_direction_row in the BSR matrices \f$A\f$, \f$B\f$, and \f$C\f$.
+*                  \ref rocsparse_direction_column in the BSR matrices \f$A\f$, \f$B\f$, and \f$C\f$.
 *  @param[in]
 *  mb              number of block rows in the sparse BSR matrix \f$op(A)\f$ and \f$C\f$.
 *  @param[in]
@@ -153,7 +153,7 @@ rocsparse_status rocsparse_bsrgeam_nnzb(rocsparse_handle          handle,
 *  handle          handle to the rocsparse library context queue.
 *  @param[in]
 *  dir             direction that specifies whether to count nonzero elements by \ref rocsparse_direction_row or by
-*                  \ref rocsparse_direction_row in the BSR matrices \f$A\f$, \f$B\f$, and \f$C\f$.
+*                  \ref rocsparse_direction_column in the BSR matrices \f$A\f$, \f$B\f$, and \f$C\f$.
 *  @param[in]
 *  mb               number of rows of the sparse BSR matrix \f$A\f$, \f$B\f$ and \f$C\f$.
 *  @param[in]
