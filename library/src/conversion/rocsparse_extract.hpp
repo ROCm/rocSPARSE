@@ -30,14 +30,17 @@ struct _rocsparse_extract_descr
 protected:
     rocsparse_extract_alg   m_alg{};
     rocsparse_extract_stage m_stage{};
-
-    rocsparse_direction m_direction;
-    int64_t             m_calculated_nnz{};
-    size_t              m_stage_analysis_buffer_size{};
-    size_t              m_stage_compute_buffer_size{};
+    rocsparse_direction     m_direction{};
+    size_t                  m_stage_analysis_buffer_size{};
+    size_t                  m_stage_compute_buffer_size{};
 
 public:
-    virtual ~_rocsparse_extract_descr() = default;
+    int64_t* m_device_nnz{};
+    virtual ~_rocsparse_extract_descr()
+    {
+        rocsparse_hipFree(this->m_device_nnz);
+    }
+
     ///
     /// @brief Get which algorithm is used.
     /// @return The algorithm to use.
@@ -75,24 +78,6 @@ public:
     }
 
     ///
-    /// @brief Get the number of calculated nnz.
-    /// @return The number of calculated nnz.
-    ///
-    int64_t nnz(rocsparse_handle handle) const
-    {
-        return this->m_calculated_nnz;
-    }
-
-    ///
-    /// @brief Set the number of calculated nnz.
-    /// @param[in] The number of calculated nnz.
-    ///
-    void nnz(int64_t value)
-    {
-        this->m_calculated_nnz = value;
-    }
-
-    ///
     /// @brief Constructor
     /// @param[in] value The algorithm to use.
     /// @param[in] source The source sparse matrix descriptor.
@@ -104,6 +89,7 @@ public:
         : m_alg(alg)
     {
         this->m_stage = rocsparse_extract_stage_analysis;
+        THROW_IF_HIP_ERROR(rocsparse_hipMalloc(&this->m_device_nnz, sizeof(int64_t)));
     }
 
     ///
@@ -119,7 +105,7 @@ public:
                                          rocsparse_const_spmat_descr source,
                                          rocsparse_spmat_descr       target,
                                          rocsparse_extract_stage     stage,
-                                         uint64_t*                   buffer_size_in_bytes)
+                                         uint64_t* __restrict__ buffer_size_in_bytes)
         = 0;
 
     ///
@@ -137,6 +123,6 @@ public:
                                  rocsparse_spmat_descr       target,
                                  rocsparse_extract_stage     stage,
                                  uint64_t                    buffer_size_in_bytes,
-                                 void*                       buffer)
+                                 void* __restrict__ buffer)
         = 0;
 };

@@ -50,9 +50,10 @@ extern "C" {
    *  for each stage, since the required buffer size can be different between stages.
    *
    *  The value of the number of non-zeros is available after the analysis phase \ref rocsparse_extract_stage_analysis being executed.
-   *  This value can be fetched with \ref rocsparse_extract_nnz but is also available in the matrix descriptor \p target.
+   *  This value can be fetched with \ref rocsparse_extract_nnz.
    *
-   *  This routine does not support execution in a hipGraph context.
+   *  This routine is asynchronous with respect to the host.
+   *  This routine does support execution in a hipGraph context.
    *
    *  @param[in]
    *  handle       handle to the rocsparse library context queue.
@@ -198,7 +199,8 @@ rocsparse_status rocsparse_extract(rocsparse_handle            handle,
    *  \p rocsparse_extract_buffer_size calculates the required buffer size in bytes for a given stage \p stage.
    *
    *  \note
-   *  This routine does not support execution in a hipGraph context.
+   *  This routine is asynchronous with respect to the host.
+   *  This routine does support execution in a hipGraph context.
    *
    *  @param[in]
    *  handle       handle to the rocsparse library context queue.
@@ -234,6 +236,7 @@ rocsparse_status rocsparse_extract_buffer_size(rocsparse_handle            handl
    *  \p rocsparse_extract_nnz returns the number of non-zeros of the extracted matrix. The value is available after the analysis phase \ref rocsparse_extract_stage_analysis being executed.
    *
    *  \note
+   *  This routine is asynchronous with respect to the host.
    *  This routine does support execution in a hipGraph context.
    *
    *  @param[in]
