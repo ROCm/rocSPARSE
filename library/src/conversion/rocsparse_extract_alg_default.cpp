@@ -26,12 +26,13 @@
 
 namespace rocsparse
 {
+
     template <typename I>
     static rocsparse_status internal_extract_buffer_size_template(rocsparse_handle    handle_,
                                                                   rocsparse_direction source_dir_,
                                                                   int64_t             source_m_,
                                                                   int64_t             source_n_,
-                                                                  size_t*             buffer_size_)
+                                                                  size_t* __restrict__ buffer_size_)
     {
         if((source_m_ > std::numeric_limits<I>::max()))
         {
@@ -62,8 +63,8 @@ namespace rocsparse
 
         RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(nullptr,
                                                     buffer_size_[0],
-                                                    (I*)nullptr,
-                                                    (I*)nullptr,
+                                                    (I* __restrict__)nullptr,
+                                                    (I* __restrict__)nullptr,
                                                     num_seq + 1,
                                                     rocprim::plus<I>(),
                                                     handle_->stream));
@@ -96,8 +97,11 @@ namespace rocsparse
     }
 
     template <typename I, typename J>
-    static rocsparse_status internal_extract_inclusive_scan(
-        rocsparse_handle handle_, J nseq_, I* ptr_, size_t buffer_size_, void* buffer_)
+    static rocsparse_status internal_extract_inclusive_scan(rocsparse_handle handle_,
+                                                            J                nseq_,
+                                                            I* __restrict__ ptr_,
+                                                            size_t buffer_size_,
+                                                            void* __restrict__ buffer_)
     {
         RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(
             buffer_, buffer_size_, ptr_, ptr_, nseq_ + 1, rocprim::plus<I>(), handle_->stream));
@@ -106,13 +110,13 @@ namespace rocsparse
 
     template <uint32_t BLOCKSIZE, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
-    void extract_count_kernel(J                    nseq_,
-                              const I*             source_ptr_,
-                              const J*             source_ind_,
+    void extract_count_kernel(J nseq_,
+                              const I* __restrict__ source_ptr_,
+                              const J* __restrict__ source_ind_,
                               rocsparse_index_base base_,
                               bool                 extract_before_diagonal_,
                               rocsparse_diag_type  target_diag_,
-                              I*                   target_ptr_)
+                              I* __restrict__ target_ptr_)
     {
         const I seq = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
         if(seq < nseq_)
@@ -139,24 +143,34 @@ namespace rocsparse
         }
     }
 
+    template <typename I, typename J>
+    ROCSPARSE_KERNEL(1)
+    void extract_grab_nnz_kernel(J n_,
+                                 const I* __restrict__ ptr_,
+                                 rocsparse_index_base base_,
+                                 int64_t* __restrict__ nnz_)
+    {
+        nnz_[0] = ptr_[n_] - base_;
+    }
+
     template <typename T, typename I, typename J>
     static rocsparse_status
-        internal_extract_analysis_template(rocsparse_handle     handle_,
-                                           rocsparse_direction  source_dir_,
-                                           int64_t              source_m_,
-                                           int64_t              source_n_,
-                                           int64_t              source_nnz_,
-                                           const void*          source_ptr_,
-                                           const void*          source_ind_,
-                                           const void*          source_val_,
+        internal_extract_analysis_template(rocsparse_handle    handle_,
+                                           rocsparse_direction source_dir_,
+                                           int64_t             source_m_,
+                                           int64_t             source_n_,
+                                           int64_t             source_nnz_,
+                                           const void* __restrict__ source_ptr_,
+                                           const void* __restrict__ source_ind_,
+                                           const void* __restrict__ source_val_,
                                            rocsparse_index_base source_base_,
                                            rocsparse_fill_mode  target_fill_mode_,
                                            rocsparse_diag_type  target_diag_,
-                                           int64_t*             target_nnz_,
-                                           void*                target_ptr_,
+                                           void* __restrict__ target_nnz_,
+                                           void* __restrict__ target_ptr_,
                                            rocsparse_index_base target_base_,
                                            size_t               buffer_size_,
-                                           void*                buffer_)
+                                           void* __restrict__ buffer_)
     {
 
         if((source_m_ > std::numeric_limits<J>::max()))
@@ -231,8 +245,6 @@ namespace rocsparse
                 target_ptr_, &base_value, sizeof(I), hipMemcpyHostToDevice, handle_->stream));
         }
 
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
-
         static constexpr int nthreads_per_block = 1024;
         dim3                 threads(nthreads_per_block);
         J                    nblocks = (num_seq - 1) / nthreads_per_block + 1;
@@ -245,25 +257,24 @@ namespace rocsparse
             0,
             handle_->stream,
             num_seq,
-            (const I*)source_ptr_,
-            (const J*)source_ind_,
+            (const I* __restrict__)source_ptr_,
+            (const J* __restrict__)source_ind_,
             source_base_,
             extract_before_diagonal,
             target_diag_,
-            (I*)target_ptr_);
+            (I* __restrict__)target_ptr_);
 
         RETURN_IF_ROCSPARSE_ERROR(rocsparse::internal_extract_inclusive_scan(
-            handle_, num_seq, (I*)target_ptr_, buffer_size_, buffer_));
-        {
-            I local_nnz;
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&local_nnz,
-                                               ((I*)target_ptr_) + num_seq,
-                                               sizeof(I),
-                                               hipMemcpyDeviceToHost,
-                                               handle_->stream));
-            RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle_->stream));
-            target_nnz_[0] = local_nnz - static_cast<I>(target_base_);
-        }
+            handle_, num_seq, (I* __restrict__)target_ptr_, buffer_size_, buffer_));
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::extract_grab_nnz_kernel<I, J>),
+                                           dim3(1),
+                                           dim3(1),
+                                           0,
+                                           handle_->stream,
+                                           num_seq,
+                                           (const I* __restrict__)target_ptr_,
+                                           target_base_,
+                                           ((int64_t* __restrict__)target_nnz_));
         return rocsparse_status_success;
     }
 
@@ -371,16 +382,16 @@ namespace rocsparse
 
     template <uint32_t BLOCKSIZE, typename T, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
-    void internal_extract_fill_kernel(J                    nseq_,
-                                      const I*             source_ptr_,
-                                      const J*             source_ind_,
-                                      const T*             source_val_,
+    void internal_extract_fill_kernel(J nseq_,
+                                      const I* __restrict__ source_ptr_,
+                                      const J* __restrict__ source_ind_,
+                                      const T* __restrict__ source_val_,
                                       rocsparse_index_base source_base_,
                                       bool                 extract_before_diagonal_,
                                       rocsparse_diag_type  target_diag_,
-                                      const I*             target_ptr_,
-                                      J*                   target_ind_,
-                                      T*                   target_val_,
+                                      const I* __restrict__ target_ptr_,
+                                      J* __restrict__ target_ind_,
+                                      T* __restrict__ target_val_,
                                       rocsparse_index_base target_base_)
     {
         const I seq = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
@@ -408,23 +419,22 @@ namespace rocsparse
     }
 
     template <typename T, typename I, typename J>
-    rocsparse_status internal_extract_compute_template(rocsparse_handle     handle_,
-                                                       rocsparse_direction  source_dir_,
-                                                       int64_t              source_m_,
-                                                       int64_t              source_n_,
-                                                       int64_t              source_nnz_,
-                                                       const void*          source_ptr_,
-                                                       const void*          source_ind_,
-                                                       const void*          source_val_,
+    rocsparse_status internal_extract_compute_template(rocsparse_handle    handle_,
+                                                       rocsparse_direction source_dir_,
+                                                       int64_t             source_m_,
+                                                       int64_t             source_n_,
+                                                       int64_t             source_nnz_,
+                                                       const void* __restrict__ source_ptr_,
+                                                       const void* __restrict__ source_ind_,
+                                                       const void* __restrict__ source_val_,
                                                        rocsparse_index_base source_base_,
                                                        rocsparse_fill_mode  target_fill_mode_,
                                                        rocsparse_diag_type  target_diag_,
-                                                       int64_t              target_nnz_,
-                                                       void*                target_ptr_,
-                                                       void*                target_ind_,
-                                                       void*                target_val_,
+                                                       void* __restrict__ target_ptr_,
+                                                       void* __restrict__ target_ind_,
+                                                       void* __restrict__ target_val_,
                                                        rocsparse_index_base target_base_,
-                                                       void*                buffer_)
+                                                       void* __restrict__ buffer_)
     {
         if((source_m_ > std::numeric_limits<J>::max()))
         {
@@ -498,15 +508,15 @@ namespace rocsparse
             0,
             handle_->stream,
             num_seq,
-            (const I*)source_ptr_,
-            (const J*)source_ind_,
-            (const T*)source_val_,
+            (const I* __restrict__)source_ptr_,
+            (const J* __restrict__)source_ind_,
+            (const T* __restrict__)source_val_,
             source_base_,
             extract_before_diagonal,
             target_diag_,
-            (I*)target_ptr_,
-            (J*)target_ind_,
-            (T*)target_val_,
+            (I* __restrict__)target_ptr_,
+            (J* __restrict__)target_ind_,
+            (T* __restrict__)target_val_,
             target_base_);
 
         return rocsparse_status_success;
@@ -616,12 +626,6 @@ namespace rocsparse
 
 }
 
-rocsparse_status rocsparse_extract_descr_default_t::nnz(rocsparse_handle handle, int64_t* nnz)
-{
-    nnz[0] = ((_rocsparse_extract_descr*)this)->nnz(handle);
-    return rocsparse_status_success;
-}
-
 rocsparse_extract_descr_default_t::rocsparse_extract_descr_default_t(
     rocsparse_const_spmat_descr source, rocsparse_const_spmat_descr target)
     : _rocsparse_extract_descr(rocsparse_extract_alg_default, source, target)
@@ -665,11 +669,12 @@ rocsparse_extract_descr_default_t::rocsparse_extract_descr_default_t(
     }
 }
 
-rocsparse_status rocsparse_extract_descr_default_t::buffer_size(rocsparse_handle            handle,
-                                                                rocsparse_const_spmat_descr source,
-                                                                rocsparse_spmat_descr       target,
-                                                                rocsparse_extract_stage     stage,
-                                                                size_t* buffer_size_in_bytes)
+rocsparse_status
+    rocsparse_extract_descr_default_t::buffer_size(rocsparse_handle            handle,
+                                                   rocsparse_const_spmat_descr source,
+                                                   rocsparse_spmat_descr       target,
+                                                   rocsparse_extract_stage     stage,
+                                                   size_t* __restrict__ buffer_size_in_bytes)
 {
 
     switch(stage)
@@ -704,16 +709,16 @@ rocsparse_status rocsparse_extract_descr_default_t::run(rocsparse_handle        
                                                         rocsparse_spmat_descr       target,
                                                         rocsparse_extract_stage     stage,
                                                         size_t                      buffer_size,
-                                                        void*                       buffer)
+                                                        void* __restrict__ buffer)
 
 {
     const rocsparse_fill_mode target_fill_mode = target->descr->fill_mode;
     const rocsparse_diag_type target_diag_type = target->descr->diag_type;
 
-    const void* const_source_ptr_data = nullptr;
-    const void* const_source_ind_data = nullptr;
-    void*       target_ptr_data       = nullptr;
-    void*       target_ind_data       = nullptr;
+    const void* __restrict__ const_source_ptr_data = nullptr;
+    const void* __restrict__ const_source_ind_data = nullptr;
+    void* __restrict__ target_ptr_data             = nullptr;
+    void* __restrict__ target_ind_data             = nullptr;
 
     switch(source->format)
     {
@@ -749,7 +754,6 @@ rocsparse_status rocsparse_extract_descr_default_t::run(rocsparse_handle        
     {
     case rocsparse_extract_stage_analysis:
     {
-        int64_t host_target_nnz[1];
         RETURN_IF_ROCSPARSE_ERROR((rocsparse::internal_extract_analysis_dispatch(
             source->data_type,
             (this->m_direction == rocsparse_direction_row) ? target->row_type : target->col_type,
@@ -765,16 +769,12 @@ rocsparse_status rocsparse_extract_descr_default_t::run(rocsparse_handle        
             source->idx_base,
             target_fill_mode,
             target_diag_type,
-            host_target_nnz,
+            this->m_device_nnz,
             target_ptr_data,
             target->idx_base,
             buffer_size,
             buffer)));
-        //
-        // set nnz.
-        //
-        this->m_calculated_nnz = host_target_nnz[0];
-        target->nnz            = this->m_calculated_nnz;
+
         break;
     }
 
@@ -796,7 +796,6 @@ rocsparse_status rocsparse_extract_descr_default_t::run(rocsparse_handle        
             //
             target_fill_mode,
             target_diag_type,
-            target->nnz,
             target_ptr_data,
             target_ind_data,
             target->val_data,
