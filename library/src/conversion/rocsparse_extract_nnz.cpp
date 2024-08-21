@@ -27,14 +27,14 @@
 
 namespace rocsparse
 {
-
     ///
     /// @brief Core of the resulting number of non-zeros of the extract.
     ///
     static rocsparse_status
         extract_nnz_core(rocsparse_handle handle, const rocsparse_extract_descr descr, int64_t* nnz)
     {
-        nnz[0] = descr->nnz(handle);
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            nnz, descr->m_device_nnz, sizeof(int64_t), hipMemcpyDeviceToHost, handle->stream));
         return rocsparse_status_success;
     }
 

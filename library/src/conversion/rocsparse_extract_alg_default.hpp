@@ -26,21 +26,20 @@
 
 struct rocsparse_extract_descr_default_t : public _rocsparse_extract_descr
 {
+
     rocsparse_extract_descr_default_t(rocsparse_const_spmat_descr source,
                                       rocsparse_const_spmat_descr target);
-
-    rocsparse_status nnz(rocsparse_handle handle, int64_t* nnz);
 
     virtual rocsparse_status buffer_size(rocsparse_handle            handle,
                                          rocsparse_const_spmat_descr source,
                                          rocsparse_spmat_descr       target,
                                          rocsparse_extract_stage     stage,
-                                         size_t*                     buffer_size_in_bytes);
+                                         size_t* __restrict__ buffer_size_in_bytes);
 
     virtual rocsparse_status run(rocsparse_handle            handle,
                                  rocsparse_const_spmat_descr source,
                                  rocsparse_spmat_descr       target,
                                  rocsparse_extract_stage     stage,
                                  size_t                      buffer_size,
-                                 void*                       buffer);
+                                 void* __restrict__ buffer);
 };

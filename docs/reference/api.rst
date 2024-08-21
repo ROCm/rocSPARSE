@@ -131,6 +131,8 @@ Auxiliary Functions
 +-----------------------------------------------------+
 |:cpp:func:`rocsparse_spmat_get_size`                 |
 +-----------------------------------------------------+
+|:cpp:func:`rocsparse_spmat_get_nnz`                  |
++-----------------------------------------------------+
 |:cpp:func:`rocsparse_spmat_get_format`               |
 +-----------------------------------------------------+
 |:cpp:func:`rocsparse_spmat_get_index_base`           |

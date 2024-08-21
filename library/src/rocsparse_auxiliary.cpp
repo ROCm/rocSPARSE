@@ -3460,6 +3460,115 @@ catch(...)
     RETURN_ROCSPARSE_EXCEPTION();
 }
 
+/****************************************************************************
+ * \brief rocsparse_spmat_get_nnz gets the sparse matrix number of non-zeros.
+ ****************************************************************************/
+rocsparse_status rocsparse_spmat_get_nnz(rocsparse_const_spmat_descr descr, int64_t* nnz)
+try
+{
+    ROCSPARSE_CHECKARG_POINTER(0, descr);
+    ROCSPARSE_CHECKARG(0, descr, (descr->init == false), rocsparse_status_not_initialized);
+    ROCSPARSE_CHECKARG_POINTER(1, nnz);
+
+    switch(descr->format)
+    {
+    case rocsparse_format_bell:
+    {
+        nnz[0] = descr->ell_cols * descr->rows * descr->block_dim * descr->block_dim;
+        break;
+    }
+
+    case rocsparse_format_ell:
+    {
+        nnz[0] = descr->ell_width * descr->rows;
+        break;
+    }
+
+    case rocsparse_format_bsr:
+    {
+        nnz[0] = descr->nnz * descr->block_dim * descr->block_dim;
+        break;
+    }
+
+    case rocsparse_format_csc:
+    case rocsparse_format_csr:
+    case rocsparse_format_coo:
+    case rocsparse_format_coo_aos:
+    {
+        nnz[0] = descr->nnz;
+        break;
+    }
+    }
+
+    return rocsparse_status_success;
+}
+catch(...)
+{
+    RETURN_ROCSPARSE_EXCEPTION();
+}
+
+/****************************************************************************
+ * \brief rocsparse_spmat_get_nnz sets the sparse matrix number of non-zeros.
+ ****************************************************************************/
+rocsparse_status rocsparse_spmat_set_nnz(rocsparse_spmat_descr descr, int64_t nnz)
+try
+{
+    ROCSPARSE_CHECKARG_POINTER(0, descr);
+    ROCSPARSE_CHECKARG(0, descr, (descr->init == false), rocsparse_status_not_initialized);
+    ROCSPARSE_CHECKARG_SIZE(1, nnz);
+
+    switch(descr->format)
+    {
+    case rocsparse_format_bell:
+    {
+        RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(
+            rocsparse_status_invalid_value,
+            "Cannot set the number of non-zeros of a Block ELL sparse matrix.");
+        break;
+    }
+
+    case rocsparse_format_ell:
+    {
+        RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(
+            rocsparse_status_invalid_value,
+            "Cannot set the number of non-zeros of an ELL sparse matrix.");
+        break;
+    }
+
+    case rocsparse_format_bsr:
+    {
+        descr->nnz = nnz;
+        break;
+    }
+    case rocsparse_format_csc:
+    {
+        descr->nnz = nnz;
+        break;
+    }
+    case rocsparse_format_csr:
+    {
+        descr->nnz = nnz;
+        break;
+    }
+    case rocsparse_format_coo:
+    {
+        descr->nnz = nnz;
+        break;
+    }
+    case rocsparse_format_coo_aos:
+    {
+        descr->nnz = nnz;
+        break;
+    }
+    }
+
+    return rocsparse_status_success;
+}
+catch(...)
+{
+    RETURN_ROCSPARSE_EXCEPTION();
+}
+
 /********************************************************************************
  * \brief rocsparse_spmat_set_strided_batch sets the sparse matrix batch count.
  *******************************************************************************/

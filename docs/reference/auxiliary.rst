@@ -324,6 +324,11 @@ rocsparse_spmat_get_size
 
 .. doxygenfunction:: rocsparse_spmat_get_size
 
+rocsparse_spmat_get_nnz
+------------------------
+
+.. doxygenfunction:: rocsparse_spmat_get_nnz
+
 rocsparse_spmat_get_format
 --------------------------
 
