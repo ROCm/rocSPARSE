@@ -204,6 +204,11 @@ rocsparse_order
 
 .. doxygenenum:: rocsparse_order
 
+rocsparse_spmat_attribute
+-------------------------
+
+.. doxygenenum:: rocsparse_spmat_attribute
+
 rocsparse_spmv_alg
 ------------------
 

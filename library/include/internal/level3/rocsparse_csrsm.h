@@ -407,7 +407,7 @@ rocsparse_status rocsparse_csrsm_clear(rocsparse_handle handle, rocsparse_mat_in
 *  \details
 *  \p rocsparse_csrsm_solve solves a sparse triangular linear system of a sparse
 *  \f$m \times m\f$ matrix, defined in CSR storage format, a column-oriented dense solution matrix
-*  \f$X\f$ and the right-hand side matrix \f$B\f$ that is multiplied by \f$\alpha\f$, such that
+*  \f$X\f$ and the column-oriented dense right-hand side matrix \f$B\f$ that is multiplied by \f$\alpha\f$, such that
 *  \f[
 *    op(A) \cdot op(X) = \alpha \cdot op(B),
 *  \f]
@@ -450,9 +450,9 @@ rocsparse_status rocsparse_csrsm_clear(rocsparse_handle handle, rocsparse_mat_in
 *  \f[
 *    op(B)/op(X) = \left\{
 *    \begin{array}{ll}
-*        ldb \times nrhs, \text{ } ldb \ge m, & \text{if trans_B == rocsparse_operation_none} \\
-*        ldb \times m, \text{ } ldb \ge nrhs,  & \text{if trans_B == rocsparse_operation_transpose} \\
-*        ldb \times m, \text{ } ldb \ge nrhs, & \text{if trans_B == rocsparse_operation_conjugate_transpose}
+*        ldb \times nrhs, \text{  } ldb \ge m, & \text{if trans_B == rocsparse_operation_none} \\
+*        ldb \times m, \text{  } ldb \ge nrhs,  & \text{if trans_B == rocsparse_operation_transpose} \\
+*        ldb \times m, \text{  } ldb \ge nrhs, & \text{if trans_B == rocsparse_operation_conjugate_transpose}
 *    \end{array}
 *    \right.
 *  \f]

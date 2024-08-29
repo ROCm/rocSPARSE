@@ -91,7 +91,17 @@ Auxiliary Functions
 +-----------------------------------------------------+
 |:cpp:func:`rocsparse_create_ell_descr`               |
 +-----------------------------------------------------+
+|:cpp:func:`rocsparse_create_bsr_descr`               |
++-----------------------------------------------------+
 |:cpp:func:`rocsparse_create_bell_descr`              |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_create_const_coo_descr`         |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_create_const_csr_descr`         |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_create_const_csc_descr`         |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_create_const_bell_descr`        |
 +-----------------------------------------------------+
 |:cpp:func:`rocsparse_destroy_spmat_descr`            |
 +-----------------------------------------------------+
@@ -157,6 +167,8 @@ Auxiliary Functions
 +-----------------------------------------------------+
 |:cpp:func:`rocsparse_create_dnvec_descr`             |
 +-----------------------------------------------------+
+|:cpp:func:`rocsparse_create_const_dnvec_descr`       |
++-----------------------------------------------------+
 |:cpp:func:`rocsparse_destroy_dnvec_descr`            |
 +-----------------------------------------------------+
 |:cpp:func:`rocsparse_dnvec_get`                      |
@@ -166,6 +178,8 @@ Auxiliary Functions
 |:cpp:func:`rocsparse_dnvec_set_values`               |
 +-----------------------------------------------------+
 |:cpp:func:`rocsparse_create_dnmat_descr`             |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_create_const_dnmat_descr`       |
 +-----------------------------------------------------+
 |:cpp:func:`rocsparse_destroy_dnmat_descr`            |
 +-----------------------------------------------------+

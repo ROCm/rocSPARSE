@@ -133,196 +133,6 @@ rocsparse_status rocsparse_bsrsm_zero_pivot(rocsparse_handle   handle,
 *              \p trans_A == \ref rocsparse_operation_conjugate_transpose,
 *              \p trans_X == \ref rocsparse_operation_conjugate_transpose or
 *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
-*
-*  \par Example
-*  Consider the lower triangular \f$m \times m\f$ matrix \f$L\f$, stored in BSR
-*  storage format with non-unit diagonal. The following example solves \f$L \cdot X = B\f$.
-*  \code{.c}
-*      // rocSPARSE handle
-*      rocsparse_handle handle;
-*      rocsparse_create_handle(&handle);
-*
-*      // A = ( 1.0  0.0  0.0  0.0 )
-*      //     ( 2.0  3.0  0.0  0.0 )
-*      //     ( 4.0  5.0  6.0  0.0 )
-*      //     ( 7.0  0.0  8.0  9.0 )
-*      //
-*      // with bsr_dim = 2
-*      //
-*      //      -------------------
-*      //   = | 1.0 0.0 | 0.0 0.0 |
-*      //     | 2.0 3.0 | 0.0 0.0 |
-*      //      -------------------
-*      //     | 4.0 5.0 | 6.0 0.0 |
-*      //     | 7.0 0.0 | 8.0 9.0 |
-*      //      -------------------
-*
-*      // Number of rows and columns
-*      rocsparse_int m = 4;
-*
-*      // Number of block rows and block columns
-*      rocsparse_int mb = 2;
-*      rocsparse_int nb = 2;
-*
-*      // BSR block dimension
-*      rocsparse_int bsr_dim = 2;
-*
-*      // Number of right-hand-sides
-*      rocsparse_int nrhs = 4;
-*
-*      // Number of non-zero blocks
-*      rocsparse_int nnzb = 3;
-*
-*      // BSR row pointers
-*      rocsparse_int hbsr_row_ptr[3] = {0, 1, 3};
-*
-*      // BSR column indices
-*      rocsparse_int hbsr_col_ind[3] = {0, 0, 1};
-*
-*      // BSR values
-*      double hbsr_val[12] = {1.0, 2.0, 0.0, 3.0, 4.0, 7.0, 5.0, 0.0, 6.0, 8.0, 0.0, 9.0};
-*
-*      // Storage scheme of the BSR blocks
-*      rocsparse_direction dir = rocsparse_direction_column;
-*
-*      // Transposition of the matrix and rhs matrix
-*      rocsparse_operation transA = rocsparse_operation_none;
-*      rocsparse_operation transX = rocsparse_operation_none;
-*
-*      // Analysis policy
-*      rocsparse_analysis_policy analysis_policy = rocsparse_analysis_policy_reuse;
-*
-*      // Solve policy
-*      rocsparse_solve_policy solve_policy = rocsparse_solve_policy_auto;
-*
-*      // Scalar alpha and beta
-*      double alpha = 3.7;
-*
-*      // rhs and solution matrix
-*      rocsparse_int ldb = nb * bsr_dim;
-*      rocsparse_int ldx = mb * bsr_dim;
-*
-*      double hB[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
-*      double hX[16];
-*
-*      // Offload data to device
-*      rocsparse_int* dbsr_row_ptr;
-*      rocsparse_int* dbsr_col_ind;
-*      double*        dbsr_val;
-*      double*        dB;
-*      double*        dX;
-*
-*      hipMalloc((void**)&dbsr_row_ptr, sizeof(rocsparse_int) * (mb + 1));
-*      hipMalloc((void**)&dbsr_col_ind, sizeof(rocsparse_int) * nnzb);
-*      hipMalloc((void**)&dbsr_val, sizeof(double) * nnzb * bsr_dim * bsr_dim);
-*      hipMalloc((void**)&dB, sizeof(double) * nb * bsr_dim * nrhs);
-*      hipMalloc((void**)&dX, sizeof(double) * mb * bsr_dim * nrhs);
-*
-*      hipMemcpy(dbsr_row_ptr, hbsr_row_ptr, sizeof(rocsparse_int) * (mb + 1), hipMemcpyHostToDevice);
-*      hipMemcpy(dbsr_col_ind, hbsr_col_ind, sizeof(rocsparse_int) * nnzb, hipMemcpyHostToDevice);
-*      hipMemcpy(dbsr_val, hbsr_val, sizeof(double) * nnzb * bsr_dim * bsr_dim, hipMemcpyHostToDevice);
-*      hipMemcpy(dB, hB, sizeof(double) * nb * bsr_dim * nrhs, hipMemcpyHostToDevice);
-*
-*      // Matrix descriptor
-*      rocsparse_mat_descr descr;
-*      rocsparse_create_mat_descr(&descr);
-*
-*      // Matrix fill mode
-*      rocsparse_set_mat_fill_mode(descr, rocsparse_fill_mode_lower);
-*
-*      // Matrix diagonal type
-*      rocsparse_set_mat_diag_type(descr, rocsparse_diag_type_non_unit);
-*
-*      // Matrix info structure
-*      rocsparse_mat_info info;
-*      rocsparse_create_mat_info(&info);
-*
-*      // Obtain required buffer size
-*      size_t buffer_size;
-*      rocsparse_dbsrsm_buffer_size(handle,
-*                                dir,
-*                                transA,
-*                                transX,
-*                                mb,
-*                                nrhs,
-*                                nnzb,
-*                                descr,
-*                                dbsr_val,
-*                                dbsr_row_ptr,
-*                                dbsr_col_ind,
-*                                bsr_dim,
-*                                info,
-*                                &buffer_size);
-*
-*      // Allocate temporary buffer
-*      void* temp_buffer;
-*      hipMalloc(&temp_buffer, buffer_size);
-*
-*      // Perform analysis step
-*      rocsparse_dbsrsm_analysis(handle,
-*                            dir,
-*                            transA,
-*                            transX,
-*                            mb,
-*                            nrhs,
-*                            nnzb,
-*                            descr,
-*                            dbsr_val,
-*                            dbsr_row_ptr,
-*                            dbsr_col_ind,
-*                            bsr_dim,
-*                            info,
-*                            analysis_policy,
-*                            solve_policy,
-*                            temp_buffer);
-*
-*      // Call dbsrsm to perform lower triangular solve LX = B
-*      rocsparse_dbsrsm_solve(handle,
-*                            dir,
-*                            transA,
-*                            transX,
-*                            mb,
-*                            nrhs,
-*                            nnzb,
-*                            &alpha,
-*                            descr,
-*                            dbsr_val,
-*                            dbsr_row_ptr,
-*                            dbsr_col_ind,
-*                            bsr_dim,
-*                            info,
-*                            dB,
-*                            ldb,
-*                            dX,
-*                            ldx,
-*                            solve_policy,
-*                            temp_buffer);
-*
-*      // Check for zero pivots
-*      rocsparse_int    pivot;
-*      rocsparse_status status = rocsparse_bsrsm_zero_pivot(handle, info, &pivot);
-*
-*      if(status == rocsparse_status_zero_pivot)
-*      {
-*          std::cout << "Found zero pivot in matrix row " << pivot << std::endl;
-*      }
-*
-*      // Copy result back to host
-*      hipMemcpy(hX, dX, sizeof(double) * mb * bsr_dim * nrhs, hipMemcpyDeviceToHost);
-*
-*      // Clear rocSPARSE
-*      rocsparse_destroy_mat_info(info);
-*      rocsparse_destroy_mat_descr(descr);
-*      rocsparse_destroy_handle(handle);
-*
-*      // Clear device memory
-*      hipFree(dbsr_row_ptr);
-*      hipFree(dbsr_col_ind);
-*      hipFree(dbsr_val);
-*      hipFree(dB);
-*      hipFree(dX);
-*      hipFree(temp_buffer);
-*  \endcode
 */
 /**@{*/
 ROCSPARSE_EXPORT
@@ -577,8 +387,8 @@ rocsparse_status rocsparse_bsrsm_clear(rocsparse_handle handle, rocsparse_mat_in
 *
 *  \details
 *  \p rocsparse_bsrsm_solve solves a sparse triangular linear system of a sparse
-*  \f$m \times m\f$ matrix, defined in BSR storage format, a column-oriented dense solution matrix
-*  \f$X\f$ and the right-hand side matrix \f$B\f$ that is multiplied by \f$\alpha\f$, such that
+*  \f$m \times m\f$ matrix (where \f$m = mb \times block\_dim\f$), defined in BSR storage format, a column-oriented dense solution matrix
+*  \f$X\f$ and the column-oriented dense right-hand side matrix \f$B\f$ that is multiplied by \f$\alpha\f$, such that
 *  \f[
 *    op(A) \cdot op(X) = \alpha \cdot op(B),
 *  \f]
@@ -594,6 +404,16 @@ rocsparse_status rocsparse_bsrsm_clear(rocsparse_handle handle, rocsparse_mat_in
 *  \f]
 *  ,
 *  \f[
+*    op(B) = \left\{
+*    \begin{array}{ll}
+*        B,   & \text{if trans_X == rocsparse_operation_none} \\
+*        B^T, & \text{if trans_X == rocsparse_operation_transpose} \\
+*        B^H, & \text{if trans_X == rocsparse_operation_conjugate_transpose}
+*    \end{array}
+*    \right.
+*  \f]
+*  and
+*  \f[
 *    op(X) = \left\{
 *    \begin{array}{ll}
 *        X,   & \text{if trans_X == rocsparse_operation_none} \\
@@ -603,22 +423,128 @@ rocsparse_status rocsparse_bsrsm_clear(rocsparse_handle handle, rocsparse_mat_in
 *    \right.
 *  \f]
 *
-*  \p rocsparse_bsrsm_solve requires a user allocated temporary buffer. Its size is
-*  returned by rocsparse_sbsrsm_buffer_size(), rocsparse_dbsrsm_buffer_size(),
-*  rocsparse_cbsrsm_buffer_size() or rocsparse_zbsrsm_buffer_size(). Furthermore,
-*  analysis meta data is required. It can be obtained by rocsparse_sbsrsm_analysis(),
-*  rocsparse_dbsrsm_analysis(), rocsparse_cbsrsm_analysis() or
-*  rocsparse_zbsrsm_analysis(). \p rocsparse_bsrsm_solve reports the first zero pivot
-*  (either numerical or structural zero). The zero pivot status can be checked calling
-*  rocsparse_bsrsm_zero_pivot(). If
-*  \ref rocsparse_diag_type == \ref rocsparse_diag_type_unit, no zero pivot will be
-*  reported, even if \f$A_{j,j} = 0\f$ for some \f$j\f$.
+*  Note that as indicated above, the operation type of both \f$op(B)\f$ and \f$op(X)\f$ is specified by the
+*  \p trans_X parameter and that the operation type of B and X must match. For example, if \f$op(B)=B\f$ then
+*  \f$op(X)=X\f$. Likewise, if \f$op(B)=B^T\f$ then \f$op(X)=X^T\f$.
+*
+*  Given that the sparse matrix A is a square matrix, its size is \f$m \times m\f$ regardless of
+*  whether A is transposed or not. The size of the column-oriented dense matrices B and X have
+*  size that depends on the value of \p trans_X:
+*
+*  \f[
+*    op(B) = \left\{
+*    \begin{array}{ll}
+*        ldb \times nrhs, \text{  } ldb \ge m, & \text{if trans_X == rocsparse_operation_none} \\
+*        ldb \times m, \text{  } ldb \ge nrhs,  & \text{if trans_X == rocsparse_operation_transpose} \\
+*        ldb \times m, \text{  } ldb \ge nrhs, & \text{if trans_X == rocsparse_operation_conjugate_transpose}
+*    \end{array}
+*    \right.
+*  \f]
+*  and
+*  \f[
+*    op(X) = \left\{
+*    \begin{array}{ll}
+*        ldb \times nrhs, \text{  } ldb \ge m, & \text{if trans_X == rocsparse_operation_none} \\
+*        ldb \times m, \text{  } ldb \ge nrhs,  & \text{if trans_X == rocsparse_operation_transpose} \\
+*        ldb \times m, \text{  } ldb \ge nrhs, & \text{if trans_X == rocsparse_operation_conjugate_transpose}
+*    \end{array}
+*    \right.
+*  \f]
+*
+*  \p rocsparse_bsrsm_solve requires a user allocated temporary buffer. Its size is returned by
+*  rocsparse_sbsrsm_buffer_size(), rocsparse_dbsrsm_buffer_size(), rocsparse_cbsrsm_buffer_size()
+*  or rocsparse_zbsrsm_buffer_size(). The size of the required buffer is larger when  \p trans_A equals
+*  \ref rocsparse_operation_transpose or \ref rocsparse_operation_conjugate_transpose and when \p trans_X
+*  is \ref rocsparse_operation_none. The subsequent solve will also be faster when \f$A\f$ is non-transposed
+*  and \f$B\f$ is transposed (or conjugate transposed). For example, instead of solving:
+*
+*  \f[
+*   \left[
+*    \begin{array}{c | c}
+*      \begin{array}{c c}
+*       a_{00} & a_{01} \\
+*       a_{10} & a_{11}
+*      \end{array} &
+*      \begin{array}{c c}
+*       0 & 0 \\
+*       0 & 0
+*      \end{array} \\
+*    \hline
+*      \begin{array}{c c}
+*       a_{20} & a_{21} \\
+*       a_{30} & a_{31}
+*      \end{array} &
+*      \begin{array}{c c}
+*       a_{22} & a_{23} \\
+*       a_{32} & a_{33}
+*      \end{array} \\
+*    \end{array}
+*   \right]
+*    \cdot
+*    \begin{bmatrix}
+*    x_{00} & x_{01} \\
+*    x_{10} & x_{11} \\
+*    x_{20} & x_{21} \\
+*    x_{30} & x_{31} \\
+*    \end{bmatrix}
+*    =
+*    \begin{bmatrix}
+*    b_{00} & b_{01} \\
+*    b_{10} & b_{11} \\
+*    b_{20} & b_{21} \\
+*    b_{30} & b_{31} \\
+*    \end{bmatrix}
+*  \f]
+*
+*  Consider solving:
+*
+*  \f[
+*   \left[
+*    \begin{array}{c | c}
+*      \begin{array}{c c}
+*       a_{00} & a_{01} \\
+*       a_{10} & a_{11}
+*      \end{array} &
+*      \begin{array}{c c}
+*       0 & 0 \\
+*       0 & 0
+*      \end{array} \\
+*    \hline
+*      \begin{array}{c c}
+*       a_{20} & a_{21} \\
+*       a_{30} & a_{31}
+*      \end{array} &
+*      \begin{array}{c c}
+*       a_{22} & a_{23} \\
+*       a_{32} & a_{33}
+*      \end{array} \\
+*    \end{array}
+*   \right]
+*    \cdot
+*    \begin{bmatrix}
+*    x_{00} & x_{10} & x_{20} & x_{30} \\
+*    x_{01} & x_{11} & x_{21} & x_{31}
+*    \end{bmatrix}^{T}
+*    =
+*    \begin{bmatrix}
+*    b_{00} & b_{10} & b_{20} & b_{30} \\
+*    b_{01} & b_{11} & b_{21} & b_{31}
+*    \end{bmatrix}^{T}
+*  \f]
+*
+*  Once the temporary storage buffer has been allocated, analysis meta data is required. It can be obtained
+*  by rocsparse_sbsrsm_analysis(), rocsparse_dbsrsm_analysis(), rocsparse_cbsrsm_analysis() or
+*  rocsparse_zbsrsm_analysis().
+*
+*  \p rocsparse_bsrsm_solve reports the first zero pivot (either numerical or structural zero). The zero pivot
+*  status can be checked calling rocsparse_bsrsm_zero_pivot(). If \ref rocsparse_diag_type == \ref rocsparse_diag_type_unit,
+*  no zero pivot will be reported, even if \f$A_{j,j} = 0\f$ for some \f$j\f$.
 *
 *  \note
 *  The sparse BSR matrix has to be sorted.
 *
 *  \note
-*  Operation type of B and X must match, if \f$op(B)=B, op(X)=X\f$.
+*  Operation type of B and X must match, for example if \f$op(B)=B\f$ then \f$op(X)=X\f$.
 *
 *  \note
 *  This function is non blocking and executed asynchronously with respect to the host.
@@ -685,6 +611,196 @@ rocsparse_status rocsparse_bsrsm_clear(rocsparse_handle handle, rocsparse_mat_in
 *              \p trans_A == \ref rocsparse_operation_conjugate_transpose,
 *              \p trans_X == \ref rocsparse_operation_conjugate_transpose or
 *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
+*
+*  \par Example
+*  Consider the lower triangular \f$m \times m\f$ matrix \f$L\f$, stored in BSR
+*  storage format with non-unit diagonal. The following example solves \f$L \cdot X = B\f$.
+*  \code{.c}
+*      // rocSPARSE handle
+*      rocsparse_handle handle;
+*      rocsparse_create_handle(&handle);
+*
+*      // A = ( 1.0  0.0  0.0  0.0 )
+*      //     ( 2.0  3.0  0.0  0.0 )
+*      //     ( 4.0  5.0  6.0  0.0 )
+*      //     ( 7.0  0.0  8.0  9.0 )
+*      //
+*      // with bsr_dim = 2
+*      //
+*      //      -------------------
+*      //   = | 1.0 0.0 | 0.0 0.0 |
+*      //     | 2.0 3.0 | 0.0 0.0 |
+*      //      -------------------
+*      //     | 4.0 5.0 | 6.0 0.0 |
+*      //     | 7.0 0.0 | 8.0 9.0 |
+*      //      -------------------
+*
+*      // Number of rows and columns
+*      rocsparse_int m = 4;
+*
+*      // Number of block rows and block columns
+*      rocsparse_int mb = 2;
+*      rocsparse_int nb = 2;
+*
+*      // BSR block dimension
+*      rocsparse_int bsr_dim = 2;
+*
+*      // Number of right-hand-sides
+*      rocsparse_int nrhs = 4;
+*
+*      // Number of non-zero blocks
+*      rocsparse_int nnzb = 3;
+*
+*      // BSR row pointers
+*      rocsparse_int hbsr_row_ptr[3] = {0, 1, 3};
+*
+*      // BSR column indices
+*      rocsparse_int hbsr_col_ind[3] = {0, 0, 1};
+*
+*      // BSR values
+*      double hbsr_val[12] = {1.0, 2.0, 0.0, 3.0, 4.0, 7.0, 5.0, 0.0, 6.0, 8.0, 0.0, 9.0};
+*
+*      // Storage scheme of the BSR blocks
+*      rocsparse_direction dir = rocsparse_direction_column;
+*
+*      // Transposition of the matrix and rhs matrix
+*      rocsparse_operation transA = rocsparse_operation_none;
+*      rocsparse_operation transX = rocsparse_operation_none;
+*
+*      // Analysis policy
+*      rocsparse_analysis_policy analysis_policy = rocsparse_analysis_policy_reuse;
+*
+*      // Solve policy
+*      rocsparse_solve_policy solve_policy = rocsparse_solve_policy_auto;
+*
+*      // Scalar alpha and beta
+*      double alpha = 3.7;
+*
+*      // rhs and solution matrix
+*      rocsparse_int ldb = nb * bsr_dim;
+*      rocsparse_int ldx = mb * bsr_dim;
+*
+*      double hB[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+*      double hX[16];
+*
+*      // Offload data to device
+*      rocsparse_int* dbsr_row_ptr;
+*      rocsparse_int* dbsr_col_ind;
+*      double*        dbsr_val;
+*      double*        dB;
+*      double*        dX;
+*
+*      hipMalloc((void**)&dbsr_row_ptr, sizeof(rocsparse_int) * (mb + 1));
+*      hipMalloc((void**)&dbsr_col_ind, sizeof(rocsparse_int) * nnzb);
+*      hipMalloc((void**)&dbsr_val, sizeof(double) * nnzb * bsr_dim * bsr_dim);
+*      hipMalloc((void**)&dB, sizeof(double) * nb * bsr_dim * nrhs);
+*      hipMalloc((void**)&dX, sizeof(double) * mb * bsr_dim * nrhs);
+*
+*      hipMemcpy(dbsr_row_ptr, hbsr_row_ptr, sizeof(rocsparse_int) * (mb + 1), hipMemcpyHostToDevice);
+*      hipMemcpy(dbsr_col_ind, hbsr_col_ind, sizeof(rocsparse_int) * nnzb, hipMemcpyHostToDevice);
+*      hipMemcpy(dbsr_val, hbsr_val, sizeof(double) * nnzb * bsr_dim * bsr_dim, hipMemcpyHostToDevice);
+*      hipMemcpy(dB, hB, sizeof(double) * nb * bsr_dim * nrhs, hipMemcpyHostToDevice);
+*
+*      // Matrix descriptor
+*      rocsparse_mat_descr descr;
+*      rocsparse_create_mat_descr(&descr);
+*
+*      // Matrix fill mode
+*      rocsparse_set_mat_fill_mode(descr, rocsparse_fill_mode_lower);
+*
+*      // Matrix diagonal type
+*      rocsparse_set_mat_diag_type(descr, rocsparse_diag_type_non_unit);
+*
+*      // Matrix info structure
+*      rocsparse_mat_info info;
+*      rocsparse_create_mat_info(&info);
+*
+*      // Obtain required buffer size
+*      size_t buffer_size;
+*      rocsparse_dbsrsm_buffer_size(handle,
+*                                dir,
+*                                transA,
+*                                transX,
+*                                mb,
+*                                nrhs,
+*                                nnzb,
+*                                descr,
+*                                dbsr_val,
+*                                dbsr_row_ptr,
+*                                dbsr_col_ind,
+*                                bsr_dim,
+*                                info,
+*                                &buffer_size);
+*
+*      // Allocate temporary buffer
+*      void* temp_buffer;
+*      hipMalloc(&temp_buffer, buffer_size);
+*
+*      // Perform analysis step
+*      rocsparse_dbsrsm_analysis(handle,
+*                            dir,
+*                            transA,
+*                            transX,
+*                            mb,
+*                            nrhs,
+*                            nnzb,
+*                            descr,
+*                            dbsr_val,
+*                            dbsr_row_ptr,
+*                            dbsr_col_ind,
+*                            bsr_dim,
+*                            info,
+*                            analysis_policy,
+*                            solve_policy,
+*                            temp_buffer);
+*
+*      // Call dbsrsm to perform lower triangular solve LX = B
+*      rocsparse_dbsrsm_solve(handle,
+*                            dir,
+*                            transA,
+*                            transX,
+*                            mb,
+*                            nrhs,
+*                            nnzb,
+*                            &alpha,
+*                            descr,
+*                            dbsr_val,
+*                            dbsr_row_ptr,
+*                            dbsr_col_ind,
+*                            bsr_dim,
+*                            info,
+*                            dB,
+*                            ldb,
+*                            dX,
+*                            ldx,
+*                            solve_policy,
+*                            temp_buffer);
+*
+*      // Check for zero pivots
+*      rocsparse_int    pivot;
+*      rocsparse_status status = rocsparse_bsrsm_zero_pivot(handle, info, &pivot);
+*
+*      if(status == rocsparse_status_zero_pivot)
+*      {
+*          std::cout << "Found zero pivot in matrix row " << pivot << std::endl;
+*      }
+*
+*      // Copy result back to host
+*      hipMemcpy(hX, dX, sizeof(double) * mb * bsr_dim * nrhs, hipMemcpyDeviceToHost);
+*
+*      // Clear rocSPARSE
+*      rocsparse_destroy_mat_info(info);
+*      rocsparse_destroy_mat_descr(descr);
+*      rocsparse_destroy_handle(handle);
+*
+*      // Clear device memory
+*      hipFree(dbsr_row_ptr);
+*      hipFree(dbsr_col_ind);
+*      hipFree(dbsr_val);
+*      hipFree(dB);
+*      hipFree(dX);
+*      hipFree(temp_buffer);
+*  \endcode
 */
 /**@{*/
 ROCSPARSE_EXPORT

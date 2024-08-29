@@ -56,7 +56,7 @@ extern "C" {
 *  @param[in]
 *  mat_B        sparse matrix descriptor.
 *  @param[in]
-*  alg          algorithm for the sparse to dense computation.
+*  alg          algorithm for the dense to sparse computation.
 *  @param[out]
 *  buffer_size  number of bytes of the temporary storage buffer. buffer_size is set when
 *               \p temp_buffer is nullptr.
