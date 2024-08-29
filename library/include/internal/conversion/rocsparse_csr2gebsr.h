@@ -87,7 +87,7 @@ extern "C" {
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
 *  \retval     rocsparse_status_invalid_size \p m or \p n or \p row_block_dim  \p col_block_dim is invalid.
-*  \retval     rocsparse_status_invalid_pointer \p csr_val or \p csr_row_ptr or \p csr_col_ind or \p bsr_row_ptr or \p buffer_size
+*  \retval     rocsparse_status_invalid_pointer \p csr_val or \p csr_row_ptr or \p csr_col_ind or \p buffer_size
 *              pointer is invalid.
 */
 /**@{*/

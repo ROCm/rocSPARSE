@@ -224,6 +224,11 @@ rocsparse_create_csc_descr
 
 .. doxygenfunction:: rocsparse_create_csc_descr
 
+rocsparse_create_bsr_descr
+--------------------------
+
+.. doxygenfunction:: rocsparse_create_bsr_descr
+
 rocsparse_create_ell_descr
 --------------------------
 
@@ -233,6 +238,26 @@ rocsparse_create_bell_descr
 ---------------------------
 
 .. doxygenfunction:: rocsparse_create_bell_descr
+
+rocsparse_create_const_coo_descr
+--------------------------------
+
+.. doxygenfunction:: rocsparse_create_const_coo_descr
+
+rocsparse_create_const_csr_descr
+--------------------------------
+
+.. doxygenfunction:: rocsparse_create_const_csr_descr
+
+rocsparse_create_const_csc_descr
+--------------------------------
+
+.. doxygenfunction:: rocsparse_create_const_csc_descr
+
+rocsparse_create_const_bell_descr
+---------------------------------
+
+.. doxygenfunction:: rocsparse_create_const_bell_descr
 
 rocsparse_destroy_spmat_descr
 -----------------------------
@@ -389,6 +414,11 @@ rocsparse_create_dnvec_descr
 
 .. doxygenfunction:: rocsparse_create_dnvec_descr
 
+rocsparse_create_const_dnvec_descr
+----------------------------------
+
+.. doxygenfunction:: rocsparse_create_const_dnvec_descr
+
 rocsparse_destroy_dnvec_descr
 -----------------------------
 
@@ -413,6 +443,11 @@ rocsparse_create_dnmat_descr
 ----------------------------
 
 .. doxygenfunction:: rocsparse_create_dnmat_descr
+
+rocsparse_create_const_dnmat_descr
+----------------------------------
+
+.. doxygenfunction:: rocsparse_create_const_dnmat_descr
 
 rocsparse_destroy_dnmat_descr
 -----------------------------

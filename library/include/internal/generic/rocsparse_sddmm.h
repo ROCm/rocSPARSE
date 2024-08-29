@@ -65,7 +65,7 @@ extern "C" {
 *  buffer_size  number of bytes of the temporary storage buffer.
 *
 *  \retval rocsparse_status_success the operation completed successfully.
-*  \retval rocsparse_status_invalid_value the value of \p trans\_A or \p trans\_B is incorrect.
+*  \retval rocsparse_status_invalid_value the value of \p opA or \p opB is incorrect.
 *  \retval rocsparse_status_invalid_handle the library context was not initialized.
 *  \retval rocsparse_status_invalid_pointer \p alpha and \p beta are invalid,
 *          \p A, \p B, \p D, \p C or \p buffer_size pointer is invalid.
@@ -121,7 +121,7 @@ rocsparse_status rocsparse_sddmm_buffer_size(rocsparse_handle            handle,
 *  The size must be greater or equal to the size obtained with \ref rocsparse_sddmm_buffer_size.
 *
 *  \retval rocsparse_status_success the operation completed successfully.
-*  \retval rocsparse_status_invalid_value the value of \p trans\_A or \p trans\_B is incorrect.
+*  \retval rocsparse_status_invalid_value the value of \p opA or \p opB is incorrect.
 *  \retval rocsparse_status_invalid_handle the library context was not initialized.
 *  \retval rocsparse_status_invalid_pointer \p alpha and \p beta are invalid,
 *          \p A, \p B, \p D, \p C or \p temp_buffer pointer is invalid.
@@ -216,7 +216,7 @@ rocsparse_status rocsparse_sddmm_preprocess(rocsparse_handle            handle,
 *  The size must be greater or equal to the size obtained with \ref rocsparse_sddmm_buffer_size.
 *
 *  \retval rocsparse_status_success the operation completed successfully.
-*  \retval rocsparse_status_invalid_value the value of \p trans\_A, \p trans\_B, \p compute\_type or alg is incorrect.
+*  \retval rocsparse_status_invalid_value the value of \p opA, \p opB, \p compute\_type or alg is incorrect.
 *  \retval rocsparse_status_invalid_handle the library context was not initialized.
 *  \retval rocsparse_status_invalid_pointer \p alpha and \p beta are invalid,
 *          \p A, \p B, \p D, \p C or \p temp_buffer pointer is invalid.

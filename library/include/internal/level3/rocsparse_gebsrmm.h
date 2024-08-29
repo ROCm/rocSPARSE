@@ -38,8 +38,8 @@ extern "C" {
  *  \details
  *  \p rocsparse_gebsrmm multiplies the scalar \f$\alpha\f$ with a sparse \f$mb \times kb\f$
  *  matrix \f$A\f$, defined in GEneral BSR storage format, and the column-oriented dense \f$k \times n\f$
- *  matrix \f$B\f$ (where \f$k = col_block\_dim \times kb\f$) and adds the result to the column-oriented dense
- *  \f$m \times n\f$ matrix \f$C\f$ (where \f$m = row_block\_dim \times mb\f$) that
+ *  matrix \f$B\f$ (where \f$k = col\_block\_dim \times kb\f$) and adds the result to the column-oriented dense
+ *  \f$m \times n\f$ matrix \f$C\f$ (where \f$m = row\_block\_dim \times mb\f$) that
  *  is multiplied by the scalar \f$\beta\f$, such that
  *  \f[
  *    C := \alpha \cdot op(A) \cdot op(B) + \beta \cdot C,

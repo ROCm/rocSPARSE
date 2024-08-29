@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -67,7 +67,6 @@ extern "C" {
 *  row_block_dim   row size of the blocks in the sparse general BSR matrix.
 *  @param[in]
 *  col_block_dim   col size of the blocks in the sparse general BSR matrix.
-
 *  @param[out]
 *  p_buffer_size number of bytes of the temporary storage buffer required by
 *              rocsparse_sgebsr2gebsc(), rocsparse_dgebsr2gebsc(), rocsparse_cgebsr2gebsc() and
@@ -77,7 +76,7 @@ extern "C" {
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
 *  \retval     rocsparse_status_invalid_size \p mb, \p nb or \p nnzb is invalid.
 *  \retval     rocsparse_status_invalid_pointer \p bsr_row_ptr, \p bsr_col_ind or
-*              \p buffer_size pointer is invalid.
+*              \p p_buffer_size pointer is invalid.
 *  \retval     rocsparse_status_internal_error an internal error occurred.
 */
 /**@{*/

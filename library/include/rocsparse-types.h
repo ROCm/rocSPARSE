@@ -118,7 +118,7 @@ typedef struct _rocsparse_spvec_descr* rocsparse_spvec_descr;
  *
  *  \details
  *  The rocSPARSE constant sparse vector descriptor is a structure holding all properties of a sparse vector.
- *  It must be initialized using rocsparse_create_const_spvec_descr() and the returned
+ *  It must be initialized using \ref rocsparse_create_const_spvec_descr() and the returned
  *  descriptor must be passed to all subsequent generic API library calls that involve the sparse vector.
  *  It should be destroyed at the end using rocsparse_destroy_spvec_descr().
  */
@@ -142,7 +142,7 @@ typedef struct _rocsparse_spmat_descr* rocsparse_spmat_descr;
  *
  *  \details
  *  The rocSPARSE constant sparse matrix descriptor is a structure holding all properties of a sparse matrix.
- *  It must be initialized using rocsparse_create__constcoo_descr(), rocsparse_create_const_bsr_descr(),
+ *  It must be initialized using rocsparse_create_const_coo_descr(),
  *  rocsparse_create_const_csr_descr(), rocsparse_create_const_csc_descr(),
  *  or rocsparse_create_const_bell_descr() and the returned
  *  descriptor must be passed to all subsequent generic API library calls that involve the sparse matrix.
@@ -365,9 +365,10 @@ typedef enum rocsparse_hyb_partition_
  *
  *  \details
  *  The \ref rocsparse_analysis_policy specifies whether gathered analysis data should be
- *  re-used or not. If meta data from a previous e.g. rocsparse_csrilu0_analysis() call
- *  is available, it can be re-used for subsequent calls to e.g.
- *  rocsparse_csrsv_analysis() and greatly improve performance of the analysis function.
+ *  re-used or not. If meta data from a previous e.g. \ref rocsparse_scsrilu0_analysis
+ *  "rocsparse_Xcsrilu0_analysis()" call is available, it can be re-used for subsequent calls to e.g.
+ *  \ref rocsparse_scsrsv_analysis "rocsparse_Xcsrsv_analysis()" and greatly improve performance
+ *  of the analysis function.
  */
 typedef enum rocsparse_analysis_policy_
 {
@@ -551,7 +552,7 @@ typedef enum rocsparse_sparse_to_sparse_alg_
    *
    *  \details
    *  This is a list of possible stages during sparse_to_sparse conversion. Typical order is
-   *  rocsparse_sparse_to_sparse_buffer_size, rocsparse_sparse_to_sparse_preprocess, rocsparse_sparse_to_sparse_compute.
+   *  rocsparse_sparse_to_sparse_stage_analysis, rocsparse_sparse_to_sparse_stage_compute.
    */
 typedef enum rocsparse_sparse_to_sparse_stage_
 {
@@ -657,7 +658,7 @@ typedef enum rocsparse_check_spmat_stage_
  *
  *  \details
  *  This is a list of possible stages during SpMV computation. Typical order is
- *  rocsparse_spmv_buffer_size, rocsparse_spmv_preprocess, rocsparse_spmv_compute.
+ *  rocsparse_spmv_stage_buffer_size, rocsparse_spmv_stage_preprocess, rocsparse_spmv_stage_compute.
  */
 typedef enum rocsparse_spmv_stage_
 {
@@ -702,7 +703,7 @@ typedef enum rocsparse_spsv_alg_
  *
  *  \details
  *  This is a list of possible stages during SpSV computation. Typical order is
- *  rocsparse_spsv_buffer_size, rocsparse_spsv_preprocess, rocsparse_spsv_compute.
+ *  rocsparse_spsv_stage_buffer_size, rocsparse_spsv_stage_preprocess, rocsparse_spsv_stage_compute.
  */
 typedef enum rocsparse_spsv_stage_
 {
@@ -728,7 +729,7 @@ typedef enum rocsparse_spitsv_alg_
  *
  *  \details
  *  This is a list of possible stages during SpITSV computation. Typical order is
- *  buffer_size, preprocess, compute.
+ *  rocsparse_spitsv_stage_buffer_size, rocsparse_spitsv_stage_preprocess, rocsparse_spitsv_stage_compute.
  */
 typedef enum rocsparse_spitsv_stage_
 {
@@ -754,7 +755,7 @@ typedef enum rocsparse_spsm_alg_
  *
  *  \details
  *  This is a list of possible stages during SpSM computation. Typical order is
- *  rocsparse_spsm_buffer_size, rocsparse_spsm_preprocess, rocsparse_spsm_compute.
+ *  rocsparse_spsm_stage_buffer_size, rocsparse_spsm_stage_preprocess, rocsparse_spsm_stage_compute.
  */
 typedef enum rocsparse_spsm_stage_
 {
@@ -830,7 +831,7 @@ typedef enum rocsparse_dense_to_sparse_alg_
  *
  *  \details
  *  This is a list of possible stages during SpMM computation. Typical order is
- *  rocsparse_spmm_buffer_size, rocsparse_spmm_preprocess, rocsparse_spmm_compute.
+ *  rocsparse_spmm_stage_buffer_size, rocsparse_spmm_stage_preprocess, rocsparse_spmm_stage_compute.
  */
 typedef enum rocsparse_spmm_stage_
 {
@@ -844,7 +845,7 @@ typedef enum rocsparse_spmm_stage_
  *
  *  \details
  *  This is a list of possible stages during SpGEMM computation. Typical order is
- *  rocsparse_spgemm_buffer_size, rocsparse_spgemm_nnz, rocsparse_spgemm_compute.
+ *  rocsparse_spgemm_stage_buffer_size, rocsparse_spgemm_stage_nnz, rocsparse_spgemm_stage_compute.
  */
 typedef enum rocsparse_spgemm_stage_
 {

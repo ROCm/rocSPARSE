@@ -36,7 +36,7 @@ extern "C" {
 *  \brief Sparse matrix sparse matrix addition using BSR storage format
 *
 *  \details
-*  \p rocsparse_bsrgeam_nnz computes the total BSR non-zero elements and the BSR row
+*  \p rocsparse_bsrgeam_nnzb computes the total BSR non-zero elements and the BSR row
 *  offsets, that point to the start of every row of the sparse BSR matrix, of the
 *  resulting matrix C. It is assumed that \p bsr_row_ptr_C has been allocated with
 *  size \p mb+1.
@@ -137,7 +137,7 @@ rocsparse_status rocsparse_bsrgeam_nnzb(rocsparse_handle          handle,
 *  It is assumed that \p bsr_row_ptr_C has already been filled and that \p bsr_val_C and
 *  \p bsr_col_ind_C are allocated by the user. \p bsr_row_ptr_C and allocation size of
 *  \p bsr_col_ind_C and \p bsr_val_C is defined by the number of non-zero block elements of
-*  the sparse BSR matrix C. Both can be obtained by rocsparse_bsrgeam_nnz().
+*  the sparse BSR matrix C. Both can be obtained by rocsparse_bsrgeam_nnzb().
 *
 *  \note Both scalars \f$\alpha\f$ and \f$beta\f$ have to be valid.
 *
