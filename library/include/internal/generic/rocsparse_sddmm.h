@@ -159,7 +159,7 @@ rocsparse_status rocsparse_sddmm_preprocess(rocsparse_handle            handle,
 *    op(A) = \left\{
 *    \begin{array}{ll}
 *        A,   & \text{if op(A) == rocsparse_operation_none} \\
-*        A^T,   & \text{if op(A) == rocsparse_operation_transpose} \\
+*        A^T, & \text{if op(A) == rocsparse_operation_transpose} \\
 *    \end{array}
 *    \right.
 *  \f],
@@ -167,15 +167,16 @@ rocsparse_status rocsparse_sddmm_preprocess(rocsparse_handle            handle,
 *    op(B) = \left\{
 *    \begin{array}{ll}
 *        B,   & \text{if op(B) == rocsparse_operation_none} \\
-*        B^T,   & \text{if op(B) == rocsparse_operation_transpose} \\
+*        B^T, & \text{if op(B) == rocsparse_operation_transpose} \\
 *    \end{array}
 *    \right.
 *  \f]
 *   and
 *  \f[
-*    spy(C)_ij = \left\{
+*    spy(C)_{ij} = \left\{
 *    \begin{array}{ll}
-*        1 \text{ if C_ij != 0},   & 0 \text{ otherwise} \\
+*        1, & \text{ if C_{ij} != 0} \\
+*        0, & \text{ otherwise} \\
 *    \end{array}
 *    \right.
 *  \f]
@@ -187,9 +188,9 @@ rocsparse_status rocsparse_sddmm_preprocess(rocsparse_handle            handle,
 *
 *  \note
 *  Different algorithms are available which can provide better performance for different matrices.
-*  Currently, the available algorithms are rocsparse_sddmm_alg_default or rocsparse_sddmm_alg_dense.
-*  The algorithm rocsparse_sddmm_alg_default uses the sparsity pattern of matrix C to perform a limited set of dot products.
-*  On the other hand, rocsparse_sddmm_alg_dense explicitly converts the matrix C into a dense matrix to perform a dense matrix multiply and add.
+*  Currently, the available algorithms are \ref rocsparse_sddmm_alg_default or \ref rocsparse_sddmm_alg_dense.
+*  The algorithm \ref rocsparse_sddmm_alg_default uses the sparsity pattern of matrix C to perform a limited set of dot products.
+*  On the other hand, \ref rocsparse_sddmm_alg_dense explicitly converts the matrix C into a dense matrix to perform a dense matrix multiply and add.
 *
 *  @param[in]
 *  handle       handle to the rocsparse library context queue.
@@ -225,7 +226,8 @@ rocsparse_status rocsparse_sddmm_preprocess(rocsparse_handle            handle,
 *          \p opB == \ref rocsparse_operation_conjugate_transpose.
 *
 *  \par Example
-*  This example performs sampled dense-dense matrix product, C = alpha * (op(A) * op(B)) o spy(C) + beta * C where o is the hadamard product
+*  This example performs sampled dense-dense matrix product, \f$C := \alpha ( A \cdot B ) \circ spy(C) + \beta C\f$
+*  where \f$\circ\f$ is the hadamard product
 *  \code{.c}
 *    // rocSPARSE handle
 *    rocsparse_handle handle;

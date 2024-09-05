@@ -99,10 +99,10 @@ extern "C" {
 *  </table>
 *
 *  \note
-*  None of the algorithms above are deterministic when A is transposed.
+*  None of the algorithms above are deterministic when \f$A\f$ is transposed.
 *
 *  \note
-*  All algorithms perform best when using row ordering for the dense B and C matrices
+*  All algorithms perform best when using row ordering for the dense \f$B\f$ and \f$C\f$ matrices
 *
 *  \par Uniform Precisions:
 *  <table>
@@ -121,6 +121,47 @@ extern "C" {
 *  <tr><td>rocsparse_datatype_i8_r <td>rocsparse_datatype_i32_r <td>rocsparse_datatype_i32_r
 *  <tr><td>rocsparse_datatype_i8_r <td>rocsparse_datatype_f32_r <td>rocsparse_datatype_f32_r
 *  </table>
+*
+*  SpMM also supports batched computation for CSR and COO matrices. There are three supported batch modes:
+*  \f[
+*      C_i = A \times B_i \\
+*      C_i = A_i \times B \\
+*      C_i = A_i \times B_i
+*  \f]
+*
+*  The batch mode is determined by the batch count and stride passed for each matrix. For example
+*  to use the first batch mode (\f$C_i = A \times B_i\f$) with 100 batches for non-transposed \f$A\f$,
+*  \f$B\f$, and \f$C\f$, one passes:
+*  \f[
+*      batch\_count\_A=1 \\
+*      batch\_count\_B=100 \\
+*      batch\_count\_C=100 \\
+*      offsets\_batch\_stride\_A=0 \\
+*      columns\_values\_batch\_stride\_A=0 \\
+*      batch\_stride\_B=k*n \\
+*      batch\_stride\_C=m*n
+*  \f]
+*  To use the second batch mode (\f$C_i = A_i \times B\f$) one could use:
+*  \f[
+*      batch\_count\_A=100 \\
+*      batch\_count\_B=1 \\
+*      batch\_count\_C=100 \\
+*      offsets\_batch\_stride\_A=m+1 \\
+*      columns\_values\_batch\_stride\_A=nnz \\
+*      batch\_stride\_B=0 \\
+*      batch\_stride\_C=m*n
+*  \f]
+*  And to use the third batch mode (\f$C_i = A_i \times B_i\f$) one could use:
+*  \f[
+*      batch\_count\_A=100 \\
+*      batch\_count\_B=100 \\
+*      batch\_count\_C=100 \\
+*      offsets\_batch\_stride\_A=m+1 \\
+*      columns\_values\_batch\_stride_A=nnz \\
+*      batch\_stride_B=k*n \\
+*      batch\_stride_C=m*n
+*  \f]
+*  See examples below.
 *
 *  \note
 *  Mixed precisions only supported for CSR, CSC, and COO matrix formats.
@@ -142,15 +183,15 @@ extern "C" {
 *
 *  \note
 *  Different algorithms are available which can provide better performance for different matrices.
-*  Currently, the available algorithms are rocsparse_spmm_alg_csr, rocsparse_spmm_alg_csr_row_split,
-*  rocsparse_spmm_alg_csr_nnz_split (also named rocsparse_spmm_alg_csr_merge) or rocsparse_spmm_alg_csr_merge_path for CSR matrices,
-*  rocsparse_spmm_alg_bell for Blocked ELL matrices and rocsparse_spmm_alg_coo_segmented or
-*  rocsparse_spmm_alg_coo_atomic for COO matrices. Additionally, one can specify the algorithm to be
-*  rocsparse_spmm_alg_default. In the case of CSR matrices this will set the algorithm to be
-*  rocsparse_spmm_alg_csr, in the case of Blocked ELL matrices this will set the
-*  algorithm to be rocsparse_spmm_alg_bell and for COO matrices it will set the algorithm to be
-*  rocsparse_spmm_alg_coo_atomic. When A is transposed, rocsparse_spmm will revert to using
-*  rocsparse_spmm_alg_csr for CSR format and rocsparse_spmm_alg_coo_atomic for COO format regardless
+*  Currently, the available algorithms are \ref rocsparse_spmm_alg_csr, \ref rocsparse_spmm_alg_csr_row_split,
+*  \ref rocsparse_spmm_alg_csr_nnz_split (also named \ref rocsparse_spmm_alg_csr_merge) or
+*  \ref rocsparse_spmm_alg_csr_merge_path for CSR matrices, \ref rocsparse_spmm_alg_bell for Blocked ELL matrices
+*  and \ref rocsparse_spmm_alg_coo_segmented or \ref rocsparse_spmm_alg_coo_atomic for COO matrices. Additionally,
+*  one can specify the algorithm to be \ref rocsparse_spmm_alg_default. In the case of CSR matrices this will set
+*  the algorithm to be \ref rocsparse_spmm_alg_csr, in the case of Blocked ELL matrices this will set the algorithm
+*  to be \ref rocsparse_spmm_alg_bell and for COO matrices it will set the algorithm to be
+*  \ref rocsparse_spmm_alg_coo_atomic. When A is transposed, \ref rocsparse_spmm will revert to using
+*  \ref rocsparse_spmm_alg_csr for CSR format and \ref rocsparse_spmm_alg_coo_atomic for COO format regardless
 *  of algorithm selected.
 *
 *  \note
@@ -201,7 +242,7 @@ extern "C" {
 *  \retval      rocsparse_status_not_implemented \p trans_A, \p trans_B, \p compute_type or \p alg is
 *               currently not supported.
 *  \par Example
-*  This example performs sparse matrix-dense matrix multiplication, C = alpha * A * B + beta * C
+*  This example performs sparse matrix-dense matrix multiplication, \f$C := \alpha \cdot A \cdot B + \beta \cdot C\f$
 *  \code{.c}
 *      //     1 4 0 0 0 0
 *      // A = 0 2 3 0 0 0
@@ -328,36 +369,7 @@ extern "C" {
 *  \endcode
 *
 *  \par Example
-*  SpMM also supports batched computation for CSR and COO matrices. There are three supported batch modes:
-*      C_i = A * B_i
-*      C_i = A_i * B
-*      C_i = A_i * B_i
-*  The batch mode is determined by the batch count and stride passed for each matrix. For example
-*  to use the first batch mode (C_i = A * B_i) with 100 batches for non-transposed A, B, and C, one passes:
-*      batch_count_A = 1
-*      batch_count_B = 100
-*      batch_count_C = 100
-*      offsets_batch_stride_A        = 0
-*      columns_values_batch_stride_A = 0
-*      batch_stride_B                = k * n
-*      batch_stride_C                = m * n
-*  To use the second batch mode (C_i = A_i * B) one could use:
-*      batch_count_A = 100
-*      batch_count_B = 1
-*      batch_count_C = 100
-*      offsets_batch_stride_A        = m + 1
-*      columns_values_batch_stride_A = nnz
-*      batch_stride_B                = 0
-*      batch_stride_C                = m * n
-*  And to use the third batch mode (C_i = A_i * B_i) one could use:
-*      batch_count_A = 100
-*      batch_count_B = 100
-*      batch_count_C = 100
-*      offsets_batch_stride_A        = m + 1
-*      columns_values_batch_stride_A = nnz
-*      batch_stride_B                = k * n
-*      batch_stride_C                = m * n
-*  An example of the first batch mode (C_i = A * B_i) is provided below.
+*  An example of the first batch mode (\f$C_i = A \times B_i\f$) is provided below.
 *  \code{.c}
 *      //     1 4 0 0 0 0
 *      // A = 0 2 3 0 0 0
