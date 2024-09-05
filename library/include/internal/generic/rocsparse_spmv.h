@@ -86,7 +86,7 @@ extern "C" {
 *  </table>
 *
 *  \note
-*  None of the algorithms above are deterministic when A is transposed.
+*  None of the algorithms above are deterministic when \f$A\f$ is transposed.
 *
 *  \details
 *  \ref rocsparse_spmv supports multiple combinations of data types and compute types. The tables below indicate the currently
@@ -399,7 +399,7 @@ ROCSPARSE_EXPORT rocsparse_status rocsparse_spmv(rocsparse_handle            han
 *  </table>
 *
 *  \note
-*  None of the algorithms above are deterministic when A is transposed.
+*  None of the algorithms above are deterministic when \f$A\f$ is transposed.
 *
 *  \details
 *  \ref rocsparse_spmv_ex supports multiple combinations of data types and compute types. The tables below indicate the currently
@@ -447,8 +447,8 @@ ROCSPARSE_EXPORT rocsparse_status rocsparse_spmv(rocsparse_handle            han
 *  \p temp_buffer.
 *
 *  \note
-*  The sparse matrix formats currently supported are: rocsparse_format_bsr, rocsparse_format_coo,
-*  rocsparse_format_coo_aos, rocsparse_format_csr, rocsparse_format_csc and rocsparse_format_ell.
+*  The sparse matrix formats currently supported are: \ref rocsparse_format_bsr, \ref rocsparse_format_coo,
+*  \ref rocsparse_format_coo_aos, \ref rocsparse_format_csr, \ref rocsparse_format_csc and \ref rocsparse_format_ell.
 *
 *  \note SpMV_ex requires three stages to complete. The first stage
 *  \ref rocsparse_spmv_stage_buffer_size will return the size of the temporary storage buffer
