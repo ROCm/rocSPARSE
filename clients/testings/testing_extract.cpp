@@ -156,6 +156,9 @@ static void testing_rocsparse_spmat_extract(rocsparse_handle                    
                                             rocsparse_extract_alg                  alg)
 {
 
+    hipStream_t stream;
+    CHECK_ROCSPARSE_ERROR(rocsparse_get_stream(handle, &stream));
+
     rocsparse_extract_descr extract_descr;
 
     //
@@ -178,13 +181,17 @@ static void testing_rocsparse_spmat_extract(rocsparse_handle                    
     CHECK_ROCSPARSE_ERROR(rocsparse_extract(
         handle, extract_descr, A, B, rocsparse_extract_stage_analysis, buffer_size, buffer));
 
-    CHECK_HIP_ERROR(rocsparse_hipFree(buffer));
-
-    buffer      = nullptr;
-    buffer_size = 0;
-
     int64_t nnz;
     CHECK_ROCSPARSE_ERROR(rocsparse_extract_nnz(handle, extract_descr, &nnz));
+
+    //
+    // Synchronize to get nnz.
+    //
+    CHECK_HIP_ERROR(hipStreamSynchronize(stream));
+
+    CHECK_HIP_ERROR(rocsparse_hipFree(buffer));
+    buffer      = nullptr;
+    buffer_size = 0;
 
     //
     // Realloc.
@@ -192,7 +199,8 @@ static void testing_rocsparse_spmat_extract(rocsparse_handle                    
     device_B.define(device_B.m, device_B.n, nnz, device_B.base);
 
     rocsparse_format B_format;
-    rocsparse_spmat_get_format(B, &B_format);
+    CHECK_ROCSPARSE_ERROR(rocsparse_spmat_get_format(B, &B_format));
+    CHECK_ROCSPARSE_ERROR(rocsparse_spmat_set_nnz(B, nnz));
     switch(B_format)
     {
     case rocsparse_format_csr:
@@ -232,6 +240,11 @@ static void testing_rocsparse_spmat_extract(rocsparse_handle                    
     //
     CHECK_ROCSPARSE_ERROR(rocsparse_extract(
         handle, extract_descr, A, B, rocsparse_extract_stage_compute, buffer_size, buffer));
+
+    //
+    // Synchronize.
+    //
+    CHECK_HIP_ERROR(hipStreamSynchronize(stream));
 
     CHECK_HIP_ERROR(rocsparse_hipFree(buffer));
     //
@@ -317,7 +330,6 @@ static void testing_extract_csx_template(const Arguments& arg)
         //
 
         test_extract_compute_csx(host_A, host_B, fill_mode, diag_type);
-
         //
         // Compare.
         //
