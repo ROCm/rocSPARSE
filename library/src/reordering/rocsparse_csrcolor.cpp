@@ -26,8 +26,8 @@
 #include "control.h"
 #include "csrcolor_device.hpp"
 #include "rocsparse_csrcolor.hpp"
+#include "rocsparse_primitives.h"
 #include "utility.h"
-#include <rocprim/rocprim.hpp>
 
 namespace rocsparse
 {
@@ -229,8 +229,8 @@ namespace rocsparse
         //
         // Obtain rocprim buffer size
         //
-        RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(
-            nullptr, temp_storage_bytes, seq_ptr, seq_ptr, n + 1, rocprim::plus<J>(), stream));
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::primitives::inclusive_scan_buffer_size<J, J>(
+            handle, n + 1, &temp_storage_bytes)));
 
         //
         // Get rocprim buffer
@@ -256,13 +256,9 @@ namespace rocsparse
         //
         // Perform actual inclusive sum.
         //
-        RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(d_temp_storage,
-                                                    temp_storage_bytes,
-                                                    seq_ptr,
-                                                    seq_ptr,
-                                                    n + 1,
-                                                    rocprim::plus<J>(),
-                                                    handle->stream));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::inclusive_scan(
+            handle, seq_ptr, seq_ptr, n + 1, temp_storage_bytes, d_temp_storage));
+
         //
         // Free rocprim buffer, if allocated.
         //
@@ -481,27 +477,15 @@ rocsparse_status rocsparse::csrcolor_core(rocsparse_handle          handle,
             rocsparse_hipMallocAsync(&sorted_colors, sizeof(J) * m, handle->stream));
 
         {
-            rocsparse_int* keys_input    = colors;
-            rocsparse_int* values_input  = reordering_identity;
-            rocsparse_int* keys_output   = sorted_colors;
-            rocsparse_int* values_output = reordering;
-
             size_t temporary_storage_size_bytes;
             void*  temporary_storage_ptr = nullptr;
 
             //
             // Get required size of the temporary storage
             //
-            rocprim::radix_sort_pairs(temporary_storage_ptr,
-                                      temporary_storage_size_bytes,
-                                      keys_input,
-                                      keys_output,
-                                      values_input,
-                                      values_output,
-                                      m,
-                                      0,
-                                      sizeof(rocsparse_int) * 8,
-                                      stream);
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::primitives::radix_sort_pairs_buffer_size<rocsparse_int, rocsparse_int>(
+                    handle, m, 0, sizeof(rocsparse_int) * 8, &temporary_storage_size_bytes)));
 
             //
             // allocate temporary storage
@@ -512,16 +496,17 @@ rocsparse_status rocsparse::csrcolor_core(rocsparse_handle          handle,
             //
             // perform sort
             //
-            rocprim::radix_sort_pairs(temporary_storage_ptr,
-                                      temporary_storage_size_bytes,
-                                      keys_input,
-                                      keys_output,
-                                      values_input,
-                                      values_output,
-                                      m,
-                                      0,
-                                      sizeof(rocsparse_int) * 8,
-                                      stream);
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse::primitives::radix_sort_pairs(handle,
+                                                        colors,
+                                                        sorted_colors,
+                                                        reordering_identity,
+                                                        reordering,
+                                                        m,
+                                                        0,
+                                                        sizeof(rocsparse_int) * 8,
+                                                        temporary_storage_size_bytes,
+                                                        temporary_storage_ptr));
 
             RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(temporary_storage_ptr, handle->stream));
         }

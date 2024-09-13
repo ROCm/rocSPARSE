@@ -31,7 +31,6 @@
 #include "../level1/rocsparse_gthr.hpp"
 #include "../level2/rocsparse_csrsv.hpp"
 #include "csrsm_device.h"
-#include <rocprim/rocprim.hpp>
 
 extern "C" rocsparse_status rocsparse_csrsm_zero_pivot(rocsparse_handle   handle,
                                                        rocsparse_mat_info info,

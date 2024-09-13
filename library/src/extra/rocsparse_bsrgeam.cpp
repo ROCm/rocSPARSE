@@ -27,7 +27,6 @@
 #include "utility.h"
 
 #include "bsrgeam_device.h"
-#include <rocprim/rocprim.hpp>
 
 namespace rocsparse
 {

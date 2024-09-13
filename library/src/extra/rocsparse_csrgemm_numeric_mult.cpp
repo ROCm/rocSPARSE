@@ -31,7 +31,6 @@
 #include "rocsparse_csrgemm_numeric_calc.hpp"
 #include "rocsparse_csrgemm_numeric_mult.hpp"
 #include "utility.h"
-#include <rocprim/rocprim.hpp>
 
 rocsparse_status rocsparse::csrgemm_numeric_mult_quickreturn(rocsparse_handle    handle,
                                                              rocsparse_operation trans_A,

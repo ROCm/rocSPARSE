@@ -29,7 +29,7 @@
 
 #include "check_matrix_csr_device.h"
 
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_primitives.h"
 
 template <typename T, typename I, typename J>
 rocsparse_status rocsparse::check_matrix_csr_buffer_size_core(rocsparse_handle       handle,
@@ -51,19 +51,9 @@ rocsparse_status rocsparse::check_matrix_csr_buffer_size_core(rocsparse_handle  
     if(storage == rocsparse_storage_mode_unsorted)
     {
         // Determine required rocprim buffer size
-        size_t                    rocprim_buffer_size;
-        rocprim::double_buffer<J> dummy(nullptr, nullptr);
-        RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs(nullptr,
-                                                                rocprim_buffer_size,
-                                                                dummy,
-                                                                dummy,
-                                                                nnz,
-                                                                m,
-                                                                csr_row_ptr,
-                                                                csr_row_ptr + 1,
-                                                                0,
-                                                                rocsparse::clz(n),
-                                                                handle->stream));
+        size_t rocprim_buffer_size;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::sort_csr_column_indices_buffer_size(
+            handle, m, n, nnz, csr_row_ptr, &rocprim_buffer_size));
         *buffer_size += ((rocprim_buffer_size - 1) / 256 + 1) * 256;
 
         // offset buffer

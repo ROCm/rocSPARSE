@@ -27,7 +27,7 @@
 
 #include "control.h"
 #include "rocsparse_dense2csx.hpp"
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_primitives.h"
 
 namespace rocsparse
 {
@@ -182,13 +182,8 @@ namespace rocsparse
 
             size_t temp_storage_bytes = 0;
             // Obtain rocprim buffer size
-            RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(nullptr,
-                                                        temp_storage_bytes,
-                                                        csx_row_col_ptr_A,
-                                                        csx_row_col_ptr_A,
-                                                        dimdir + 1,
-                                                        rocprim::plus<I>(),
-                                                        handle->stream));
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse::primitives::inclusive_scan_buffer_size<I, I>(
+                handle, dimdir + 1, &temp_storage_bytes)));
 
             // Get rocprim buffer
             bool  d_temp_alloc;
@@ -208,13 +203,13 @@ namespace rocsparse
             }
 
             // Perform actual inclusive sum
-            RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(d_temp_storage,
-                                                        temp_storage_bytes,
-                                                        csx_row_col_ptr_A,
-                                                        csx_row_col_ptr_A,
-                                                        dimdir + 1,
-                                                        rocprim::plus<I>(),
-                                                        handle->stream));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::inclusive_scan(handle,
+                                                                            csx_row_col_ptr_A,
+                                                                            csx_row_col_ptr_A,
+                                                                            dimdir + 1,
+                                                                            temp_storage_bytes,
+                                                                            d_temp_storage));
+
             // Free rocprim buffer, if allocated
             if(d_temp_alloc == true)
             {

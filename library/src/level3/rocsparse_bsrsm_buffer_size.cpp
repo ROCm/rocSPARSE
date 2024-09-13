@@ -27,7 +27,7 @@
 #include "rocsparse_bsrsm.hpp"
 #include "utility.h"
 
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_primitives.h"
 
 rocsparse_status rocsparse::bsrsm_buffer_size_quickreturn(rocsparse_handle          handle,
                                                           rocsparse_direction       dir,
@@ -137,7 +137,7 @@ rocsparse_status rocsparse::bsrsm_buffer_size_core(rocsparse_handle          han
                                                    size_t*                   buffer_size)
 {
     // Stream
-    hipStream_t stream = handle->stream;
+    // hipStream_t stream = handle->stream;
 
     // rocsparse_int max_nnz
     *buffer_size = 256;
@@ -156,15 +156,10 @@ rocsparse_status rocsparse::bsrsm_buffer_size_core(rocsparse_handle          han
     // int workspace2
     *buffer_size += ((sizeof(int) * mb - 1) / 256 + 1) * 256;
 
-    size_t         rocprim_size;
-    rocsparse_int* ptr  = reinterpret_cast<rocsparse_int*>(buffer_size);
-    int*           ptr2 = reinterpret_cast<int*>(buffer_size);
-
-    rocprim::double_buffer<rocsparse_int> dummy(ptr, ptr);
-    rocprim::double_buffer<int>           dummy2(ptr2, ptr2);
-
-    RETURN_IF_HIP_ERROR(
-        rocprim::radix_sort_pairs(nullptr, rocprim_size, dummy2, dummy, mb, 0, 32, stream));
+    size_t rocprim_size;
+    RETURN_IF_ROCSPARSE_ERROR(
+        (rocsparse::primitives::radix_sort_pairs_buffer_size<int, rocsparse_int>(
+            handle, mb, 0, 32, &rocprim_size)));
 
     // rocprim buffer
     *buffer_size += rocprim_size;
@@ -181,8 +176,9 @@ rocsparse_status rocsparse::bsrsm_buffer_size_core(rocsparse_handle          han
         size_t transpose_size;
 
         // Determine rocprim buffer size
-        RETURN_IF_HIP_ERROR(
-            rocprim::radix_sort_pairs(nullptr, transpose_size, dummy, dummy, nnzb, 0, 32, stream));
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse::primitives::radix_sort_pairs_buffer_size<rocsparse_int, rocsparse_int>(
+                handle, nnzb, 0, 32, &transpose_size)));
 
         // rocPRIM does not support in-place sorting, so we need an additional buffer
         transpose_size += ((sizeof(rocsparse_int) * nnzb - 1) / 256 + 1) * 256;

@@ -35,7 +35,7 @@
 #include "rocsparse_csr2gebsr.hpp"
 #include "rocsparse_gebsr2csr.hpp"
 
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_primitives.h"
 
 #define launch_gebsr2gebsr_fast_kernel(T, direction, block_size, segment_size)     \
     RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(                                            \
@@ -809,15 +809,10 @@ try
         }
 
         // Perform inclusive scan on bsr row pointer array
-        auto   op = rocprim::plus<rocsparse_int>();
         size_t temp_storage_size_bytes;
-        RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(nullptr,
-                                                    temp_storage_size_bytes,
-                                                    bsr_row_ptr_C,
-                                                    bsr_row_ptr_C,
-                                                    mb_c + 1,
-                                                    op,
-                                                    handle->stream));
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse::primitives::inclusive_scan_buffer_size<rocsparse_int, rocsparse_int>(
+                handle, mb_c + 1, &temp_storage_size_bytes)));
 
         bool  temp_alloc       = false;
         void* temp_storage_ptr = nullptr;
@@ -833,13 +828,12 @@ try
             temp_alloc = true;
         }
 
-        RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(temp_storage_ptr,
-                                                    temp_storage_size_bytes,
-                                                    bsr_row_ptr_C,
-                                                    bsr_row_ptr_C,
-                                                    mb_c + 1,
-                                                    op,
-                                                    handle->stream));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::inclusive_scan(handle,
+                                                                        bsr_row_ptr_C,
+                                                                        bsr_row_ptr_C,
+                                                                        mb_c + 1,
+                                                                        temp_storage_size_bytes,
+                                                                        temp_storage_ptr));
 
         if(temp_alloc)
         {

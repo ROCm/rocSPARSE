@@ -29,8 +29,6 @@
 
 #include "csr2bsr_device.h"
 
-#include <rocprim/rocprim.hpp>
-
 namespace rocsparse
 {
 #define launch_csr2bsr_wavefront_per_row_multipass_kernel(blocksize, wfsize, blockdim)        \

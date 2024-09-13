@@ -27,8 +27,8 @@
 
 #include "common.h"
 #include "control.h"
+#include "rocsparse_primitives.h"
 #include "utility.h"
-#include <rocprim/rocprim.hpp>
 
 template <typename I, typename J, typename T>
 rocsparse_status rocsparse::csrsm_buffer_size_core(rocsparse_handle          handle,
@@ -61,7 +61,7 @@ rocsparse_status rocsparse::csrsm_buffer_size_core(rocsparse_handle          han
         return rocsparse_status_success;
     }
 
-    hipStream_t stream = handle->stream;
+    // hipStream_t stream = handle->stream;
 
     // max_nnz
     *buffer_size = 256;
@@ -90,16 +90,8 @@ rocsparse_status rocsparse::csrsm_buffer_size_core(rocsparse_handle          han
     *buffer_size += ((sizeof(int) * m - 1) / 256 + 1) * 256;
 
     size_t rocprim_size;
-    int*   ptr1 = reinterpret_cast<int*>(buffer_size);
-    I*     ptr2 = reinterpret_cast<I*>(buffer_size);
-    J*     ptr3 = reinterpret_cast<J*>(buffer_size);
-
-    rocprim::double_buffer<int> dummy1(ptr1, ptr1);
-    rocprim::double_buffer<I>   dummy2(ptr2, ptr2);
-    rocprim::double_buffer<J>   dummy3(ptr3, ptr3);
-
-    RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(
-        nullptr, rocprim_size, dummy1, dummy3, m, 0, rocsparse::clz(m), stream));
+    RETURN_IF_ROCSPARSE_ERROR((rocsparse::primitives::radix_sort_pairs_buffer_size<int, J>(
+        handle, m, 0, rocsparse::clz(m), &rocprim_size)));
 
     // rocprim buffer
     *buffer_size += rocprim_size;
@@ -117,8 +109,8 @@ rocsparse_status rocsparse::csrsm_buffer_size_core(rocsparse_handle          han
         size_t transpose_size;
 
         // Determine rocprim buffer size
-        RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(
-            nullptr, transpose_size, dummy3, dummy2, nnz, 0, rocsparse::clz(m), stream));
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::primitives::radix_sort_pairs_buffer_size<J, I>(
+            handle, nnz, 0, rocsparse::clz(m), &transpose_size)));
 
         // rocPRIM does not support in-place sorting, so we need an additional buffer
         transpose_size += ((sizeof(J) * nnz - 1) / 256 + 1) * 256;

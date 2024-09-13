@@ -29,7 +29,7 @@
 
 #include "csr2csr_compress_device.h"
 #include "prune_dense2csr_device.h"
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_primitives.h"
 
 namespace rocsparse
 {
@@ -233,13 +233,9 @@ rocsparse_status rocsparse::prune_dense2csr_nnz_template(rocsparse_handle       
 
     // Obtain rocprim buffer size
     size_t temp_storage_bytes = 0;
-    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(nullptr,
-                                                temp_storage_bytes,
-                                                csr_row_ptr,
-                                                csr_row_ptr,
-                                                m + 1,
-                                                rocprim::plus<rocsparse_int>(),
-                                                handle->stream));
+    RETURN_IF_ROCSPARSE_ERROR(
+        (rocsparse::primitives::inclusive_scan_buffer_size<rocsparse_int, rocsparse_int>(
+            handle, m + 1, &temp_storage_bytes)));
 
     // Get rocprim buffer
     bool  d_temp_alloc;
@@ -259,13 +255,8 @@ rocsparse_status rocsparse::prune_dense2csr_nnz_template(rocsparse_handle       
     }
 
     // Perform actual inclusive sum
-    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(d_temp_storage,
-                                                temp_storage_bytes,
-                                                csr_row_ptr,
-                                                csr_row_ptr,
-                                                m + 1,
-                                                rocprim::plus<rocsparse_int>(),
-                                                handle->stream));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::inclusive_scan(
+        handle, csr_row_ptr, csr_row_ptr, m + 1, temp_storage_bytes, d_temp_storage));
 
     // Free rocprim buffer, if allocated
     if(d_temp_alloc == true)

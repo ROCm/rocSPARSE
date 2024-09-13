@@ -29,7 +29,7 @@
 
 #include "csr2bsr_nnz_device.h"
 
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_primitives.h"
 
 /*
  * ===========================================================================
@@ -405,10 +405,9 @@ rocsparse_status rocsparse::csr2bsr_nnz_core(rocsparse_handle          handle,
     }
 
     // Perform inclusive scan on bsr row pointer array
-    auto   op = rocprim::plus<I>();
     size_t temp_storage_size_bytes;
-    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(
-        nullptr, temp_storage_size_bytes, bsr_row_ptr, bsr_row_ptr, mb + 1, op, handle->stream));
+    RETURN_IF_ROCSPARSE_ERROR((rocsparse::primitives::inclusive_scan_buffer_size<I, I>(
+        handle, mb + 1, &temp_storage_size_bytes)));
 
     bool  temp_alloc       = false;
     void* temp_storage_ptr = nullptr;
@@ -424,13 +423,8 @@ rocsparse_status rocsparse::csr2bsr_nnz_core(rocsparse_handle          handle,
         temp_alloc = true;
     }
 
-    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(temp_storage_ptr,
-                                                temp_storage_size_bytes,
-                                                bsr_row_ptr,
-                                                bsr_row_ptr,
-                                                mb + 1,
-                                                op,
-                                                handle->stream));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::inclusive_scan(
+        handle, bsr_row_ptr, bsr_row_ptr, mb + 1, temp_storage_size_bytes, temp_storage_ptr));
 
     if(temp_alloc)
     {

@@ -30,7 +30,6 @@
 #include "utility.h"
 
 #include "csr2csc_device.h"
-#include <rocprim/rocprim.hpp>
 
 namespace rocsparse
 {

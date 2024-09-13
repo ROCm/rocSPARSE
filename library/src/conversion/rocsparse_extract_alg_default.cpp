@@ -22,7 +22,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_extract_alg_default.hpp"
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_primitives.h"
 
 namespace rocsparse
 {
@@ -32,7 +32,7 @@ namespace rocsparse
                                                                   rocsparse_direction source_dir_,
                                                                   int64_t             source_m_,
                                                                   int64_t             source_n_,
-                                                                  size_t* __restrict__ buffer_size_)
+                                                                  size_t*             buffer_size_)
     {
         if((source_m_ > std::numeric_limits<I>::max()))
         {
@@ -61,13 +61,9 @@ namespace rocsparse
         }
         }
 
-        RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(nullptr,
-                                                    buffer_size_[0],
-                                                    (I* __restrict__)nullptr,
-                                                    (I* __restrict__)nullptr,
-                                                    num_seq + 1,
-                                                    rocprim::plus<I>(),
-                                                    handle_->stream));
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::primitives::inclusive_scan_buffer_size<I, I>(
+            handle_, num_seq + 1, buffer_size_)));
+
         return rocsparse_status_success;
     }
 
@@ -103,8 +99,8 @@ namespace rocsparse
                                                             size_t buffer_size_,
                                                             void* __restrict__ buffer_)
     {
-        RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(
-            buffer_, buffer_size_, ptr_, ptr_, nseq_ + 1, rocprim::plus<I>(), handle_->stream));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::inclusive_scan(
+            handle_, ptr_, ptr_, nseq_ + 1, buffer_size_, buffer_));
         return rocsparse_status_success;
     }
 
@@ -275,6 +271,7 @@ namespace rocsparse
                                            (const I* __restrict__)target_ptr_,
                                            target_base_,
                                            ((int64_t* __restrict__)target_nnz_));
+
         return rocsparse_status_success;
     }
 

@@ -30,7 +30,6 @@
 #include "common.h"
 #include "control.h"
 #include "utility.h"
-#include <rocprim/rocprim.hpp>
 
 namespace rocsparse
 {

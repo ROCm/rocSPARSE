@@ -29,8 +29,6 @@
 
 #include "csrmv_device.h"
 
-#include <rocprim/rocprim.hpp>
-
 #define BLOCK_MULTIPLIER 3
 #define WG_SIZE 256
 #define LR_THRESHOLD 11

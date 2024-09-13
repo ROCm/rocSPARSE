@@ -30,8 +30,6 @@
 
 #include "rocsparse_dense2csx_impl.hpp"
 
-#include <rocprim/rocprim.hpp>
-
 namespace rocsparse
 {
     template <typename I, typename T>

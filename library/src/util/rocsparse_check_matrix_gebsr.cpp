@@ -26,7 +26,7 @@
 #include "to_string.hpp"
 #include "utility.h"
 
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_primitives.h"
 
 #include "check_matrix_gebsr_device.h"
 
@@ -103,10 +103,6 @@ rocsparse_status rocsparse::check_matrix_gebsr_core(rocsparse_handle       handl
     // If columns are unsorted, then sort them in temp buffer
     if(storage == rocsparse_storage_mode_unsorted)
     {
-        uint32_t startbit = 0;
-        uint32_t endbit   = rocsparse::clz(nb);
-        size_t   size;
-
         // offsets buffer
         tmp_offsets = reinterpret_cast<I*>(ptr);
         ptr += ((sizeof(I) * mb) / 256 + 1) * 256;
@@ -128,99 +124,11 @@ rocsparse_status rocsparse::check_matrix_gebsr_core(rocsparse_handle       handl
                                            bsr_row_ptr,
                                            tmp_offsets);
 
-        RETURN_IF_HIP_ERROR(
-            hipMemcpyAsync(tmp_cols1, bsr_col_ind, sizeof(J) * nnzb, hipMemcpyDeviceToDevice));
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
-
         // rocprim buffer
         void* tmp_rocprim = reinterpret_cast<void*>(ptr);
 
-        // Compute buffer size
-        rocprim::double_buffer<J> dummy(tmp_cols1, tmp_cols2);
-        RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys(nullptr,
-                                                               size,
-                                                               dummy,
-                                                               nnzb,
-                                                               mb,
-                                                               tmp_offsets,
-                                                               tmp_offsets + 1,
-                                                               startbit,
-                                                               endbit,
-                                                               handle->stream));
-
-        // Sort by keys
-        rocprim::double_buffer<J> keys(tmp_cols1, tmp_cols2);
-
-        // Determine blocksize and items per thread depending on average nnz per row
-        J avg_row_nnzb = nnzb / mb;
-
-        if(avg_row_nnzb < 64)
-        {
-            using config
-                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 1>>;
-            RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(tmp_rocprim,
-                                                                           size,
-                                                                           keys,
-                                                                           nnzb,
-                                                                           mb,
-                                                                           tmp_offsets,
-                                                                           tmp_offsets + 1,
-                                                                           startbit,
-                                                                           endbit,
-                                                                           handle->stream));
-        }
-        else if(avg_row_nnzb < 128)
-        {
-            using config
-                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 2>>;
-            RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(tmp_rocprim,
-                                                                           size,
-                                                                           keys,
-                                                                           nnzb,
-                                                                           mb,
-                                                                           tmp_offsets,
-                                                                           tmp_offsets + 1,
-                                                                           startbit,
-                                                                           endbit,
-                                                                           handle->stream));
-        }
-        else if(avg_row_nnzb < 256)
-        {
-            using config
-                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 4>>;
-            RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(tmp_rocprim,
-                                                                           size,
-                                                                           keys,
-                                                                           nnzb,
-                                                                           mb,
-                                                                           tmp_offsets,
-                                                                           tmp_offsets + 1,
-                                                                           startbit,
-                                                                           endbit,
-                                                                           handle->stream));
-        }
-        else
-        {
-            RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys(tmp_rocprim,
-                                                                   size,
-                                                                   keys,
-                                                                   nnzb,
-                                                                   mb,
-                                                                   tmp_offsets,
-                                                                   tmp_offsets + 1,
-                                                                   startbit,
-                                                                   endbit,
-                                                                   handle->stream));
-        }
-
-        if(keys.current() != tmp_cols2)
-        {
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(tmp_cols2,
-                                               keys.current(),
-                                               sizeof(J) * nnzb,
-                                               hipMemcpyDeviceToDevice,
-                                               handle->stream));
-        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::sort_csr_column_indices(
+            handle, mb, nb, nnzb, tmp_offsets, bsr_col_ind, tmp_cols1, tmp_cols2, tmp_rocprim));
     }
 
     const J* bsr_col_ind_sorted

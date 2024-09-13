@@ -26,7 +26,7 @@
 #include "rocsparse_check_matrix_gebsr.hpp"
 #include "utility.h"
 
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_primitives.h"
 
 #include "check_matrix_gebsr_device.h"
 
@@ -53,19 +53,9 @@ rocsparse_status rocsparse::check_matrix_gebsr_buffer_size_core(rocsparse_handle
     if(storage == rocsparse_storage_mode_unsorted)
     {
         // Determine required rocprim buffer size
-        size_t                    rocprim_buffer_size;
-        rocprim::double_buffer<J> dummy(nullptr, nullptr);
-        RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs(nullptr,
-                                                                rocprim_buffer_size,
-                                                                dummy,
-                                                                dummy,
-                                                                nnzb,
-                                                                mb,
-                                                                bsr_row_ptr,
-                                                                bsr_row_ptr + 1,
-                                                                0,
-                                                                rocsparse::clz(nb),
-                                                                handle->stream));
+        size_t rocprim_buffer_size;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::sort_csr_column_indices_buffer_size(
+            handle, mb, nb, nnzb, bsr_row_ptr, &rocprim_buffer_size));
         *buffer_size += ((rocprim_buffer_size - 1) / 256 + 1) * 256;
 
         // offset buffer
