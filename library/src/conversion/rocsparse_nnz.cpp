@@ -29,7 +29,7 @@
 #include "utility.h"
 
 #include "nnz_device.h"
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_primitives.h"
 
 namespace rocsparse
 {
@@ -258,16 +258,9 @@ rocsparse_status rocsparse::nnz_impl(rocsparse_handle          handle,
     //
     {
         J      mn = dir == rocsparse_direction_row ? m : n;
-        auto   op = rocprim::plus<I>();
         size_t temp_storage_size_bytes;
-        RETURN_IF_HIP_ERROR(rocprim::reduce(nullptr,
-                                            temp_storage_size_bytes,
-                                            nnz_per_row_columns,
-                                            nnz_total_dev_host_ptr,
-                                            0,
-                                            mn,
-                                            op,
-                                            handle->stream));
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::primitives::find_sum_buffer_size<I, I>(
+            handle, mn, &temp_storage_size_bytes)));
         temp_storage_size_bytes += sizeof(I);
         bool  temp_alloc       = false;
         void* temp_storage_ptr = nullptr;
@@ -293,14 +286,8 @@ rocsparse_status rocsparse::nnz_impl(rocsparse_handle          handle,
         //
         // Perform reduce
         //
-        RETURN_IF_HIP_ERROR(rocprim::reduce(temp_storage_ptr,
-                                            temp_storage_size_bytes,
-                                            nnz_per_row_columns,
-                                            d_nnz,
-                                            0,
-                                            mn,
-                                            op,
-                                            handle->stream));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::find_sum(
+            handle, nnz_per_row_columns, d_nnz, mn, temp_storage_size_bytes, temp_storage_ptr));
 
         //
         // Extract nnz

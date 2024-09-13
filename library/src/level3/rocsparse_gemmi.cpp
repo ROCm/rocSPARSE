@@ -122,7 +122,7 @@ namespace rocsparse
         }
 
 #define GEMMIT_DIM 256
-        dim3 gemmit_blocks((m - 1) / GEMMIT_DIM + 1, std::min(n, 65535));
+        dim3 gemmit_blocks((m - 1) / GEMMIT_DIM + 1, std::min(n, (rocsparse_int)65535));
         dim3 gemmit_threads(GEMMIT_DIM);
 
         if(handle->pointer_mode == rocsparse_pointer_mode_device)

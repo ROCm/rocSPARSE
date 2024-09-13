@@ -34,17 +34,16 @@
 #include "common.hpp"
 #include "rocsparse_csritilu0_driver.hpp"
 #include "rocsparse_csritilu0x_driver.hpp"
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_primitives.h"
 
 namespace rocsparse
 {
     template <typename I, typename J>
     static rocsparse_status inclusive_scan(rocsparse_handle handle, J m_, I* ptr_)
     {
-        auto   op = rocprim::plus<I>();
         size_t temp_storage_size_bytes;
-        RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(
-            nullptr, temp_storage_size_bytes, ptr_, ptr_, m_ + 1, op, handle->stream));
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::primitives::inclusive_scan_buffer_size<I, I>(
+            handle, m_ + 1, &temp_storage_size_bytes)));
 
         bool  temp_alloc       = false;
         void* temp_storage_ptr = nullptr;
@@ -61,8 +60,8 @@ namespace rocsparse
             temp_alloc = true;
         }
 
-        RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(
-            temp_storage_ptr, temp_storage_size_bytes, ptr_, ptr_, m_ + 1, op, handle->stream));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::inclusive_scan(
+            handle, ptr_, ptr_, m_ + 1, temp_storage_size_bytes, temp_storage_ptr));
 
         if(temp_alloc)
         {

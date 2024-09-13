@@ -26,8 +26,8 @@
 #include "control.h"
 #include "internal/extra/rocsparse_csrgeam.h"
 #include "rocsparse_csrgeam.hpp"
+#include "rocsparse_primitives.h"
 #include "utility.h"
-#include <rocprim/rocprim.hpp>
 
 namespace rocsparse
 {
@@ -250,14 +250,9 @@ rocsparse_status rocsparse::csrgeam_nnz_core(rocsparse_handle          handle,
 
     // Exclusive sum to obtain row pointers of C
     size_t rocprim_size;
-    RETURN_IF_HIP_ERROR(rocprim::exclusive_scan(nullptr,
-                                                rocprim_size,
-                                                csr_row_ptr_C,
-                                                csr_row_ptr_C,
-                                                static_cast<rocsparse_int>(descr_C->base),
-                                                m + 1,
-                                                rocprim::plus<rocsparse_int>(),
-                                                stream));
+    RETURN_IF_ROCSPARSE_ERROR(
+        (rocsparse::primitives::exclusive_scan_buffer_size<rocsparse_int, rocsparse_int>(
+            handle, static_cast<rocsparse_int>(descr_C->base), m + 1, &rocprim_size)));
 
     bool  rocprim_alloc;
     void* rocprim_buffer;
@@ -274,14 +269,14 @@ rocsparse_status rocsparse::csrgeam_nnz_core(rocsparse_handle          handle,
         rocprim_alloc = true;
     }
 
-    RETURN_IF_HIP_ERROR(rocprim::exclusive_scan(rocprim_buffer,
-                                                rocprim_size,
-                                                csr_row_ptr_C,
-                                                csr_row_ptr_C,
-                                                static_cast<rocsparse_int>(descr_C->base),
-                                                m + 1,
-                                                rocprim::plus<rocsparse_int>(),
-                                                stream));
+    RETURN_IF_ROCSPARSE_ERROR(
+        rocsparse::primitives::exclusive_scan(handle,
+                                              csr_row_ptr_C,
+                                              csr_row_ptr_C,
+                                              static_cast<rocsparse_int>(descr_C->base),
+                                              m + 1,
+                                              rocprim_size,
+                                              rocprim_buffer));
 
     if(rocprim_alloc == true)
     {

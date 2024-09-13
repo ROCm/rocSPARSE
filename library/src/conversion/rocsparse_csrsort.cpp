@@ -27,7 +27,7 @@
 #include "control.h"
 #include "csrsort_device.h"
 
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_primitives.h"
 
 extern "C" rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle     handle,
                                                           rocsparse_int        m,
@@ -62,29 +62,20 @@ try
         return rocsparse_status_success;
     }
 
-    // Stream
-    hipStream_t stream = handle->stream;
-
-    rocsparse_int*                        ptr = reinterpret_cast<rocsparse_int*>(buffer_size);
-    rocprim::double_buffer<rocsparse_int> dummy(ptr, ptr);
-
     uint32_t startbit = 0;
     uint32_t endbit   = rocsparse::clz(n);
-
-    using config
-        = rocprim::segmented_radix_sort_config<7,
-                                               4,
-                                               rocprim::kernel_config<256, 16>,
-                                               rocprim::WarpSortConfig<8, 8, 256, 5, 16, 16, 256>,
-                                               1>;
 
     // We do not know if sort_pairs or sort_keys will be called, so use the largest buffer between the two
     size_t size1;
     size_t size2;
-    RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(
-        nullptr, size1, dummy, dummy, nnz, m, ptr, ptr + 1, startbit, endbit, stream));
-    RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(
-        nullptr, size2, dummy, nnz, m, ptr, ptr + 1, startbit, endbit, stream));
+    RETURN_IF_ROCSPARSE_ERROR(
+        (rocsparse::primitives::
+             segmented_radix_sort_pairs_buffer_size<rocsparse_int, rocsparse_int, rocsparse_int>(
+                 handle, nnz, m, startbit, endbit, &size1)));
+    RETURN_IF_ROCSPARSE_ERROR(
+        (rocsparse::primitives::segmented_radix_sort_keys_buffer_size<rocsparse_int, rocsparse_int>(
+            handle, nnz, m, startbit, endbit, &size2)));
+
     *buffer_size = rocsparse::max(size1, size2);
 
     *buffer_size = ((*buffer_size - 1) / 256 + 1) * 256;
@@ -152,37 +143,21 @@ try
     uint32_t endbit   = rocsparse::clz(n);
     size_t   size;
 
-    using config
-        = rocprim::segmented_radix_sort_config<7,
-                                               4,
-                                               rocprim::kernel_config<256, 16>,
-                                               rocprim::WarpSortConfig<8, 8, 256, 5, 16, 16, 256>,
-                                               1>;
-
     if(perm != nullptr)
     {
         // Sort pairs, if permutation vector is present
-        rocprim::double_buffer<rocsparse_int> dummy(csr_col_ind, perm);
-
-        RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(nullptr,
-                                                                        size,
-                                                                        dummy,
-                                                                        dummy,
-                                                                        nnz,
-                                                                        m,
-                                                                        csr_row_ptr,
-                                                                        csr_row_ptr + 1,
-                                                                        startbit,
-                                                                        endbit,
-                                                                        stream));
+        RETURN_IF_ROCSPARSE_ERROR((
+            rocsparse::primitives::
+                segmented_radix_sort_pairs_buffer_size<rocsparse_int, rocsparse_int, rocsparse_int>(
+                    handle, nnz, m, startbit, endbit, &size)));
     }
     else
     {
         // Sort keys, if no permutation vector is present
-        rocprim::double_buffer<rocsparse_int> dummy(csr_col_ind, csr_col_ind);
-
-        RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(
-            nullptr, size, dummy, nnz, m, csr_row_ptr, csr_row_ptr + 1, startbit, endbit, stream));
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse::primitives::segmented_radix_sort_keys_buffer_size<rocsparse_int,
+                                                                          rocsparse_int>(
+                handle, nnz, m, startbit, endbit, &size)));
     }
 
     // Temporary buffer entry points
@@ -229,11 +204,11 @@ try
     if(perm != nullptr)
     {
         // Sort by pairs, if permutation vector is present
-        rocprim::double_buffer<rocsparse_int> keys(csr_col_ind, tmp_cols);
-        rocprim::double_buffer<rocsparse_int> vals(perm, tmp_perm);
+        rocsparse::primitives::double_buffer<rocsparse_int> keys(csr_col_ind, tmp_cols);
+        rocsparse::primitives::double_buffer<rocsparse_int> vals(perm, tmp_perm);
 
-        RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(
-            tmp_rocprim, size, keys, vals, nnz, m, offsets, offsets + 1, startbit, endbit, stream));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::segmented_radix_sort_pairs(
+            handle, keys, vals, nnz, m, offsets, offsets + 1, startbit, endbit, size, tmp_rocprim));
 
         if(keys.current() != csr_col_ind)
         {
@@ -255,10 +230,10 @@ try
     else
     {
         // Sort by keys, if no permutation vector is present
-        rocprim::double_buffer<rocsparse_int> keys(csr_col_ind, tmp_cols);
+        rocsparse::primitives::double_buffer<rocsparse_int> keys(csr_col_ind, tmp_cols);
 
-        RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(
-            tmp_rocprim, size, keys, nnz, m, offsets, offsets + 1, startbit, endbit, stream));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::segmented_radix_sort_keys(
+            handle, keys, nnz, m, offsets, offsets + 1, startbit, endbit, size, tmp_rocprim));
 
         if(keys.current() != csr_col_ind)
         {

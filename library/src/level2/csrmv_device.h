@@ -489,8 +489,8 @@ namespace rocsparse
             }
 
             const I vecStart = (I)wg * (I)BLOCK_MULTIPLIER * BLOCKSIZE + row_offset - idx_base;
-            const I vecEnd
-                = min(csr_row_ptr[row + 1] - idx_base, vecStart + BLOCK_MULTIPLIER * BLOCKSIZE);
+            const I vecEnd   = rocsparse::min(csr_row_ptr[row + 1] - idx_base,
+                                            vecStart + I(BLOCK_MULTIPLIER * BLOCKSIZE));
 
             // Load in a bunch of partial results into your register space, rather than LDS (no
             // contention)

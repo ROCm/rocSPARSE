@@ -25,7 +25,6 @@
 #include "rocsparse_coosm.hpp"
 #include "rocsparse_csrsm.hpp"
 #include "utility.h"
-#include <rocprim/rocprim.hpp>
 
 #include "../conversion/rocsparse_coo2csr.hpp"
 

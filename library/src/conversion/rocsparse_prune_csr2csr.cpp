@@ -29,7 +29,7 @@
 #include "utility.h"
 
 #include "csr2csr_compress_device.h"
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_primitives.h"
 
 namespace rocsparse
 {
@@ -328,10 +328,10 @@ rocsparse_status rocsparse::prune_csr2csr_nnz_template(rocsparse_handle         
                                        handle->stream));
 
     // Perform inclusive scan on csr row pointer array
-    auto   op = rocprim::plus<rocsparse_int>();
     size_t temp_storage_size_bytes;
-    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(
-        nullptr, temp_storage_size_bytes, csr_row_ptr_C, csr_row_ptr_C, m + 1, op, stream));
+    RETURN_IF_ROCSPARSE_ERROR(
+        (rocsparse::primitives::inclusive_scan_buffer_size<rocsparse_int, rocsparse_int>(
+            handle, m + 1, &temp_storage_size_bytes)));
 
     bool  temp_alloc       = false;
     void* temp_storage_ptr = nullptr;
@@ -347,13 +347,8 @@ rocsparse_status rocsparse::prune_csr2csr_nnz_template(rocsparse_handle         
         temp_alloc = true;
     }
 
-    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(temp_storage_ptr,
-                                                temp_storage_size_bytes,
-                                                csr_row_ptr_C,
-                                                csr_row_ptr_C,
-                                                m + 1,
-                                                op,
-                                                stream));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::inclusive_scan(
+        handle, csr_row_ptr_C, csr_row_ptr_C, m + 1, temp_storage_size_bytes, temp_storage_ptr));
 
     if(temp_alloc)
     {

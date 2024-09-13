@@ -30,7 +30,7 @@
 #include "csr2ell_device.h"
 #include "csr2hyb_device.h"
 
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_primitives.h"
 
 namespace rocsparse
 {
@@ -283,26 +283,17 @@ rocsparse_status rocsparse::csr2hyb_template(rocsparse_handle          handle,
             size_t temp_storage_bytes = 0;
 
             // Obtain rocprim buffer size
-            RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(d_temp_storage,
-                                                        temp_storage_bytes,
-                                                        workspace,
-                                                        workspace,
-                                                        m + 1,
-                                                        rocprim::plus<rocsparse_int>(),
-                                                        stream));
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::primitives::inclusive_scan_buffer_size<rocsparse_int, rocsparse_int>(
+                    handle, m + 1, &temp_storage_bytes)));
 
             // Allocate rocprim buffer
             RETURN_IF_HIP_ERROR(
                 rocsparse_hipMallocAsync(&d_temp_storage, temp_storage_bytes, handle->stream));
 
             // Do inclusive sum
-            RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(d_temp_storage,
-                                                        temp_storage_bytes,
-                                                        workspace,
-                                                        workspace,
-                                                        m + 1,
-                                                        rocprim::plus<rocsparse_int>(),
-                                                        stream));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::inclusive_scan(
+                handle, workspace, workspace, m + 1, temp_storage_bytes, d_temp_storage));
 
             // Clear rocprim buffer
             RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(d_temp_storage, handle->stream));

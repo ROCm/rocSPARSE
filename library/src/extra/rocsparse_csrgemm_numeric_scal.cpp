@@ -30,7 +30,6 @@
 #include "control.h"
 #include "rocsparse_csrgemm_numeric_scal.hpp"
 #include "utility.h"
-#include <rocprim/rocprim.hpp>
 
 namespace rocsparse
 {

@@ -28,7 +28,7 @@
 #include "utility.h"
 
 #include "ell2csr_device.h"
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_primitives.h"
 
 rocsparse_status rocsparse::ell2csr_quickreturn(rocsparse_handle          handle,
                                                 int64_t                   m,
@@ -293,8 +293,9 @@ rocsparse_status rocsparse::ell2csr_nnz_core(rocsparse_handle          handle,
     size_t temp_storage_bytes = 0;
 
     // Obtain rocprim buffer size
-    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(
-        nullptr, temp_storage_bytes, csr_row_ptr, csr_row_ptr, m + 1, rocprim::plus<I>(), stream));
+    RETURN_IF_ROCSPARSE_ERROR((rocsparse::primitives::inclusive_scan_buffer_size<I, I>(
+        handle, m + 1, &temp_storage_bytes)));
+
     // Get rocprim buffer
     bool  d_temp_alloc;
     void* d_temp_storage;
@@ -311,13 +312,9 @@ rocsparse_status rocsparse::ell2csr_nnz_core(rocsparse_handle          handle,
         d_temp_alloc = true;
     }
     // Perform actual inclusive sum
-    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(d_temp_storage,
-                                                temp_storage_bytes,
-                                                csr_row_ptr,
-                                                csr_row_ptr,
-                                                m + 1,
-                                                rocprim::plus<I>(),
-                                                stream));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::inclusive_scan(
+        handle, csr_row_ptr, csr_row_ptr, m + 1, temp_storage_bytes, d_temp_storage));
+
     // Extract and adjust nnz
     if(csr_descr->base == rocsparse_index_base_one)
     {

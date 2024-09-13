@@ -28,7 +28,7 @@
 #include "utility.h"
 
 #include "csr2csr_compress_device.h"
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_primitives.h"
 
 template <typename T>
 rocsparse_status rocsparse::csr2csr_compress_template(rocsparse_handle          handle, //0
@@ -93,24 +93,16 @@ rocsparse_status rocsparse::csr2csr_compress_template(rocsparse_handle          
 
     // Compute buffer size for inclusive scan on csr_row_ptr_C
     size_t temp_storage_size_bytes2;
-    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(nullptr,
-                                                temp_storage_size_bytes2,
-                                                (rocsparse_int*)nullptr,
-                                                (rocsparse_int*)nullptr,
-                                                m + 1,
-                                                rocprim::plus<rocsparse_int>(),
-                                                stream));
+    RETURN_IF_ROCSPARSE_ERROR(
+        (rocsparse::primitives::inclusive_scan_buffer_size<rocsparse_int, rocsparse_int>(
+            handle, m + 1, &temp_storage_size_bytes2)));
     temp_storage_size_bytes2 = ((temp_storage_size_bytes2 - 1) / 256 + 1) * 256;
 
     // Compute buffer size for inclusive scan on warp_start
     size_t temp_storage_size_bytes3;
-    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(nullptr,
-                                                temp_storage_size_bytes3,
-                                                (uint32_t*)nullptr,
-                                                (uint32_t*)nullptr,
-                                                nwarps + 1,
-                                                rocprim::plus<uint32_t>(),
-                                                stream));
+    RETURN_IF_ROCSPARSE_ERROR(
+        (rocsparse::primitives::inclusive_scan_buffer_size<uint32_t, uint32_t>(
+            handle, nwarps + 1, &temp_storage_size_bytes3)));
     temp_storage_size_bytes3 = ((temp_storage_size_bytes3 - 1) / 256 + 1) * 256;
 
     size_t temp_storage_size_bytes
@@ -150,13 +142,12 @@ rocsparse_status rocsparse::csr2csr_compress_template(rocsparse_handle          
                                        csr_row_ptr_C);
 
     // Perform inclusive scan on csr row pointer array
-    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(temp_storage_buffer2,
-                                                temp_storage_size_bytes2,
-                                                csr_row_ptr_C,
-                                                csr_row_ptr_C,
-                                                m + 1,
-                                                rocprim::plus<rocsparse_int>(),
-                                                stream));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::inclusive_scan(handle,
+                                                                    csr_row_ptr_C,
+                                                                    csr_row_ptr_C,
+                                                                    m + 1,
+                                                                    temp_storage_size_bytes2,
+                                                                    temp_storage_buffer2));
 
     if(csr_val_C == nullptr || csr_col_ind_C == nullptr)
     {
@@ -211,13 +202,12 @@ rocsparse_status rocsparse::csr2csr_compress_template(rocsparse_handle          
     }
 
     // Perform inclusive scan on warp start array
-    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(temp_storage_buffer3,
-                                                temp_storage_size_bytes3,
-                                                warp_start,
-                                                warp_start,
-                                                nwarps + 1,
-                                                rocprim::plus<uint32_t>(),
-                                                stream));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::inclusive_scan(handle,
+                                                                    warp_start,
+                                                                    warp_start,
+                                                                    nwarps + 1,
+                                                                    temp_storage_size_bytes3,
+                                                                    temp_storage_buffer3));
 
     if(handle->wavefront_size == 32)
     {

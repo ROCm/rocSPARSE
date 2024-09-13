@@ -30,8 +30,6 @@
 #include "common.h"
 #include "coo2dense_device.h"
 
-#include <rocprim/rocprim.hpp>
-
 template <typename I, typename T>
 rocsparse_status rocsparse::coo2dense_template(rocsparse_handle          handle, //0
                                                I                         m, //1

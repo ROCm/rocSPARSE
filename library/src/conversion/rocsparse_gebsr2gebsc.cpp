@@ -32,7 +32,7 @@
 #include "utility.h"
 
 #include "gebsr2gebsc_device.h"
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_primitives.h"
 
 namespace rocsparse
 {
@@ -205,15 +205,15 @@ rocsparse_status rocsparse::gebsr2gebsc_template(rocsparse_handle     handle, //
         RETURN_IF_ROCSPARSE_ERROR(
             rocsparse_csr2coo(handle, bsr_row_ptr, nnzb, mb, bsc_row_ind, idx_base));
         // Stable sort COO by columns
-        rocprim::double_buffer<rocsparse_int> keys(tmp_work1, tmp_perm);
-        rocprim::double_buffer<rocsparse_int> vals(bsc_row_ind, tmp_work2);
+        rocsparse::primitives::double_buffer<rocsparse_int> keys(tmp_work1, tmp_perm);
+        rocsparse::primitives::double_buffer<rocsparse_int> vals(bsc_row_ind, tmp_work2);
 
         size_t size = 0;
-
-        RETURN_IF_HIP_ERROR(
-            rocprim::radix_sort_pairs(nullptr, size, keys, vals, nnzb, startbit, endbit, stream));
-        RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(
-            tmp_rocprim, size, keys, vals, nnzb, startbit, endbit, stream));
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse::primitives::radix_sort_pairs_buffer_size<rocsparse_int, rocsparse_int>(
+                handle, nnzb, startbit, endbit, &size)));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::radix_sort_pairs(
+            handle, keys, vals, nnzb, startbit, endbit, size, tmp_rocprim));
 
         // Create column pointers
         RETURN_IF_ROCSPARSE_ERROR(
@@ -237,15 +237,15 @@ rocsparse_status rocsparse::gebsr2gebsc_template(rocsparse_handle     handle, //
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_identity_permutation(handle, nnzb, tmp_perm));
 
         // Stable sort COO by columns
-        rocprim::double_buffer<rocsparse_int> keys(tmp_work1, bsc_row_ind);
-        rocprim::double_buffer<rocsparse_int> vals(tmp_perm, tmp_work2);
+        rocsparse::primitives::double_buffer<rocsparse_int> keys(tmp_work1, bsc_row_ind);
+        rocsparse::primitives::double_buffer<rocsparse_int> vals(tmp_perm, tmp_work2);
 
         size_t size = 0;
-
-        RETURN_IF_HIP_ERROR(
-            rocprim::radix_sort_pairs(nullptr, size, keys, vals, nnzb, startbit, endbit, stream));
-        RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(
-            tmp_rocprim, size, keys, vals, nnzb, startbit, endbit, stream));
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse::primitives::radix_sort_pairs_buffer_size<rocsparse_int, rocsparse_int>(
+                handle, nnzb, startbit, endbit, &size)));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::radix_sort_pairs(
+            handle, keys, vals, nnzb, startbit, endbit, size, tmp_rocprim));
 
         // Create column pointers
         RETURN_IF_ROCSPARSE_ERROR(
@@ -358,15 +358,9 @@ namespace rocsparse
         ROCSPARSE_CHECKARG_ARRAY(5, mb, bsr_row_ptr);
         ROCSPARSE_CHECKARG_ARRAY(6, nnzb, bsr_col_ind);
 
-        hipStream_t stream = handle->stream;
-
-        // Determine rocprim buffer size
-        rocsparse_int* ptr = reinterpret_cast<rocsparse_int*>(p_buffer_size);
-
-        rocprim::double_buffer<rocsparse_int> dummy(ptr, ptr);
-
-        RETURN_IF_HIP_ERROR(
-            rocprim::radix_sort_pairs(nullptr, *p_buffer_size, dummy, dummy, nnzb, 0, 32, stream));
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse::primitives::radix_sort_pairs_buffer_size<rocsparse_int, rocsparse_int>(
+                handle, nnzb, 0, 32, p_buffer_size)));
 
         *p_buffer_size = ((*p_buffer_size - 1) / 256 + 1) * 256;
 

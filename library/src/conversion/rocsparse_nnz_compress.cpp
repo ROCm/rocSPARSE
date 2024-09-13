@@ -28,7 +28,7 @@
 #include "utility.h"
 
 #include "nnz_compress_device.h"
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_primitives.h"
 
 namespace rocsparse
 {
@@ -355,10 +355,10 @@ rocsparse_status rocsparse::nnz_compress_template(rocsparse_handle          hand
     }
 
     // Perform inclusive scan on csr row pointer array
-    auto   op = rocprim::plus<rocsparse_int>();
     size_t temp_storage_size_bytes;
-    RETURN_IF_HIP_ERROR(
-        rocprim::reduce(nullptr, temp_storage_size_bytes, nnz_per_row, dnnz_C, m, op, stream));
+    RETURN_IF_ROCSPARSE_ERROR(
+        (rocsparse::primitives::find_sum_buffer_size<rocsparse_int, rocsparse_int>(
+            handle, m, &temp_storage_size_bytes)));
 
     bool  temp_alloc       = false;
     void* temp_storage_ptr = nullptr;
@@ -374,8 +374,8 @@ rocsparse_status rocsparse::nnz_compress_template(rocsparse_handle          hand
         temp_alloc = true;
     }
 
-    RETURN_IF_HIP_ERROR(rocprim::reduce(
-        temp_storage_ptr, temp_storage_size_bytes, nnz_per_row, dnnz_C, m, op, stream));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::find_sum(
+        handle, nnz_per_row, dnnz_C, m, temp_storage_size_bytes, temp_storage_ptr));
 
     if(handle->pointer_mode == rocsparse_pointer_mode_host)
     {

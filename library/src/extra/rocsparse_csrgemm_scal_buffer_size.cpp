@@ -30,7 +30,6 @@
 #include "utility.h"
 
 #include "rocsparse_csrgemm_scal.hpp"
-#include <rocprim/rocprim.hpp>
 
 rocsparse_status rocsparse::csrgemm_scal_buffer_size_quickreturn(rocsparse_handle          handle,
                                                                  int64_t                   m,

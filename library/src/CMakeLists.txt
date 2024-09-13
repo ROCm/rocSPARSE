@@ -24,6 +24,7 @@
 # rocSPARSE source
 set(rocsparse_source
   src/handle.cpp
+  src/rocsparse_primitives.cpp
   src/rocsparse_auxiliary.cpp
   src/rocsparse_blas.cpp
   src/rocsparse_blas_rocblas.cpp

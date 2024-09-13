@@ -28,7 +28,6 @@
 #include "common.h"
 #include "control.h"
 #include "rocsparse_csx2dense.hpp"
-#include <rocprim/rocprim.hpp>
 
 namespace rocsparse
 {

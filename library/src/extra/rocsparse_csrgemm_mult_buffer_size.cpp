@@ -30,7 +30,7 @@
 #include "utility.h"
 
 #include "rocsparse_csrgemm_mult.hpp"
-#include <rocprim/rocprim.hpp>
+#include "rocsparse_primitives.h"
 
 #define INSTANTIATE(I, J, T)                                            \
     template rocsparse_status rocsparse::csrgemm_mult_buffer_size_core( \
@@ -93,28 +93,20 @@ rocsparse_status rocsparse::csrgemm_mult_buffer_size_core(rocsparse_handle      
                                                           rocsparse_mat_info        info_C,
                                                           size_t*                   buffer_size)
 {
-    // Stream
-    hipStream_t stream = handle->stream;
-
     // rocprim buffer
     size_t rocprim_size;
     size_t rocprim_max = 0;
 
-    // rocprim::reduce
-    RETURN_IF_HIP_ERROR(rocprim::reduce(
-        nullptr, rocprim_size, csr_row_ptr_A, &nnz_A, 0, m, rocprim::maximum<I>(), stream));
+    RETURN_IF_ROCSPARSE_ERROR(
+        (rocsparse::primitives::find_max_buffer_size<I, I>(handle, m, &rocprim_size)));
     rocprim_max = rocsparse::max(rocprim_max, rocprim_size);
 
-    // rocprim exclusive scan
-    RETURN_IF_HIP_ERROR(rocprim::exclusive_scan(
-        nullptr, rocprim_size, csr_row_ptr_A, &nnz_A, 0, m + 1, rocprim::plus<I>(), stream));
+    RETURN_IF_ROCSPARSE_ERROR((rocsparse::primitives::exclusive_scan_buffer_size<I, I>(
+        handle, static_cast<I>(0), m + 1, &rocprim_size)));
     rocprim_max = rocsparse::max(rocprim_max, rocprim_size);
 
-    // rocprim::radix_sort_pairs
-    rocprim::double_buffer<I> buf1(&nnz_A, &nnz_B);
-    rocprim::double_buffer<J> buf2(&n, &k);
-    RETURN_IF_HIP_ERROR(
-        rocprim::radix_sort_pairs(nullptr, rocprim_size, buf1, buf2, m, 0, 3, stream));
+    RETURN_IF_ROCSPARSE_ERROR((
+        rocsparse::primitives::radix_sort_pairs_buffer_size<I, J>(handle, m, 0, 3, &rocprim_size)));
     rocprim_max = rocsparse::max(rocprim_max, rocprim_size);
 
     *buffer_size = ((rocprim_max - 1) / 256 + 1) * 256;
