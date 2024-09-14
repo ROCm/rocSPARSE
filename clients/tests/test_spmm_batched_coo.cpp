@@ -27,7 +27,7 @@
 
 TEST_ROUTINE_WITH_CONFIG(spmm_batched_coo,
                          level3,
-                         rocsparse_test_config_it,
+                         rocsparse_test_config_iabct,
                          arg.M,
                          arg.N,
                          arg.K,

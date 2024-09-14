@@ -374,6 +374,7 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
             return status;                    \
         }                                     \
     }
+#define DEFINE_CASE_IABCT_X(value, testingf) DEFINE_CASE_IAXYT_X(value, testingf)
 
 #define DEFINE_CASE_IJAXYT_X(value, testingf) \
     case value:                               \
@@ -388,12 +389,15 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
             return status;                    \
         }                                     \
     }
+#define DEFINE_CASE_IJABCT_X(value, testingf) DEFINE_CASE_IJAXYT_X(value, testingf)
 
 #define DEFINE_CASE_IT(value) DEFINE_CASE_IT_X(value, testing_##value)
 #define DEFINE_CASE_IJT(value) DEFINE_CASE_IJT_X(value, testing_##value)
 #define DEFINE_CASE_IXYT(value) DEFINE_CASE_IXYT_X(value, testing_##value)
 #define DEFINE_CASE_IAXYT(value) DEFINE_CASE_IAXYT_X(value, testing_##value)
 #define DEFINE_CASE_IJAXYT(value) DEFINE_CASE_IJAXYT_X(value, testing_##value)
+#define DEFINE_CASE_IABCT(value) DEFINE_CASE_IABCT_X(value, testing_##value)
+#define DEFINE_CASE_IJABCT(value) DEFINE_CASE_IJABCT_X(value, testing_##value)
 #define IS_T_REAL (std::is_same<T, double>() || std::is_same<T, float>())
 #define IS_T_COMPLEX \
     (std::is_same<T, rocsparse_double_complex>() || std::is_same<T, rocsparse_float_complex>())
@@ -500,8 +504,8 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
         DEFINE_CASE_T(check_matrix_gebsc);
         DEFINE_CASE_T(check_matrix_ell);
         DEFINE_CASE_T(check_matrix_hyb);
-        DEFINE_CASE_IT_X(coomm, testing_spmm_coo);
-        DEFINE_CASE_IT_X(coomm_batched, testing_spmm_batched_coo);
+        DEFINE_CASE_IABCT_X(coomm, testing_spmm_coo);
+        DEFINE_CASE_IABCT_X(coomm_batched, testing_spmm_batched_coo);
         DEFINE_CASE_IAXYT_X(coomv, testing_spmv_coo);
         DEFINE_CASE_T_FLOAT_ONLY(coosort);
         DEFINE_CASE_IT_X(coosv, testing_spsv_coo);
@@ -523,10 +527,10 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
         DEFINE_CASE_IJAXYT_X(csrmv, testing_spmv_csr);
         DEFINE_CASE_T(csrmv_managed);
         DEFINE_CASE_IJAXYT_X(cscmv, testing_spmv_csc);
-        DEFINE_CASE_IJT_X(csrmm, testing_spmm_csr);
-        DEFINE_CASE_IJT_X(csrmm_batched, testing_spmm_batched_csr);
-        DEFINE_CASE_IJT_X(cscmm, testing_spmm_csc);
-        DEFINE_CASE_IJT_X(cscmm_batched, testing_spmm_batched_csc);
+        DEFINE_CASE_IJABCT_X(csrmm, testing_spmm_csr);
+        DEFINE_CASE_IJABCT_X(csrmm_batched, testing_spmm_batched_csr);
+        DEFINE_CASE_IJABCT_X(cscmm, testing_spmm_csc);
+        DEFINE_CASE_IJABCT_X(cscmm_batched, testing_spmm_batched_csc);
         DEFINE_CASE_IJT_X(csrsm, testing_spsm_csr);
         DEFINE_CASE_T_FLOAT_ONLY(csrsort);
         DEFINE_CASE_IJT_X(csrsv, testing_spsv_csr);

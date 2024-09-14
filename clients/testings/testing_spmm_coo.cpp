@@ -25,7 +25,7 @@
 
 #include <algorithm>
 
-template <typename I, typename T>
+template <typename I, typename A, typename B, typename C, typename T>
 void testing_spmm_coo_bad_arg(const Arguments& arg)
 {
     static const size_t safe_size = 100;
@@ -43,8 +43,8 @@ void testing_spmm_coo_bad_arg(const Arguments& arg)
     void*                coo_val     = (void*)0x4;
     void*                coo_row_ind = (void*)0x4;
     void*                coo_col_ind = (void*)0x4;
-    void*                B           = (void*)0x4;
-    void*                C           = (void*)0x4;
+    void*                dense_B     = (void*)0x4;
+    void*                dense_C     = (void*)0x4;
     rocsparse_operation  trans_A     = rocsparse_operation_none;
     rocsparse_operation  trans_B     = rocsparse_operation_none;
     rocsparse_index_base base        = rocsparse_index_base_zero;
@@ -54,13 +54,16 @@ void testing_spmm_coo_bad_arg(const Arguments& arg)
     rocsparse_spmm_stage stage       = rocsparse_spmm_stage_compute;
 
     rocsparse_indextype itype        = get_indextype<I>();
+    rocsparse_datatype  atype        = get_datatype<A>();
+    rocsparse_datatype  btype        = get_datatype<B>();
+    rocsparse_datatype  ctype        = get_datatype<C>();
     rocsparse_datatype  compute_type = get_datatype<T>();
 
     // SpMM structures
     rocsparse_local_spmat local_mat_A(
-        m, k, nnz, coo_row_ind, coo_col_ind, coo_val, itype, base, compute_type);
-    rocsparse_local_dnmat local_mat_B(k, n, k, B, compute_type, order_B);
-    rocsparse_local_dnmat local_mat_C(m, n, m, C, compute_type, order_C);
+        m, k, nnz, coo_row_ind, coo_col_ind, coo_val, itype, base, atype);
+    rocsparse_local_dnmat local_mat_B(k, n, k, dense_B, btype, order_B);
+    rocsparse_local_dnmat local_mat_C(m, n, m, dense_C, ctype, order_C);
 
     rocsparse_spmat_descr mat_A = local_mat_A;
     rocsparse_dnmat_descr mat_B = local_mat_B;
@@ -98,7 +101,7 @@ void testing_spmm_coo_bad_arg(const Arguments& arg)
 #undef PARAMS
 }
 
-template <typename I, typename T>
+template <typename I, typename A, typename B, typename C, typename T>
 void testing_spmm_coo(const Arguments& arg)
 {
     I                    M               = arg.M;
@@ -118,6 +121,9 @@ void testing_spmm_coo(const Arguments& arg)
 
     // Index and data type
     rocsparse_indextype itype = get_indextype<I>();
+    rocsparse_datatype  atype = get_datatype<A>();
+    rocsparse_datatype  btype = get_datatype<B>();
+    rocsparse_datatype  ctype = get_datatype<C>();
     rocsparse_datatype  ttype = get_datatype<T>();
 
     // Create rocsparse handle
@@ -126,10 +132,10 @@ void testing_spmm_coo(const Arguments& arg)
     // Allocate host memory for matrix
     host_vector<I> hcoo_row_ind;
     host_vector<I> hcoo_col_ind;
-    host_vector<T> hcoo_val;
+    host_vector<A> hcoo_val;
 
     // Allocate host memory for matrix
-    rocsparse_matrix_factory<T, I, I> matrix_factory(arg);
+    rocsparse_matrix_factory<A, I, I> matrix_factory(arg);
 
     int64_t nnz_A;
     matrix_factory.init_coo(hcoo_row_ind,
@@ -169,14 +175,14 @@ void testing_spmm_coo(const Arguments& arg)
     int64_t nnz_C = nrowC * ncolC;
 
     // Allocate host memory for vectors
-    host_vector<T> hB(nnz_B);
-    host_vector<T> hC_1(nnz_C, 0);
-    host_vector<T> hC_2(nnz_C, 0);
-    host_vector<T> hC_gold(nnz_C, 0);
+    host_vector<B> hB(nnz_B);
+    host_vector<C> hC_1(nnz_C, 0);
+    host_vector<C> hC_2(nnz_C, 0);
+    host_vector<C> hC_gold(nnz_C, 0);
 
     // Initialize data on CPU
-    rocsparse_init<T>(hB, nnz_B, 1, 1);
-    rocsparse_init<T>(hC_1, nnz_C, 1, 1);
+    rocsparse_init<B>(hB, nnz_B, 1, 1);
+    rocsparse_init<C>(hC_1, nnz_C, 1, 1);
 
     hC_2    = hC_1;
     hC_gold = hC_1;
@@ -184,10 +190,10 @@ void testing_spmm_coo(const Arguments& arg)
     // Allocate device memory
     device_vector<I> dcoo_row_ind(nnz_A);
     device_vector<I> dcoo_col_ind(nnz_A);
-    device_vector<T> dcoo_val(nnz_A);
-    device_vector<T> dB(nnz_B);
-    device_vector<T> dC_1(nnz_C);
-    device_vector<T> dC_2(nnz_C);
+    device_vector<A> dcoo_val(nnz_A);
+    device_vector<B> dB(nnz_B);
+    device_vector<C> dC_1(nnz_C);
+    device_vector<C> dC_2(nnz_C);
     device_vector<T> dalpha(1);
     device_vector<T> dbeta(1);
 
@@ -196,19 +202,19 @@ void testing_spmm_coo(const Arguments& arg)
         hipMemcpy(dcoo_row_ind, hcoo_row_ind.data(), sizeof(I) * nnz_A, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(
         hipMemcpy(dcoo_col_ind, hcoo_col_ind.data(), sizeof(I) * nnz_A, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dcoo_val, hcoo_val.data(), sizeof(T) * nnz_A, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dB, hB, sizeof(T) * nnz_B, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dC_1, hC_1, sizeof(T) * nnz_C, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dC_2, hC_2, sizeof(T) * nnz_C, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dcoo_val, hcoo_val.data(), sizeof(A) * nnz_A, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dB, hB, sizeof(B) * nnz_B, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dC_1, hC_1, sizeof(C) * nnz_C, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dC_2, hC_2, sizeof(C) * nnz_C, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dalpha, &halpha, sizeof(T), hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dbeta, &hbeta, sizeof(T), hipMemcpyHostToDevice));
 
     // Create descriptors
-    rocsparse_local_spmat A(
-        A_m, A_n, nnz_A, dcoo_row_ind, dcoo_col_ind, dcoo_val, itype, base, ttype);
-    rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, order_B);
-    rocsparse_local_dnmat C1(C_m, C_n, ldc, dC_1, ttype, order_C);
-    rocsparse_local_dnmat C2(C_m, C_n, ldc, dC_2, ttype, order_C);
+    rocsparse_local_spmat mat_A(
+        A_m, A_n, nnz_A, dcoo_row_ind, dcoo_col_ind, dcoo_val, itype, base, atype);
+    rocsparse_local_dnmat mat_B(B_m, B_n, ldb, dB, btype, order_B);
+    rocsparse_local_dnmat mat_C1(C_m, C_n, ldc, dC_1, ctype, order_C);
+    rocsparse_local_dnmat mat_C2(C_m, C_n, ldc, dC_2, ctype, order_C);
 
     // Query SpMM buffer
     size_t buffer_size;
@@ -216,10 +222,10 @@ void testing_spmm_coo(const Arguments& arg)
                                          trans_A,
                                          trans_B,
                                          &halpha,
-                                         A,
-                                         B,
+                                         mat_A,
+                                         mat_B,
                                          &hbeta,
-                                         C1,
+                                         mat_C1,
                                          ttype,
                                          alg,
                                          rocsparse_spmm_stage_buffer_size,
@@ -234,10 +240,10 @@ void testing_spmm_coo(const Arguments& arg)
                                          trans_A,
                                          trans_B,
                                          &halpha,
-                                         A,
-                                         B,
+                                         mat_A,
+                                         mat_B,
                                          &hbeta,
-                                         C1,
+                                         mat_C1,
                                          ttype,
                                          alg,
                                          rocsparse_spmm_stage_preprocess,
@@ -254,10 +260,10 @@ void testing_spmm_coo(const Arguments& arg)
                                                       trans_A,
                                                       trans_B,
                                                       &halpha,
-                                                      A,
-                                                      B,
+                                                      mat_A,
+                                                      mat_B,
                                                       &hbeta,
-                                                      C1,
+                                                      mat_C1,
                                                       ttype,
                                                       alg,
                                                       rocsparse_spmm_stage_compute,
@@ -274,10 +280,10 @@ void testing_spmm_coo(const Arguments& arg)
                                                       trans_A,
                                                       trans_B,
                                                       dalpha,
-                                                      A,
-                                                      B,
+                                                      mat_A,
+                                                      mat_B,
                                                       dbeta,
-                                                      C2,
+                                                      mat_C2,
                                                       ttype,
                                                       alg,
                                                       rocsparse_spmm_stage_compute,
@@ -290,31 +296,31 @@ void testing_spmm_coo(const Arguments& arg)
         }
 
         // Copy output to host
-        CHECK_HIP_ERROR(hipMemcpy(hC_1, dC_1, sizeof(T) * nnz_C, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hC_2, dC_2, sizeof(T) * nnz_C, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(hC_1, dC_1, sizeof(C) * nnz_C, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(hC_2, dC_2, sizeof(C) * nnz_C, hipMemcpyDeviceToHost));
 
         // CPU coomm
-        host_coomm(A_m,
-                   N,
-                   A_n,
-                   nnz_A,
-                   trans_A,
-                   trans_B,
-                   halpha,
-                   hcoo_row_ind.data(),
-                   hcoo_col_ind.data(),
-                   hcoo_val.data(),
-                   hB.data(),
-                   ldb,
-                   order_B,
-                   hbeta,
-                   hC_gold.data(),
-                   ldc,
-                   order_C,
-                   base);
+        host_coomm<T, I, A, B, C>(A_m,
+                                  N,
+                                  A_n,
+                                  nnz_A,
+                                  trans_A,
+                                  trans_B,
+                                  halpha,
+                                  hcoo_row_ind.data(),
+                                  hcoo_col_ind.data(),
+                                  hcoo_val.data(),
+                                  hB.data(),
+                                  ldb,
+                                  order_B,
+                                  hbeta,
+                                  hC_gold.data(),
+                                  ldc,
+                                  order_C,
+                                  base);
 
-        hC_gold.near_check(hC_1, get_near_check_tol<T>(arg));
-        hC_gold.near_check(hC_2, get_near_check_tol<T>(arg));
+        hC_gold.near_check(hC_1, get_near_check_tol<C>(arg));
+        hC_gold.near_check(hC_2, get_near_check_tol<C>(arg));
     }
 
     if(arg.timing)
@@ -331,10 +337,10 @@ void testing_spmm_coo(const Arguments& arg)
                                                  trans_A,
                                                  trans_B,
                                                  &halpha,
-                                                 A,
-                                                 B,
+                                                 mat_A,
+                                                 mat_B,
                                                  &hbeta,
-                                                 C1,
+                                                 mat_C1,
                                                  ttype,
                                                  alg,
                                                  rocsparse_spmm_stage_compute,
@@ -351,10 +357,10 @@ void testing_spmm_coo(const Arguments& arg)
                                                  trans_A,
                                                  trans_B,
                                                  &halpha,
-                                                 A,
-                                                 B,
+                                                 mat_A,
+                                                 mat_B,
                                                  &hbeta,
-                                                 C1,
+                                                 mat_C1,
                                                  ttype,
                                                  alg,
                                                  rocsparse_spmm_stage_compute,
@@ -396,9 +402,14 @@ void testing_spmm_coo(const Arguments& arg)
     CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
 }
 
-#define INSTANTIATE(ITYPE, TTYPE)                                               \
-    template void testing_spmm_coo_bad_arg<ITYPE, TTYPE>(const Arguments& arg); \
-    template void testing_spmm_coo<ITYPE, TTYPE>(const Arguments& arg)
+#define INSTANTIATE(ITYPE, TTYPE)                                              \
+    template void testing_spmm_coo_bad_arg<ITYPE, TTYPE, TTYPE, TTYPE, TTYPE>( \
+        const Arguments& arg);                                                 \
+    template void testing_spmm_coo<ITYPE, TTYPE, TTYPE, TTYPE, TTYPE>(const Arguments& arg)
+#define INSTANTIATE_MIXED(ITYPE, ATYPE, XTYPE, YTYPE, TTYPE)                   \
+    template void testing_spmm_coo_bad_arg<ITYPE, ATYPE, XTYPE, YTYPE, TTYPE>( \
+        const Arguments& arg);                                                 \
+    template void testing_spmm_coo<ITYPE, ATYPE, XTYPE, YTYPE, TTYPE>(const Arguments& arg)
 
 INSTANTIATE(int32_t, float);
 INSTANTIATE(int32_t, double);
@@ -408,4 +419,10 @@ INSTANTIATE(int64_t, float);
 INSTANTIATE(int64_t, double);
 INSTANTIATE(int64_t, rocsparse_float_complex);
 INSTANTIATE(int64_t, rocsparse_double_complex);
+
+INSTANTIATE_MIXED(int32_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE_MIXED(int64_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE_MIXED(int32_t, int8_t, int8_t, float, float);
+INSTANTIATE_MIXED(int64_t, int8_t, int8_t, float, float);
+
 void testing_spmm_coo_extra(const Arguments& arg) {}
