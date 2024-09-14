@@ -318,24 +318,24 @@ void testing_csrmm(const Arguments& arg)
         {
             host_dense_matrix<T> hC_copy(hC);
             // CPU csrmm
-            host_csrmm<T, rocsparse_int, rocsparse_int>(M,
-                                                        N,
-                                                        K,
-                                                        transA,
-                                                        transB,
-                                                        *h_alpha,
-                                                        hA.ptr,
-                                                        hA.ind,
-                                                        hA.val,
-                                                        hB,
-                                                        hB.ld,
-                                                        order,
-                                                        *h_beta,
-                                                        hC,
-                                                        hC.ld,
-                                                        order,
-                                                        base,
-                                                        false);
+            host_csrmm<T, rocsparse_int, rocsparse_int, T, T, T>(M,
+                                                                 N,
+                                                                 K,
+                                                                 transA,
+                                                                 transB,
+                                                                 *h_alpha,
+                                                                 hA.ptr,
+                                                                 hA.ind,
+                                                                 hA.val,
+                                                                 hB,
+                                                                 hB.ld,
+                                                                 order,
+                                                                 *h_beta,
+                                                                 hC,
+                                                                 hC.ld,
+                                                                 order,
+                                                                 base,
+                                                                 false);
             hC.near_check(dC);
             dC = hC_copy;
         }

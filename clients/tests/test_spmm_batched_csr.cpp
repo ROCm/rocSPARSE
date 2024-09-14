@@ -27,7 +27,7 @@
 
 TEST_ROUTINE_WITH_CONFIG(spmm_batched_csr,
                          level3,
-                         rocsparse_test_config_ijt,
+                         rocsparse_test_config_ijabct,
                          arg.M,
                          arg.N,
                          arg.K,

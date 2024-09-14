@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,7 @@
 template <template <typename...> class TEST>
 auto rocsparse_simple_dispatch(const Arguments& arg)
 {
+
     switch(arg.compute_type)
     {
     case rocsparse_datatype_f32_r:
@@ -221,7 +222,7 @@ auto rocsparse_ixyt_dispatch(const Arguments& arg)
     bool i8r_i8r_f32r_case = (X == rocsparse_datatype_i8_r && Y == rocsparse_datatype_i8_r
                               && T == rocsparse_datatype_f32_r);
 
-#define INSTANTIATE_TEST(ITYPE)                             \
+#define DISPATCH_TEST(ITYPE)                                \
     if(f32r_case)                                           \
     {                                                       \
         return TEST<ITYPE, float, float, float>{}(arg);     \
@@ -261,14 +262,14 @@ auto rocsparse_ixyt_dispatch(const Arguments& arg)
     }
     case rocsparse_indextype_i32:
     {
-        INSTANTIATE_TEST(int32_t);
+        DISPATCH_TEST(int32_t);
     }
     case rocsparse_indextype_i64:
     {
-        INSTANTIATE_TEST(int64_t);
+        DISPATCH_TEST(int64_t);
     }
     }
-#undef INSTANTIATE_TEST
+#undef DISPATCH_TEST
 
     return TEST<void, void, void, void>{}(arg);
 }
@@ -305,7 +306,7 @@ auto rocsparse_iaxyt_dispatch(const Arguments& arg)
         = (A == rocsparse_datatype_f64_r && X == rocsparse_datatype_f64_c
            && Y == rocsparse_datatype_f64_c && T == rocsparse_datatype_f64_c);
 
-#define INSTANTIATE_TEST(ITYPE)                                      \
+#define DISPATCH_TEST(ITYPE)                                         \
     if(f32r_case)                                                    \
     {                                                                \
         return TEST<ITYPE, float, float, float, float>{}(arg);       \
@@ -363,14 +364,14 @@ auto rocsparse_iaxyt_dispatch(const Arguments& arg)
     }
     case rocsparse_indextype_i32:
     {
-        INSTANTIATE_TEST(int32_t);
+        DISPATCH_TEST(int32_t);
     }
     case rocsparse_indextype_i64:
     {
-        INSTANTIATE_TEST(int64_t);
+        DISPATCH_TEST(int64_t);
     }
     }
-#undef INSTANTIATE_TEST
+#undef DISPATCH_TEST
 
     return TEST<void, void, void, void, void>{}(arg);
 }
@@ -408,7 +409,7 @@ auto rocsparse_ijaxyt_dispatch(const Arguments& arg)
         = (A == rocsparse_datatype_f64_r && X == rocsparse_datatype_f64_c
            && Y == rocsparse_datatype_f64_c && T == rocsparse_datatype_f64_c);
 
-#define INSTANTIATE_TEST(ITYPE, JTYPE)                                      \
+#define DISPATCH_TEST(ITYPE, JTYPE)                                         \
     if(f32r_case)                                                           \
     {                                                                       \
         return TEST<ITYPE, JTYPE, float, float, float, float>{}(arg);       \
@@ -479,7 +480,7 @@ auto rocsparse_ijaxyt_dispatch(const Arguments& arg)
         }
         case rocsparse_indextype_i32:
         {
-            INSTANTIATE_TEST(int32_t, int32_t);
+            DISPATCH_TEST(int32_t, int32_t);
         }
         }
     }
@@ -493,16 +494,200 @@ auto rocsparse_ijaxyt_dispatch(const Arguments& arg)
         }
         case rocsparse_indextype_i32:
         {
-            INSTANTIATE_TEST(int64_t, int32_t);
+            DISPATCH_TEST(int64_t, int32_t);
         }
         case rocsparse_indextype_i64:
         {
-            INSTANTIATE_TEST(int64_t, int64_t);
+            DISPATCH_TEST(int64_t, int64_t);
         }
         }
     }
     }
-#undef INSTANTIATE_TEST
+#undef DISPATCH_TEST
+
+    return TEST<void, void, void, void, void, void>{}(arg);
+}
+
+template <template <typename...> class TEST>
+auto rocsparse_iabct_dispatch(const Arguments& arg)
+{
+    const auto I = arg.index_type_I;
+
+    const auto A = arg.a_type;
+    const auto B = arg.b_type;
+    const auto C = arg.c_type;
+
+    const auto T = arg.compute_type;
+
+    bool f32r_case = (A == rocsparse_datatype_f32_r && A == B && A == C && A == T);
+    bool f64r_case = (A == rocsparse_datatype_f64_r && A == B && A == C && A == T);
+    bool f32c_case = (A == rocsparse_datatype_f32_c && A == B && A == C && A == T);
+    bool f64c_case = (A == rocsparse_datatype_f64_c && A == B && A == C && A == T);
+
+    bool i8r_i8r_i32r_i32r_case
+        = (A == rocsparse_datatype_i8_r && B == rocsparse_datatype_i8_r
+           && C == rocsparse_datatype_i32_r && T == rocsparse_datatype_i32_r);
+
+    bool i8r_i8r_f32r_f32r_case
+        = (A == rocsparse_datatype_i8_r && B == rocsparse_datatype_i8_r
+           && C == rocsparse_datatype_f32_r && T == rocsparse_datatype_f32_r);
+
+#define DISPATCH_TEST(ITYPE)                                         \
+    if(f32r_case)                                                    \
+    {                                                                \
+        return TEST<ITYPE, float, float, float, float>{}(arg);       \
+    }                                                                \
+    else if(f64r_case)                                               \
+    {                                                                \
+        return TEST<ITYPE, double, double, double, double>{}(arg);   \
+    }                                                                \
+    else if(f32c_case)                                               \
+    {                                                                \
+        return TEST<ITYPE,                                           \
+                    rocsparse_float_complex,                         \
+                    rocsparse_float_complex,                         \
+                    rocsparse_float_complex,                         \
+                    rocsparse_float_complex>{}(arg);                 \
+    }                                                                \
+    else if(f64c_case)                                               \
+    {                                                                \
+        return TEST<ITYPE,                                           \
+                    rocsparse_double_complex,                        \
+                    rocsparse_double_complex,                        \
+                    rocsparse_double_complex,                        \
+                    rocsparse_double_complex>{}(arg);                \
+    }                                                                \
+    else if(i8r_i8r_i32r_i32r_case)                                  \
+    {                                                                \
+        return TEST<ITYPE, int8_t, int8_t, int32_t, int32_t>{}(arg); \
+    }                                                                \
+    else if(i8r_i8r_f32r_f32r_case)                                  \
+    {                                                                \
+        return TEST<ITYPE, int8_t, int8_t, float, float>{}(arg);     \
+    }
+
+    switch(I)
+    {
+    case rocsparse_indextype_u16:
+    {
+        return TEST<void, void, void, void, void>{}(arg);
+    }
+    case rocsparse_indextype_i32:
+    {
+        DISPATCH_TEST(int32_t);
+    }
+    case rocsparse_indextype_i64:
+    {
+        DISPATCH_TEST(int64_t);
+    }
+    }
+#undef DISPATCH_TEST
+
+    return TEST<void, void, void, void, void>{}(arg);
+}
+
+template <template <typename...> class TEST>
+auto rocsparse_ijabct_dispatch(const Arguments& arg)
+{
+    const auto I = arg.index_type_I;
+    const auto J = arg.index_type_J;
+
+    const auto A = arg.a_type;
+    const auto B = arg.b_type;
+    const auto C = arg.c_type;
+
+    const auto T = arg.compute_type;
+
+    bool f32r_case = (A == rocsparse_datatype_f32_r && A == B && A == C && A == T);
+    bool f64r_case = (A == rocsparse_datatype_f64_r && A == B && A == C && A == T);
+    bool f32c_case = (A == rocsparse_datatype_f32_c && A == B && A == C && A == T);
+    bool f64c_case = (A == rocsparse_datatype_f64_c && A == B && A == C && A == T);
+
+    bool i8r_i8r_i32r_i32r_case
+        = (A == rocsparse_datatype_i8_r && B == rocsparse_datatype_i8_r
+           && C == rocsparse_datatype_i32_r && T == rocsparse_datatype_i32_r);
+
+    bool i8r_i8r_f32r_f32r_case
+        = (A == rocsparse_datatype_i8_r && B == rocsparse_datatype_i8_r
+           && C == rocsparse_datatype_f32_r && T == rocsparse_datatype_f32_r);
+
+#define DISPATCH_TEST(ITYPE, JTYPE)                                         \
+    if(f32r_case)                                                           \
+    {                                                                       \
+        return TEST<ITYPE, JTYPE, float, float, float, float>{}(arg);       \
+    }                                                                       \
+    else if(f64r_case)                                                      \
+    {                                                                       \
+        return TEST<ITYPE, JTYPE, double, double, double, double>{}(arg);   \
+    }                                                                       \
+    else if(f32c_case)                                                      \
+    {                                                                       \
+        return TEST<ITYPE,                                                  \
+                    JTYPE,                                                  \
+                    rocsparse_float_complex,                                \
+                    rocsparse_float_complex,                                \
+                    rocsparse_float_complex,                                \
+                    rocsparse_float_complex>{}(arg);                        \
+    }                                                                       \
+    else if(f64c_case)                                                      \
+    {                                                                       \
+        return TEST<ITYPE,                                                  \
+                    JTYPE,                                                  \
+                    rocsparse_double_complex,                               \
+                    rocsparse_double_complex,                               \
+                    rocsparse_double_complex,                               \
+                    rocsparse_double_complex>{}(arg);                       \
+    }                                                                       \
+    else if(i8r_i8r_i32r_i32r_case)                                         \
+    {                                                                       \
+        return TEST<ITYPE, JTYPE, int8_t, int8_t, int32_t, int32_t>{}(arg); \
+    }                                                                       \
+    else if(i8r_i8r_f32r_f32r_case)                                         \
+    {                                                                       \
+        return TEST<ITYPE, JTYPE, int8_t, int8_t, float, float>{}(arg);     \
+    }
+
+    switch(I)
+    {
+    case rocsparse_indextype_u16:
+    {
+        return TEST<void, void, void, void, void, void>{}(arg);
+    }
+    case rocsparse_indextype_i32:
+    {
+        switch(J)
+        {
+        case rocsparse_indextype_u16:
+        case rocsparse_indextype_i64:
+        {
+            return TEST<void, void, void, void, void, void>{}(arg);
+        }
+        case rocsparse_indextype_i32:
+        {
+            DISPATCH_TEST(int32_t, int32_t);
+        }
+        }
+    }
+    case rocsparse_indextype_i64:
+    {
+        switch(J)
+        {
+        case rocsparse_indextype_u16:
+        {
+            return TEST<void, void, void, void, void, void>{}(arg);
+        }
+        case rocsparse_indextype_i32:
+        {
+            DISPATCH_TEST(int64_t, int32_t);
+        }
+        case rocsparse_indextype_i64:
+        {
+            DISPATCH_TEST(int64_t, int64_t);
+        }
+        }
+    }
+    }
+#undef DISPATCH_TEST
 
     return TEST<void, void, void, void, void, void>{}(arg);
 }

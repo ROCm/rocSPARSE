@@ -111,6 +111,46 @@ Tests:
   orderB: [rocsparse_order_column]
   orderC: [rocsparse_order_column]
 
+- name: spmm_batched_csc
+  category: quick
+  function: spmm_batched_csc
+  indextype: *i32i32_i64i32_i64i64
+  precision: *int8_int8_int32_int32_abct_precision
+  M: [245]
+  N: [276]
+  K: [367]
+  batch_count_A: [167]
+  batch_count_B: [189]
+  batch_count_C: [202]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  spmm_alg: [rocsparse_spmm_alg_csr]
+  orderB: [rocsparse_order_column]
+  orderC: [rocsparse_order_row]
+
+- name: spmm_batched_csc
+  category: quick
+  function: spmm_batched_csc
+  indextype: *i32i32_i64i32_i64i64
+  precision: *int8_int8_float32_float32_abct_precision
+  M: [425]
+  N: [222]
+  K: [176]
+  batch_count_A: [119]
+  batch_count_B: [256]
+  batch_count_C: [261]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  spmm_alg: [rocsparse_spmm_alg_csr]
+  orderB: [rocsparse_order_row]
+  orderC: [rocsparse_order_row]
+
 ##############################
 # Precheckin
 ##############################
@@ -197,6 +237,28 @@ Tests:
   orderB: [rocsparse_order_row]
   orderC: [rocsparse_order_column]
   filename: [Chebyshev4]
+
+- name: spmm_batched_csc_file
+  category: pre_checkin
+  function: spmm_batched_csc
+  indextype: *i32i32_i64i32_i64i64
+  precision: *int8_int8_int32_int32_abct_precision
+  M: 1
+  N: [32]
+  K: 1
+  batch_count_A: [1]
+  batch_count_B: [5]
+  batch_count_C: [5]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  spmm_alg: [rocsparse_spmm_alg_csr]
+  orderB: [rocsparse_order_column]
+  orderC: [rocsparse_order_column]
+  filename: [nos2,
+             nos3]
 
 - name: spmm_batched_csc_graph_test
   category: pre_checkin
@@ -347,6 +409,27 @@ Tests:
   orderB: [rocsparse_order_column]
   orderC: [rocsparse_order_row]
   filename: [Chevron2]
+
+- name: spmm_batched_csc_file
+  category: nightly
+  function: spmm_batched_csc
+  indextype: *i32i32_i64i32_i64i64
+  precision: *int8_int8_float32_float32_abct_precision
+  M: 1
+  N: [19]
+  K: 1
+  batch_count_A: [5]
+  batch_count_B: [1]
+  batch_count_C: [5]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  spmm_alg: [rocsparse_spmm_alg_csr]
+  orderB: [rocsparse_order_row]
+  orderC: [rocsparse_order_column]
+  filename: [shipsec1]
 
 ##############################
 # Stress

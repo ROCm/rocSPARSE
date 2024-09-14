@@ -25,7 +25,7 @@
 
 #include <tuple>
 
-template <typename I, typename J, typename T>
+template <typename I, typename J, typename A, typename B, typename C, typename T>
 void testing_spmm_batched_csc_bad_arg(const Arguments& arg)
 {
     static const size_t safe_size = 100;
@@ -41,8 +41,8 @@ void testing_spmm_batched_csc_bad_arg(const Arguments& arg)
     void*                csc_val     = (void*)0x4;
     void*                csc_col_ptr = (void*)0x4;
     void*                csc_row_ind = (void*)0x4;
-    void*                B           = (void*)0x4;
-    void*                C           = (void*)0x4;
+    void*                dense_B     = (void*)0x4;
+    void*                dense_C     = (void*)0x4;
     size_t*              buffer_size = (size_t*)0x4;
     void*                temp_buffer = (void*)0x4;
     rocsparse_operation  trans_A     = rocsparse_operation_none;
@@ -55,6 +55,9 @@ void testing_spmm_batched_csc_bad_arg(const Arguments& arg)
 
     rocsparse_indextype itype = get_indextype<I>();
     rocsparse_indextype jtype = get_indextype<J>();
+    rocsparse_datatype  atype = get_datatype<A>();
+    rocsparse_datatype  btype = get_datatype<B>();
+    rocsparse_datatype  ctype = get_datatype<C>();
     rocsparse_datatype  ttype = get_datatype<T>();
 
     T alpha = static_cast<T>(1.0);
@@ -63,9 +66,9 @@ void testing_spmm_batched_csc_bad_arg(const Arguments& arg)
     // SpMM structures
     static const bool     use_csc_format = true;
     rocsparse_local_spmat local_mat_A(
-        m, k, nnz, csc_col_ptr, csc_row_ind, csc_val, itype, jtype, base, ttype, use_csc_format);
-    rocsparse_local_dnmat local_mat_B(k, n, k, B, ttype, order_B);
-    rocsparse_local_dnmat local_mat_C(m, n, m, C, ttype, order_C);
+        m, k, nnz, csc_col_ptr, csc_row_ind, csc_val, itype, jtype, base, atype, use_csc_format);
+    rocsparse_local_dnmat local_mat_B(k, n, k, dense_B, btype, order_B);
+    rocsparse_local_dnmat local_mat_C(m, n, m, dense_C, ctype, order_C);
 
     rocsparse_spmat_descr mat_A = local_mat_A;
     rocsparse_dnmat_descr mat_B = local_mat_B;
@@ -142,7 +145,7 @@ void testing_spmm_batched_csc_bad_arg(const Arguments& arg)
 #undef PARAMS
 }
 
-template <typename I, typename J, typename T>
+template <typename I, typename J, typename A, typename B, typename C, typename T>
 void testing_spmm_batched_csc(const Arguments& arg)
 {
     J                    M               = arg.M;
@@ -167,6 +170,9 @@ void testing_spmm_batched_csc(const Arguments& arg)
     // Index and data type
     rocsparse_indextype itype = get_indextype<I>();
     rocsparse_indextype jtype = get_indextype<J>();
+    rocsparse_datatype  atype = get_datatype<A>();
+    rocsparse_datatype  btype = get_datatype<B>();
+    rocsparse_datatype  ctype = get_datatype<C>();
     rocsparse_datatype  ttype = get_datatype<T>();
 
     // Create rocsparse handle
@@ -182,12 +188,12 @@ void testing_spmm_batched_csc(const Arguments& arg)
     }
 
     // Allocate host memory for matrix
-    rocsparse_matrix_factory<T, I, J> matrix_factory(arg);
+    rocsparse_matrix_factory<A, I, J> matrix_factory(arg);
 
     // Generate single batch of A matrix
     host_vector<I> hcsc_col_ptr_temp;
     host_vector<J> hcsc_row_ind_temp;
-    host_vector<T> hcsc_val_temp;
+    host_vector<A> hcsc_val_temp;
 
     I nnz_A;
     matrix_factory.init_csc(hcsc_col_ptr_temp,
@@ -230,7 +236,7 @@ void testing_spmm_batched_csc(const Arguments& arg)
     // Allocate host memory for all batches of A matrix
     host_vector<I> hcsc_col_ptr(batch_count_A * (A_n + 1));
     host_vector<J> hcsc_row_ind(batch_count_A * nnz_A);
-    host_vector<T> hcsc_val(batch_count_A * nnz_A);
+    host_vector<A> hcsc_val(batch_count_A * nnz_A);
 
     for(J i = 0; i < batch_count_A; i++)
     {
@@ -247,14 +253,14 @@ void testing_spmm_batched_csc(const Arguments& arg)
     }
 
     // Allocate host memory for vectors
-    host_vector<T> hB(batch_count_B * nnz_B);
-    host_vector<T> hC_1(batch_count_C * nnz_C);
-    host_vector<T> hC_2(batch_count_C * nnz_C);
-    host_vector<T> hC_gold(batch_count_C * nnz_C);
+    host_vector<B> hB(batch_count_B * nnz_B);
+    host_vector<C> hC_1(batch_count_C * nnz_C);
+    host_vector<C> hC_2(batch_count_C * nnz_C);
+    host_vector<C> hC_gold(batch_count_C * nnz_C);
 
     // Initialize data on CPU
-    rocsparse_init<T>(hB, batch_count_B * nnz_B, 1, 1);
-    rocsparse_init<T>(hC_1, batch_count_C * nnz_C, 1, 1);
+    rocsparse_init<B>(hB, batch_count_B * nnz_B, 1, 1);
+    rocsparse_init<C>(hC_1, batch_count_C * nnz_C, 1, 1);
 
     hC_2    = hC_1;
     hC_gold = hC_1;
@@ -262,10 +268,10 @@ void testing_spmm_batched_csc(const Arguments& arg)
     // Allocate device memory
     device_vector<I> dcsc_col_ptr(hcsc_col_ptr);
     device_vector<J> dcsc_row_ind(hcsc_row_ind);
-    device_vector<T> dcsc_val(hcsc_val);
-    device_vector<T> dB(hB);
-    device_vector<T> dC_1(hC_1);
-    device_vector<T> dC_2(hC_2);
+    device_vector<A> dcsc_val(hcsc_val);
+    device_vector<B> dB(hB);
+    device_vector<C> dC_1(hC_1);
+    device_vector<C> dC_2(hC_2);
     device_vector<T> dalpha(1);
     device_vector<T> dbeta(1);
 
@@ -274,30 +280,30 @@ void testing_spmm_batched_csc(const Arguments& arg)
 
     // Create descriptors
     static const bool     use_csc_format = true;
-    rocsparse_local_spmat A(A_m,
-                            A_n,
-                            nnz_A,
-                            dcsc_col_ptr,
-                            dcsc_row_ind,
-                            dcsc_val,
-                            itype,
-                            jtype,
-                            base,
-                            ttype,
-                            use_csc_format);
+    rocsparse_local_spmat mat_A(A_m,
+                                A_n,
+                                nnz_A,
+                                dcsc_col_ptr,
+                                dcsc_row_ind,
+                                dcsc_val,
+                                itype,
+                                jtype,
+                                base,
+                                atype,
+                                use_csc_format);
 
     ldb = std::max(int64_t(1), ldb);
     ldc = std::max(int64_t(1), ldc);
 
-    rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, order_B);
-    rocsparse_local_dnmat C1(C_m, C_n, ldc, dC_1, ttype, order_C);
-    rocsparse_local_dnmat C2(C_m, C_n, ldc, dC_2, ttype, order_C);
+    rocsparse_local_dnmat mat_B(B_m, B_n, ldb, dB, btype, order_B);
+    rocsparse_local_dnmat mat_C1(C_m, C_n, ldc, dC_1, ctype, order_C);
+    rocsparse_local_dnmat mat_C2(C_m, C_n, ldc, dC_2, ctype, order_C);
 
     CHECK_ROCSPARSE_ERROR(rocsparse_csc_set_strided_batch(
-        A, batch_count_A, offsets_batch_stride_A, rows_values_batch_stride_A));
-    CHECK_ROCSPARSE_ERROR(rocsparse_dnmat_set_strided_batch(B, batch_count_B, batch_stride_B));
-    CHECK_ROCSPARSE_ERROR(rocsparse_dnmat_set_strided_batch(C1, batch_count_C, batch_stride_C));
-    CHECK_ROCSPARSE_ERROR(rocsparse_dnmat_set_strided_batch(C2, batch_count_C, batch_stride_C));
+        mat_A, batch_count_A, offsets_batch_stride_A, rows_values_batch_stride_A));
+    CHECK_ROCSPARSE_ERROR(rocsparse_dnmat_set_strided_batch(mat_B, batch_count_B, batch_stride_B));
+    CHECK_ROCSPARSE_ERROR(rocsparse_dnmat_set_strided_batch(mat_C1, batch_count_C, batch_stride_C));
+    CHECK_ROCSPARSE_ERROR(rocsparse_dnmat_set_strided_batch(mat_C2, batch_count_C, batch_stride_C));
 
     // Query SpMM buffer
     size_t buffer_size;
@@ -305,10 +311,10 @@ void testing_spmm_batched_csc(const Arguments& arg)
                                          trans_A,
                                          trans_B,
                                          &halpha,
-                                         A,
-                                         B,
+                                         mat_A,
+                                         mat_B,
                                          &hbeta,
-                                         C1,
+                                         mat_C1,
                                          ttype,
                                          alg,
                                          rocsparse_spmm_stage_buffer_size,
@@ -323,10 +329,10 @@ void testing_spmm_batched_csc(const Arguments& arg)
                                          trans_A,
                                          trans_B,
                                          &halpha,
-                                         A,
-                                         B,
+                                         mat_A,
+                                         mat_B,
                                          &hbeta,
-                                         C1,
+                                         mat_C1,
                                          ttype,
                                          alg,
                                          rocsparse_spmm_stage_preprocess,
@@ -341,10 +347,10 @@ void testing_spmm_batched_csc(const Arguments& arg)
                                                       trans_A,
                                                       trans_B,
                                                       &halpha,
-                                                      A,
-                                                      B,
+                                                      mat_A,
+                                                      mat_B,
                                                       &hbeta,
-                                                      C1,
+                                                      mat_C1,
                                                       ttype,
                                                       alg,
                                                       rocsparse_spmm_stage_compute,
@@ -357,10 +363,10 @@ void testing_spmm_batched_csc(const Arguments& arg)
                                                       trans_A,
                                                       trans_B,
                                                       dalpha,
-                                                      A,
-                                                      B,
+                                                      mat_A,
+                                                      mat_B,
                                                       dbeta,
-                                                      C2,
+                                                      mat_C2,
                                                       ttype,
                                                       alg,
                                                       rocsparse_spmm_stage_compute,
@@ -372,30 +378,30 @@ void testing_spmm_batched_csc(const Arguments& arg)
         hC_2.transfer_from(dC_2);
 
         // CPU cscmm_batched
-        host_cscmm_batched<T, I, J>(A_m,
-                                    N,
-                                    A_n,
-                                    batch_count_A,
-                                    offsets_batch_stride_A,
-                                    rows_values_batch_stride_A,
-                                    trans_A,
-                                    trans_B,
-                                    halpha,
-                                    hcsc_col_ptr,
-                                    hcsc_row_ind,
-                                    hcsc_val,
-                                    hB,
-                                    ldb,
-                                    batch_count_B,
-                                    batch_stride_B,
-                                    order_B,
-                                    hbeta,
-                                    hC_gold,
-                                    ldc,
-                                    batch_count_C,
-                                    batch_stride_C,
-                                    order_C,
-                                    base);
+        host_cscmm_batched<T, I, J, A, B, C>(A_m,
+                                             N,
+                                             A_n,
+                                             batch_count_A,
+                                             offsets_batch_stride_A,
+                                             rows_values_batch_stride_A,
+                                             trans_A,
+                                             trans_B,
+                                             halpha,
+                                             hcsc_col_ptr,
+                                             hcsc_row_ind,
+                                             hcsc_val,
+                                             hB,
+                                             ldb,
+                                             batch_count_B,
+                                             batch_stride_B,
+                                             order_B,
+                                             hbeta,
+                                             hC_gold,
+                                             ldc,
+                                             batch_count_C,
+                                             batch_stride_C,
+                                             order_C,
+                                             base);
 
         hC_gold.near_check(hC_1);
         hC_gold.near_check(hC_2);
@@ -415,10 +421,10 @@ void testing_spmm_batched_csc(const Arguments& arg)
                                                  trans_A,
                                                  trans_B,
                                                  &halpha,
-                                                 A,
-                                                 B,
+                                                 mat_A,
+                                                 mat_B,
                                                  &hbeta,
-                                                 C1,
+                                                 mat_C1,
                                                  ttype,
                                                  alg,
                                                  rocsparse_spmm_stage_compute,
@@ -435,10 +441,10 @@ void testing_spmm_batched_csc(const Arguments& arg)
                                                  trans_A,
                                                  trans_B,
                                                  &halpha,
-                                                 A,
-                                                 B,
+                                                 mat_A,
+                                                 mat_B,
                                                  &hbeta,
-                                                 C1,
+                                                 mat_C1,
                                                  ttype,
                                                  alg,
                                                  rocsparse_spmm_stage_compute,
@@ -494,9 +500,16 @@ void testing_spmm_batched_csc(const Arguments& arg)
     CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
 }
 
-#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                                       \
-    template void testing_spmm_batched_csc_bad_arg<ITYPE, JTYPE, TTYPE>(const Arguments& arg); \
-    template void testing_spmm_batched_csc<ITYPE, JTYPE, TTYPE>(const Arguments& arg)
+#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                                      \
+    template void testing_spmm_batched_csc_bad_arg<ITYPE, JTYPE, TTYPE, TTYPE, TTYPE, TTYPE>( \
+        const Arguments& arg);                                                                \
+    template void testing_spmm_batched_csc<ITYPE, JTYPE, TTYPE, TTYPE, TTYPE, TTYPE>(         \
+        const Arguments& arg)
+#define INSTANTIATE_MIXED(ITYPE, JTYPE, ATYPE, XTYPE, YTYPE, TTYPE)                           \
+    template void testing_spmm_batched_csc_bad_arg<ITYPE, JTYPE, ATYPE, XTYPE, YTYPE, TTYPE>( \
+        const Arguments& arg);                                                                \
+    template void testing_spmm_batched_csc<ITYPE, JTYPE, ATYPE, XTYPE, YTYPE, TTYPE>(         \
+        const Arguments& arg)
 
 INSTANTIATE(int32_t, int32_t, float);
 INSTANTIATE(int32_t, int32_t, double);
@@ -510,4 +523,12 @@ INSTANTIATE(int64_t, int64_t, float);
 INSTANTIATE(int64_t, int64_t, double);
 INSTANTIATE(int64_t, int64_t, rocsparse_float_complex);
 INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
+
+INSTANTIATE_MIXED(int32_t, int32_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE_MIXED(int64_t, int32_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE_MIXED(int64_t, int64_t, int8_t, int8_t, int32_t, int32_t);
+INSTANTIATE_MIXED(int32_t, int32_t, int8_t, int8_t, float, float);
+INSTANTIATE_MIXED(int64_t, int32_t, int8_t, int8_t, float, float);
+INSTANTIATE_MIXED(int64_t, int64_t, int8_t, int8_t, float, float);
+
 void testing_spmm_batched_csc_extra(const Arguments& arg) {}

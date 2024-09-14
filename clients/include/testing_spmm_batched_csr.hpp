@@ -25,8 +25,8 @@
 
 #include "rocsparse_arguments.hpp"
 
-template <typename I, typename J, typename T>
+template <typename I, typename J, typename A, typename B, typename C, typename T>
 void testing_spmm_batched_csr_bad_arg(const Arguments& arg);
 void testing_spmm_batched_csr_extra(const Arguments& arg);
-template <typename I, typename J, typename T>
+template <typename I, typename J, typename A, typename B, typename C, typename T>
 void testing_spmm_batched_csr(const Arguments& arg);

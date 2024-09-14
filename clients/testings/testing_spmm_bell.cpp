@@ -286,24 +286,24 @@ void testing_spmm_bell(const Arguments& arg)
                 }
             }
 
-            host_coomm<T, I>(M,
-                             N,
-                             K,
-                             nnzb * block_dim * block_dim,
-                             trans_A,
-                             trans_B,
-                             *h_alpha,
-                             coo_row,
-                             coo_col,
-                             coo_val,
-                             hB,
-                             (order_B == rocsparse_order_column) ? hB.m : hB.n,
-                             order_B,
-                             *h_beta,
-                             hC,
-                             (order_C == rocsparse_order_column) ? hC.m : hC.n,
-                             order_C,
-                             base);
+            host_coomm<T, I, T, T, T>(M,
+                                      N,
+                                      K,
+                                      nnzb * block_dim * block_dim,
+                                      trans_A,
+                                      trans_B,
+                                      *h_alpha,
+                                      coo_row,
+                                      coo_col,
+                                      coo_val,
+                                      hB,
+                                      (order_B == rocsparse_order_column) ? hB.m : hB.n,
+                                      order_B,
+                                      *h_beta,
+                                      hC,
+                                      (order_C == rocsparse_order_column) ? hC.m : hC.n,
+                                      order_C,
+                                      base);
 
             delete[] coo_val;
             delete[] coo_col;
