@@ -162,27 +162,3 @@ You can test the installation by running one of the rocSPARSE examples, after su
    # Execute rocSPARSE example
    $ ./example_csrmv 1000
 
-
-Supported Targets
-=================
-Currently, rocSPARSE is supported under the following operating systems
-
-- `Ubuntu 16.04 <https://ubuntu.com/>`_
-- `Ubuntu 18.04 <https://ubuntu.com/>`_
-- `CentOS 7 <https://www.centos.org/>`_
-- `SLES 15 <https://www.suse.com/solutions/enterprise-linux/>`_
-
-To compile and run rocSPARSE, `AMD ROCm Platform <https://github.com/ROCm/ROCm>`_ is required.
-
-The following HIP capable devices are currently supported
-
-- gfx906 (e.g. Vega20, MI50, MI60)
-- gfx908
-- gfx90a (e.g. MI200)
-- gfx940
-- gfx941
-- gfx942
-- gfx1030 (e.g. Navi21)
-- gfx1100 (e.g. Navi31)
-- gfx1101 (e.g. Navi32)
-- gfx1102 (e.g. Navi33)
