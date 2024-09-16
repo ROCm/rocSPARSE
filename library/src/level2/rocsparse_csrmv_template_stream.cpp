@@ -34,8 +34,8 @@ namespace rocsparse
 {
 #define LAUNCH_CSRMVN_GENERAL(wfsize)                                               \
     RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((csrmvn_general_kernel<CSRMVN_DIM, wfsize>), \
-                                       dim3(csrmvn_blocks),                         \
-                                       dim3(csrmvn_threads),                        \
+                                       dim3(nblocks),                               \
+                                       dim3(CSRMVN_DIM),                            \
                                        0,                                           \
                                        stream,                                      \
                                        conj,                                        \
@@ -186,27 +186,98 @@ rocsparse_status rocsparse::csrmv_stream_template_dispatch(rocsparse_handle    h
 
     if(trans == rocsparse_operation_none || descr->type == rocsparse_matrix_type_symmetric)
     {
-#define CSRMVN_DIM 512
-        dim3 csrmvn_blocks((m - 1) / CSRMVN_DIM + 1);
-        dim3 csrmvn_threads(CSRMVN_DIM);
-
+#define CSRMVN_DIM 256
+        int wfsize = 0;
         if(nnz_per_row < 4)
         {
-            LAUNCH_CSRMVN_GENERAL(2);
+            wfsize = 2;
         }
         else if(nnz_per_row < 8)
         {
-            LAUNCH_CSRMVN_GENERAL(4);
+            wfsize = 4;
         }
         else if(nnz_per_row < 16)
         {
-            LAUNCH_CSRMVN_GENERAL(8);
+            wfsize = 8;
         }
         else if(nnz_per_row < 32)
         {
-            LAUNCH_CSRMVN_GENERAL(16);
+            wfsize = 16;
         }
         else if(nnz_per_row < 64 || handle->wavefront_size == 32)
+        {
+            wfsize = 32;
+        }
+        else
+        {
+            wfsize = 64;
+        }
+
+        J nblocks = std::min((m - 1) / (CSRMVN_DIM / wfsize) + 1, (J)2147483647);
+
+        int maxthreads = handle->properties.maxThreadsPerBlock;
+        int nprocs     = 2 * handle->properties.multiProcessorCount;
+        int minblocks  = (nprocs * maxthreads - 1) / CSRMVN_DIM + 1;
+
+        if(nblocks < minblocks)
+        {
+            J threads_per_row = CSRMVN_DIM * minblocks / m;
+
+            if(threads_per_row >= 64)
+            {
+                wfsize = 64;
+            }
+            else if(threads_per_row >= 32)
+            {
+                wfsize = 32;
+            }
+            else if(threads_per_row >= 16)
+            {
+                wfsize = 16;
+            }
+            else if(threads_per_row >= 8)
+            {
+                wfsize = 8;
+            }
+            else if(threads_per_row >= 4)
+            {
+                wfsize = 4;
+            }
+            else
+            {
+                wfsize = 2;
+            }
+
+            wfsize = std::min(wfsize, handle->wavefront_size);
+        }
+
+        nblocks = std::min((m - 1) / (CSRMVN_DIM / wfsize) + 1, (J)2147483647);
+
+        if(handle->wavefront_size == 32)
+        {
+            if(nblocks > 20 * minblocks)
+            {
+                nblocks = std::max((nblocks - 1) / wfsize + 1, (J)minblocks);
+            }
+        }
+
+        if(wfsize == 2)
+        {
+            LAUNCH_CSRMVN_GENERAL(2);
+        }
+        else if(wfsize == 4)
+        {
+            LAUNCH_CSRMVN_GENERAL(4);
+        }
+        else if(wfsize == 8)
+        {
+            LAUNCH_CSRMVN_GENERAL(8);
+        }
+        else if(wfsize == 16)
+        {
+            LAUNCH_CSRMVN_GENERAL(16);
+        }
+        else if(wfsize == 32 || handle->wavefront_size == 32)
         {
             LAUNCH_CSRMVN_GENERAL(32);
         }
