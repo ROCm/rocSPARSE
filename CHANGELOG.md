@@ -3,6 +3,30 @@
 Documentation for rocSPARSE is available at
 [https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/](https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/).
 
+## rocSPARSE 3.3.0 for ROCm 6.3.0
+
+### Additions
+
+* Add `rocsparse_create_extract_descr`, `rocsparse_destroy_extract_descr`, `rocsparse_extract_buffer_size`, `rocsparse_extract_nnz`, and `rocsparse_extract` API's to allow extraction of upper or lower part of sparse CSR or CSC matrices.
+* Support for gfx1200, gfx1201 and gfx1151.
+
+### Changes
+
+* Change default compiler from hipcc to amdclang in install script and cmake files.
+* Change address sanitizer build targets so that only gfx908:xnack+, gfx90a:xnack+, gfx940:xnack+, gfx941:xnack+, and gfx942:xnack+ are built when `BUILD_ADDRESS_SANITIZER=ON`.
+
+### Optimizations
+
+* Improved user manual
+
+### Fixes
+
+* Fix `csrmm` merge path algorithm so that diagonal is clamped to correct range.
+* Fix race condition in `bsrgemm` that could on rare occasions cause incorrect results.
+* Fix issue in `hyb2csr` where the CSR row pointer array was not being properly filled in the case where `n=0` or `coo_nnz=0` or `ell_nnz=0`. 
+* Fix scaling in `rocsparse_Xhybmv` when only performing `y=beta*y`, i.e. where `alpha==0` in `y=alpha*Ax+beta*y`.
+* Fix `rocsparse_Xgemmi` failures when y grid dimension is too large. This occured when n >= 65536.
+
 ## rocSPARSE 3.2.0 for ROCm 6.2.0
 
 ### Additions
