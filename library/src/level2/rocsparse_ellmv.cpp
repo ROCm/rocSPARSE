@@ -23,6 +23,7 @@
  * ************************************************************************ */
 
 #include "internal/level2/rocsparse_ellmv.h"
+#include "rocsparse_common.h"
 #include "rocsparse_ellmv.hpp"
 
 #include "control.h"
@@ -74,17 +75,6 @@ namespace rocsparse
         }
     }
 
-    template <uint32_t BLOCKSIZE, typename I, typename Y, typename U>
-    ROCSPARSE_KERNEL(BLOCKSIZE)
-    void ellmvt_scale_kernel(I size, U scalar_device_host, Y* __restrict__ data)
-    {
-        auto scalar = rocsparse::load_scalar_device_host(scalar_device_host);
-        if(scalar != 1)
-        {
-            rocsparse::ellmvt_scale_device(size, scalar, data);
-        }
-    }
-
     template <typename I, typename A, typename X, typename Y, typename U>
     rocsparse_status ellmv_dispatch(rocsparse_handle          handle,
                                     rocsparse_operation       trans,
@@ -129,14 +119,7 @@ namespace rocsparse
         {
 #define ELLMVT_DIM 1024
             // Scale y with beta
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::ellmvt_scale_kernel<ELLMVT_DIM>),
-                                               dim3((n - 1) / ELLMVT_DIM + 1),
-                                               dim3(ELLMVT_DIM),
-                                               0,
-                                               stream,
-                                               n,
-                                               beta_device_host,
-                                               y);
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::scale_array(handle, n, beta_device_host, y));
 
             RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::ellmvt_kernel<ELLMVT_DIM>),
                                                dim3((m - 1) / ELLMVT_DIM + 1),
@@ -228,25 +211,13 @@ rocsparse_status rocsparse::ellmv_template(rocsparse_handle          handle, // 
 
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array<256>),
-                                                   dim3((ysize - 1) / 256 + 1),
-                                                   dim3(256),
-                                                   0,
-                                                   handle->stream,
-                                                   ysize,
-                                                   y,
-                                                   beta_device_host);
+                RETURN_IF_ROCSPARSE_ERROR(
+                    rocsparse::scale_array(handle, ysize, beta_device_host, y));
             }
             else
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array<256>),
-                                                   dim3((ysize - 1) / 256 + 1),
-                                                   dim3(256),
-                                                   0,
-                                                   handle->stream,
-                                                   ysize,
-                                                   y,
-                                                   *beta_device_host);
+                RETURN_IF_ROCSPARSE_ERROR(
+                    rocsparse::scale_array(handle, ysize, *beta_device_host, y));
             }
         }
 

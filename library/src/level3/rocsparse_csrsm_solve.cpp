@@ -26,6 +26,7 @@
 
 #include "common.h"
 #include "control.h"
+#include "rocsparse_common.h"
 #include "utility.h"
 
 #include "../level1/rocsparse_gthr.hpp"
@@ -74,14 +75,6 @@ namespace rocsparse
                                                           idx_base,
                                                           fill_mode,
                                                           diag_type);
-    }
-
-    template <uint32_t DIM_X, uint32_t DIM_Y, typename I, typename T>
-    ROCSPARSE_KERNEL(DIM_X* DIM_Y)
-    void csrsm_transpose(
-        I m, I n, const T* __restrict__ A, int64_t lda, T* __restrict__ B, int64_t ldb)
-    {
-        rocsparse::dense_transpose_device<DIM_X, DIM_Y>(m, n, (T)1, A, lda, B, ldb);
     }
 
     template <typename I, typename J, typename T, typename U>
@@ -171,25 +164,8 @@ namespace rocsparse
             // Leading dimension for transposed B
             ldimB = nrhs;
 
-#define CSRSM_DIM_X 32
-#define CSRSM_DIM_Y 8
-            dim3 csrsm_blocks((m - 1) / CSRSM_DIM_X + 1);
-            dim3 csrsm_threads(CSRSM_DIM_X * CSRSM_DIM_Y);
-
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (rocsparse::csrsm_transpose<CSRSM_DIM_X, CSRSM_DIM_Y>),
-                csrsm_blocks,
-                csrsm_threads,
-                0,
-                stream,
-                m,
-                nrhs,
-                B,
-                ldb,
-                Bt,
-                ldimB);
-#undef CSRSM_DIM_X
-#undef CSRSM_DIM_Y
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse::dense_transpose(handle, m, nrhs, (T)1, B, ldb, Bt, ldimB));
         }
 
         // Pointers to differentiate between transpose mode
@@ -217,13 +193,7 @@ namespace rocsparse
             if(trans_A == rocsparse_operation_conjugate_transpose)
             {
                 // conjugate csrt_val
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::conjugate<256, I, T>),
-                                                   dim3((nnz - 1) / 256 + 1),
-                                                   dim3(256),
-                                                   0,
-                                                   stream,
-                                                   nnz,
-                                                   csrt_val);
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::conjugate(handle, nnz, csrt_val));
             }
 
             local_csr_row_ptr = (const I*)csrsm_info->trmt_row_ptr;
@@ -499,25 +469,8 @@ namespace rocsparse
         // Transpose B back if B was not initially transposed
         if((trans_B == rocsparse_operation_none && order_B == rocsparse_order_column))
         {
-#define CSRSM_DIM_X 32
-#define CSRSM_DIM_Y 8
-            const dim3 csrsm_blocks((m - 1) / CSRSM_DIM_X + 1);
-            const dim3 csrsm_threads(CSRSM_DIM_X * CSRSM_DIM_Y);
-
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (rocsparse::dense_transpose_back<CSRSM_DIM_X, CSRSM_DIM_Y>),
-                csrsm_blocks,
-                csrsm_threads,
-                0,
-                stream,
-                m,
-                nrhs,
-                Bt,
-                ldimB,
-                B,
-                ldb);
-#undef CSRSM_DIM_X
-#undef CSRSM_DIM_Y
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse::dense_transpose_back(handle, m, nrhs, Bt, ldimB, B, ldb));
         }
 
         return rocsparse_status_success;

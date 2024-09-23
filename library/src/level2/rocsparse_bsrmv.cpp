@@ -26,6 +26,7 @@
 #include "internal/level2/rocsparse_csrmv.h"
 #include "rocsparse_bsrmv.hpp"
 #include "rocsparse_bsrxmv_spzl.hpp"
+#include "rocsparse_common.h"
 #include "rocsparse_csrmv.hpp"
 
 template <typename I, typename J, typename A>
@@ -484,25 +485,13 @@ rocsparse_status rocsparse::bsrmv_template(rocsparse_handle          handle,
 
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array<256>),
-                                                   dim3((ysize - 1) / 256 + 1),
-                                                   dim3(256),
-                                                   0,
-                                                   handle->stream,
-                                                   ysize,
-                                                   y,
-                                                   beta_device_host);
+                RETURN_IF_ROCSPARSE_ERROR(
+                    rocsparse::scale_array(handle, ysize, beta_device_host, y));
             }
             else
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array<256>),
-                                                   dim3((ysize - 1) / 256 + 1),
-                                                   dim3(256),
-                                                   0,
-                                                   handle->stream,
-                                                   ysize,
-                                                   y,
-                                                   *beta_device_host);
+                RETURN_IF_ROCSPARSE_ERROR(
+                    rocsparse::scale_array(handle, ysize, *beta_device_host, y));
             }
         }
 

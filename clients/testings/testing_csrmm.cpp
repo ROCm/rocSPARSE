@@ -52,16 +52,16 @@ void testing_csrmm_bad_arg(const Arguments& arg)
     const T*             csr_val     = (const T*)0x4;
     const rocsparse_int* csr_row_ptr = (const rocsparse_int*)0x4;
     const rocsparse_int* csr_col_ind = (const rocsparse_int*)0x4;
-    const T*             B           = (const T*)0x4;
+    const T*             dense_B     = (const T*)0x4;
     rocsparse_int        ldb         = safe_size;
     const T              local_beta  = static_cast<T>(2);
     const T*             beta        = &local_beta;
-    T*                   C           = (T*)0x4;
+    T*                   dense_C     = (T*)0x4;
     rocsparse_int        ldc         = safe_size;
 
-#define PARAMS                                                                                  \
-    handle, trans_A, trans_B, m, n, k, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, \
-        ldb, beta, C, ldc
+#define PARAMS                                                                               \
+    handle, trans_A, trans_B, m, n, k, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, \
+        dense_B, ldb, beta, dense_C, ldc
 
     bad_arg_analysis(rocsparse_csrmm<T>, PARAMS);
 

@@ -28,17 +28,6 @@
 
 namespace rocsparse
 {
-    template <typename I, typename T>
-    ROCSPARSE_DEVICE_ILF void gemvi_scale_kernel(I m, T scalar, T* x)
-    {
-        const I gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-
-        if(gid < m)
-        {
-            x[gid] *= scalar;
-        }
-    }
-
     template <uint32_t BLOCKSIZE, uint32_t WFSIZE, typename I, typename T>
     ROCSPARSE_DEVICE_ILF void gemvi_device(I                    m,
                                            I                    n,

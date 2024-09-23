@@ -26,6 +26,7 @@
 #include "utility.h"
 
 #include "control.h"
+#include "rocsparse_common.h"
 #include "rocsparse_dense2csx.hpp"
 #include "rocsparse_primitives.h"
 
@@ -60,14 +61,8 @@ namespace rocsparse
             {
                 J dimdir = is_row_oriented ? m : n;
 
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
-                                                   dim3(dimdir / 256 + 1),
-                                                   dim3(256),
-                                                   0,
-                                                   handle->stream,
-                                                   (dimdir + 1),
-                                                   csx_row_col_ptr_A,
-                                                   static_cast<I>(descr->base));
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::valset(
+                    handle, dimdir + 1, static_cast<I>(descr->base), csx_row_col_ptr_A));
             }
 
             return rocsparse_status_success;

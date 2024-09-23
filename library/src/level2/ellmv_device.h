@@ -76,20 +76,6 @@ namespace rocsparse
         }
     }
 
-    // Scale
-    template <typename I, typename Y, typename T>
-    ROCSPARSE_DEVICE_ILF void ellmvt_scale_device(I size, T scalar, Y* data)
-    {
-        const I idx = blockIdx.x * blockDim.x + threadIdx.x;
-
-        if(idx >= size)
-        {
-            return;
-        }
-
-        data[idx] *= scalar;
-    }
-
     // ELL SpMV for general, (conjugate) transposed matrices
     template <uint32_t BLOCKSIZE, typename I, typename A, typename X, typename Y, typename T>
     ROCSPARSE_DEVICE_ILF void ellmvt_device(rocsparse_operation  trans,

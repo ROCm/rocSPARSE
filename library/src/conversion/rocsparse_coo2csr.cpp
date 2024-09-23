@@ -29,6 +29,7 @@
 #include "rocsparse_coo2csr.hpp"
 
 #include "coo2csr_device.h"
+#include "rocsparse_common.h"
 
 template <typename I, typename J>
 rocsparse_status rocsparse::coo2csr_core(rocsparse_handle     handle,
@@ -71,14 +72,8 @@ rocsparse_status rocsparse::coo2csr_template(rocsparse_handle     handle,
     {
         if(csr_row_ptr != nullptr)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<1>),
-                                               dim3(1),
-                                               dim3(1),
-                                               0,
-                                               handle->stream,
-                                               m + 1,
-                                               csr_row_ptr,
-                                               static_cast<I>(idx_base));
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse::valset(handle, m + 1, static_cast<I>(idx_base), csr_row_ptr));
         }
         return rocsparse_status_success;
     }

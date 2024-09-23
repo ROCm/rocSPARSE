@@ -35,6 +35,7 @@
 #include "rocsparse_csr2gebsr.hpp"
 #include "rocsparse_gebsr2csr.hpp"
 
+#include "rocsparse_common.h"
 #include "rocsparse_primitives.h"
 
 #define launch_gebsr2gebsr_fast_kernel(T, direction, block_size, segment_size)     \
@@ -728,14 +729,8 @@ try
         {
             if(bsr_row_ptr_C != nullptr)
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
-                                                   dim3(mb_c / 256 + 1),
-                                                   dim3(256),
-                                                   0,
-                                                   stream,
-                                                   (mb_c + 1),
-                                                   bsr_row_ptr_C,
-                                                   static_cast<rocsparse_int>(descr_C->base));
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::valset(
+                    handle, mb_c + 1, static_cast<rocsparse_int>(descr_C->base), bsr_row_ptr_C));
             }
 
             rocsparse_pointer_mode mode;

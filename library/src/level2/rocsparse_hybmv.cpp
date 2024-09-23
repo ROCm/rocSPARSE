@@ -24,6 +24,7 @@
 
 #include "internal/level2/rocsparse_hybmv.h"
 #include "control.h"
+#include "rocsparse_common.h"
 #include "rocsparse_coomv.hpp"
 #include "rocsparse_ellmv.hpp"
 #include "rocsparse_hybmv.hpp"
@@ -108,25 +109,13 @@ rocsparse_status rocsparse::hybmv_template(rocsparse_handle          handle,
 
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array<256>),
-                                                   dim3((ysize - 1) / 256 + 1),
-                                                   dim3(256),
-                                                   0,
-                                                   handle->stream,
-                                                   ysize,
-                                                   y,
-                                                   beta_device_host);
+                RETURN_IF_ROCSPARSE_ERROR(
+                    rocsparse::scale_array(handle, ysize, beta_device_host, y));
             }
             else
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array<256>),
-                                                   dim3((ysize - 1) / 256 + 1),
-                                                   dim3(256),
-                                                   0,
-                                                   handle->stream,
-                                                   ysize,
-                                                   y,
-                                                   *beta_device_host);
+                RETURN_IF_ROCSPARSE_ERROR(
+                    rocsparse::scale_array(handle, ysize, *beta_device_host, y));
             }
         }
 

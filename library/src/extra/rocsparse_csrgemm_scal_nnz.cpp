@@ -24,6 +24,7 @@
 
 #include "control.h"
 #include "csrgemm_device.h"
+#include "rocsparse_common.h"
 #include "rocsparse_csrgemm_nnz_calc.hpp"
 #include "rocsparse_csrgemm_scal.hpp"
 #include "utility.h"
@@ -57,14 +58,8 @@ rocsparse_status rocsparse::csrgemm_scal_nnz_quickreturn(rocsparse_handle       
 
         if(csr_row_ptr_C != nullptr)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<1024>),
-                                               dim3(m / 1024 + 1),
-                                               dim3(1024),
-                                               0,
-                                               handle->stream,
-                                               (m + 1),
-                                               csr_row_ptr_C,
-                                               static_cast<I>(descr_C->base));
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse::valset(handle, m + 1, static_cast<I>(descr_C->base), csr_row_ptr_C));
         }
         return rocsparse_status_success;
     }

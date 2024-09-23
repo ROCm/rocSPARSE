@@ -28,27 +28,6 @@
 
 namespace rocsparse
 {
-    // Scale kernel for beta != 1.0
-    template <uint32_t BLOCKSIZE, typename I, typename Y, typename T>
-    ROCSPARSE_DEVICE_ILF void coomv_scale_device(I size, T beta, Y* __restrict__ data)
-    {
-        const I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-
-        if(gid >= size)
-        {
-            return;
-        }
-
-        if(beta == 0)
-        {
-            data[gid] = static_cast<Y>(0);
-        }
-        else
-        {
-            data[gid] = static_cast<Y>(beta * data[gid]);
-        }
-    }
-
     // Implementation motivated by papers 'Efficient Sparse Matrix-Vector Multiplication on CUDA',
     // 'Implementing Sparse Matrix-Vector Multiplication on Throughput-Oriented Processors' and
     // 'Segmented operations for sparse matrix computation on vector multiprocessors'

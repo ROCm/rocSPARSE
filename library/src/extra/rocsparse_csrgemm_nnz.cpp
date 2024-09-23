@@ -29,6 +29,7 @@
 #include "rocsparse_csrgemm.hpp"
 #include "utility.h"
 
+#include "rocsparse_common.h"
 #include "rocsparse_primitives.h"
 
 #include "rocsparse_csrgemm_mult.hpp"
@@ -809,14 +810,8 @@ namespace rocsparse
 
             if(csr_row_ptr_C != nullptr)
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<1024>),
-                                                   dim3(m / 1024 + 1),
-                                                   dim3(1024),
-                                                   0,
-                                                   handle->stream,
-                                                   (m + 1),
-                                                   csr_row_ptr_C,
-                                                   static_cast<I>(descr_C->base));
+                RETURN_IF_ROCSPARSE_ERROR(
+                    rocsparse::valset(handle, m + 1, static_cast<I>(descr_C->base), csr_row_ptr_C));
             }
 
             return rocsparse_status_success;
@@ -936,14 +931,8 @@ rocsparse_status rocsparse::csrgemm_nnz_template(rocsparse_handle          handl
         }
         if(csr_row_ptr_C != nullptr)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<1024>),
-                                               dim3(m / 1024 + 1),
-                                               dim3(1024),
-                                               0,
-                                               handle->stream,
-                                               (m + 1),
-                                               csr_row_ptr_C,
-                                               static_cast<I>(descr_C->base));
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse::valset(handle, m + 1, static_cast<I>(descr_C->base), csr_row_ptr_C));
         }
         return rocsparse_status_success;
     }

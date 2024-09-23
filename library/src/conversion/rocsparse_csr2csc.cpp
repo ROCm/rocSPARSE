@@ -29,6 +29,7 @@
 #include "utility.h"
 
 #include "csr2csc_device.h"
+#include "rocsparse_common.h"
 #include "rocsparse_coo2csr.hpp"
 #include "rocsparse_csr2coo.hpp"
 #include "rocsparse_identity.hpp"
@@ -189,14 +190,8 @@ rocsparse_status rocsparse::csr2csc_template(rocsparse_handle     handle,
 
     if(nnz == 0)
     {
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
-                                           dim3(n / 256 + 1),
-                                           dim3(256),
-                                           0,
-                                           handle->stream,
-                                           (n + 1),
-                                           csc_col_ptr,
-                                           static_cast<I>(idx_base));
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse::valset(handle, n + 1, static_cast<I>(idx_base), csc_col_ptr));
 
         return rocsparse_status_success;
     }
@@ -277,14 +272,8 @@ rocsparse_status rocsparse::csr2csc_impl(rocsparse_handle     handle, //0
     {
         if(nnz == 0 && csc_col_ptr != nullptr)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
-                                               dim3(n / 256 + 1),
-                                               dim3(256),
-                                               0,
-                                               handle->stream,
-                                               (n + 1),
-                                               csc_col_ptr,
-                                               static_cast<I>(idx_base));
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse::valset(handle, n + 1, static_cast<I>(idx_base), csc_col_ptr));
         }
         return rocsparse_status_success;
     }

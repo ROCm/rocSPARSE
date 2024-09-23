@@ -26,6 +26,7 @@
 #include "utility.h"
 
 #include "csrmm_device_nnz_split.h"
+#include "rocsparse_common.h"
 #include "rocsparse_csrmm.hpp"
 
 #define NNZ_PER_BLOCK 256
@@ -263,18 +264,6 @@ namespace rocsparse
                                                                           idx_base);
     }
 
-    template <unsigned int BLOCKSIZE, typename I, typename C, typename U>
-    ROCSPARSE_KERNEL(BLOCKSIZE)
-    void csrmmnn_nnz_split_scale(
-        I m, I n, U beta_device_host, C* __restrict__ data, int64_t ld, rocsparse_order order)
-    {
-        auto beta = load_scalar_device_host(beta_device_host);
-        if(beta != 1)
-        {
-            rocsparse::csrmmnn_nnz_split_scale_device<BLOCKSIZE>(m, n, beta, data, ld, order);
-        }
-    }
-
     template <typename T, typename I, typename J, typename A>
     rocsparse_status csrmm_buffer_size_template_nnz_split(rocsparse_handle          handle,
                                                           rocsparse_operation       trans_A,
@@ -452,17 +441,8 @@ namespace rocsparse
                                                        void*                     temp_buffer)
     {
         // Scale C with beta
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmmnn_nnz_split_scale<256>),
-                                           dim3((int64_t(m) * n - 1) / 256 + 1),
-                                           dim3(256),
-                                           0,
-                                           handle->stream,
-                                           m,
-                                           n,
-                                           beta_device_host,
-                                           dense_C,
-                                           ldc,
-                                           order_C);
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse::scale_2d_array(handle, m, n, ldc, 1, 0, beta_device_host, dense_C, order_C));
 
         I nblocks = (nnz - 1) / NNZ_PER_BLOCK + 1;
 
@@ -625,17 +605,8 @@ namespace rocsparse
                                                 void*                     temp_buffer)
     {
         // Scale C with beta
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmmnn_nnz_split_scale<256>),
-                                           dim3((int64_t(m) * n - 1) / 256 + 1),
-                                           dim3(256),
-                                           0,
-                                           handle->stream,
-                                           m,
-                                           n,
-                                           beta_device_host,
-                                           dense_C,
-                                           ldc,
-                                           order_C);
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse::scale_2d_array(handle, m, n, ldc, 1, 0, beta_device_host, dense_C, order_C));
 
         char* ptr        = reinterpret_cast<char*>(temp_buffer);
         J*    row_limits = reinterpret_cast<J*>(ptr);
