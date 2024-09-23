@@ -25,54 +25,11 @@
 #include "rocsparse_coomm.hpp"
 #include "common.h"
 #include "control.h"
+#include "rocsparse_common.h"
 #include "utility.h"
 
 namespace rocsparse
 {
-    // Scale kernel for beta != 1.0
-    template <uint32_t BLOCKSIZE, typename I, typename T>
-    ROCSPARSE_DEVICE_ILF void coommnn_scale_device(
-        I m, I n, T beta, T* __restrict__ data, int64_t ld, int64_t stride, rocsparse_order order)
-    {
-        const I gid   = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-        const I batch = hipBlockIdx_y;
-
-        if(gid >= m * n)
-        {
-            return;
-        }
-
-        const I wid = (order == rocsparse_order_column) ? gid / m : gid / n;
-        const I lid = (order == rocsparse_order_column) ? gid % m : gid % n;
-
-        if(beta == static_cast<T>(0))
-        {
-            data[lid + ld * wid + stride * batch] = static_cast<T>(0);
-        }
-        else
-        {
-            data[lid + ld * wid + stride * batch] *= beta;
-        }
-    }
-
-    template <uint32_t BLOCKSIZE, typename I, typename T, typename U>
-    ROCSPARSE_KERNEL(BLOCKSIZE)
-    void coommnn_scale_kernel(I m,
-                              I n,
-                              U beta_device_host,
-                              T* __restrict__ data,
-                              int64_t         ld,
-                              int64_t         stride,
-                              rocsparse_order order)
-    {
-
-        const auto beta = rocsparse::load_scalar_device_host(beta_device_host);
-        if(beta != static_cast<T>(1))
-        {
-            rocsparse::coommnn_scale_device<BLOCKSIZE>(m, n, beta, data, ld, stride, order);
-        }
-    }
-
     template <typename T, typename I, typename A, typename B, typename C, typename U>
     rocsparse_status coomm_template_atomic(rocsparse_handle          handle,
                                            rocsparse_operation       trans_A,
@@ -187,33 +144,13 @@ rocsparse_status rocsparse::coomm_template_dispatch(rocsparse_handle          ha
 {
     if(trans_A == rocsparse_operation_none)
     {
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::coommnn_scale_kernel<256>),
-                                           dim3((int64_t(m) * n - 1) / 256 + 1, batch_count_C),
-                                           dim3(256),
-                                           0,
-                                           handle->stream,
-                                           m,
-                                           n,
-                                           beta_device_host,
-                                           dense_C,
-                                           ldc,
-                                           batch_stride_C,
-                                           order_C);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::scale_2d_array(
+            handle, m, n, ldc, batch_count_C, batch_stride_C, beta_device_host, dense_C, order_C));
     }
     else
     {
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::coommnn_scale_kernel<256>),
-                                           dim3((int64_t(k) * n - 1) / 256 + 1, batch_count_C),
-                                           dim3(256),
-                                           0,
-                                           handle->stream,
-                                           k,
-                                           n,
-                                           beta_device_host,
-                                           dense_C,
-                                           ldc,
-                                           batch_stride_C,
-                                           order_C);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::scale_2d_array(
+            handle, k, n, ldc, batch_count_C, batch_stride_C, beta_device_host, dense_C, order_C));
     }
 
     switch(alg)
@@ -525,35 +462,29 @@ namespace rocsparse
 
                 if(handle->pointer_mode == rocsparse_pointer_mode_device)
                 {
-                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array_2d<256>),
-                                                       dim3((Csize - 1) / 256 + 1, batch_count_C),
-                                                       dim3(256),
-                                                       0,
-                                                       handle->stream,
-                                                       (trans_A == rocsparse_operation_none) ? m
-                                                                                             : k,
-                                                       n,
-                                                       ldc,
-                                                       batch_stride_C,
-                                                       dense_C,
-                                                       beta_device_host,
-                                                       order_C);
+                    RETURN_IF_ROCSPARSE_ERROR(
+                        rocsparse::scale_2d_array(handle,
+                                                  (trans_A == rocsparse_operation_none) ? m : k,
+                                                  n,
+                                                  ldc,
+                                                  batch_count_C,
+                                                  batch_stride_C,
+                                                  beta_device_host,
+                                                  dense_C,
+                                                  order_C));
                 }
                 else
                 {
-                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array_2d<256>),
-                                                       dim3((Csize - 1) / 256 + 1, batch_count_C),
-                                                       dim3(256),
-                                                       0,
-                                                       handle->stream,
-                                                       (trans_A == rocsparse_operation_none) ? m
-                                                                                             : k,
-                                                       n,
-                                                       ldc,
-                                                       batch_stride_C,
-                                                       dense_C,
-                                                       *beta_device_host,
-                                                       order_C);
+                    RETURN_IF_ROCSPARSE_ERROR(
+                        rocsparse::scale_2d_array(handle,
+                                                  (trans_A == rocsparse_operation_none) ? m : k,
+                                                  n,
+                                                  ldc,
+                                                  batch_count_C,
+                                                  batch_stride_C,
+                                                  *beta_device_host,
+                                                  dense_C,
+                                                  order_C));
                 }
             }
             return rocsparse_status_success;

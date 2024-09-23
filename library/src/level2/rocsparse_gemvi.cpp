@@ -23,6 +23,7 @@
  * ************************************************************************ */
 
 #include "internal/level2/rocsparse_gemvi.h"
+#include "rocsparse_common.h"
 #include "rocsparse_gemvi.hpp"
 
 #include "control.h"
@@ -31,18 +32,6 @@
 
 namespace rocsparse
 {
-    template <uint32_t BLOCKSIZE, typename I, typename T, typename U>
-    ROCSPARSE_KERNEL(BLOCKSIZE)
-    void gemvi_scale_kernel(I m, U scalar_device_host, T* x)
-    {
-        auto scalar = rocsparse::load_scalar_device_host(scalar_device_host);
-
-        if(scalar != static_cast<T>(1))
-        {
-            rocsparse::gemvi_scale_kernel(m, scalar, x);
-        }
-    }
-
     template <uint32_t BLOCKSIZE, uint32_t WFSIZE, typename I, typename T, typename U>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void gemvi_kernel(I m,
@@ -87,14 +76,7 @@ namespace rocsparse
         // If nnz is zero, only compute beta * y
         if(nnz == 0)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::gemvi_scale_kernel<GEMVI_DIM>),
-                                               dim3((m - 1) / GEMVI_DIM + 1),
-                                               dim3(GEMVI_DIM),
-                                               0,
-                                               handle->stream,
-                                               m,
-                                               beta_device_host,
-                                               y);
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::scale_array(handle, m, beta_device_host, y));
 
             return rocsparse_status_success;
         }

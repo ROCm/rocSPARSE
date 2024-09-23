@@ -408,31 +408,6 @@ namespace rocsparse
         }
     }
 
-    // Scale kernel for beta != 1.0
-    template <unsigned int BLOCKSIZE, typename I, typename C, typename T>
-    ROCSPARSE_DEVICE_ILF void csrmmnn_nnz_split_scale_device(
-        I m, I n, T beta, C* __restrict__ data, int64_t ld, rocsparse_order order_C)
-    {
-        const I gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-
-        if(gid >= m * n)
-        {
-            return;
-        }
-
-        const I wid = (order_C == rocsparse_order_column) ? gid / m : gid / n;
-        const I lid = (order_C == rocsparse_order_column) ? gid % m : gid % n;
-
-        if(beta == 0)
-        {
-            data[lid + ld * wid] = 0;
-        }
-        else
-        {
-            data[lid + ld * wid] *= beta;
-        }
-    }
-
     template <unsigned int BLOCKSIZE, unsigned int NNZ_PER_BLOCK, typename I, typename J>
     ROCSPARSE_KERNEL(BLOCKSIZE)
     void csrmmnn_nnz_split_compute_row_limits(J m,

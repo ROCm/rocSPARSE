@@ -25,6 +25,7 @@
 #include "common.h"
 #include "control.h"
 #include "internal/level2/rocsparse_csritsv.h"
+#include "rocsparse_common.h"
 #include "rocsparse_csritsv.hpp"
 #include "utility.h"
 
@@ -240,26 +241,11 @@ rocsparse_status rocsparse::csritsv_solve_template(rocsparse_handle handle,
 
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
-
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array<BLOCKSIZE>),
-                                                   blocks,
-                                                   threads,
-                                                   0,
-                                                   handle->stream,
-                                                   m,
-                                                   y,
-                                                   alpha_device_host);
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::scale_array(handle, m, alpha_device_host, y));
             }
             else
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array<BLOCKSIZE>),
-                                                   blocks,
-                                                   threads,
-                                                   0,
-                                                   handle->stream,
-                                                   m,
-                                                   y,
-                                                   *alpha_device_host);
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::scale_array(handle, m, *alpha_device_host, y));
             }
 
             return rocsparse_status_success;

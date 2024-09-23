@@ -24,6 +24,7 @@
 
 #include "common.h"
 #include "control.h"
+#include "rocsparse_common.h"
 #include "rocsparse_csrmv.hpp"
 #include "utility.h"
 
@@ -105,14 +106,6 @@ namespace rocsparse
                                                                  y,
                                                                  idx_base);
         }
-    }
-
-    template <uint32_t BLOCKSIZE, typename J, typename Y, typename U>
-    ROCSPARSE_KERNEL(BLOCKSIZE)
-    void csrmvt_scale_kernel(J size, U scalar_device_host, Y* __restrict__ data)
-    {
-        auto scalar = rocsparse::load_scalar_device_host(scalar_device_host);
-        rocsparse::csrmvt_scale_device(size, scalar, data);
     }
 
     template <uint32_t BLOCKSIZE,
@@ -294,14 +287,7 @@ rocsparse_status rocsparse::csrmv_stream_template_dispatch(rocsparse_handle    h
         if(descr->type != rocsparse_matrix_type_symmetric)
         {
             // Scale y with beta
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmvt_scale_kernel<CSRMVT_DIM>),
-                                               dim3((n - 1) / CSRMVT_DIM + 1),
-                                               dim3(CSRMVT_DIM),
-                                               0,
-                                               stream,
-                                               n,
-                                               beta_device_host,
-                                               y);
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::scale_array(handle, n, beta_device_host, y));
         }
 
         bool skip_diag = (descr->type == rocsparse_matrix_type_symmetric);

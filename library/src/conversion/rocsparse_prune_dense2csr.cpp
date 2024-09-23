@@ -29,6 +29,7 @@
 
 #include "csr2csr_compress_device.h"
 #include "prune_dense2csr_device.h"
+#include "rocsparse_common.h"
 #include "rocsparse_primitives.h"
 
 namespace rocsparse
@@ -161,14 +162,8 @@ rocsparse_status rocsparse::prune_dense2csr_nnz_template(rocsparse_handle       
     {
         if(nnz_total_dev_host_ptr != nullptr && csr_row_ptr != nullptr)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
-                                               dim3(m / 256 + 1),
-                                               dim3(256),
-                                               0,
-                                               stream,
-                                               (m + 1),
-                                               csr_row_ptr,
-                                               static_cast<rocsparse_int>(descr->base));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::valset(
+                handle, m + 1, static_cast<rocsparse_int>(descr->base), csr_row_ptr));
 
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {

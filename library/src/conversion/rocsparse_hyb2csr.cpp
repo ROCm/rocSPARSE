@@ -29,6 +29,7 @@
 #include "utility.h"
 
 #include "hyb2csr_device.h"
+#include "rocsparse_common.h"
 #include "rocsparse_primitives.h"
 
 namespace rocsparse
@@ -47,14 +48,8 @@ namespace rocsparse
         {
             if(hyb->m >= 0 && csr_row_ptr != nullptr)
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
-                                                   dim3(hyb->m / 256 + 1),
-                                                   dim3(256),
-                                                   0,
-                                                   handle->stream,
-                                                   hyb->m + 1,
-                                                   csr_row_ptr,
-                                                   static_cast<rocsparse_int>(descr->base));
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::valset(
+                    handle, hyb->m + 1, static_cast<rocsparse_int>(descr->base), csr_row_ptr));
             }
 
             return rocsparse_status_success;

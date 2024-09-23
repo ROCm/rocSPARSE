@@ -88,19 +88,6 @@ namespace rocsparse
         }
     }
 
-    template <typename J, typename Y, typename T>
-    ROCSPARSE_DEVICE_ILF void csrmvt_scale_device(J size, T scalar, Y* data)
-    {
-        const J idx = blockIdx.x * blockDim.x + threadIdx.x;
-
-        if(idx >= size)
-        {
-            return;
-        }
-
-        data[idx] *= scalar;
-    }
-
     template <uint32_t BLOCKSIZE,
               uint32_t WF_SIZE,
               typename I,

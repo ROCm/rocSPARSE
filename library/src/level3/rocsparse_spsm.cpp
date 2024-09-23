@@ -25,6 +25,7 @@
 #include "control.h"
 #include "handle.h"
 #include "rocsparse.h"
+#include "rocsparse_common.h"
 #include "utility.h"
 
 #include "rocsparse_coosm.hpp"
@@ -32,14 +33,6 @@
 
 namespace rocsparse
 {
-    template <uint32_t DIM_X, uint32_t DIM_Y, typename I, typename T>
-    ROCSPARSE_KERNEL(DIM_X* DIM_Y)
-    void spsm_transpose(
-        I m, I n, const T* __restrict__ A, int64_t lda, T* __restrict__ B, int64_t ldb)
-    {
-        dense_transpose_device<DIM_X, DIM_Y>(m, n, (T)1, A, lda, B, ldb);
-    }
-
     enum class spsm_case
     {
         NT_NT,
@@ -288,31 +281,25 @@ namespace rocsparse
         {
             if(matB->order == rocsparse_order_column)
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::spsm_transpose<32, 8>),
-                                                   dim3((matB->rows - 1) / 32 + 1),
-                                                   dim3(32 * 8),
-                                                   0,
-                                                   handle->stream,
-                                                   (J)matB->rows,
-                                                   (J)matB->cols,
-                                                   (const T*)spsm_buffer,
-                                                   matB->rows,
-                                                   (T*)matC->values,
-                                                   matC->ld);
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::dense_transpose(handle,
+                                                                     (J)matB->rows,
+                                                                     (J)matB->cols,
+                                                                     (T)1,
+                                                                     (const T*)spsm_buffer,
+                                                                     matB->rows,
+                                                                     (T*)matC->values,
+                                                                     matC->ld));
             }
             else
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::spsm_transpose<32, 8>),
-                                                   dim3((matB->cols - 1) / 32 + 1),
-                                                   dim3(32 * 8),
-                                                   0,
-                                                   handle->stream,
-                                                   (J)matB->cols,
-                                                   (J)matB->rows,
-                                                   (const T*)spsm_buffer,
-                                                   matB->cols,
-                                                   (T*)matC->values,
-                                                   matC->ld);
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::dense_transpose(handle,
+                                                                     (J)matB->cols,
+                                                                     (J)matB->rows,
+                                                                     (T)1,
+                                                                     (const T*)spsm_buffer,
+                                                                     matB->cols,
+                                                                     (T*)matC->values,
+                                                                     matC->ld));
             }
         }
 
@@ -337,31 +324,25 @@ namespace rocsparse
         {
             if(matB->order == rocsparse_order_column)
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::spsm_transpose<32, 8>),
-                                                   dim3((matB->rows - 1) / 32 + 1),
-                                                   dim3(32 * 8),
-                                                   0,
-                                                   handle->stream,
-                                                   (J)matB->rows,
-                                                   (J)matB->cols,
-                                                   (const T*)matB->const_values,
-                                                   matB->ld,
-                                                   (T*)matC->values,
-                                                   matC->ld);
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::dense_transpose(handle,
+                                                                     (J)matB->rows,
+                                                                     (J)matB->cols,
+                                                                     (T)1,
+                                                                     (const T*)matB->const_values,
+                                                                     matB->ld,
+                                                                     (T*)matC->values,
+                                                                     matC->ld));
             }
             else
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::spsm_transpose<32, 8>),
-                                                   dim3((matB->cols - 1) / 32 + 1),
-                                                   dim3(32 * 8),
-                                                   0,
-                                                   handle->stream,
-                                                   (J)matB->cols,
-                                                   (J)matB->rows,
-                                                   (const T*)matB->const_values,
-                                                   matB->ld,
-                                                   (T*)matC->values,
-                                                   matC->ld);
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::dense_transpose(handle,
+                                                                     (J)matB->cols,
+                                                                     (J)matB->rows,
+                                                                     (T)1,
+                                                                     (const T*)matB->const_values,
+                                                                     matB->ld,
+                                                                     (T*)matC->values,
+                                                                     matC->ld));
             }
         }
 
@@ -447,31 +428,25 @@ namespace rocsparse
         {
             if(matB->order == rocsparse_order_column)
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::spsm_transpose<32, 8>),
-                                                   dim3((matB->rows - 1) / 32 + 1),
-                                                   dim3(32 * 8),
-                                                   0,
-                                                   handle->stream,
-                                                   (J)matB->rows,
-                                                   (J)matB->cols,
-                                                   (const T*)matB->const_values,
-                                                   matB->ld,
-                                                   (T*)spsm_buffer,
-                                                   matB->cols);
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::dense_transpose(handle,
+                                                                     (J)matB->rows,
+                                                                     (J)matB->cols,
+                                                                     (T)1,
+                                                                     (const T*)matB->const_values,
+                                                                     matB->ld,
+                                                                     (T*)spsm_buffer,
+                                                                     matB->cols));
             }
             else
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::spsm_transpose<32, 8>),
-                                                   dim3((matB->cols - 1) / 32 + 1),
-                                                   dim3(32 * 8),
-                                                   0,
-                                                   handle->stream,
-                                                   (J)matB->cols,
-                                                   (J)matB->rows,
-                                                   (const T*)matB->const_values,
-                                                   matB->ld,
-                                                   (T*)spsm_buffer,
-                                                   matB->rows);
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::dense_transpose(handle,
+                                                                     (J)matB->cols,
+                                                                     (J)matB->rows,
+                                                                     (T)1,
+                                                                     (const T*)matB->const_values,
+                                                                     matB->ld,
+                                                                     (T*)spsm_buffer,
+                                                                     matB->rows));
             }
         }
 
@@ -537,31 +512,25 @@ namespace rocsparse
         {
             if(matB->order == rocsparse_order_column)
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::spsm_transpose<32, 8>),
-                                                   dim3((matB->cols - 1) / 32 + 1),
-                                                   dim3(32 * 8),
-                                                   0,
-                                                   handle->stream,
-                                                   (J)matB->cols,
-                                                   (J)matB->rows,
-                                                   (const T*)spsm_buffer,
-                                                   matB->cols,
-                                                   (T*)matC->values,
-                                                   matC->ld);
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::dense_transpose(handle,
+                                                                     (J)matB->cols,
+                                                                     (J)matB->rows,
+                                                                     (T)1,
+                                                                     (const T*)spsm_buffer,
+                                                                     matB->cols,
+                                                                     (T*)matC->values,
+                                                                     matC->ld));
             }
             else
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::spsm_transpose<32, 8>),
-                                                   dim3((matB->rows - 1) / 32 + 1),
-                                                   dim3(32 * 8),
-                                                   0,
-                                                   handle->stream,
-                                                   (J)matB->rows,
-                                                   (J)matB->cols,
-                                                   (const T*)spsm_buffer,
-                                                   matB->rows,
-                                                   (T*)matC->values,
-                                                   matC->ld);
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::dense_transpose(handle,
+                                                                     (J)matB->rows,
+                                                                     (J)matB->cols,
+                                                                     (T)1,
+                                                                     (const T*)spsm_buffer,
+                                                                     matB->rows,
+                                                                     (T*)matC->values,
+                                                                     matC->ld));
             }
         }
 

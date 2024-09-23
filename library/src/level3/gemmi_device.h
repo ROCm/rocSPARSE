@@ -29,26 +29,6 @@
 namespace rocsparse
 {
     template <uint32_t BLOCKSIZE, typename T>
-    ROCSPARSE_DEVICE_ILF void gemmi_scale_device(rocsparse_int size, T alpha, T* __restrict__ data)
-    {
-        rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-
-        if(idx >= size)
-        {
-            return;
-        }
-
-        if(alpha == static_cast<T>(0))
-        {
-            data[idx] = static_cast<T>(0);
-        }
-        else
-        {
-            data[idx] *= alpha;
-        }
-    }
-
-    template <uint32_t BLOCKSIZE, typename T>
     ROCSPARSE_DEVICE_ILF void gemmit_device(rocsparse_int m,
                                             rocsparse_int n,
                                             T             alpha,

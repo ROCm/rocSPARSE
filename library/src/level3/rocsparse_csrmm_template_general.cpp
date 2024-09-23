@@ -25,26 +25,10 @@
 #include "utility.h"
 
 #include "csrmm_device.h"
+#include "rocsparse_common.h"
+
 namespace rocsparse
 {
-    template <uint32_t DIM_X, uint32_t DIM_Y, typename I, typename T, typename U>
-    ROCSPARSE_KERNEL(DIM_X* DIM_Y)
-    void csrmm_scale(I m,
-                     I n,
-                     U beta_device_host,
-                     T* __restrict__ data,
-                     int64_t         ld,
-                     int64_t         stride,
-                     rocsparse_order order)
-    {
-
-        const auto beta = rocsparse::load_scalar_device_host(beta_device_host);
-        if(beta != static_cast<T>(1))
-        {
-            rocsparse::csrmm_scale_device(m, n, beta, data, ld, stride, order);
-        }
-    }
-
     template <uint32_t BLOCKSIZE,
               uint32_t WF_SIZE,
               typename I,
@@ -748,24 +732,11 @@ namespace rocsparse
                                               int64_t                   batch_stride_C,
                                               rocsparse_order           order_C)
     {
+        // Scale C with beta
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::scale_2d_array(
+            handle, k, n, ldc, batch_count_C, batch_stride_C, beta_device_host, dense_C, order_C));
 #define CSRMMTN_DIM 256
 #define WF_SIZE 4
-
-        // Scale C with beta
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (rocsparse::csrmm_scale<CSRMMTN_DIM, WF_SIZE>),
-            dim3((k - 1) / CSRMMTN_DIM + 1, (n - 1) / WF_SIZE + 1, batch_count_C),
-            dim3(CSRMMTN_DIM, WF_SIZE),
-            0,
-            handle->stream,
-            k,
-            n,
-            beta_device_host,
-            dense_C,
-            ldc,
-            batch_stride_C,
-            order_C);
-
         RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (rocsparse::csrmmtn_general_kernel<CSRMMTN_DIM, WF_SIZE>),
             dim3((m - 1) / (CSRMMTN_DIM / WF_SIZE) + 1, (n - 1) / WF_SIZE + 1, batch_count_C),
@@ -827,23 +798,11 @@ namespace rocsparse
                                               int64_t                   batch_stride_C,
                                               rocsparse_order           order_C)
     {
+        // Scale C with beta
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::scale_2d_array(
+            handle, k, n, ldc, batch_count_C, batch_stride_C, beta_device_host, dense_C, order_C));
 #define CSRMMTT_DIM 256
 #define WF_SIZE 4
-        // Scale C with beta
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-            (rocsparse::csrmm_scale<CSRMMTT_DIM, WF_SIZE>),
-            dim3((k - 1) / CSRMMTT_DIM + 1, (n - 1) / WF_SIZE + 1, batch_count_C),
-            dim3(CSRMMTT_DIM, WF_SIZE),
-            0,
-            handle->stream,
-            k,
-            n,
-            beta_device_host,
-            dense_C,
-            ldc,
-            batch_stride_C,
-            order_C);
-
         RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
             (rocsparse::csrmmtt_general_kernel<CSRMMTT_DIM, WF_SIZE>),
             dim3((m - 1) / (CSRMMTT_DIM / WF_SIZE) + 1, (n - 1) / WF_SIZE + 1, batch_count_C),

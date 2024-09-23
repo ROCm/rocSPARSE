@@ -26,6 +26,7 @@
 #include "bsrsm_device_large.h"
 #include "control.h"
 #include "rocsparse_bsrsm.hpp"
+#include "rocsparse_common.h"
 #include "utility.h"
 
 namespace rocsparse
@@ -74,20 +75,6 @@ namespace rocsparse
 
         const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
         rocsparse::bsrsm_copy_scale_device(m, n, alpha, B, ldb, X, ldx);
-    }
-
-    template <uint32_t DIM_X, uint32_t DIM_Y, typename T, typename U>
-    ROCSPARSE_KERNEL(DIM_X* DIM_Y)
-    void bsrsm_transpose(rocsparse_int m,
-                         rocsparse_int n,
-                         U             alpha_device_host,
-                         const T* __restrict__ A,
-                         int64_t lda,
-                         T* __restrict__ B,
-                         int64_t ldb)
-    {
-        const auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
-        rocsparse::dense_transpose_device<DIM_X, DIM_Y>(m, n, alpha, A, lda, B, ldb);
     }
 
     template <typename T, typename U>
@@ -185,26 +172,8 @@ namespace rocsparse
             // Leading dimension for transposed X
             ldimX = nrhs;
 
-#define BSRSM_DIM_X 32
-#define BSRSM_DIM_Y 8
-            dim3 bsrsm_blocks((mb * block_dim - 1) / BSRSM_DIM_X + 1);
-            dim3 bsrsm_threads(BSRSM_DIM_X * BSRSM_DIM_Y);
-
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (rocsparse::bsrsm_transpose<BSRSM_DIM_X, BSRSM_DIM_Y>),
-                bsrsm_blocks,
-                bsrsm_threads,
-                0,
-                stream,
-                mb * block_dim,
-                nrhs,
-                alpha,
-                B,
-                ldb,
-                Xt,
-                ldimX);
-#undef BSRSM_DIM_X
-#undef BSRSM_DIM_Y
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse::dense_transpose(handle, mb * block_dim, nrhs, alpha, B, ldb, Xt, ldimX));
         }
         else
         {
@@ -301,25 +270,8 @@ namespace rocsparse
         // Transpose X back if X was not initially transposed
         if(trans_X == rocsparse_operation_none)
         {
-#define BSRSM_DIM_X 32
-#define BSRSM_DIM_Y 8
-            const dim3 bsrsm_blocks((mb * block_dim - 1) / BSRSM_DIM_X + 1);
-            const dim3 bsrsm_threads(BSRSM_DIM_X * BSRSM_DIM_Y);
-
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                (rocsparse::dense_transpose_back<BSRSM_DIM_X, BSRSM_DIM_Y>),
-                bsrsm_blocks,
-                bsrsm_threads,
-                0,
-                stream,
-                mb * block_dim,
-                nrhs,
-                Xt,
-                ldimX,
-                X,
-                ldx);
-#undef BSRSM_DIM_X
-#undef BSRSM_DIM_Y
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse::dense_transpose_back(handle, mb * block_dim, nrhs, Xt, ldimX, X, ldx));
         }
 
         return rocsparse_status_success;

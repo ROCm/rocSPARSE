@@ -432,33 +432,6 @@ namespace rocsparse
         }
     }
 
-    // Scale kernel for beta != 1.0
-    template <typename I, typename T>
-    ROCSPARSE_DEVICE_ILF void csrmm_scale_device(
-        I m, I n, T beta, T* __restrict__ data, int64_t ld, int64_t stride, rocsparse_order order)
-    {
-        const I gidx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-        const I gidy = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
-
-        const I batch = hipBlockIdx_z;
-
-        if(gidx >= m || gidy >= n)
-        {
-            return;
-        }
-
-        if(order == rocsparse_order_column)
-        {
-            data[gidx + ld * gidy + stride * batch]
-                = data[gidx + ld * gidy + stride * batch] * beta;
-        }
-        else
-        {
-            data[gidy + ld * gidx + stride * batch]
-                = data[gidy + ld * gidx + stride * batch] * beta;
-        }
-    }
-
     // See Y. Tao et al., "Atomic reduction based sparse matrix-transpose vector multiplication on GPUs,"
     // 2014 20th IEEE International Conference on Parallel and Distributed Systems (ICPADS), 2014, pp. 987-992,
     // doi: 10.1109/PADSW.2014.7097920.

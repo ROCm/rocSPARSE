@@ -26,22 +26,11 @@
 #include "utility.h"
 
 #include "csrmm_device_merge.h"
+#include "rocsparse_common.h"
 #include "rocsparse_csrmm.hpp"
 
 namespace rocsparse
 {
-    template <uint32_t BLOCKSIZE, typename I, typename C, typename U>
-    ROCSPARSE_KERNEL(BLOCKSIZE)
-    void csrmmnn_merge_path_scale(
-        I m, I n, U beta_device_host, C* __restrict__ data, int64_t ld, rocsparse_order order)
-    {
-        auto beta = load_scalar_device_host(beta_device_host);
-        if(beta != 1)
-        {
-            rocsparse::csrmmnn_merge_path_scale_device<BLOCKSIZE>(m, n, beta, data, ld, order);
-        }
-    }
-
     template <uint32_t WF_SIZE,
               uint32_t ITEMS_PER_THREAD,
               uint32_t LOOPS,
@@ -432,17 +421,8 @@ namespace rocsparse
                                             void*                     temp_buffer)
     {
         // Scale C with beta
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmmnn_merge_path_scale<256>),
-                                           dim3((int64_t(m) * n - 1) / 256 + 1),
-                                           dim3(256),
-                                           0,
-                                           handle->stream,
-                                           m,
-                                           n,
-                                           beta_device_host,
-                                           dense_C,
-                                           ldc,
-                                           order_C);
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse::scale_2d_array(handle, m, n, ldc, 1, 0, beta_device_host, dense_C, order_C));
 
         constexpr uint32_t ITEM_PER_THREAD = 256;
         const uint64_t     total_work      = static_cast<uint64_t>(m) + nnz;
@@ -590,17 +570,8 @@ namespace rocsparse
                                             void*                     temp_buffer)
     {
         // Scale C with beta
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrmmnn_merge_path_scale<256>),
-                                           dim3((int64_t(m) * n - 1) / 256 + 1),
-                                           dim3(256),
-                                           0,
-                                           handle->stream,
-                                           m,
-                                           n,
-                                           beta_device_host,
-                                           dense_C,
-                                           ldc,
-                                           order_C);
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse::scale_2d_array(handle, m, n, ldc, 1, 0, beta_device_host, dense_C, order_C));
 
         constexpr uint32_t ITEM_PER_THREAD = 256;
         const uint64_t     total_work      = static_cast<uint64_t>(m) + nnz;

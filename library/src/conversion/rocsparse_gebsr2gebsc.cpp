@@ -32,6 +32,7 @@
 #include "utility.h"
 
 #include "gebsr2gebsc_device.h"
+#include "rocsparse_common.h"
 #include "rocsparse_primitives.h"
 
 namespace rocsparse
@@ -57,14 +58,8 @@ namespace rocsparse
         {
             if(bsc_col_ptr != nullptr)
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
-                                                   dim3(nb / 256 + 1),
-                                                   dim3(256),
-                                                   0,
-                                                   handle->stream,
-                                                   (nb + 1),
-                                                   bsc_col_ptr,
-                                                   static_cast<rocsparse_int>(idx_base));
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::valset(
+                    handle, nb + 1, static_cast<rocsparse_int>(idx_base), bsc_col_ptr));
             }
 
             return rocsparse_status_success;
@@ -72,14 +67,8 @@ namespace rocsparse
 
         if(nnzb == 0)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
-                                               dim3(nb / 256 + 1),
-                                               dim3(256),
-                                               0,
-                                               handle->stream,
-                                               (nb + 1),
-                                               bsc_col_ptr,
-                                               static_cast<rocsparse_int>(idx_base));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::valset(
+                handle, nb + 1, static_cast<rocsparse_int>(idx_base), bsc_col_ptr));
 
             return rocsparse_status_success;
         }

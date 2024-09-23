@@ -27,6 +27,7 @@
 
 #include "common.h"
 #include "control.h"
+#include "rocsparse_common.h"
 #include "rocsparse_csx2dense.hpp"
 
 namespace rocsparse
@@ -181,17 +182,8 @@ namespace rocsparse
         //     hipMemset2DAsync(A, sizeof(T) * lda, 0, sizeof(T) * mn, nm, handle->stream));
 
         // Set memory to zero.
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::memset2d_kernel<512>),
-                                           dim3((m * n - 1) / 512 + 1),
-                                           dim3(512),
-                                           0,
-                                           handle->stream,
-                                           static_cast<I>(m),
-                                           static_cast<I>(n),
-                                           static_cast<T>(0),
-                                           A,
-                                           lda,
-                                           order);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::valset_2d(
+            handle, static_cast<I>(m), static_cast<I>(n), lda, static_cast<T>(0), A, order));
 
         //
         // Compute the conversion.

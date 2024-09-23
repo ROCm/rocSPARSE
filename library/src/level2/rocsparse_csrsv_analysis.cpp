@@ -30,6 +30,7 @@
 #include "../level1/rocsparse_gthr.hpp"
 #include "control.h"
 #include "csrsv_device.h"
+#include "rocsparse_common.h"
 #include "rocsparse_primitives.h"
 #include "utility.h"
 
@@ -134,14 +135,8 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
         }
         else
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256, J, I>),
-                                               dim3(m / 256 + 1),
-                                               dim3(256),
-                                               0,
-                                               stream,
-                                               (m + 1),
-                                               (I*)info->trmt_row_ptr,
-                                               static_cast<I>(descr->base));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::valset(
+                handle, m + 1, static_cast<I>(descr->base), (I*)info->trmt_row_ptr));
         }
     }
 

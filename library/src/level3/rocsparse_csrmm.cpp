@@ -26,6 +26,7 @@
 
 #include "../conversion/rocsparse_csr2coo.hpp"
 #include "internal/level3/rocsparse_csrmm.h"
+#include "rocsparse_common.h"
 #include "rocsparse_csrmm.hpp"
 
 #include "common.h"
@@ -504,7 +505,7 @@ namespace rocsparse
         }
     }
 
-    template <typename T>
+    template <typename T, typename I, typename J, typename A, typename B, typename C>
     static rocsparse_status csrmm_quickreturn(rocsparse_handle          handle,
                                               rocsparse_operation       trans_A,
                                               rocsparse_operation       trans_B,
@@ -514,13 +515,13 @@ namespace rocsparse
                                               int64_t                   nnz,
                                               const T*                  alpha,
                                               const rocsparse_mat_descr descr,
-                                              const void*               csr_val,
-                                              const void*               csr_row_ptr,
-                                              const void*               csr_col_ind,
-                                              const void*               dense_B,
+                                              const A*                  csr_val,
+                                              const I*                  csr_row_ptr,
+                                              const J*                  csr_col_ind,
+                                              const B*                  dense_B,
                                               int64_t                   ldb,
                                               const T*                  beta,
-                                              void*                     dense_C,
+                                              C*                        dense_C,
                                               int64_t                   ldc,
                                               rocsparse_order           order_B,
                                               rocsparse_order           order_C,
@@ -541,35 +542,29 @@ namespace rocsparse
 
                 if(handle->pointer_mode == rocsparse_pointer_mode_device)
                 {
-                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array_2d<256>),
-                                                       dim3((Csize - 1) / 256 + 1, batch_count_C),
-                                                       dim3(256),
-                                                       0,
-                                                       handle->stream,
-                                                       (trans_A == rocsparse_operation_none) ? m
-                                                                                             : k,
-                                                       n,
-                                                       ldc,
-                                                       batch_stride_C,
-                                                       (T*)dense_C,
-                                                       beta,
-                                                       order_C);
+                    RETURN_IF_ROCSPARSE_ERROR(
+                        rocsparse::scale_2d_array(handle,
+                                                  (trans_A == rocsparse_operation_none) ? m : k,
+                                                  n,
+                                                  ldc,
+                                                  batch_count_C,
+                                                  batch_stride_C,
+                                                  beta,
+                                                  dense_C,
+                                                  order_C));
                 }
                 else
                 {
-                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array_2d<256>),
-                                                       dim3((Csize - 1) / 256 + 1, batch_count_C),
-                                                       dim3(256),
-                                                       0,
-                                                       handle->stream,
-                                                       (trans_A == rocsparse_operation_none) ? m
-                                                                                             : k,
-                                                       n,
-                                                       ldc,
-                                                       batch_stride_C,
-                                                       (T*)dense_C,
-                                                       *beta,
-                                                       order_C);
+                    RETURN_IF_ROCSPARSE_ERROR(
+                        rocsparse::scale_2d_array(handle,
+                                                  (trans_A == rocsparse_operation_none) ? m : k,
+                                                  n,
+                                                  ldc,
+                                                  batch_count_C,
+                                                  batch_stride_C,
+                                                  *beta,
+                                                  dense_C,
+                                                  order_C));
                 }
             }
 
@@ -585,7 +580,7 @@ namespace rocsparse
         return rocsparse_status_continue;
     }
 
-    template <typename T>
+    template <typename T, typename I, typename J, typename A, typename B, typename C>
     static rocsparse_status csrmm_checkarg(rocsparse_handle          handle, //0
                                            rocsparse_operation       trans_A, //1
                                            rocsparse_operation       trans_B, //2
@@ -595,13 +590,13 @@ namespace rocsparse
                                            int64_t                   nnz, //6
                                            const T*                  alpha, //7
                                            const rocsparse_mat_descr descr, //8
-                                           const void*               csr_val, //9
-                                           const void*               csr_row_ptr, //10
-                                           const void*               csr_col_ind, //11
-                                           const void*               B, //12
+                                           const A*                  csr_val, //9
+                                           const I*                  csr_row_ptr, //10
+                                           const J*                  csr_col_ind, //11
+                                           const B*                  dense_B, //12
                                            int64_t                   ldb, //13
                                            const T*                  beta, //14
-                                           void*                     C, //15
+                                           C*                        dense_C, //15
                                            int64_t                   ldc, //16
                                            rocsparse_order           order_B,
                                            rocsparse_order           order_C,
@@ -642,10 +637,10 @@ namespace rocsparse
                                                                      csr_val,
                                                                      csr_row_ptr,
                                                                      csr_col_ind,
-                                                                     B,
+                                                                     dense_B,
                                                                      ldb,
                                                                      beta,
-                                                                     C,
+                                                                     dense_C,
                                                                      ldc,
                                                                      order_B,
                                                                      order_C,
@@ -659,10 +654,10 @@ namespace rocsparse
         }
 
         ROCSPARSE_CHECKARG_POINTER(7, alpha);
-        ROCSPARSE_CHECKARG_POINTER(12, B);
+        ROCSPARSE_CHECKARG_POINTER(12, dense_B);
         ROCSPARSE_CHECKARG_SIZE(13, ldb);
         ROCSPARSE_CHECKARG_POINTER(14, beta);
-        ROCSPARSE_CHECKARG_POINTER(15, C);
+        ROCSPARSE_CHECKARG_POINTER(15, dense_C);
         ROCSPARSE_CHECKARG_SIZE(16, ldc);
 
         static constexpr int64_t s_one = static_cast<int64_t>(1);

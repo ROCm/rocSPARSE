@@ -25,6 +25,7 @@
 #include "internal/conversion/rocsparse_bsr2csr.h"
 #include "control.h"
 #include "rocsparse_bsr2csr.hpp"
+#include "rocsparse_common.h"
 #include "utility.h"
 
 #include "bsr2csr_device.h"
@@ -206,14 +207,8 @@ rocsparse_status rocsparse::bsr2csr_quickreturn(rocsparse_handle          handle
         if(csr_row_ptr != nullptr)
         {
             const I m = I(block_dim) * mb;
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<256>),
-                                               dim3(((m + 1) - 1) / 256 + 1),
-                                               dim3(256),
-                                               0,
-                                               handle->stream,
-                                               (m + 1),
-                                               csr_row_ptr,
-                                               static_cast<I>(csr_descr->base));
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse::valset(handle, m + 1, static_cast<I>(csr_descr->base), csr_row_ptr));
         }
         return rocsparse_status_success;
     }

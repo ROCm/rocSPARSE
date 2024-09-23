@@ -26,6 +26,7 @@
 #include "control.h"
 #include "csrgemm_device.h"
 #include "internal/extra/rocsparse_bsrgemm.h"
+#include "rocsparse_common.h"
 #include "utility.h"
 
 #include "rocsparse_bsrgemm.hpp"
@@ -319,14 +320,8 @@ namespace rocsparse
 
             if(bsr_row_ptr_C != nullptr)
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::set_array_to_value<1024>),
-                                                   dim3(mb / 1024 + 1),
-                                                   dim3(1024),
-                                                   0,
-                                                   handle->stream,
-                                                   (mb + 1),
-                                                   bsr_row_ptr_C,
-                                                   static_cast<I>(descr_C->base));
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::valset(
+                    handle, mb + 1, static_cast<I>(descr_C->base), bsr_row_ptr_C));
             }
 
             return rocsparse_status_success;

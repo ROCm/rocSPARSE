@@ -25,6 +25,7 @@
 #include "rocsparse_coo2dense_aos.hpp"
 #include "common.h"
 #include "control.h"
+#include "rocsparse_common.h"
 #include "utility.h"
 
 #include "coo2dense_device.h"
@@ -97,17 +98,13 @@ rocsparse_status rocsparse::coo2dense_aos_template(rocsparse_handle          han
     // RETURN_IF_HIP_ERROR(hipMemset2DAsync(A, sizeof(T) * lda, 0, sizeof(T) * mn, nm, stream));
 
     // Set memory to zero.
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::memset2d_kernel<512>),
-                                       dim3((m * n - 1) / 512 + 1),
-                                       dim3(512),
-                                       0,
-                                       stream,
-                                       static_cast<int64_t>(m),
-                                       static_cast<int64_t>(n),
-                                       static_cast<T>(0),
-                                       A,
-                                       lda,
-                                       order);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::valset_2d(handle,
+                                                   static_cast<int64_t>(m),
+                                                   static_cast<int64_t>(n),
+                                                   lda,
+                                                   static_cast<T>(0),
+                                                   A,
+                                                   order));
 
 #define COO2DENSE_DIM 512
     const int64_t num_blocks_x = rocsparse::min(

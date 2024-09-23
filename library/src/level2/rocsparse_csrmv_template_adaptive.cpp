@@ -24,6 +24,7 @@
 
 #include "common.h"
 #include "control.h"
+#include "rocsparse_common.h"
 #include "rocsparse_csrmv.hpp"
 #include "utility.h"
 
@@ -577,14 +578,7 @@ rocsparse_status rocsparse::csrmv_adaptive_template_dispatch(rocsparse_handle   
     }
     else if(descr->type == rocsparse_matrix_type_symmetric)
     {
-        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array<256>),
-                                           dim3((m - 1) / 256 + 1),
-                                           dim3(256),
-                                           0,
-                                           stream,
-                                           m,
-                                           y,
-                                           beta_device_host);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::scale_array(handle, m, beta_device_host, y));
 
         dim3 csrmvn_blocks(info->adaptive.size - 1);
         dim3 csrmvn_threads(WG_SIZE);

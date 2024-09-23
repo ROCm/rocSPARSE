@@ -24,6 +24,7 @@
 
 #include "internal/level3/rocsparse_bsrmm.h"
 #include "rocsparse_bsrmm.hpp"
+#include "rocsparse_common.h"
 #include "rocsparse_csrmm.hpp"
 
 #include "../level2/rocsparse_bsrmv.hpp"
@@ -293,33 +294,13 @@ rocsparse_status rocsparse::bsrmm_quickreturn(rocsparse_handle          handle,
 
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array_2d<256>),
-                                                   dim3((C_size - 1) / 256 + 1),
-                                                   dim3(256),
-                                                   0,
-                                                   handle->stream,
-                                                   m,
-                                                   n,
-                                                   ldc,
-                                                   0,
-                                                   C,
-                                                   beta,
-                                                   rocsparse_order_column);
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::scale_2d_array(
+                    handle, m, n, ldc, 1, 0, beta, C, rocsparse_order_column));
             }
             else
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::scale_array_2d<256>),
-                                                   dim3((C_size - 1) / 256 + 1),
-                                                   dim3(256),
-                                                   0,
-                                                   handle->stream,
-                                                   m,
-                                                   n,
-                                                   ldc,
-                                                   0,
-                                                   C,
-                                                   *beta,
-                                                   rocsparse_order_column);
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::scale_2d_array(
+                    handle, m, n, ldc, 1, 0, *beta, C, rocsparse_order_column));
             }
         }
 

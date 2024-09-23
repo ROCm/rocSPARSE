@@ -25,6 +25,7 @@
 #include "common.h"
 #include "control.h"
 #include "internal/conversion/rocsparse_csr2csc.h"
+#include "rocsparse_common.h"
 #include "rocsparse_csr2csc.hpp"
 #include "rocsparse_csxsldu.hpp"
 #include "utility.h"
@@ -311,15 +312,11 @@ rocsparse_status rocsparse::csxsldu_compute_template(rocsparse_handle handle_,
                 }
                 else
                 {
-                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                        (rocsparse::set_array_to_value<256>),
-                        dim3(((sizet + 1) - 1) / 256 + 1),
-                        dim3(256),
-                        0,
-                        handle_->stream,
-                        (sizet + 1),
-                        uptr_,
-                        static_cast<rocsparse_int>(rocsparse_index_base_one));
+                    RETURN_IF_ROCSPARSE_ERROR(
+                        rocsparse::valset(handle_,
+                                          sizet + 1,
+                                          static_cast<rocsparse_int>(rocsparse_index_base_one),
+                                          uptr_));
                 }
             }
         }
@@ -386,15 +383,11 @@ rocsparse_status rocsparse::csxsldu_compute_template(rocsparse_handle handle_,
                 }
                 else
                 {
-                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                        (rocsparse::set_array_to_value<256>),
-                        dim3(((sizet + 1) - 1) / 256 + 1),
-                        dim3(256),
-                        0,
-                        handle_->stream,
-                        (sizet + 1),
-                        lptr_,
-                        static_cast<rocsparse_int>(rocsparse_index_base_one));
+                    RETURN_IF_ROCSPARSE_ERROR(
+                        rocsparse::valset(handle_,
+                                          sizet + 1,
+                                          static_cast<rocsparse_int>(rocsparse_index_base_one),
+                                          lptr_));
                 }
             }
         }

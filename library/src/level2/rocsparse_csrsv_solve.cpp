@@ -28,6 +28,7 @@
 #include "../level1/rocsparse_gthr.hpp"
 #include "control.h"
 #include "csrsv_device.h"
+#include "rocsparse_common.h"
 #include "utility.h"
 
 namespace rocsparse
@@ -150,13 +151,7 @@ namespace rocsparse
             if(trans == rocsparse_operation_conjugate_transpose)
             {
                 // conjugate csrt_val
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::conjugate<256, I, T>),
-                                                   dim3((nnz - 1) / 256 + 1),
-                                                   dim3(256),
-                                                   0,
-                                                   stream,
-                                                   nnz,
-                                                   csrt_val);
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse::conjugate(handle, nnz, csrt_val));
             }
 
             local_csr_row_ptr = (const I*)csrsv->trmt_row_ptr;

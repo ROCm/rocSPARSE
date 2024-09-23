@@ -25,6 +25,7 @@
 #include "rocsparse_ell2dense.hpp"
 #include "common.h"
 #include "control.h"
+#include "rocsparse_common.h"
 #include "utility.h"
 
 #include "ell2dense_device.h"
@@ -105,17 +106,13 @@ rocsparse_status rocsparse::ell2dense_template(rocsparse_handle          handle,
     // RETURN_IF_HIP_ERROR(hipMemset2DAsync(A, sizeof(T) * lda, 0, sizeof(T) * mn, nm, stream));
 
     // Set memory to zero.
-    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::memset2d_kernel<512>),
-                                       dim3((m * n - 1) / 512 + 1),
-                                       dim3(512),
-                                       0,
-                                       stream,
-                                       static_cast<int64_t>(m),
-                                       static_cast<int64_t>(n),
-                                       static_cast<T>(0),
-                                       A,
-                                       lda,
-                                       order);
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::valset_2d(handle,
+                                                   static_cast<int64_t>(m),
+                                                   static_cast<int64_t>(n),
+                                                   lda,
+                                                   static_cast<T>(0),
+                                                   A,
+                                                   order));
 
     if(handle->wavefront_size == 32)
     {

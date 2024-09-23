@@ -23,24 +23,13 @@
  * ************************************************************************ */
 
 #include "internal/generic/rocsparse_axpby.h"
-#include "axpby_device.h"
 #include "control.h"
 #include "rocsparse_axpyi.hpp"
+#include "rocsparse_common.h"
 #include "utility.h"
 
 namespace rocsparse
 {
-    template <uint32_t BLOCKSIZE, typename I, typename T, typename U>
-    ROCSPARSE_KERNEL(BLOCKSIZE)
-    void axpby_scale_kernel(I size, U alpha_device_host, T* __restrict__ x)
-    {
-        auto alpha = rocsparse::load_scalar_device_host(alpha_device_host);
-        if(alpha != static_cast<T>(1))
-        {
-            rocsparse::axpby_scale_device<BLOCKSIZE>(size, alpha, x);
-        }
-    }
-
     template <typename I, typename T>
     rocsparse_status axpby_template(rocsparse_handle            handle,
                                     const void*                 alpha,
@@ -54,20 +43,10 @@ namespace rocsparse
             return rocsparse_status_success;
         }
 
-#define SCALE_DIM 256
-        dim3 scale_blocks((y->size - 1) / SCALE_DIM + 1);
-        dim3 scale_threads(SCALE_DIM);
-
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::axpby_scale_kernel<SCALE_DIM>),
-                                               scale_blocks,
-                                               scale_threads,
-                                               0,
-                                               handle->stream,
-                                               (I)y->size,
-                                               (const T*)beta,
-                                               (T*)y->values);
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse::scale_array(handle, (I)y->size, (const T*)beta, (T*)y->values));
         }
         else
         {
@@ -75,17 +54,10 @@ namespace rocsparse
 
             if(*beta_ptr != static_cast<T>(1))
             {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::axpby_scale_kernel<SCALE_DIM>),
-                                                   scale_blocks,
-                                                   scale_threads,
-                                                   0,
-                                                   handle->stream,
-                                                   (I)y->size,
-                                                   *beta_ptr,
-                                                   (T*)y->values);
+                RETURN_IF_ROCSPARSE_ERROR(
+                    rocsparse::scale_array(handle, (I)y->size, *beta_ptr, (T*)y->values));
             }
         }
-#undef SCALE_DIM
 
         RETURN_IF_ROCSPARSE_ERROR((rocsparse::axpyi_template<I, T>)(handle,
                                                                     (I)x->nnz,
