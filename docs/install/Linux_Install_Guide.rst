@@ -11,21 +11,42 @@ Installation and building for Linux
 Prerequisites
 =============
 
-- A ROCm enabled platform. `ROCm Documentation <https://docs.amd.com/>`_ has more information on
+- A ROCm enabled platform. `ROCm Documentation <https://rocm.docs.amd.com/>`_ has more information on
   supported GPUs, Linux distributions, and Windows SKUs. It also has information on how to install ROCm.
 
 
 Installing pre-built packages
 =============================
 
-For detailed instructions on how to set up ROCm on different platforms, see the `ROCm Documentation <https://docs.amd.com/>`_.
+For detailed instructions on how to set up ROCm on different platforms, see the `ROCm Documentation <https://rocm.docs.amd.com/>`_.
 
-rocSPARSE can be installed on e.g. Ubuntu using
+rocSPARSE can be installed on Ubuntu(R) or Debian using:
 
 ::
 
     $ sudo apt-get update
     $ sudo apt-get install rocsparse
+
+rocSPARSE can be installed on CentOS using:
+
+::
+
+    $ sudo yum update
+    $ sudo yum install rocsparse
+
+rocSPARSE can be installed on SLES using:
+
+::
+
+    $ sudo dnf upgrade
+    $ sudo dnf install rocsparse
+
+rocSPARSE can be installed on Fedora using:
+
+::
+
+    $ sudo dnf install rocsparse
+    $ sudo dnf install rocsparse-devel
 
 Once installed, rocSPARSE can be used just like any other library with a C API.
 The header file will need to be included in the user code in order to make calls into rocSPARSE, and the rocSPARSE shared library will become link-time and run-time dependent for the user application.

@@ -67,6 +67,13 @@ Requirements
 - `python <https://www.python.org/>`_
 - `PyYaml <https://pypi.org/project/PyYAML/>`_
 
+When building rocSPARSE from source, care must be given regarding what versions of the math library
+dependencies (in this case rocPRIM and optionally rocBLAS) are supported. Given a version of rocSPARSE,
+you must use the same or later version of rocPRIM (and optionally rocBLAS). For example, it should be
+possible to re-build rocSPARSE 3.2.0 with any future rocPRIM 3.Y.Z version (within the same major version
+and where 3.Y.Z is 3.2.0 or later), but it is not supported to compile rocSPARSE with an older version of
+rocPRIM such as 3.1.0.
+
 Download rocSPARSE
 ------------------
 

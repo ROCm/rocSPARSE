@@ -13,7 +13,6 @@ subtrees:
     subtrees:
     - entries:
       - file: how-to/basics.rst
-      - file: how-to/logging.rst
       - file: how-to/design.rst
       - file: how-to/contribute.rst
   - file: reference/reference.rst
