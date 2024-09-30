@@ -8,8 +8,8 @@ language and optimized for AMD's latest discrete GPUs.
 
 ## Documentation
 
-Documentation for rocSPARSE is available at
-[https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/](https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/).
+> [!NOTE]
+> The published rocSPARSE documentation is available at [rocSPARSE](https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/index.html) in an organized, easy-to-read format, with search and a table of contents. The documentation source files reside in the rocSPARSE/docs folder of this repository. As with all ROCm projects, the documentation is open source. For more information, see [Contribute to ROCm documentation](https://rocm.docs.amd.com/en/latest/contribute/contributing.html).
 
 To build our documentation locally, run the following code:
 
