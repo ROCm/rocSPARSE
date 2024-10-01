@@ -128,9 +128,6 @@ void testing_spmm_csr(const Arguments& arg)
     rocsparse_datatype  ctype = get_datatype<C>();
     rocsparse_datatype  ttype = get_datatype<T>();
 
-    std::cout << "itype: " << itype << " jtype: " << jtype << " atype: " << atype
-              << " btype: " << btype << " ctype: " << ctype << std::endl;
-
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
 
