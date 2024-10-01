@@ -221,8 +221,16 @@ inline void rocsparse_expect_data_status(rocsparse_data_status status, rocsparse
                           RocSPARSE_TestData::end()),                          \
         testclass::PrintToStringParamName());
 
+#if defined(GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST)
+#define ROCSPARSE_ALLOW_UNINSTANTIATED_GTEST(testclass) \
+    GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(testclass);
+#else
+#define ROCSPARSE_ALLOW_UNINSTANTIATED_GTEST(testclass)
+#endif
+
 // Instantiate all test categories
 #define INSTANTIATE_TEST_CATEGORIES(testclass)        \
+    ROCSPARSE_ALLOW_UNINSTANTIATED_GTEST(testclass)   \
     INSTANTIATE_TEST_CATEGORY(testclass, quick)       \
     INSTANTIATE_TEST_CATEGORY(testclass, pre_checkin) \
     INSTANTIATE_TEST_CATEGORY(testclass, nightly)     \
