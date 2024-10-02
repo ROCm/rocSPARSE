@@ -3,6 +3,12 @@
 Documentation for rocSPARSE is available at
 [https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/](https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/).
 
+## rocSPARSE 3.2.1 for ROCm 6.2.4
+
+### Additions
+
+* GFX1151 Support
+
 ## rocSPARSE 3.2.0 for ROCm 6.2.0
 
 ### Additions

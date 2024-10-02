@@ -145,15 +145,15 @@ endif()
 if(COMMAND rocm_check_target_ids)
     if(BUILD_ADDRESS_SANITIZER)
       rocm_check_target_ids(DEFAULT_AMDGPU_TARGETS
-        TARGETS "gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx90a:xnack-;gfx90a:xnack+;gfx940;gfx941;gfx942;gfx1030;gfx1100;gfx1101;gfx1102")
+        TARGETS "gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx90a:xnack-;gfx90a:xnack+;gfx940;gfx941;gfx942;gfx1030;gfx1100;gfx1101;gfx1102;gfx1151")
     else()
       rocm_check_target_ids(DEFAULT_AMDGPU_TARGETS
-          TARGETS "gfx803;gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx90a:xnack-;gfx90a:xnack+;gfx940;gfx941;gfx942;gfx1030;gfx1100;gfx1101;gfx1102")
+          TARGETS "gfx803;gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx90a:xnack-;gfx90a:xnack+;gfx940;gfx941;gfx942;gfx1030;gfx1100;gfx1101;gfx1102;gfx1151")
     endif()
 else()
     # Use target ID syntax if supported for AMDGPU_TARGETS
     if(TARGET_ID_SUPPORT)
-        set(DEFAULT_AMDGPU_TARGETS "gfx803;gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx1030;gfx1100;gfx1101;gfx1102")
+        set(DEFAULT_AMDGPU_TARGETS "gfx803;gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx1030;gfx1100;gfx1101;gfx1102;gfx1151")
     else()
         set(DEFAULT_AMDGPU_TARGETS "gfx803;gfx900;gfx906;gfx908")
     endif()
@@ -185,7 +185,7 @@ if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
 endif( )
 
 # Setup version
-set(VERSION_STRING "3.2.0")
+set(VERSION_STRING "3.2.1")
 set(SOVERSION_STRING "1.0")
 
 rocm_setup_version(VERSION ${VERSION_STRING})
