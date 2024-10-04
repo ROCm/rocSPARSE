@@ -1,3 +1,7 @@
+.. meta::
+  :description: rocSPARSE bitwise reproducibility API reference library documentation
+  :keywords: rocSPARSE, ROCm, API, documentation
+
 .. _reproducibility:
 
 Bitwise reproducibility
