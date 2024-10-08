@@ -5,27 +5,27 @@ Documentation for rocSPARSE is available at
 
 ## rocSPARSE 3.3.0 for ROCm 6.3.0
 
-### Additions
+### Added
 
-* Add `rocsparse_create_extract_descr`, `rocsparse_destroy_extract_descr`, `rocsparse_extract_buffer_size`, `rocsparse_extract_nnz`, and `rocsparse_extract` API's to allow extraction of upper or lower part of sparse CSR or CSC matrices.
-* Support for gfx1200, gfx1201 and gfx1151.
+* Add `rocsparse_create_extract_descr`, `rocsparse_destroy_extract_descr`, `rocsparse_extract_buffer_size`, `rocsparse_extract_nnz`, and `rocsparse_extract` APIs to allow extraction of the upper or lower part of sparse CSR or CSC matrices.
+* Support for the gfx1151, gfx1200, and gfx1201 architectures.
 
-### Changes
+### Changed
 
-* Change default compiler from hipcc to amdclang in install script and cmake files.
-* Change address sanitizer build targets so that only gfx908:xnack+, gfx90a:xnack+, gfx940:xnack+, gfx941:xnack+, and gfx942:xnack+ are built when `BUILD_ADDRESS_SANITIZER=ON`.
+* Change the default compiler from hipcc to amdclang in install script and cmake files.
+* Change address sanitizer build targets so that only gfx908:xnack+, gfx90a:xnack+, gfx940:xnack+, gfx941:xnack+, and gfx942:xnack+ are built when `BUILD_ADDRESS_SANITIZER=ON` is configured.
 
-### Optimizations
+### Optimized
 
-* Improved user manual
+* Improved user documentation
 
-### Fixes
+### Resolved issues
 
-* Fix `csrmm` merge path algorithm so that diagonal is clamped to correct range.
-* Fix race condition in `bsrgemm` that could on rare occasions cause incorrect results.
-* Fix issue in `hyb2csr` where the CSR row pointer array was not being properly filled in the case where `n=0` or `coo_nnz=0` or `ell_nnz=0`. 
-* Fix scaling in `rocsparse_Xhybmv` when only performing `y=beta*y`, i.e. where `alpha==0` in `y=alpha*Ax+beta*y`.
-* Fix `rocsparse_Xgemmi` failures when y grid dimension is too large. This occured when n >= 65536.
+* Fixed the `csrmm` merge path algorithm so that diagonal is clamped to the correct range.
+* Fixed a race condition in `bsrgemm` that could on rare occasions cause incorrect results.
+* Fixed an issue in `hyb2csr` where the CSR row pointer array was not being properly filled when `n=0`, `coo_nnz=0`, or `ell_nnz=0`. 
+* Fixed scaling in `rocsparse_Xhybmv` when only performing `y=beta*y`, for example, where `alpha==0` in `y=alpha*Ax+beta*y`.
+* Fixed `rocsparse_Xgemmi` failures when the y grid dimension is too large. This occured when n >= 65536.
 
 ## rocSPARSE 3.2.0 for ROCm 6.2.0
 
