@@ -5,9 +5,9 @@ Documentation for rocSPARSE is available at
 
 ## rocSPARSE 3.2.1 for ROCm 6.2.4
 
-### Additions
+### Added
 
-* GFX1151 Support
+* Support for the gfx1151 architecture
 
 ## rocSPARSE 3.2.0 for ROCm 6.2.0
 
