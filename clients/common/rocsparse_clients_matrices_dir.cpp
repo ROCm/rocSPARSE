@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,19 +36,26 @@ private:
     bool        m_is_defined{};
     clients_matrices_dir()
     {
-        m_is_defined = rocsparse_clients_envariables::is_defined(
+        this->m_is_defined = rocsparse_clients_envariables::is_defined(
             rocsparse_clients_envariables::MATRICES_DIR);
-        if(m_is_defined)
+        if(this->m_is_defined)
         {
-            m_path
+            this->m_path
                 = rocsparse_clients_envariables::get(rocsparse_clients_envariables::MATRICES_DIR);
-            if(m_path.size() > 0)
             {
-                m_path += "/";
+                const size_t size = this->m_path.size();
+                if((size > 0) && (this->m_path[size - 1] != '/'))
+                    this->m_path += "/";
             }
         }
-        m_default_path = rocsparse_exepath();
-        m_default_path += "/../matrices/";
+
+        this->m_default_path = rocsparse_exepath();
+        {
+            const size_t size = this->m_default_path.size();
+            if((size > 0) && (this->m_default_path[size - 1] != '/'))
+                this->m_default_path += "/";
+        }
+        this->m_default_path += "../matrices/";
     }
 
 public:
@@ -88,6 +95,9 @@ public:
         clients_matrices_dir& self = instance();
         self.m_is_defined          = true;
         self.m_path                = p;
+        const size_t size          = p.size();
+        if((size > 0) && (p[size - 1] != '/'))
+            self.m_path += "/";
     }
 };
 
@@ -104,5 +114,5 @@ const char* rocsparse_clients_matrices_dir_get(bool use_default_path)
 //
 void rocsparse_clients_matrices_dir_set(const char* path)
 {
-    clients_matrices_dir::set(std::string(path) + "/");
+    clients_matrices_dir::set(std::string(path));
 }

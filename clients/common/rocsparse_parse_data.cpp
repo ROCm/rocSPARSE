@@ -49,7 +49,7 @@ namespace fs = std::experimental::filesystem;
 #include "rocsparse_clients_envariables.hpp"
 
 // Parse YAML data
-static std::string rocsparse_parse_yaml(const std::string& yaml)
+static std::string rocsparse_parse_yaml(const std::string& yaml, const char* include_path)
 {
 #ifdef WIN32
     // Generate "/tmp/rocsparse-XXXXXX" like file name
@@ -64,9 +64,26 @@ static std::string rocsparse_parse_yaml(const std::string& yaml)
 
     fs::path tmpname = fs::temp_directory_path() / uniquestr;
 
-    auto exepath = rocsparse_exepath();
-    auto cmd     = exepath + "rocsparse_gentest.py --template " + exepath
-               + "rocsparse_template.yaml -o " + tmpname.string() + " " + yaml;
+    auto        exepath       = rocsparse_exepath();
+    const char* matrices_path = rocsparse_clients_matrices_dir_get(false);
+    auto        cmd           = exepath + "rocsparse_gentest.py ";
+    if(include_path != nullptr)
+    {
+        cmd += " -I ";
+        cmd += include_path;
+    }
+    else
+    {
+        cmd += " -I ./ ";
+    }
+
+    if(matrices_path && matrices_path[0] != '\0')
+    {
+        cmd += " -m ";
+        cmd += matrices_path;
+    }
+    cmd += " --template " + exepath + "rocsparse_template.yaml -o " + tmp + " " + yaml;
+
     std::cerr << cmd << std::endl;
 
     int status = std::system(cmd.c_str());
@@ -86,10 +103,29 @@ static std::string rocsparse_parse_yaml(const std::string& yaml)
         perror("Cannot open temporary file");
         exit(EXIT_FAILURE);
     }
-    auto exepath = rocsparse_exepath();
-    auto cmd     = exepath + "rocsparse_gentest.py --template " + exepath
-               + "rocsparse_template.yaml -o " + tmp + " " + yaml;
+    auto        exepath       = rocsparse_exepath();
+    const char* matrices_path = rocsparse_clients_matrices_dir_get(false);
+    auto        cmd           = exepath + "rocsparse_gentest.py ";
+    if(include_path != nullptr)
+    {
+        cmd += " -I ";
+        cmd += include_path;
+    }
+    else
+    {
+        cmd += " -I ./ ";
+    }
+
+    if(matrices_path && matrices_path[0] != '\0')
+    {
+        cmd += " -m ";
+        cmd += matrices_path;
+    }
+
+    cmd += " --template " + exepath + "rocsparse_template.yaml -o " + tmp + " " + yaml;
+
     std::cerr << cmd << std::endl;
+
     int status = system(cmd.c_str());
     if(status == -1 || !WIFEXITED(status) || WEXITSTATUS(status))
         exit(EXIT_FAILURE);
@@ -108,7 +144,6 @@ bool rocsparse_parse_data(int& argc, char** argv, const std::string& default_fil
 #ifdef ROCSPARSE_WITH_MEMSTAT
     const char* memory_report_filename = nullptr;
 #endif
-    std::string reproducibility_filename("rocsparse_reproducibility.json");
 
     // Scan, process and remove any --yaml or --data options
     std::string command = argv[0];
@@ -116,10 +151,15 @@ bool rocsparse_parse_data(int& argc, char** argv, const std::string& default_fil
     {
         command += std::string(" ") + argv[i];
     }
+    const char* include_path = nullptr;
     rocsparse_reproducibility_t::instance().config().set_command(command);
     for(int i = 1; argv[i]; ++i)
     {
-        if(!strcmp(argv[i], "--data") || (yaml |= !strcmp(argv[i], "--yaml")))
+        if(!strcmp(argv[i], "-I"))
+        {
+            include_path = argv[++i];
+        }
+        else if(!strcmp(argv[i], "--data") || (yaml |= !strcmp(argv[i], "--yaml")))
         {
             if(filename != "")
             {
@@ -272,11 +312,11 @@ bool rocsparse_parse_data(int& argc, char** argv, const std::string& default_fil
             if(!help && (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")))
             {
                 help = true;
-                std::cout
-                    << "\n"
-                    << argv[0]
-                    << " [ --data <path> | --yaml <path> ] [--matrices-dir <path>]<options> ...\n"
-                    << std::endl;
+                std::cout << "\n"
+                          << argv[0]
+                          << " [ --data <path> | --yaml <path> ] [--matrices-dir <path>] [-I "
+                             "<path>] <options> ...\n"
+                          << std::endl;
 
                 std::cout << "" << std::endl;
                 std::cout << "Rocsparse reproducibility options:" << std::endl;
@@ -369,7 +409,7 @@ bool rocsparse_parse_data(int& argc, char** argv, const std::string& default_fil
         filename = default_file;
 
     if(yaml)
-        filename = rocsparse_parse_yaml(filename);
+        filename = rocsparse_parse_yaml(filename, include_path);
 
     if(filename != "")
     {

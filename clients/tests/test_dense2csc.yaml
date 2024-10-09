@@ -23,7 +23,7 @@
 
 ---
 include: rocsparse_common.yaml
-include: known_bugs.yaml
+
 
 Tests:
 - name: dense2csc_bad_arg

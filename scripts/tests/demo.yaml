@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2019-2020 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2024 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,24 @@
 #
 # ########################################################################
 
-# A list of known bugs/failures. The bug can be specific or general.
-# A test case is considered as matching if all indicated parameters match.
-# Wildcards can be used for the function
+---
+include: rocsparse_common.yaml
 
-Known bugs:
+Definitions:
+  - &alpha_beta_range_quick
+    - { alpha:   1.0, beta: -1.0, alphai:  0.0, betai: 0.0 }
+    - { alpha:  -0.5, beta:  0.5, alphai: -0.5, betai:  1.0 }
+
+Tests:
+
+- name: spmv_csr_file
+  category: quick
+  function: spmv_csr
+  indextype: *i32i32_i64i32_i64i64
+  precision: *single_double_precisions
+  alpha_beta: *alpha_beta_range_quick
+  transA: *all_rocsparse_operation
+  baseA: *all_rocsparse_index_base
+  spmv_alg: *all_rocsparse_spmv_alg_csr
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: ['nos*.csr']

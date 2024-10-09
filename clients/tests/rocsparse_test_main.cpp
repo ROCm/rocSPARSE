@@ -295,6 +295,8 @@ int main(int argc, char** argv)
     // Run all tests
     int ret = RUN_ALL_TESTS();
 
+    auto& reproducibility = rocsparse_reproducibility_t::instance();
+    if(reproducibility.config().is_enabled())
     {
         static hipDeviceProp_t prop;
         static int             dev;
@@ -306,8 +308,8 @@ int main(int argc, char** argv)
         {
             return -1;
         }
-        rocsparse_reproducibility_t::instance().config().set_gpu_name(prop.gcnArchName);
-        rocsparse_reproducibility_write_report(rocsparse_reproducibility_t::instance());
+        reproducibility.config().set_gpu_name(prop.gcnArchName);
+        rocsparse_reproducibility_write_report(reproducibility);
     }
 
     // Reset HIP device
