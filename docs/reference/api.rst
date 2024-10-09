@@ -1,3 +1,7 @@
+.. meta::
+  :description: rocSPARSE API reference library documentation
+  :keywords: rocSPARSE, ROCm, API, documentation
+
 .. _api:
 
 Exported rocSPARSE Functions
