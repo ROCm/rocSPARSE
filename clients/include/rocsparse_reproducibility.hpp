@@ -41,6 +41,7 @@ public:
         static rocsparse_reproducibility_t s_instance;
         return s_instance;
     }
+
     ///
     /// @brief Enumeration to describe the reproducibility status.
     ///

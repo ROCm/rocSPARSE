@@ -23,7 +23,6 @@
  * ************************************************************************ */
 
 #include "rocsparse_reproducibility.hpp"
-#include <fstream>
 
 bool rocsparse_reproducibility_t::is_enabled() const
 {

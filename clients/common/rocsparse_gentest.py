@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # ########################################################################
-# Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -122,6 +122,9 @@ Expand rocSPARSE YAML test data file into binary Arguments records
                         default=[])
     parser.add_argument('-t', '--template',
                         type=argparse.FileType('r'))
+    parser.add_argument('-m', '--matrices-dir',
+                        dest='matrices-dir',
+                        default='./')
     return parser.parse_args()
 
 
@@ -372,6 +375,10 @@ def generate(test, function):
                              "must be a defined as a dictionary.\n")
             return
 
+    matrices_dir = str(args['matrices-dir'])
+
+    if matrices_dir[-1] != "/":
+        matrices_dir+="/"
     for key in sorted(list(test)):
         # Integer arguments which are ranges (A..B[..C]) are expanded
         if type(test[key]) == str:
@@ -390,14 +397,9 @@ def generate(test, function):
                 cleanlist=[]
                 for test[key] in test[key]:
                     #
-                    # Get the root path.
-                    #
-                    out_path = os.path.dirname(args['outfile'].name) +  "/../matrices/"
-
-                    #
                     # Get argument.
                     #
-                    filename_arg = out_path + str(test[key])
+                    filename_arg = matrices_dir + str(test[key])
 
                     #
                     # Check if this is a valid argument
@@ -406,7 +408,7 @@ def generate(test, function):
                         and (not glob.glob(filename_arg))
                         and (not glob.glob(filename_arg + ".csr"))
                         and (not glob.glob(filename_arg + ".bsr"))):
-                        print("skip unrecognized filename, directory or filename regular expression: '" + test[key] + "'")
+                        print("skip unrecognized filename, directory or filename glob expression: '" + test[key] + "'")
                     else:
                         cleanlist.append(test[key])
 
@@ -415,14 +417,9 @@ def generate(test, function):
                 test[key] = cleanlist
                 for test[key] in test[key]:
                     #
-                    # Get the root path.
-                    #
-                    out_path = os.path.dirname(args['outfile'].name) +  "/../matrices/"
-
-                    #
                     # Get argument.
                     #
-                    filename_arg = out_path + str(test[key])
+                    filename_arg = matrices_dir + str(test[key])
 
                     #
                     # It is a directory.
@@ -433,13 +430,13 @@ def generate(test, function):
                         #
                         names = glob.glob(filename_arg + "/*")
                         for name in names:
-                            subpath=os.path.splitext(name.replace(out_path,""))[0]
+                            subpath=os.path.splitext(name.replace(matrices_dir,""))[0]
                             test[key]=[subpath]
                             generate(test,function)
 
                     else:
                         #
-                        # Might be a regular expression
+                        # Might be a glob expression
                         #
                         names = glob.glob(filename_arg)
                         if not names:
@@ -450,7 +447,7 @@ def generate(test, function):
 
                         else:
                             for name in names:
-                                subpath=os.path.splitext(name.replace(out_path,""))[0]
+                                subpath=os.path.splitext(name.replace(matrices_dir,""))[0]
                                 test[key]=[subpath]
                                 generate(test,function)
 

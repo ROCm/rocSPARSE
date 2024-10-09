@@ -306,6 +306,146 @@ C precisions complex and real: &double_only_precisions_complex_real
   - *double_precision
   - *double_precision_complex
 
+All rocsparse_index_base: &all_rocsparse_index_base
+  [ rocsparse_index_base_zero, rocsparse_index_base_one ]
+
+All rocsparse_indextype: &all_rocsparse_indextype
+        [i32,
+         i64]
+
+All rocsparse_datatype: &all_rocsparse_datatype
+        [f32_r,
+         f64_r
+         f32_c,
+         f64_c,
+         i8_r,
+         u8_r,
+         i32_r,
+         u32_r]
+
+All rocsparse_operation: &all_rocsparse_operation
+        [rocsparse_operation_none,
+         rocsparse_operation_transpose,
+         rocsparse_operation_conjugate_transpose]
+
+All rocsparse_matrix_type: &all_rocsparse_matrix_type
+        [rocsparse_matrix_type_general,
+         rocsparse_matrix_type_symmetric,
+         rocsparse_matrix_type_hermitian,
+         rocsparse_matrix_type_triangular]
+
+All rocsparse_diag_type: &all_rocsparse_diag_type
+        [rocsparse_diag_type_non_unit,
+         rocsparse_diag_type_unit]
+
+All rocsparse_fill_mode: &all_rocsparse_fill_mode
+        [rocsparse_fill_mode_lower,
+         rocsparse_fill_mode_upper]
+
+All rocsparse_storage_mode: &all_rocsparse_storage_mode
+        [rocsparse_storage_mode_sorted,
+         rocsparse_storage_mode_unsorted]
+
+All rocsparse_action: &all_rocsparse_action
+        [rocsparse_action_symbolic,
+         rocsparse_action_numeric]
+
+All rocsparse_hyb_partition: &all_rocsparse_hyb_partition
+        [rocsparse_hyb_partition_auto,
+         rocsparse_hyb_partition_user,
+         rocsparse_hyb_partition_max]
+
+All rocsparse_analysis_policy: &all_rocsparse_analysis_policy
+        [rocsparse_analysis_policy_reuse,
+        rocsparse_analysis_policy_force]
+
+All rocsparse_solve_policy: &all_rocsparse_solve_policy
+        rocsparse_solve_policy_auto
+
+All rocsparse_direction: &all_rocsparse_direction
+        [rocsparse_direction_row,
+         rocsparse_direction_column]
+
+All rocsparse_order: &all_rocsparse_order
+        [rocsparse_order_row,
+         rocsparse_order_column]
+
+All rocsparse_format: &all_rocsparse_format
+        [rocsparse_format_coo,
+         rocsparse_format_coo_aos,
+         rocsparse_format_csr,
+         rocsparse_format_csc,
+         rocsparse_format_ell,
+         rocsparse_format_bell,
+         rocsparse_format_bsr]
+
+All rocsparse_itilu0_alg: &all_rocsparse_itilu0_alg
+        [rocsparse_itilu0_alg_default,
+         rocsparse_itilu0_alg_async_inplace,
+         rocsparse_itilu0_alg_async_split,
+         rocsparse_itilu0_alg_sync_split,
+         rocsparse_itilu0_alg_sync_split_fusion]
+
+All rocsparse_sddmm_alg: &all_rocsparse_sddmm_alg
+        [rocsparse_sddmm_alg_default,
+         rocsparse_sddmm_alg_dense]
+
+All rocsparse_spmv_alg: &all_rocsparse_spmv_alg
+        [rocsparse_spmv_alg_default,
+         rocsparse_spmv_alg_coo,
+         rocsparse_spmv_alg_csr_adaptive,
+         rocsparse_spmv_alg_csr_stream,
+         rocsparse_spmv_alg_ell,
+         rocsparse_spmv_alg_coo_atomic,
+         rocsparse_spmv_alg_bsr,
+         rocsparse_spmv_alg_csr_lrb]
+
+All rocsparse_spmv_alg_csr: &all_rocsparse_spmv_alg_csr
+        [rocsparse_spmv_alg_csr_adaptive,
+         rocsparse_spmv_alg_csr_stream,
+         rocsparse_spmv_alg_csr_lrb]
+
+All rocsparse_spsv_alg: &all_rocsparse_spsv_alg
+        [rocsparse_spsv_alg_default]
+
+All rocsparse_spitsv_alg: &all_rocsparse_spitsv_alg
+        [rocsparse_spitsv_alg_default]
+
+All rocsparse_spsm_alg: &all_rocsparse_spsm_alg
+        [rocsparse_spsm_alg_default]
+
+All rocsparse_spmm_alg: &all_rocsparse_spmm_alg
+        [rocsparse_spmm_alg_default,
+         rocsparse_spmm_alg_csr,
+         rocsparse_spmm_alg_coo_segmented,
+         rocsparse_spmm_alg_coo_atomic,
+         rocsparse_spmm_alg_csr_row_split,
+         rocsparse_spmm_alg_csr_merge,
+         rocsparse_spmm_alg_coo_segmented_atomic,
+         rocsparse_spmm_alg_bell,
+         rocsparse_spmm_alg_bsr,
+         rocsparse_spmm_alg_csr_merge_path,
+         rocsparse_spmm_alg_csr_nnz_split]
+
+All rocsparse_spgemm_alg: &all_rocsparse_spgemm_alg
+        [rocsparse_spgemm_alg_default]
+
+All rocsparse_sparse_to_dense_alg: &all_rocsparse_sparse_to_dense_alg
+        [rocsparse_sparse_to_dense_alg_default]
+
+All rocsparse_dense_to_sparse_alg: &all_rocsparse_dense_to_sparse_alg
+        [rocsparse_dense_to_sparse_alg_default]
+
+All rocsparse_gtsv_interleaved_alg: &all_rocsparse_gtsv_interleaved_alg
+        [rocsparse_gtsv_interleaved_alg_default,
+         rocsparse_gtsv_interleaved_alg_thomas,
+         rocsparse_gtsv_interleaved_alg_lu,
+         rocsparse_gtsv_interleaved_alg_qr]
+
+All rocsparse_gpsv_interleaved_alg: &all_rocsparse_gpsv_interleaved_alg
+        [rocsparse_gpsv_interleaved_alg_default,
+	 rocsparse_gpsv_interleaved_alg_qr]
+
 # The Arguments struct passed directly to C++. See rocsparse_arguments.hpp.
 # The order of the entries is significant, so it can't simply be a dictionary.
 # The types on the RHS are eval'd for Python-recognized types including ctypes

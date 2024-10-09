@@ -23,7 +23,7 @@
 
 ---
 include: rocsparse_common.yaml
-include: known_bugs.yaml
+
 
 Tests:
 - name: csr2hyb_bad_arg

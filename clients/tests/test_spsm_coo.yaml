@@ -23,7 +23,7 @@
 
 ---
 include: rocsparse_common.yaml
-include: known_bugs.yaml
+
 
 Definitions:
   - &M_N_range_quick
