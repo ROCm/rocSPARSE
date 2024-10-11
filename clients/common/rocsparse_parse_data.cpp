@@ -82,7 +82,7 @@ static std::string rocsparse_parse_yaml(const std::string& yaml, const char* inc
         cmd += " -m ";
         cmd += matrices_path;
     }
-    cmd += " --template " + exepath + "rocsparse_template.yaml -o " + tmp + " " + yaml;
+    cmd += " --template " + exepath + "rocsparse_template.yaml -o " + tmpname.string() + " " + yaml;
 
     std::cerr << cmd << std::endl;
 
