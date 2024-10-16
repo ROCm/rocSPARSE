@@ -77,12 +77,26 @@ option(BUILD_MEMSTAT "Build rocSPARSE with memory statistics enabled" OFF)
 option(BUILD_ROCSPARSE_ILP64 "Build rocSPARSE with rocsparse_int equal to int64_t" OFF)
 option(BUILD_COMPRESSED_DBG "Enable compressed debug symbols" ON)
 option(BUILD_WITH_ROCBLAS "Enable building rocSPARSE with rocBLAS" ON)
+option(BUILD_WITH_OFFLOAD_COMPRESS
+       "Enable offload compression during compilation" ON)
 
 # Clients utilize rocsparse fortran API and a fortran compiler
 if( NOT BUILD_FORTRAN_CLIENTS )
   option( BUILD_FORTRAN_CLIENTS "Build rocSPARSE clients requiring Fortran capabilities" ON )
 endif( )
 option(BUILD_DOCS "Build documentation" OFF)
+
+if(BUILD_WITH_OFFLOAD_COMPRESS)
+  include(CheckCXXCompilerFlag)
+  check_cxx_compiler_flag("--offload-compress"
+                          CXX_COMPILER_SUPPORTS_OFFLOAD_COMPRESS)
+  if(NOT CXX_COMPILER_SUPPORTS_OFFLOAD_COMPRESS)
+    message(
+      FATAL_ERROR
+        "The option '--offload-compress' is not supported from the CXX compiler, turn off the option BUILD_WITH_OFFLOAD_COMPRESS."
+    )
+  endif()
+endif()
 
 #
 if(BUILD_CODE_COVERAGE)

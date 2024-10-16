@@ -93,7 +93,14 @@ if (BUILD_WITH_ROCBLAS AND rocblas_FOUND)
   endif()
 endif()
 
+
 # Target properties
+
+# Offload compression ?
+if(BUILD_WITH_OFFLOAD_COMPRESS)
+  set_target_properties(rocsparse PROPERTIES COMPILE_FLAGS "--offload-compress")
+endif()
+
 rocm_set_soversion(rocsparse ${rocsparse_SOVERSION})
 set_target_properties(rocsparse PROPERTIES CXX_VISIBILITY_PRESET "hidden" VISIBILITY_INLINES_HIDDEN ON)
 set_target_properties(rocsparse PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")

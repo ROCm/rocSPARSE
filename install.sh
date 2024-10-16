@@ -22,6 +22,8 @@ function display_help()
   echo "    [--hip-clang] build library for amdgpu backend using hip-clang"
   echo "    [-s|--static] build static library"
   echo "    [--memstat] build with memory statistics enabled."
+  echo "    [--offload-compress] Apply offload compression (enabled by default)."
+  echo "    [--no-offload-compress] Do not apply offload compression."
   echo "    [--rocsparse_ILP64] build with rocsparse_int equal to int64_t."
   echo "    [--address-sanitizer] build with address sanitizer"
   echo "    [--codecoverage] build with code coverage profiling enabled"
@@ -283,6 +285,7 @@ build_address_sanitizer=false
 build_memstat=false
 build_rocsparse_ILP64=false
 build_with_rocblas=true
+build_with_offload_compress=true
 matrices_dir=
 matrices_dir_install=
 gpu_architecture=all
@@ -297,7 +300,7 @@ declare -a cmake_client_options
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
- GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,memstat,rocsparse_ILP64,rocprim-path:,rocblas-path:,without-rocblas,address-sanitizer,matrices-dir:,matrices-dir-install:,architecture:,rm-legacy-include-dir,cmake-arg: --options hicdgrska: -- "$@")
+ GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,memstat,rocsparse_ILP64,rocprim-path:,rocblas-path:,no-offload-compress,offload-compress,without-rocblas,address-sanitizer,matrices-dir:,matrices-dir-install:,architecture:,rm-legacy-include-dir,cmake-arg: --options hicdgrska: -- "$@")
 
 else
   echo "Need a new version of getopt"
@@ -353,6 +356,12 @@ while true; do
         --rocblas-path)
             rocblas_path=${2}
             shift 2 ;;
+	--no-offload-compress)
+            build_with_offload_compress=false
+            shift ;;
+        --offload-compress)
+            build_with_offload_compress=true
+            shift ;;
         --without-rocblas)
             build_with_rocblas=false
             shift ;;
@@ -543,6 +552,13 @@ pushd .
   # rocsparse_ILP64
   if [[ "${build_rocsparse_ILP64}" == true ]]; then
     cmake_common_options+=("-DBUILD_ROCSPARSE_ILP64=ON")
+  fi
+
+  # offload-compress
+  if [[ "${build_with_offload_compress}" == true ]]; then
+    cmake_common_options+=("-DBUILD_WITH_OFFLOAD_COMPRESS=ON")
+  else
+    cmake_common_options+=("-DBUILD_WITH_OFFLOAD_COMPRESS=OFF")
   fi
 
   # without-rocblas
