@@ -215,6 +215,8 @@ struct _rocsparse_color_info
 struct rocsparse_adaptive_info
 {
     size_t    size{}; // num row blocks
+    int64_t   first_row{};
+    int64_t   last_row{};
     void*     row_blocks{};
     uint32_t* wg_flags{};
     void*     wg_ids{};

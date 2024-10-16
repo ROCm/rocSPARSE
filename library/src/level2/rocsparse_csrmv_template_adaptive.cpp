@@ -96,10 +96,15 @@ namespace rocsparse
     static inline void ComputeRowBlocks(I*       rowBlocks,
                                         J*       wgIds,
                                         size_t&  rowBlockSize,
+                                        int64_t& first_row,
+                                        int64_t& last_row,
                                         const I* rowDelimiters,
                                         I        nRows,
                                         bool     allocate_row_blocks = true)
     {
+        I first_row_with_nonzeros = nRows - 1;
+        I last_row_with_nonzeros  = 0;
+
         I* rowBlocksBase;
 
         // Start at one because of rowBlock[0]
@@ -123,6 +128,12 @@ namespace rocsparse
         {
             I row_length = (rowDelimiters[i] - rowDelimiters[i - 1]);
             sum += row_length;
+
+            if(allocate_row_blocks && row_length > 0)
+            {
+                first_row_with_nonzeros = std::min(first_row_with_nonzeros, (i - 1));
+                last_row_with_nonzeros  = std::max(last_row_with_nonzeros, (i - 1));
+            }
 
             // The following section of code calculates whether you're moving between
             // a series of "short" rows and a series of "long" rows.
@@ -300,6 +311,34 @@ namespace rocsparse
                                   "Calculated distance is expected to be bounded by rowBlockSize.");
             // Update the size of rowBlocks to reflect the actual amount of memory used
             rowBlockSize = dist;
+
+            // When the first or last row block covers many consecutive rows with zero entries, we can skip these rows in the
+            // adaptive kernel and handle scaling y for these rows separately. This significantly improves the performance
+            // for matrices that have many rows at the beginning or end with no non-zeros in them.
+            first_row = 0;
+            last_row  = nRows;
+
+            I num_rows = rowBlocksBase[1] - rowBlocksBase[0];
+            if(num_rows > ROWS_FOR_VECTOR)
+            {
+                if(first_row_with_nonzeros > 32 * WG_SIZE)
+                {
+                    first_row = std::max((I)0, first_row_with_nonzeros - (ROWS_FOR_VECTOR + 1));
+                }
+            }
+
+            num_rows = rowBlocksBase[rowBlockSize - 1] - rowBlocksBase[rowBlockSize - 2];
+            if(num_rows > ROWS_FOR_VECTOR)
+            {
+                if(nRows - last_row_with_nonzeros > 32 * WG_SIZE)
+                {
+                    last_row
+                        = std::min(nRows, (last_row_with_nonzeros + (ROWS_FOR_VECTOR + 1)) + 1);
+                }
+            }
+
+            rowBlocksBase[0]                = first_row;
+            rowBlocksBase[rowBlockSize - 1] = last_row;
         }
         else
         {
@@ -342,16 +381,28 @@ rocsparse_status
     RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
     // Determine row blocks array size
-    ComputeRowBlocks<I, J>(
-        (I*)NULL, (J*)NULL, info->csrmv_info->adaptive.size, hptr.data(), m, false);
+    ComputeRowBlocks<I, J>((I*)NULL,
+                           (J*)NULL,
+                           info->csrmv_info->adaptive.size,
+                           info->csrmv_info->adaptive.first_row,
+                           info->csrmv_info->adaptive.last_row,
+                           hptr.data(),
+                           m,
+                           false);
 
     // Create row blocks, workgroup flag, and workgroup data structures
     std::vector<I>        row_blocks(info->csrmv_info->adaptive.size, 0);
     std::vector<uint32_t> wg_flags(info->csrmv_info->adaptive.size, 0);
     std::vector<J>        wg_ids(info->csrmv_info->adaptive.size, 0);
 
-    ComputeRowBlocks<I, J>(
-        row_blocks.data(), wg_ids.data(), info->csrmv_info->adaptive.size, hptr.data(), m, true);
+    ComputeRowBlocks<I, J>(row_blocks.data(),
+                           wg_ids.data(),
+                           info->csrmv_info->adaptive.size,
+                           info->csrmv_info->adaptive.first_row,
+                           info->csrmv_info->adaptive.last_row,
+                           hptr.data(),
+                           m,
+                           true);
 
     if(descr->type == rocsparse_matrix_type_symmetric)
     {
@@ -411,6 +462,17 @@ rocsparse_status
 
 namespace rocsparse
 {
+    template <typename J, typename Y, typename U>
+    ROCSPARSE_KERNEL(WG_SIZE)
+    void partial_scale_y_kernel(J m, J first_row, J last_row, U beta_device_host, Y* __restrict__ y)
+    {
+        auto beta = rocsparse::load_scalar_device_host(beta_device_host);
+        if(beta != 1)
+        {
+            rocsparse::partial_scale_y_device<WG_SIZE>(m, first_row, last_row, beta, y);
+        }
+    }
+
     template <typename I, typename J, typename A, typename X, typename Y, typename U>
     ROCSPARSE_KERNEL(WG_SIZE)
     void csrmvn_adaptive_kernel(bool conj,
@@ -575,6 +637,27 @@ rocsparse_status rocsparse::csrmv_adaptive_template_dispatch(rocsparse_handle   
                                            beta_device_host,
                                            y,
                                            descr->base);
+
+        if(info->adaptive.first_row > 0 || info->adaptive.last_row < m)
+        {
+            // Scale y by beta from rows [0, first_row) and [last_row, m)
+            J first_row        = info->adaptive.first_row;
+            J last_row         = info->adaptive.last_row;
+            J required_threads = (first_row - 0) + (m - last_row);
+
+            dim3 csrmvn_blocks((required_threads - 1) / WG_SIZE + 1);
+            dim3 csrmvn_threads(WG_SIZE);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::partial_scale_y_kernel),
+                                               csrmvn_blocks,
+                                               csrmvn_threads,
+                                               0,
+                                               stream,
+                                               m,
+                                               first_row,
+                                               last_row,
+                                               beta_device_host,
+                                               y);
+        }
     }
     else if(descr->type == rocsparse_matrix_type_symmetric)
     {

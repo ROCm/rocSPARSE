@@ -152,6 +152,42 @@ namespace rocsparse
         }
     }
 
+    // Scales y by beta in the range [0, first_row) and [last_row, m)
+    template <uint32_t WG_SIZE, typename J, typename Y, typename T>
+    ROCSPARSE_DEVICE_ILF void partial_scale_y_device(J m, J first_row, J last_row, T beta, Y* y)
+    {
+        const J gid              = hipBlockIdx_x * WG_SIZE + hipThreadIdx_x;
+        const J required_threads = (first_row - 0) + (m - last_row);
+
+        if(gid >= required_threads)
+        {
+            return;
+        }
+
+        if(gid < first_row)
+        {
+            if(beta == static_cast<T>(0))
+            {
+                y[gid] = static_cast<Y>(0);
+            }
+            else
+            {
+                y[gid] *= beta;
+            }
+        }
+        else
+        {
+            if(beta == static_cast<T>(0))
+            {
+                y[last_row + (gid - first_row)] = static_cast<Y>(0);
+            }
+            else
+            {
+                y[last_row + (gid - first_row)] *= beta;
+            }
+        }
+    }
+
     template <typename I, typename T>
     ROCSPARSE_DEVICE_ILF T sum2_reduce(T cur_sum, T* partial, int lid, I max_size, int reduc_size)
     {
