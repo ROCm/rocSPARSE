@@ -268,6 +268,8 @@ rocsparse_status rocsparse::copy_csrmv_info(rocsparse_csrmv_info       dest,
     bool previously_created = false;
 
     previously_created |= (dest->adaptive.size != 0);
+    previously_created |= (dest->adaptive.first_row != 0);
+    previously_created |= (dest->adaptive.last_row != 0);
     previously_created |= (dest->adaptive.row_blocks != nullptr);
     previously_created |= (dest->adaptive.wg_flags != nullptr);
     previously_created |= (dest->adaptive.wg_ids != nullptr);
@@ -294,6 +296,8 @@ rocsparse_status rocsparse::copy_csrmv_info(rocsparse_csrmv_info       dest,
         // Sparsity pattern of dest and src must match
         bool invalid = false;
         invalid |= (dest->adaptive.size != src->adaptive.size);
+        invalid |= (dest->adaptive.first_row != src->adaptive.first_row);
+        invalid |= (dest->adaptive.last_row != src->adaptive.last_row);
         invalid |= (dest->lrb.size != src->lrb.size);
         invalid |= (dest->trans != src->trans);
         invalid |= (dest->m != src->m);
@@ -434,15 +438,17 @@ rocsparse_status rocsparse::copy_csrmv_info(rocsparse_csrmv_info       dest,
             dest->lrb.n_rows_bins, src->lrb.n_rows_bins, J_size * 32, hipMemcpyDeviceToDevice));
     }
 
-    dest->adaptive.size = src->adaptive.size;
-    dest->lrb.size      = src->lrb.size;
-    dest->trans         = src->trans;
-    dest->m             = src->m;
-    dest->n             = src->n;
-    dest->nnz           = src->nnz;
-    dest->max_rows      = src->max_rows;
-    dest->index_type_I  = src->index_type_I;
-    dest->index_type_J  = src->index_type_J;
+    dest->adaptive.size      = src->adaptive.size;
+    dest->adaptive.first_row = src->adaptive.first_row;
+    dest->adaptive.last_row  = src->adaptive.last_row;
+    dest->lrb.size           = src->lrb.size;
+    dest->trans              = src->trans;
+    dest->m                  = src->m;
+    dest->n                  = src->n;
+    dest->nnz                = src->nnz;
+    dest->max_rows           = src->max_rows;
+    dest->index_type_I       = src->index_type_I;
+    dest->index_type_J       = src->index_type_J;
 
     // Not owned by the info struct. Just pointers to externally allocated memory
     dest->descr       = src->descr;
