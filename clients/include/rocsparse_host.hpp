@@ -407,26 +407,28 @@ void host_gemvi(I                    M,
  *    level 3 SPARSE
  * ===========================================================================
  */
-template <typename T>
-void host_bsrmm(rocsparse_handle          handle,
-                rocsparse_direction       dir,
-                rocsparse_operation       trans_A,
-                rocsparse_operation       trans_B,
-                rocsparse_int             mb,
-                rocsparse_int             n,
-                rocsparse_int             kb,
-                rocsparse_int             nnzb,
-                const T*                  alpha,
-                const rocsparse_mat_descr descr,
-                const T*                  bsr_val,
-                const rocsparse_int*      bsr_row_ptr,
-                const rocsparse_int*      bsr_col_ind,
-                rocsparse_int             block_dim,
-                const T*                  B,
-                int64_t                   ldb,
-                const T*                  beta,
-                T*                        C,
-                int64_t                   ldc);
+template <typename T, typename I, typename J, typename A, typename B, typename C>
+void host_bsrmm(rocsparse_handle     handle,
+                rocsparse_direction  dir,
+                rocsparse_operation  trans_A,
+                rocsparse_operation  trans_B,
+                J                    mb,
+                J                    n,
+                J                    kb,
+                I                    nnzb,
+                T                    alpha,
+                const A*             bsr_val,
+                const I*             bsr_row_ptr,
+                const J*             bsr_col_ind,
+                J                    block_dim,
+                const B*             dense_B,
+                int64_t              ldb,
+                rocsparse_order      order_B,
+                T                    beta,
+                C*                   dense_C,
+                int64_t              ldc,
+                rocsparse_order      order_C,
+                rocsparse_index_base base);
 
 template <typename T>
 void host_gebsrmm(rocsparse_handle          handle,

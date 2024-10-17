@@ -27,6 +27,7 @@
 #include "utility.h"
 
 #include "rocsparse_bellmm.hpp"
+#include "rocsparse_bsrmm.hpp"
 #include "rocsparse_coomm.hpp"
 #include "rocsparse_cscmm.hpp"
 #include "rocsparse_csrmm.hpp"
@@ -135,6 +136,32 @@ namespace rocsparse
         case rocsparse_spmm_alg_csr_row_split:
         case rocsparse_spmm_alg_csr_nnz_split:
         case rocsparse_spmm_alg_csr_merge_path:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+        }
+        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+    }
+
+    rocsparse_status spmm_alg2bsrmm_alg(rocsparse_spmm_alg spmm_alg, rocsparse_bsrmm_alg& bsrmm_alg)
+    {
+        switch(spmm_alg)
+        {
+        case rocsparse_spmm_alg_default:
+        case rocsparse_spmm_alg_bsr:
+        {
+            bsrmm_alg = rocsparse_bsrmm_alg_default;
+            return rocsparse_status_success;
+        }
+
+        case rocsparse_spmm_alg_csr:
+        case rocsparse_spmm_alg_csr_row_split:
+        case rocsparse_spmm_alg_csr_nnz_split:
+        case rocsparse_spmm_alg_csr_merge_path:
+        case rocsparse_spmm_alg_bell:
+        case rocsparse_spmm_alg_coo_segmented:
+        case rocsparse_spmm_alg_coo_atomic:
+        case rocsparse_spmm_alg_coo_segmented_atomic:
         {
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
         }
@@ -519,9 +546,92 @@ namespace rocsparse
             break;
         }
 
+        case rocsparse_format_bsr:
+        {
+            rocsparse_bsrmm_alg bsrmm_alg;
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse::spmm_alg2bsrmm_alg(alg, bsrmm_alg)));
+
+            const J mb = (J)mat_A->rows;
+            const J n  = (J)mat_C->cols;
+            const J kb = (J)mat_A->cols;
+
+            switch(stage)
+            {
+            case rocsparse_spmm_stage_buffer_size:
+            {
+                RETURN_IF_ROCSPARSE_ERROR(
+                    rocsparse::bsrmm_buffer_size_template<T>(handle,
+                                                             trans_A,
+                                                             bsrmm_alg,
+                                                             mb,
+                                                             n,
+                                                             kb,
+                                                             (I)mat_A->nnz,
+                                                             mat_A->descr,
+                                                             (const A*)mat_A->const_val_data,
+                                                             (const I*)mat_A->const_row_data,
+                                                             (const J*)mat_A->const_col_data,
+                                                             (J)mat_A->block_dim,
+                                                             buffer_size));
+                return rocsparse_status_success;
+            }
+            case rocsparse_spmm_stage_preprocess:
+            {
+                RETURN_IF_ROCSPARSE_ERROR(
+                    rocsparse::bsrmm_analysis_template<T>(handle,
+                                                          trans_A,
+                                                          bsrmm_alg,
+                                                          mb,
+                                                          n,
+                                                          kb,
+                                                          (I)mat_A->nnz,
+                                                          mat_A->descr,
+                                                          (const A*)mat_A->const_val_data,
+                                                          (const I*)mat_A->const_row_data,
+                                                          (const J*)mat_A->const_col_data,
+                                                          (J)mat_A->block_dim,
+                                                          temp_buffer));
+                return rocsparse_status_success;
+            }
+            case rocsparse_spmm_stage_compute:
+            {
+                RETURN_IF_ROCSPARSE_ERROR(
+                    rocsparse::bsrmm_template(handle,
+                                              mat_A->block_dir,
+                                              trans_A,
+                                              trans_B,
+                                              bsrmm_alg,
+                                              mb,
+                                              n,
+                                              kb,
+                                              (I)mat_A->nnz,
+                                              (J)mat_A->batch_count,
+                                              mat_A->offsets_batch_stride,
+                                              mat_A->columns_values_batch_stride,
+                                              (const T*)alpha,
+                                              mat_A->descr,
+                                              (const A*)mat_A->const_val_data,
+                                              (const I*)mat_A->const_row_data,
+                                              (const J*)mat_A->const_col_data,
+                                              (J)mat_A->block_dim,
+                                              (const B*)mat_B->const_values,
+                                              mat_B->ld,
+                                              (J)mat_B->batch_count,
+                                              mat_B->batch_stride,
+                                              mat_B->order,
+                                              (const T*)beta,
+                                              (C*)mat_C->values,
+                                              mat_C->ld,
+                                              (J)mat_C->batch_count,
+                                              mat_C->batch_stride,
+                                              mat_C->order));
+                return rocsparse_status_success;
+            }
+            }
+        }
+
         case rocsparse_format_coo_aos:
         case rocsparse_format_ell:
-        case rocsparse_format_bsr:
         {
             RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
         }

@@ -101,6 +101,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_bsrmm.cpp
 ../testings/testing_gebsrmm.cpp
 ../testings/testing_csrmm.cpp
+../testings/testing_spmm_bsr.cpp
 ../testings/testing_spmm_csr.cpp
 ../testings/testing_spmm_csc.cpp
 ../testings/testing_spmm_coo.cpp

@@ -56,15 +56,15 @@ void testing_bsrmm_bad_arg(const Arguments& arg)
     const rocsparse_int* bsr_row_ptr = (const rocsparse_int*)0x4;
     const rocsparse_int* bsr_col_ind = (const rocsparse_int*)0x4;
     rocsparse_int        block_dim   = safe_size;
-    const T*             B           = (const T*)0x4;
+    const T*             dense_B     = (const T*)0x4;
     rocsparse_int        ldb         = safe_size;
     const T*             beta        = &h_beta;
-    T*                   C           = (T*)0x4;
+    T*                   dense_C     = (T*)0x4;
     rocsparse_int        ldc         = safe_size;
 
 #define PARAMS                                                                          \
     handle, dir, trans_A, trans_B, mb, n, kb, nnzb, alpha, descr, bsr_val, bsr_row_ptr, \
-        bsr_col_ind, block_dim, B, ldb, beta, C, ldc
+        bsr_col_ind, block_dim, dense_B, ldb, beta, dense_C, ldc
 
     //
     // Auto testing.
@@ -288,10 +288,10 @@ void testing_bsrmm_bad_arg(const Arguments& arg)
                                                bsr_row_ptr,
                                                nullptr,
                                                block_dim,
-                                               B,
+                                               dense_B,
                                                ldb,
                                                beta,
-                                               C,
+                                               dense_C,
                                                ldc),
                             rocsparse_status_invalid_pointer);
 }
@@ -398,7 +398,27 @@ void testing_bsrmm(const Arguments& arg)
         //
         {
             host_dense_matrix<T> hC_copy(hC);
-            host_bsrmm<T>(PARAMS(h_alpha, hA, hB, h_beta, hC));
+            host_bsrmm<T, rocsparse_int, rocsparse_int, T, T, T>(handle,
+                                                                 direction,
+                                                                 transA,
+                                                                 transB,
+                                                                 Mb,
+                                                                 N,
+                                                                 Kb,
+                                                                 hA.nnzb,
+                                                                 *h_alpha,
+                                                                 hA.val,
+                                                                 hA.ptr,
+                                                                 hA.ind,
+                                                                 hA.row_block_dim,
+                                                                 hB,
+                                                                 hB.ld,
+                                                                 rocsparse_order_column,
+                                                                 *h_beta,
+                                                                 hC,
+                                                                 hC.ld,
+                                                                 rocsparse_order_column,
+                                                                 base);
             hC.near_check(dC);
             dC = hC_copy;
         }

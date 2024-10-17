@@ -138,6 +138,7 @@ static constexpr std::size_t countof2(T (&)[N])
   TRANSFORM_ROCSPARSE_TEST_ENUM(spgemm_csr)				\
   TRANSFORM_ROCSPARSE_TEST_ENUM(spmat_descr)				\
   TRANSFORM_ROCSPARSE_TEST_ENUM(spmm_bell)				\
+  TRANSFORM_ROCSPARSE_TEST_ENUM(spmm_bsr)				\
   TRANSFORM_ROCSPARSE_TEST_ENUM(spmm_coo)				\
   TRANSFORM_ROCSPARSE_TEST_ENUM(spmm_csc)				\
   TRANSFORM_ROCSPARSE_TEST_ENUM(spmm_csr)				\

@@ -160,6 +160,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_spsv_coo.cpp
   test_spsm_csr.cpp
   test_spsm_coo.cpp
+  test_spmm_bsr.cpp
   test_spmm_csr.cpp
   test_spmm_csc.cpp
   test_spmm_coo.cpp
@@ -289,6 +290,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_spsv_coo.cpp
 ../testings/testing_spsm_csr.cpp
 ../testings/testing_spsm_coo.cpp
+../testings/testing_spmm_bsr.cpp
 ../testings/testing_spmm_csr.cpp
 ../testings/testing_spmm_csc.cpp
 ../testings/testing_spmm_coo.cpp
