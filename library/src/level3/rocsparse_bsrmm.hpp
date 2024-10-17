@@ -27,80 +27,103 @@
 #include "control.h"
 #include "handle.h"
 
+typedef enum rocsparse_bsrmm_alg_
+{
+    rocsparse_bsrmm_alg_default = 0,
+    rocsparse_bsrmm_alg_bsr
+} rocsparse_bsrmm_alg;
+
 namespace rocsparse
 {
-    template <typename T, typename U>
-    rocsparse_status bsrmm_template_dispatch(rocsparse_handle          handle,
-                                             rocsparse_direction       dir,
+    template <typename T, typename I, typename J, typename A>
+    rocsparse_status bsrmm_buffer_size_template(rocsparse_handle          handle,
+                                                rocsparse_operation       trans_A,
+                                                rocsparse_bsrmm_alg       alg,
+                                                J                         mb,
+                                                J                         n,
+                                                J                         kb,
+                                                I                         nnzb,
+                                                const rocsparse_mat_descr descr,
+                                                const A*                  bsr_val,
+                                                const I*                  bsr_row_ptr,
+                                                const J*                  bsr_col_ind,
+                                                J                         block_dim,
+                                                size_t*                   buffer_size);
+
+    template <typename T, typename I, typename J, typename A>
+    rocsparse_status bsrmm_analysis_template(rocsparse_handle          handle,
                                              rocsparse_operation       trans_A,
-                                             rocsparse_operation       trans_B,
-                                             rocsparse_int             mb,
-                                             rocsparse_int             n,
-                                             rocsparse_int             kb,
-                                             rocsparse_int             nnzb,
-                                             U                         alpha,
+                                             rocsparse_bsrmm_alg       alg,
+                                             J                         mb,
+                                             J                         n,
+                                             J                         kb,
+                                             I                         nnzb,
                                              const rocsparse_mat_descr descr,
-                                             const T*                  bsr_val,
-                                             const rocsparse_int*      bsr_row_ptr,
-                                             const rocsparse_int*      bsr_col_ind,
-                                             rocsparse_int             block_dim,
-                                             const T*                  B,
+                                             const A*                  bsr_val,
+                                             const I*                  bsr_row_ptr,
+                                             const J*                  bsr_col_ind,
+                                             J                         block_dim,
+                                             void*                     temp_buffer);
+
+    template <typename T, typename I, typename J, typename A, typename B, typename C, typename U>
+    rocsparse_status bsrmm_template_dispatch(rocsparse_handle    handle,
+                                             rocsparse_direction dir,
+                                             rocsparse_operation trans_A,
+                                             rocsparse_operation trans_B,
+                                             rocsparse_bsrmm_alg alg,
+                                             J                   mb,
+                                             J                   n,
+                                             J                   kb,
+                                             I                   nnzb,
+                                             J                   batch_count_A,
+                                             int64_t             offsets_batch_stride_A,
+                                             int64_t             columns_values_batch_stride_A,
+                                             U                   alpha,
+                                             const rocsparse_mat_descr descr,
+                                             const A*                  bsr_val,
+                                             const I*                  bsr_row_ptr,
+                                             const J*                  bsr_col_ind,
+                                             J                         block_dim,
+                                             const B*                  dense_B,
                                              int64_t                   ldb,
+                                             J                         batch_count_B,
+                                             int64_t                   batch_stride_B,
+                                             rocsparse_order           order_B,
                                              U                         beta,
-                                             T*                        C,
-                                             int64_t                   ldc);
-    template <typename T>
-    rocsparse_status bsrmm_quickreturn(rocsparse_handle          handle,
-                                       rocsparse_direction       dir,
-                                       rocsparse_operation       trans_A,
-                                       rocsparse_operation       trans_B,
-                                       rocsparse_int             mb,
-                                       rocsparse_int             n,
-                                       rocsparse_int             kb,
-                                       rocsparse_int             nnzb,
-                                       const T*                  alpha,
-                                       const rocsparse_mat_descr descr,
-                                       const T*                  bsr_val,
-                                       const rocsparse_int*      bsr_row_ptr,
-                                       const rocsparse_int*      bsr_col_ind,
-                                       rocsparse_int             block_dim,
-                                       const T*                  B,
-                                       int64_t                   ldb,
-                                       const T*                  beta,
-                                       T*                        C,
-                                       int64_t                   ldc);
-    template <typename T>
-    rocsparse_status bsrmm_core(rocsparse_handle          handle,
-                                rocsparse_direction       dir,
-                                rocsparse_operation       trans_A,
-                                rocsparse_operation       trans_B,
-                                rocsparse_int             mb,
-                                rocsparse_int             n,
-                                rocsparse_int             kb,
-                                rocsparse_int             nnzb,
-                                const T*                  alpha,
-                                const rocsparse_mat_descr descr,
-                                const T*                  bsr_val,
-                                const rocsparse_int*      bsr_row_ptr,
-                                const rocsparse_int*      bsr_col_ind,
-                                rocsparse_int             block_dim,
-                                const T*                  B,
-                                int64_t                   ldb,
-                                const T*                  beta,
-                                T*                        C,
-                                int64_t                   ldc);
+                                             C*                        dense_C,
+                                             int64_t                   ldc,
+                                             J                         batch_count_C,
+                                             int64_t                   batch_stride_C,
+                                             rocsparse_order           order_C);
 
-    template <typename T, typename... P>
-    rocsparse_status bsrmm_template(P&&... p)
-    {
-        const rocsparse_status status = rocsparse::bsrmm_quickreturn<T>(p...);
-        if(status != rocsparse_status_continue)
-        {
-            RETURN_IF_ROCSPARSE_ERROR(status);
-            return rocsparse_status_success;
-        }
-
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::bsrmm_core(p...));
-        return rocsparse_status_success;
-    }
+    template <typename T, typename I, typename J, typename A, typename B, typename C>
+    rocsparse_status bsrmm_template(rocsparse_handle          handle,
+                                    rocsparse_direction       dir,
+                                    rocsparse_operation       trans_A,
+                                    rocsparse_operation       trans_B,
+                                    rocsparse_bsrmm_alg       alg,
+                                    J                         mb,
+                                    J                         n,
+                                    J                         kb,
+                                    I                         nnzb,
+                                    J                         batch_count_A,
+                                    int64_t                   offsets_batch_stride_A,
+                                    int64_t                   columns_values_batch_stride_A,
+                                    const T*                  alpha,
+                                    const rocsparse_mat_descr descr,
+                                    const A*                  bsr_val,
+                                    const I*                  bsr_row_ptr,
+                                    const J*                  bsr_col_ind,
+                                    J                         block_dim,
+                                    const B*                  dense_B,
+                                    int64_t                   ldb,
+                                    J                         batch_count_B,
+                                    int64_t                   batch_stride_B,
+                                    rocsparse_order           order_B,
+                                    const T*                  beta,
+                                    C*                        dense_C,
+                                    int64_t                   ldc,
+                                    J                         batch_count_C,
+                                    int64_t                   batch_stride_C,
+                                    rocsparse_order           order_C);
 }

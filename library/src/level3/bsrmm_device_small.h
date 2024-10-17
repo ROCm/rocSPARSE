@@ -28,57 +28,64 @@
 
 namespace rocsparse
 {
-    template <rocsparse_int BLOCKSIZE,
-              rocsparse_int WF_SIZE,
-              rocsparse_int BSR_BLOCK_DIM,
-              typename T>
-    ROCSPARSE_DEVICE_ILF void
-        bsrmmnn_small_blockdim_device(rocsparse_direction direction,
-                                      rocsparse_int       Mb,
-                                      rocsparse_int       N,
-                                      T                   alpha,
-                                      const rocsparse_int* __restrict__ bsr_row_ptr,
-                                      const rocsparse_int* __restrict__ bsr_col_ind,
-                                      const T* __restrict__ bsr_val,
-                                      const T* __restrict__ B,
-                                      int64_t ldb,
-                                      T       beta,
-                                      T* __restrict__ C,
-                                      int64_t              ldc,
-                                      rocsparse_index_base idx_base)
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t BSR_BLOCK_DIM,
+              typename T,
+              typename I,
+              typename J,
+              typename A,
+              typename B,
+              typename C>
+    ROCSPARSE_DEVICE_ILF void bsrmmnn_small_blockdim_device(rocsparse_direction direction,
+                                                            J                   Mb,
+                                                            J                   N,
+                                                            int64_t offsets_batch_stride_A,
+                                                            int64_t columns_values_batch_stride_A,
+                                                            T       alpha,
+                                                            const I* __restrict__ bsr_row_ptr,
+                                                            const J* __restrict__ bsr_col_ind,
+                                                            const A* __restrict__ bsr_val,
+                                                            const B* __restrict__ dense_B,
+                                                            int64_t ldb,
+                                                            int64_t batch_stride_B,
+                                                            T       beta,
+                                                            C* __restrict__ dense_C,
+                                                            int64_t              ldc,
+                                                            int64_t              batch_stride_C,
+                                                            rocsparse_order      order_C,
+                                                            rocsparse_index_base idx_base)
     {
-        constexpr rocsparse_int PADDED_BSR_BLOCK_DIM = (BSR_BLOCK_DIM + 1);
+        constexpr uint32_t PADDED_BSR_BLOCK_DIM = (BSR_BLOCK_DIM + 1);
 
-        const rocsparse_int tid  = hipThreadIdx_x;
-        const rocsparse_int gid  = hipBlockIdx_x * hipBlockDim_x + tid;
-        const rocsparse_int lid  = gid & (WF_SIZE - 1);
-        const rocsparse_int wid  = tid / WF_SIZE;
-        const rocsparse_int nwfb = hipGridDim_x * hipBlockDim_x / (WF_SIZE * BSR_BLOCK_DIM);
-        const rocsparse_int col  = lid + hipBlockIdx_y * WF_SIZE;
+        const int32_t tid  = hipThreadIdx_x;
+        const J       gid  = hipBlockIdx_x * hipBlockDim_x + tid;
+        const int32_t lid  = gid & (WF_SIZE - 1);
+        const int32_t wid  = tid / WF_SIZE;
+        const J       nwfb = hipGridDim_x * hipBlockDim_x / (WF_SIZE * BSR_BLOCK_DIM);
+        const J       col  = lid + hipBlockIdx_y * WF_SIZE;
 
         const int64_t colB = col * ldb;
-        const int64_t colC = col * ldc;
 
         // global row
-        const rocsparse_int global_row = (gid / WF_SIZE);
+        const J global_row = (gid / WF_SIZE);
 
         // local row within block row
-        const rocsparse_int local_row = (gid / WF_SIZE) % BSR_BLOCK_DIM;
+        const J local_row = (gid / WF_SIZE) % BSR_BLOCK_DIM;
 
-        __shared__ rocsparse_int shared_col[BLOCKSIZE / WF_SIZE][WF_SIZE];
-        __shared__ T             shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE * PADDED_BSR_BLOCK_DIM];
+        __shared__ J shared_col[BLOCKSIZE / WF_SIZE][WF_SIZE];
+        __shared__ A shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE * PADDED_BSR_BLOCK_DIM];
 
-        for(rocsparse_int block_row = gid / (WF_SIZE * BSR_BLOCK_DIM); block_row < Mb;
-            block_row += nwfb)
+        for(J block_row = gid / (WF_SIZE * BSR_BLOCK_DIM); block_row < Mb; block_row += nwfb)
         {
-            const rocsparse_int block_row_start = bsr_row_ptr[block_row] - idx_base;
-            const rocsparse_int block_row_end   = bsr_row_ptr[block_row + 1] - idx_base;
+            const I block_row_start = bsr_row_ptr[block_row] - idx_base;
+            const I block_row_end   = bsr_row_ptr[block_row + 1] - idx_base;
 
             T sum = static_cast<T>(0);
 
-            for(rocsparse_int j = block_row_start; j < block_row_end; j += WF_SIZE)
+            for(I j = block_row_start; j < block_row_end; j += WF_SIZE)
             {
-                const rocsparse_int k = j + lid;
+                const I k = j + lid;
 
                 shared_col[wid][lid]
                     = (k < block_row_end) ? BSR_BLOCK_DIM * (bsr_col_ind[k] - idx_base) : 0;
@@ -86,7 +93,7 @@ namespace rocsparse
                 if(direction == rocsparse_direction_row)
                 {
                     // Perform:
-                    // for(rocsparse_int l = 0; l < BSR_BLOCK_DIM; l++)
+                    // for(uint32_t l = 0; l < BSR_BLOCK_DIM; l++)
                     // {
                     //     shared_val[wid][PADDED_BSR_BLOCK_DIM * lid + l]
                     //         = (k < block_row_end) ? bsr_val[BSR_BLOCK_DIM * BSR_BLOCK_DIM * k
@@ -123,7 +130,7 @@ namespace rocsparse
                 else
                 {
                     // Perform:
-                    // for(rocsparse_int l = 0; l < BSR_BLOCK_DIM; l++)
+                    // for(uint32_t l = 0; l < BSR_BLOCK_DIM; l++)
                     // {
                     //     shared_val[wid][BSR_BLOCK_DIM * lid + l]
                     //         = (k < block_row_end) ? bsr_val[BSR_BLOCK_DIM * BSR_BLOCK_DIM * k
@@ -162,36 +169,36 @@ namespace rocsparse
 
                 if(col < N)
                 {
-                    for(rocsparse_int i = 0; i < WF_SIZE; ++i)
+                    for(uint32_t i = 0; i < WF_SIZE; ++i)
                     {
                         // Perform:
-                        // for(rocsparse_int l = 0; l < BSR_BLOCK_DIM; l++)
+                        // for(uint32_t l = 0; l < BSR_BLOCK_DIM; l++)
                         // {
-                        //     sum = rocsparse::fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + l],
-                        //                         B[shared_col[wid][i] + l],
+                        //     sum = rocsparse::fma<T>(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + l],
+                        //                         dense_B[shared_col[wid][i] + l],
                         //                         sum);
                         // }
                         // as unrolled loop.
-                        sum = rocsparse::fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i],
-                                             B[shared_col[wid][i] + colB],
-                                             sum);
+                        sum = rocsparse::fma<T>(shared_val[wid][PADDED_BSR_BLOCK_DIM * i],
+                                                dense_B[shared_col[wid][i] + colB],
+                                                sum);
                         if(BSR_BLOCK_DIM >= 2)
                         {
-                            sum = rocsparse::fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 1],
-                                                 B[shared_col[wid][i] + 1 + colB],
-                                                 sum);
+                            sum = rocsparse::fma<T>(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 1],
+                                                    dense_B[shared_col[wid][i] + 1 + colB],
+                                                    sum);
                         }
                         if(BSR_BLOCK_DIM >= 3)
                         {
-                            sum = rocsparse::fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 2],
-                                                 B[shared_col[wid][i] + 2 + colB],
-                                                 sum);
+                            sum = rocsparse::fma<T>(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 2],
+                                                    dense_B[shared_col[wid][i] + 2 + colB],
+                                                    sum);
                         }
                         if(BSR_BLOCK_DIM >= 4)
                         {
-                            sum = rocsparse::fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 3],
-                                                 B[shared_col[wid][i] + 3 + colB],
-                                                 sum);
+                            sum = rocsparse::fma<T>(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 3],
+                                                    dense_B[shared_col[wid][i] + 3 + colB],
+                                                    sum);
                         }
                     }
                 }
@@ -201,64 +208,89 @@ namespace rocsparse
             {
                 if(beta == static_cast<T>(0))
                 {
-                    C[global_row + colC] = alpha * sum;
+                    if(order_C == rocsparse_order_column)
+                    {
+                        dense_C[global_row + ldc * col] = alpha * sum;
+                    }
+                    else
+                    {
+                        dense_C[global_row * ldc + col] = alpha * sum;
+                    }
                 }
                 else
                 {
-                    C[global_row + colC] = rocsparse::fma(beta, C[global_row + colC], alpha * sum);
+                    if(order_C == rocsparse_order_column)
+                    {
+                        dense_C[global_row + ldc * col]
+                            = rocsparse::fma<T>(beta, dense_C[global_row + ldc * col], alpha * sum);
+                    }
+                    else
+                    {
+                        dense_C[ldc * global_row + col]
+                            = rocsparse::fma<T>(beta, dense_C[global_row * ldc + col], alpha * sum);
+                    }
                 }
             }
         }
     }
 
-    template <rocsparse_int BLOCKSIZE,
-              rocsparse_int WF_SIZE,
-              rocsparse_int BSR_BLOCK_DIM,
-              typename T>
-    ROCSPARSE_DEVICE_ILF void
-        bsrmmnt_small_blockdim_device(rocsparse_direction direction,
-                                      rocsparse_int       Mb,
-                                      rocsparse_int       N,
-                                      T                   alpha,
-                                      const rocsparse_int* __restrict__ bsr_row_ptr,
-                                      const rocsparse_int* __restrict__ bsr_col_ind,
-                                      const T* __restrict__ bsr_val,
-                                      const T* __restrict__ B,
-                                      int64_t ldb,
-                                      T       beta,
-                                      T* __restrict__ C,
-                                      int64_t              ldc,
-                                      rocsparse_index_base idx_base)
+    template <uint32_t BLOCKSIZE,
+              uint32_t WF_SIZE,
+              uint32_t BSR_BLOCK_DIM,
+              typename T,
+              typename I,
+              typename J,
+              typename A,
+              typename B,
+              typename C>
+    ROCSPARSE_DEVICE_ILF void bsrmmnt_small_blockdim_device(rocsparse_direction direction,
+                                                            J                   Mb,
+                                                            J                   N,
+                                                            int64_t offsets_batch_stride_A,
+                                                            int64_t columns_values_batch_stride_A,
+                                                            T       alpha,
+                                                            const I* __restrict__ bsr_row_ptr,
+                                                            const J* __restrict__ bsr_col_ind,
+                                                            const A* __restrict__ bsr_val,
+                                                            const B* __restrict__ dense_B,
+                                                            int64_t ldb,
+                                                            int64_t batch_stride_B,
+                                                            T       beta,
+                                                            C* __restrict__ dense_C,
+                                                            int64_t              ldc,
+                                                            int64_t              batch_stride_C,
+                                                            rocsparse_order      order_C,
+                                                            rocsparse_index_base idx_base)
     {
-        constexpr rocsparse_int PADDED_BSR_BLOCK_DIM = (BSR_BLOCK_DIM + 1);
+        constexpr uint32_t PADDED_BSR_BLOCK_DIM = (BSR_BLOCK_DIM + 1);
 
-        const rocsparse_int tid        = hipThreadIdx_x;
-        const rocsparse_int gid        = hipBlockIdx_x * hipBlockDim_x + tid;
-        const rocsparse_int block_row  = gid / (WF_SIZE * BSR_BLOCK_DIM);
-        const rocsparse_int global_row = gid / WF_SIZE;
-        const rocsparse_int local_row  = (gid / WF_SIZE) % BSR_BLOCK_DIM;
-        const rocsparse_int lid        = tid & (WF_SIZE - 1);
-        const rocsparse_int wid        = tid / WF_SIZE;
+        const int tid        = hipThreadIdx_x;
+        const J   gid        = hipBlockIdx_x * hipBlockDim_x + tid;
+        const J   block_row  = gid / (WF_SIZE * BSR_BLOCK_DIM);
+        const J   global_row = gid / WF_SIZE;
+        const J   local_row  = (gid / WF_SIZE) % BSR_BLOCK_DIM;
+        const int lid        = tid & (WF_SIZE - 1);
+        const int wid        = tid / WF_SIZE;
 
         if(block_row >= Mb)
         {
             return;
         }
 
-        __shared__ rocsparse_int shared_col[BLOCKSIZE / WF_SIZE][WF_SIZE];
-        __shared__ T             shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE * PADDED_BSR_BLOCK_DIM];
+        __shared__ J shared_col[BLOCKSIZE / WF_SIZE][WF_SIZE];
+        __shared__ A shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE * PADDED_BSR_BLOCK_DIM];
 
-        const rocsparse_int block_row_start = bsr_row_ptr[block_row] - idx_base;
-        const rocsparse_int block_row_end   = bsr_row_ptr[block_row + 1] - idx_base;
+        const I block_row_start = bsr_row_ptr[block_row] - idx_base;
+        const I block_row_end   = bsr_row_ptr[block_row + 1] - idx_base;
 
-        for(rocsparse_int l = 0; l < N; l += WF_SIZE)
+        for(J l = 0; l < N; l += WF_SIZE)
         {
-            const rocsparse_int col = l + lid;
-            T                   sum = static_cast<T>(0);
+            const J col = l + lid;
+            T       sum = static_cast<T>(0);
 
-            for(rocsparse_int j = block_row_start; j < block_row_end; j += WF_SIZE)
+            for(I j = block_row_start; j < block_row_end; j += WF_SIZE)
             {
-                const rocsparse_int k = j + lid;
+                const I k = j + lid;
 
                 shared_col[wid][lid]
                     = (k < block_row_end) ? BSR_BLOCK_DIM * (bsr_col_ind[k] - idx_base) : 0;
@@ -266,7 +298,7 @@ namespace rocsparse
                 if(direction == rocsparse_direction_row)
                 {
                     // Perform:
-                    // for(rocsparse_int p = 0; p < BSR_BLOCK_DIM; p++)
+                    // for(uint32_t p = 0; p < BSR_BLOCK_DIM; p++)
                     // {
                     //     shared_val[wid][PADDED_BSR_BLOCK_DIM * lid + p]
                     //         = (k < block_row_end) ? bsr_val[BSR_BLOCK_DIM * BSR_BLOCK_DIM * k
@@ -303,7 +335,7 @@ namespace rocsparse
                 else
                 {
                     // Perform:
-                    // for(rocsparse_int p = 0; p < BSR_BLOCK_DIM; p++)
+                    // for(uint32_t p = 0; p < BSR_BLOCK_DIM; p++)
                     // {
                     //     shared_val[wid][PADDED_BSR_BLOCK_DIM * lid + p]
                     //         = (k < block_row_end) ? bsr_val[BSR_BLOCK_DIM * BSR_BLOCK_DIM * k
@@ -342,33 +374,34 @@ namespace rocsparse
 
                 if(col < N)
                 {
-                    for(rocsparse_int i = 0; i < WF_SIZE; ++i)
+                    for(uint32_t i = 0; i < WF_SIZE; ++i)
                     {
                         // Perform:
-                        // for(rocsparse_int p = 0; p < BSR_BLOCK_DIM; p++)
+                        // for(uint32_t p = 0; p < BSR_BLOCK_DIM; p++)
                         // {
-                        //     T val_B = rocsparse::ldg(B + col + ldb * (p + shared_col[wid][i]));
-                        //     sum = rocsparse::fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + p], val_B, sum);
+                        //     T val_B = rocsparse::ldg(dense_B + col + ldb * (p + shared_col[wid][i]));
+                        //     sum = rocsparse::fma<T>(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + p], val_B, sum);
                         // }
                         // as unrolled loop.
-                        T val_B = rocsparse::ldg(B + col + ldb * shared_col[wid][i]);
-                        sum = rocsparse::fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i], val_B, sum);
+                        T val_B = rocsparse::ldg(dense_B + col + ldb * shared_col[wid][i]);
+                        sum     = rocsparse::fma<T>(
+                            shared_val[wid][PADDED_BSR_BLOCK_DIM * i], val_B, sum);
                         if(BSR_BLOCK_DIM >= 2)
                         {
-                            val_B = rocsparse::ldg(B + col + ldb * (1 + shared_col[wid][i]));
-                            sum   = rocsparse::fma(
+                            val_B = rocsparse::ldg(dense_B + col + ldb * (1 + shared_col[wid][i]));
+                            sum   = rocsparse::fma<T>(
                                 shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 1], val_B, sum);
                         }
                         if(BSR_BLOCK_DIM >= 3)
                         {
-                            val_B = rocsparse::ldg(B + col + ldb * (2 + shared_col[wid][i]));
-                            sum   = rocsparse::fma(
+                            val_B = rocsparse::ldg(dense_B + col + ldb * (2 + shared_col[wid][i]));
+                            sum   = rocsparse::fma<T>(
                                 shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 2], val_B, sum);
                         }
                         if(BSR_BLOCK_DIM >= 4)
                         {
-                            val_B = rocsparse::ldg(B + col + ldb * (3 + shared_col[wid][i]));
-                            sum   = rocsparse::fma(
+                            val_B = rocsparse::ldg(dense_B + col + ldb * (3 + shared_col[wid][i]));
+                            sum   = rocsparse::fma<T>(
                                 shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 3], val_B, sum);
                         }
                     }
@@ -379,12 +412,27 @@ namespace rocsparse
             {
                 if(beta == static_cast<T>(0))
                 {
-                    C[global_row + col * ldc] = alpha * sum;
+                    if(order_C == rocsparse_order_column)
+                    {
+                        dense_C[global_row + ldc * col] = alpha * sum;
+                    }
+                    else
+                    {
+                        dense_C[global_row * ldc + col] = alpha * sum;
+                    }
                 }
                 else
                 {
-                    C[global_row + col * ldc]
-                        = rocsparse::fma(beta, C[global_row + col * ldc], alpha * sum);
+                    if(order_C == rocsparse_order_column)
+                    {
+                        dense_C[global_row + ldc * col]
+                            = rocsparse::fma<T>(beta, dense_C[global_row + ldc * col], alpha * sum);
+                    }
+                    else
+                    {
+                        dense_C[ldc * global_row + col]
+                            = rocsparse::fma<T>(beta, dense_C[global_row * ldc + col], alpha * sum);
+                    }
                 }
             }
         }

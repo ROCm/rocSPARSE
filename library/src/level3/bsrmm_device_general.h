@@ -28,66 +28,72 @@
 
 namespace rocsparse
 {
-    template <rocsparse_int BSR_BLOCK_DIM, rocsparse_int BLK_SIZE_Y, typename T>
-    ROCSPARSE_DEVICE_ILF void
-        bsrmm_general_blockdim_device(rocsparse_direction direction,
-                                      rocsparse_operation trans_B,
-                                      rocsparse_int       Mb,
-                                      rocsparse_int       N,
-                                      T                   alpha,
-                                      const rocsparse_int* __restrict__ bsr_row_ptr,
-                                      const rocsparse_int* __restrict__ bsr_col_ind,
-                                      const T* __restrict__ bsr_val,
-                                      rocsparse_int block_dim,
-                                      const T* __restrict__ B,
-                                      int64_t ldb,
-                                      T       beta,
-                                      T* __restrict__ C,
-                                      int64_t              ldc,
-                                      rocsparse_index_base idx_base)
+    template <uint32_t BSR_BLOCK_DIM,
+              uint32_t BLK_SIZE_Y,
+              typename T,
+              typename I,
+              typename J,
+              typename A,
+              typename B,
+              typename C>
+    ROCSPARSE_DEVICE_ILF void bsrmm_general_blockdim_device(bool                nn,
+                                                            rocsparse_direction direction,
+                                                            J                   Mb,
+                                                            J                   N,
+                                                            int64_t offsets_batch_stride_A,
+                                                            int64_t columns_values_batch_stride_A,
+                                                            T       alpha,
+                                                            const I* __restrict__ bsr_row_ptr,
+                                                            const J* __restrict__ bsr_col_ind,
+                                                            const A* __restrict__ bsr_val,
+                                                            J block_dim,
+                                                            const B* __restrict__ dense_B,
+                                                            int64_t ldb,
+                                                            int64_t batch_stride_B,
+                                                            T       beta,
+                                                            C* __restrict__ dense_C,
+                                                            int64_t              ldc,
+                                                            int64_t              batch_stride_C,
+                                                            rocsparse_order      order_C,
+                                                            rocsparse_index_base idx_base)
     {
-        const rocsparse_int tidx = hipThreadIdx_x;
-        const rocsparse_int tidy = hipThreadIdx_y;
+        const int32_t tidx = hipThreadIdx_x;
+        const int32_t tidy = hipThreadIdx_y;
 
-        const rocsparse_int block_row = hipBlockIdx_x;
+        const int32_t block_row = hipBlockIdx_x;
 
-        const rocsparse_int block_row_start
-            = (block_row < Mb) ? (bsr_row_ptr[block_row] - idx_base) : 0;
-        const rocsparse_int block_row_end
-            = (block_row < Mb) ? (bsr_row_ptr[block_row + 1] - idx_base) : 0;
+        const I block_row_start = (block_row < Mb) ? (bsr_row_ptr[block_row] - idx_base) : 0;
+        const I block_row_end   = (block_row < Mb) ? (bsr_row_ptr[block_row + 1] - idx_base) : 0;
 
         __shared__ T shared_B[BSR_BLOCK_DIM * BLK_SIZE_Y];
         __shared__ T shared_A[BSR_BLOCK_DIM * BSR_BLOCK_DIM];
 
-        const rocsparse_int global_col = tidy + hipBlockIdx_y * BLK_SIZE_Y;
+        const J global_col = tidy + hipBlockIdx_y * BLK_SIZE_Y;
 
-        const int64_t colB = global_col * ldb;
-        const int64_t colC = global_col * ldc;
-
-        for(rocsparse_int x = 0; x < block_dim; x += BSR_BLOCK_DIM)
+        for(J x = 0; x < block_dim; x += BSR_BLOCK_DIM)
         {
-            const rocsparse_int global_row = tidx + x + hipBlockIdx_x * block_dim;
+            const J global_row = tidx + x + hipBlockIdx_x * block_dim;
 
             T sum = static_cast<T>(0);
 
-            for(rocsparse_int k = block_row_start; k < block_row_end; k++)
+            for(I k = block_row_start; k < block_row_end; k++)
             {
-                const rocsparse_int block_col = (bsr_col_ind[k] - idx_base);
+                const J block_col = (bsr_col_ind[k] - idx_base);
 
-                for(rocsparse_int y = 0; y < block_dim; y += BLK_SIZE_Y)
+                for(J y = 0; y < block_dim; y += BLK_SIZE_Y)
                 {
-                    if(trans_B == rocsparse_operation_none)
+                    if(nn)
                     {
                         shared_B[BSR_BLOCK_DIM * tidy + tidx]
                             = (global_col < N && (tidx + y) < block_dim)
-                                  ? B[block_dim * block_col + (tidx + y) + colB]
+                                  ? dense_B[block_dim * block_col + (tidx + y) + global_col * ldb]
                                   : static_cast<T>(0);
                     }
                     else
                     {
                         shared_B[BSR_BLOCK_DIM * tidy + tidx]
                             = (global_col < N && (tidx + y) < block_dim)
-                                  ? B[global_col + ldb * (block_dim * block_col + (tidx + y))]
+                                  ? dense_B[global_col + ldb * (block_dim * block_col + (tidx + y))]
                                   : static_cast<T>(0);
                     }
 
@@ -110,11 +116,11 @@ namespace rocsparse
 
                     __syncthreads();
 
-                    for(rocsparse_int j = 0; j < BSR_BLOCK_DIM; j++)
+                    for(uint32_t j = 0; j < BSR_BLOCK_DIM; j++)
                     {
-                        sum = rocsparse::fma(shared_A[BSR_BLOCK_DIM * j + tidx],
-                                             shared_B[BSR_BLOCK_DIM * tidy + j],
-                                             sum);
+                        sum = rocsparse::fma<T>(shared_A[BSR_BLOCK_DIM * j + tidx],
+                                                shared_B[BSR_BLOCK_DIM * tidy + j],
+                                                sum);
                     }
 
                     __syncthreads();
@@ -125,11 +131,27 @@ namespace rocsparse
             {
                 if(beta == static_cast<T>(0))
                 {
-                    C[global_row + colC] = alpha * sum;
+                    if(order_C == rocsparse_order_column)
+                    {
+                        dense_C[global_row + ldc * global_col] = alpha * sum;
+                    }
+                    else
+                    {
+                        dense_C[global_row * ldc + global_col] = alpha * sum;
+                    }
                 }
                 else
                 {
-                    C[global_row + colC] = rocsparse::fma(beta, C[global_row + colC], alpha * sum);
+                    if(order_C == rocsparse_order_column)
+                    {
+                        dense_C[global_row + ldc * global_col] = rocsparse::fma<T>(
+                            beta, dense_C[global_row + ldc * global_col], alpha * sum);
+                    }
+                    else
+                    {
+                        dense_C[global_row * ldc + global_col] = rocsparse::fma<T>(
+                            beta, dense_C[global_row * ldc + global_col], alpha * sum);
+                    }
                 }
             }
         }

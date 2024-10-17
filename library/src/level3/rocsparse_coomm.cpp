@@ -419,40 +419,39 @@ namespace rocsparse
         }
     }
 
-    template <typename T, typename I, typename A, typename B, typename C>
+    template <typename T, typename C>
     static rocsparse_status coomm_quickreturn(rocsparse_handle          handle,
                                               rocsparse_operation       trans_A,
                                               rocsparse_operation       trans_B,
                                               rocsparse_coomm_alg       alg,
-                                              I                         m,
-                                              I                         n,
-                                              I                         k,
+                                              int64_t                   m,
+                                              int64_t                   n,
+                                              int64_t                   k,
                                               int64_t                   nnz,
-                                              I                         batch_count_A,
+                                              int64_t                   batch_count_A,
                                               int64_t                   batch_stride_A,
                                               const T*                  alpha_device_host,
                                               const rocsparse_mat_descr descr,
-                                              const A*                  coo_val,
-                                              const I*                  coo_row_ind,
-                                              const I*                  coo_col_ind,
-                                              const B*                  dense_B,
+                                              const void*               coo_val,
+                                              const void*               coo_row_ind,
+                                              const void*               coo_col_ind,
+                                              const void*               dense_B,
                                               int64_t                   ldb,
-                                              I                         batch_count_B,
+                                              int64_t                   batch_count_B,
                                               int64_t                   batch_stride_B,
                                               rocsparse_order           order_B,
                                               const T*                  beta_device_host,
                                               C*                        dense_C,
                                               int64_t                   ldc,
-                                              I                         batch_count_C,
+                                              int64_t                   batch_count_C,
                                               int64_t                   batch_stride_C,
                                               rocsparse_order           order_C,
                                               void*                     temp_buffer)
     {
         if(m == 0 || n == 0 || k == 0)
         {
-
             // matrix never accessed however still need to update C matrix
-            const rocsparse_int Csize = (trans_A == rocsparse_operation_none) ? m * n : k * n;
+            const int64_t Csize = (trans_A == rocsparse_operation_none) ? m * n : k * n;
             if(Csize > 0)
             {
                 if(dense_C == nullptr && beta_device_host == nullptr)
@@ -500,31 +499,31 @@ namespace rocsparse
         return rocsparse_status_continue;
     }
 
-    template <typename T, typename I, typename A, typename B, typename C>
+    template <typename T, typename C>
     static rocsparse_status coomm_checkarg(rocsparse_handle          handle, //0
                                            rocsparse_operation       trans_A, //1
                                            rocsparse_operation       trans_B, //2
                                            rocsparse_coomm_alg       alg, //3
-                                           I                         m, //4
-                                           I                         n, //5
-                                           I                         k, //6
+                                           int64_t                   m, //4
+                                           int64_t                   n, //5
+                                           int64_t                   k, //6
                                            int64_t                   nnz, //7
-                                           I                         batch_count_A, //8
+                                           int64_t                   batch_count_A, //8
                                            int64_t                   batch_stride_A, //9
                                            const T*                  alpha_device_host, //10
                                            const rocsparse_mat_descr descr, //11
-                                           const A*                  coo_val, //12
-                                           const I*                  coo_row_ind, //13
-                                           const I*                  coo_col_ind, //14
-                                           const B*                  dense_B, //15
+                                           const void*               coo_val, //12
+                                           const void*               coo_row_ind, //13
+                                           const void*               coo_col_ind, //14
+                                           const void*               dense_B, //15
                                            int64_t                   ldb, //16
-                                           I                         batch_count_B, //17
+                                           int64_t                   batch_count_B, //17
                                            int64_t                   batch_stride_B, //18
                                            rocsparse_order           order_B, //19
                                            const T*                  beta_device_host, //20
                                            C*                        dense_C, //21
                                            int64_t                   ldc, //22
-                                           I                         batch_count_C, //23
+                                           int64_t                   batch_count_C, //23
                                            int64_t                   batch_stride_C, //24
                                            rocsparse_order           order_C, //25
                                            void*                     temp_buffer) //26
@@ -598,7 +597,7 @@ namespace rocsparse
         ROCSPARSE_CHECKARG_POINTER(21, dense_C);
 
         // Check leading dimension of matrices
-        static constexpr I s_one = static_cast<I>(1);
+        static constexpr int64_t s_one = static_cast<int64_t>(1);
         switch(trans_A)
         {
         case rocsparse_operation_none:
