@@ -259,14 +259,25 @@ if(BUILD_DOCS)
 endif()
 
 # Package specific CPACK vars
+## add dependency on hip runtime for shared libraries
+set(HIP_RUNTIME_MINIMUM 4.5.0)
 if(BUILD_ADDRESS_SANITIZER)
   set(DEPENDS_HIP_RUNTIME "hip-runtime-amd-asan" )
 else()
   set(DEPENDS_HIP_RUNTIME "hip-runtime-amd" )
 endif()
-rocm_package_add_dependencies(DEPENDS "${DEPENDS_HIP_RUNTIME} >= 4.5.0")
+rocm_package_add_dependencies(SHARED_DEPENDS "${DEPENDS_HIP_RUNTIME} >= ${HIP_RUNTIME_MINIMUM}")
+
+## add dependency on hip runtime for static libraries
+rocm_package_add_deb_dependencies(STATIC_DEPENDS "hip-static-dev >= ${HIP_RUNTIME_MINIMUM}")
+rocm_package_add_rpm_dependencies(STATIC_DEPENDS "hip-static-devel >= ${HIP_RUNTIME_MINIMUM}")
+
+## add dependency on rocBLAS
 if (rocblas_FOUND)
-  rocm_package_add_dependencies(DEPENDS "rocblas >= 4.1.0")
+  set(ROCBLAS_MINIMUM "4.1.0")
+  rocm_package_add_dependencies(SHARED_DEPENDS "rocblas >= ${ROCBLAS_MINIMUM}")
+  rocm_package_add_deb_dependencies(STATIC_DEPENDS "rocblas-static-dev >= ${ROCBLAS_MINIMUM}")
+  rocm_package_add_rpm_dependencies(STATIC_DEPENDS "rocblas-static-devel >= ${ROCBLAS_MINIMUM}")
 else()
   message("Build rocSPARSE with rocBLAS is disabled since rocBLAS is not found")
 endif()
