@@ -259,10 +259,25 @@ typedef enum rocsparse_index_base_
  *  \brief Specify the matrix type.
  *
  *  \details
- *  The \ref rocsparse_matrix_type indices the type of a matrix. For a given
+ *  The \ref rocsparse_matrix_type indicates the type of a matrix. For a given
  *  \ref rocsparse_mat_descr, the \ref rocsparse_matrix_type can be set using
  *  rocsparse_set_mat_type(). The current \ref rocsparse_matrix_type of a matrix can be
  *  obtained by rocsparse_get_mat_type().
+ *
+ *  For the matrix types \ref rocsparse_matrix_type_symmetric, \ref rocsparse_matrix_type_hermitian,
+ *  and \ref rocsparse_matrix_type_triangular, only the upper or lower part of the matrix 
+ *  (specified by setting the \ref rocsparse_fill_mode) is assumed to be stored. The purpose of this 
+ *  is to minimize the amount of memory required to store the matrix.
+ *
+ *  Routines that accept \ref rocsparse_matrix_type_symmetric or \ref rocsparse_matrix_type_hermitian 
+ *  will only read from the stored upper or lower part of the matrix but will perform the computation 
+ *  as if the full symmetric/hermitian matrix existed. For example, when computing \f$y=A*x\f$ where 
+ *  A is symmetric and only the lower part is stored, internally the multiplication will be performed 
+ *  in two steps. First the computation \f$y=(L+D)*x\f$ will be performed. Secondly the multiplication 
+ *  will be completed by performing \f$y=L^T*x + y\f$. This second step involves a transposed 
+ *  multiplication which is slower. For this reason, where space allows, it is faster to store the 
+ *  entire symmetric matrix and use \ref rocsparse_matrix_type_general instead of 
+ *  \ref rocsparse_matrix_type_symmetric.
  */
 typedef enum rocsparse_matrix_type_
 {
