@@ -38,6 +38,16 @@ extern "C" {
 *  \details
 *  \p rocsparse_check_spmat checks if the input matrix is valid.
 *
+*  \par Uniform Precisions:
+*  <table>
+*  <caption id="check_spmat_uniform">Uniform Precisions</caption>
+*  <tr><th>A
+*  <tr><td>rocsparse_datatype_f32_r
+*  <tr><td>rocsparse_datatype_f64_r
+*  <tr><td>rocsparse_datatype_f32_c
+*  <tr><td>rocsparse_datatype_f64_c
+*  </table>
+*
 *  \note
 *  This function writes the required allocation size (in bytes) to \p buffer_size and
 *  returns without performing the checking operation, when stage is equal to

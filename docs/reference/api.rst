@@ -113,8 +113,6 @@ Auxiliary Functions
 +-----------------------------------------------------+
 |:cpp:func:`rocsparse_destroy_extract_descr`          |
 +-----------------------------------------------------+
-|:cpp:func:`rocsparse_extract_nnz`                    |
-+-----------------------------------------------------+
 |:cpp:func:`rocsparse_create_sparse_to_sparse_descr`  |
 +-----------------------------------------------------+
 |:cpp:func:`rocsparse_destroy_sparse_to_sparse_descr` |
@@ -432,27 +430,55 @@ Function name                                                                   
 Sparse Generic Functions
 ------------------------
 
-==================================================== ====== ====== ============== ==============
-Function name                                        single double single complex double complex
-==================================================== ====== ====== ============== ==============
-:cpp:func:`rocsparse_axpby()`                        x      x      x              x
-:cpp:func:`rocsparse_gather()`                       x      x      x              x
-:cpp:func:`rocsparse_scatter()`                      x      x      x              x
-:cpp:func:`rocsparse_rot()`                          x      x      x              x
-:cpp:func:`rocsparse_spvv()`                         x      x      x              x
-:cpp:func:`rocsparse_sparse_to_dense()`              x      x      x              x
-:cpp:func:`rocsparse_dense_to_sparse()`              x      x      x              x
-:cpp:func:`rocsparse_spmv()`                         x      x      x              x
-:cpp:func:`rocsparse_spmv_ex()`                      x      x      x              x
-:cpp:func:`rocsparse_spsv()`                         x      x      x              x
-:cpp:func:`rocsparse_spmm()`                         x      x      x              x
-:cpp:func:`rocsparse_spsm()`                         x      x      x              x
-:cpp:func:`rocsparse_spgemm()`                       x      x      x              x
-:cpp:func:`rocsparse_sddmm_buffer_size()`            x      x      x              x
-:cpp:func:`rocsparse_sddmm_preprocess()`             x      x      x              x
-:cpp:func:`rocsparse_sddmm()`                        x      x      x              x
-:cpp:func:`rocsparse_sparse_to_sparse_buffer_size()` x      x      x              x
-:cpp:func:`rocsparse_sparse_to_sparse()`             x      x      x              x
-:cpp:func:`rocsparse_extract_buffer_size()`          x      x      x              x
-:cpp:func:`rocsparse_extract()`                      x      x      x              x
-==================================================== ====== ====== ============== ==============
+The generic API allows different combinations of data types and compute types to be used. See the specific routine 
+documentation for details on what data types and compute types are supported.
+
++-----------------------------------------------------+
+|Function name                                        |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_axpby()`                        |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_gather()`                       |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_scatter()`                      |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_rot()`                          |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_spvv()`                         |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_sparse_to_dense()`              |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_dense_to_sparse()`              |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_spmv()`                         |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_spmv_ex()`                      |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_spsv()`                         |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_spmm()`                         |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_spsm()`                         |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_spgemm()`                       |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_sddmm_buffer_size()`            |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_sddmm_preprocess()`             |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_sddmm()`                        |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_sparse_to_sparse_buffer_size()` |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_sparse_to_sparse()`             |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_extract_buffer_size()`          |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_extract_nnz()`                  |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_extract()`                      |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_check_spmat()`                  |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_spitsv()`                       |
++-----------------------------------------------------+
