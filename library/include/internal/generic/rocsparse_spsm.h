@@ -63,6 +63,16 @@ extern "C" {
 *    \right.
 *  \f]
 *
+*  \par Uniform Precisions:
+*  <table>
+*  <caption id="spsm_uniform">Uniform Precisions</caption>
+*  <tr><th>A / B / C / compute_type
+*  <tr><td>rocsparse_datatype_f32_r
+*  <tr><td>rocsparse_datatype_f64_r
+*  <tr><td>rocsparse_datatype_f32_c
+*  <tr><td>rocsparse_datatype_f64_c
+*  </table>
+*
 *  \note SpSM requires three stages to complete. The first stage
 *  \ref rocsparse_spsm_stage_buffer_size will return the size of the temporary storage buffer
 *  that is required for subsequent calls. The second stage

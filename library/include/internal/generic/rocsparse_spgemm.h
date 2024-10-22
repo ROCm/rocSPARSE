@@ -65,6 +65,16 @@ extern "C" {
 *    \right.
 *  \f]
 *
+*  \par Uniform Precisions:
+*  <table>
+*  <caption id="spgemm_uniform">Uniform Precisions</caption>
+*  <tr><th>A / B / C / D / compute_type
+*  <tr><td>rocsparse_datatype_f32_r
+*  <tr><td>rocsparse_datatype_f64_r
+*  <tr><td>rocsparse_datatype_f32_c
+*  <tr><td>rocsparse_datatype_f64_c
+*  </table>
+*
 *  \note
 *  This function does not produce deterministic results.
 *
