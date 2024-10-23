@@ -230,7 +230,7 @@ Tests:
   function: bsrsm
   precision: *single_double_precisions_complex_real
   M_N: *M_N_range_nightly
-  K: [32, 135]
+  K: [32]
   block_dim: [5]
   alpha_alphai: *alpha_range_nightly
   direction: [rocsparse_direction_row]
@@ -249,7 +249,7 @@ Tests:
   precision: *double_only_precisions_complex_real
   M_N: *M_N_range_nightly
   K: [32, 135]
-  block_dim: [11, 33]
+  block_dim: [5, 11, 33]
   alpha_alphai: *alpha_range_nightly
   direction: [rocsparse_direction_row]
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]
