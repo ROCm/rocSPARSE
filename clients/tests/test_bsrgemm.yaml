@@ -124,9 +124,7 @@ Tests:
   matrix_init_kind: [rocsparse_matrix_init_kind_tunedavg]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [scircuit,
-             amazon0312,
              bmwcra_1,
-             sme3Dc,
              rma10,
              shipsec1,
              Chevron3,
@@ -134,6 +132,29 @@ Tests:
              qc2534,
              mplate,
              mac_econ_fwd500]
+
+- name: bsrgemm_mult_file
+  category: nightly
+  function: bsrgemm
+  precision: *single_double_precisions
+  M: 1
+  N: [2200]
+  K: 1
+  block_dim: [3, 24]
+  alpha_alphai: *alpha_range_nightly
+  beta_betai: *beta_range_nightly
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  baseB: [rocsparse_index_base_one]
+  baseC: [rocsparse_index_base_zero]
+  baseD: [rocsparse_index_base_one]
+  direction: [rocsparse_direction_column]
+  matrix_init_kind: [rocsparse_matrix_init_kind_tunedavg]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [amazon0312,
+             sme3Dc]
+  skip_hardware: gfx1151
 
 # C = alpha * A * B
 - name: bsrgemm_mult

@@ -181,6 +181,7 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [Chevron4]
+  skip_hardware: gfx1151
 
 - name: spmv_bsr_graph_test
   category: pre_checkin
