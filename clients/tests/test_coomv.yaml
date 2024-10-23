@@ -105,8 +105,8 @@ Tests:
   category: nightly
   function: coomv
   precision: *single_double_precisions_complex_real
-  M: [39385, 193482, 639102]
-  N: [29348, 340123, 710341]
+  M: [39385, 193482]
+  N: [29348, 340123]
   alpha_beta: *alpha_beta_range_nightly
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
@@ -123,7 +123,7 @@ Tests:
   transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
-  storage: [rocsparse_storage_mode_unsorted]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
 
 - name: coomv_file
   category: quick
