@@ -9,6 +9,7 @@ Documentation for rocSPARSE is available at
 
 * Add `rocsparse_create_extract_descr`, `rocsparse_destroy_extract_descr`, `rocsparse_extract_buffer_size`, `rocsparse_extract_nnz`, and `rocsparse_extract` APIs to allow extraction of the upper or lower part of sparse CSR or CSC matrices.
 * Support for the gfx1151, gfx1200, and gfx1201 architectures.
+* Added `azurelinux` OS name for correcting gfortran dependency
 
 ### Changed
 
