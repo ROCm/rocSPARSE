@@ -9,7 +9,6 @@ Documentation for rocSPARSE is available at
 
 * Add `rocsparse_create_extract_descr`, `rocsparse_destroy_extract_descr`, `rocsparse_extract_buffer_size`, `rocsparse_extract_nnz`, and `rocsparse_extract` APIs to allow extraction of the upper or lower part of sparse CSR or CSC matrices.
 * Support for the gfx1151, gfx1200, and gfx1201 architectures.
-* Added `azurelinux` OS name for correcting gfortran dependency
 
 ### Changed
 
@@ -27,6 +26,7 @@ Documentation for rocSPARSE is available at
 * Fixed an issue in `hyb2csr` where the CSR row pointer array was not being properly filled when `n=0`, `coo_nnz=0`, or `ell_nnz=0`. 
 * Fixed scaling in `rocsparse_Xhybmv` when only performing `y=beta*y`, for example, where `alpha==0` in `y=alpha*Ax+beta*y`.
 * Fixed `rocsparse_Xgemmi` failures when the y grid dimension is too large. This occured when n >= 65536.
+* Fixed `azurelinux` OS name for gfortran dependency
 
 ## rocSPARSE 3.2.0 for ROCm 6.2.0
 
