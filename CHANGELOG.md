@@ -3,13 +3,6 @@
 Documentation for rocSPARSE is available at
 [https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/](https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/).
 
-## (Unreleased) rocSPARSE 3.5.0
-
-### Optimized
-
-* Reduced the number of template instantiations in the library to further reduce the shared library binary size and improve compile times
-* Improved the user documentation
-
 ## rocSPARSE 3.4.0 for ROCm 6.4.0
 
 ### Added
