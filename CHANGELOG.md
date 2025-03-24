@@ -3,6 +3,11 @@
 Documentation for rocSPARSE is available at
 [https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/](https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/).
 
+## rocSPARSE 3.4.1 for ROCm 6.4.1
+
+### Resolved issues
+* Fixed an issue in `rocsparse_bsrilu0` where the algorithm was running out of bounds of the `bsr_val` array.
+
 ## rocSPARSE 3.4.0 for ROCm 6.4.0
 
 ### Added
