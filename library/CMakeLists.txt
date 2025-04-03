@@ -112,7 +112,7 @@ set_target_properties(rocsparse PROPERTIES CXX_VISIBILITY_PRESET "hidden" VISIBI
 set_target_properties(rocsparse PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
 set_target_properties(rocsparse PROPERTIES DEBUG_POSTFIX "-d")
 target_compile_options(rocsparse PRIVATE -fgpu-rdc)
-target_link_options(rocsparse PRIVATE -fgpu-rdc)
+target_link_options(rocsparse PRIVATE -fgpu-rdc -Xoffload-linker --lto-partitions=1)
 
 if (WIN32 AND BUILD_CLIENTS)
   add_custom_command( TARGET rocsparse POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/staging/$<TARGET_FILE_NAME:rocsparse> ${PROJECT_BINARY_DIR}/clients/staging/$<TARGET_FILE_NAME:rocsparse> )
