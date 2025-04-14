@@ -3,11 +3,6 @@
 Documentation for rocSPARSE is available at
 [https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/](https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/).
 
-## (Unreleased) rocSPARSE 3.6.0
-
-### Added
-* Adds SpGEAM generic routine for computing sparse matrix addition in CSR format
-
 ## rocSPARSE 3.5.0 for ROCm 6.5.0
 
 ### Added
