@@ -196,6 +196,27 @@ namespace rocsparse
                       rocsparse_datatype_i8_r,
                       rocsparse_datatype_f32_r),
 
+         CSRMV_CONFIG(rocsparse_datatype_f32_r,
+                      rocsparse_indextype_i32,
+                      rocsparse_indextype_i32,
+                      rocsparse_datatype_f16_r,
+                      rocsparse_datatype_f16_r,
+                      rocsparse_datatype_f32_r),
+    
+         CSRMV_CONFIG(rocsparse_datatype_f32_r,
+                      rocsparse_indextype_i64,
+                      rocsparse_indextype_i32,
+                      rocsparse_datatype_f16_r,
+                      rocsparse_datatype_f16_r,
+                      rocsparse_datatype_f32_r),
+
+         CSRMV_CONFIG(rocsparse_datatype_f32_r,
+                      rocsparse_indextype_i64,
+                      rocsparse_indextype_i64,
+                      rocsparse_datatype_f16_r,
+                      rocsparse_datatype_f16_r,
+                      rocsparse_datatype_f32_r),
+
          CSRMV_CONFIG(rocsparse_datatype_f32_c,
                       rocsparse_indextype_i32,
                       rocsparse_indextype_i32,
@@ -279,7 +300,6 @@ namespace rocsparse
                       rocsparse_datatype_f32_c,
                       rocsparse_datatype_f64_c,
                       rocsparse_datatype_f64_c)
-
         }};
 
     static rocsparse_status csrmv_find(csrmv_t*            function_,
@@ -347,7 +367,6 @@ namespace rocsparse
 
         return rocsparse_status_success;
     }
-
 }
 
 rocsparse_status rocsparse::csrmv(rocsparse_handle          handle,
