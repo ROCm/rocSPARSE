@@ -15,6 +15,8 @@ Documentation for rocSPARSE is available at
 ### Removed
 
 * The deprecated `rocsparse_spmv_ex` routine
+* The deprecated `rocsparse_sbsrmv_ex`, `rocsparse_dbsrmv_ex`, `rocsparse_cbsrmv_ex` and `rocsparse_zbsrmv_ex`  routines
+* The deprecated `rocsparse_sbsrmv_ex_analysis`, `rocsparse_dbsrmv_ex_analysis`, `rocsparse_cbsrmv_ex_analysis` and `rocsparse_zbsrmv_ex_analysis`  routines
 
 ### Upcoming changes
 * Deprecated the `rocsparse_spmv` routine. Users should use the `rocsparse_v2_spmv` routine going forward.
