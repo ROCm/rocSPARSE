@@ -39,6 +39,7 @@ typedef struct _rocsparse_csritsv_info*  rocsparse_csritsv_info;
 typedef struct _rocsparse_adaptive_info* rocsparse_adaptive_info;
 typedef struct _rocsparse_lrb_info*      rocsparse_lrb_info;
 typedef struct _rocsparse_bsrmv_info*    rocsparse_bsrmv_info;
+typedef struct _rocsparse_csrmv_info*    rocsparse_cscmv_info;
 
 /********************************************************************************
  * \brief rocsparse_handle is a structure holding the rocsparse library context.
