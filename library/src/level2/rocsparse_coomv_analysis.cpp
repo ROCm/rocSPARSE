@@ -43,12 +43,14 @@ namespace rocsparse
 
     using coomv_analysis_tuple = std::tuple<rocsparse_indextype, rocsparse_datatype>;
 
+    // clang-format off
 #define COOMV_ANALYSIS_CONFIG(I_, A_)                                                 \
     {                                                                                 \
         coomv_analysis_tuple(I_, A_),                                                 \
             coomv_analysis_template<typename rocsparse::indextype_traits<I_>::type_t, \
                                     typename rocsparse::datatype_traits<A_>::type_t>  \
     }
+    // clang-format on
 
     static const std::map<coomv_analysis_tuple, coomv_analysis_t> s_coomv_analysis_dispatch{
         {COOMV_ANALYSIS_CONFIG(rocsparse_indextype_i32, rocsparse_datatype_i8_r),

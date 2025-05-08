@@ -46,6 +46,7 @@ namespace rocsparse
     using bsrmv_analysis_tuple
         = std::tuple<rocsparse_indextype, rocsparse_indextype, rocsparse_datatype>;
 
+    // clang-format off
 #define BSRMV_ANALYSIS_CONFIG(I_, J_, A_)                                             \
     {                                                                                 \
         bsrmv_analysis_tuple(I_, J_, A_),                                             \
@@ -53,6 +54,7 @@ namespace rocsparse
                                     typename rocsparse::indextype_traits<J_>::type_t, \
                                     typename rocsparse::datatype_traits<A_>::type_t>  \
     }
+    // clang-format on
 
     static const std::map<bsrmv_analysis_tuple, bsrmv_analysis_t> s_bsrmv_analysis_dispatch{
         {BSRMV_ANALYSIS_CONFIG(

@@ -51,6 +51,7 @@ namespace rocsparse
                                    rocsparse_datatype,
                                    rocsparse_datatype>;
 
+    // clang-format off
 #define ELLMV_CONFIG(T, I, A, X, Y)                                  \
     {ellmv_tuple(T, I, A, X, Y),                                     \
      ellmv_template<typename rocsparse::datatype_traits<T>::type_t,  \
@@ -58,6 +59,7 @@ namespace rocsparse
                     typename rocsparse::datatype_traits<A>::type_t,  \
                     typename rocsparse::datatype_traits<X>::type_t,  \
                     typename rocsparse::datatype_traits<Y>::type_t>}
+    // clang-format on
 
     static const std::map<ellmv_tuple, ellmv_t> s_ellmv_dispatch{
         {ELLMV_CONFIG(rocsparse_datatype_f32_r,

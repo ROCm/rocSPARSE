@@ -57,6 +57,7 @@ namespace rocsparse
                                    rocsparse_datatype,
                                    rocsparse_datatype>;
 
+    // clang-format off
 #define BSRMV_CONFIG(T, I, J, A, X, Y)                               \
     {bsrmv_tuple(T, I, J, A, X, Y),                                  \
      bsrmv_template<typename rocsparse::datatype_traits<T>::type_t,  \
@@ -65,6 +66,7 @@ namespace rocsparse
                     typename rocsparse::datatype_traits<A>::type_t,  \
                     typename rocsparse::datatype_traits<X>::type_t,  \
                     typename rocsparse::datatype_traits<Y>::type_t>}
+    // clang-format on
 
     static const std::map<bsrmv_tuple, bsrmv_t> s_bsrmv_dispatch{
         {BSRMV_CONFIG(rocsparse_datatype_f32_r,

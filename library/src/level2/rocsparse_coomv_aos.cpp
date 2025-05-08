@@ -51,6 +51,7 @@ namespace rocsparse
                                        rocsparse_datatype,
                                        rocsparse_datatype>;
 
+    // clang-format off
 #define COOMV_AOS_CONFIG(T, I, A, X, Y)                                  \
     {coomv_aos_tuple(T, I, A, X, Y),                                     \
      coomv_aos_template<typename rocsparse::datatype_traits<T>::type_t,  \
@@ -58,6 +59,7 @@ namespace rocsparse
                         typename rocsparse::datatype_traits<A>::type_t,  \
                         typename rocsparse::datatype_traits<X>::type_t,  \
                         typename rocsparse::datatype_traits<Y>::type_t>}
+    // clang-format on
 
     static const std::map<coomv_aos_tuple, coomv_aos_t> s_coomv_aos_dispatch{
         {COOMV_AOS_CONFIG(rocsparse_datatype_f32_r,

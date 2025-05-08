@@ -45,11 +45,13 @@ namespace rocsparse
     using cscmv_analysis_tuple
         = std::tuple<rocsparse_indextype, rocsparse_indextype, rocsparse_datatype>;
 
+    // clang-format off
 #define CSCMV_ANALYSIS_CONFIG(I_, J_, A_)                                      \
     {cscmv_analysis_tuple(I_, J_, A_),                                         \
      cscmv_analysis_template<typename rocsparse::indextype_traits<I_>::type_t, \
                              typename rocsparse::indextype_traits<J_>::type_t, \
                              typename rocsparse::datatype_traits<A_>::type_t>}
+    // clang-format on
 
     static const std::map<cscmv_analysis_tuple, cscmv_analysis_t> s_cscmv_analysis_dispatch{
         {CSCMV_ANALYSIS_CONFIG(

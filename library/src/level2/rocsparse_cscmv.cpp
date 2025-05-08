@@ -54,6 +54,7 @@ namespace rocsparse
                                    rocsparse_datatype,
                                    rocsparse_datatype>;
 
+    // clang-format off
 #define CSCMV_CONFIG(T, I, J, A, X, Y)                               \
     {cscmv_tuple(T, I, J, A, X, Y),                                  \
      cscmv_template<typename rocsparse::datatype_traits<T>::type_t,  \
@@ -62,6 +63,7 @@ namespace rocsparse
                     typename rocsparse::datatype_traits<A>::type_t,  \
                     typename rocsparse::datatype_traits<X>::type_t,  \
                     typename rocsparse::datatype_traits<Y>::type_t>}
+    // clang-format on
 
     static const std::map<cscmv_tuple, cscmv_t> s_cscmv_dispatch{
         {CSCMV_CONFIG(rocsparse_datatype_f32_r,
