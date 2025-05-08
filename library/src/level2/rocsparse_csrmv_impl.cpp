@@ -733,10 +733,6 @@ try
         info->set_csrmv_info(nullptr);
     }
 
-    //    info->shared_csrmv_info.reset();
-    //    RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_csrmv_info(info->csrmv_info));
-    //    info->csrmv_info = nullptr;
-
     return rocsparse_status_success;
     // LCOV_EXCL_START
 }
