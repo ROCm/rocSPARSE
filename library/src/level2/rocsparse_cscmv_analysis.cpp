@@ -45,13 +45,11 @@ namespace rocsparse
     using cscmv_analysis_tuple
         = std::tuple<rocsparse_indextype, rocsparse_indextype, rocsparse_datatype>;
 
-#define CSCMV_ANALYSIS_CONFIG(I_, J_, A_)                                             \
-    {                                                                                 \
-        cscmv_analysis_tuple(I_, J_, A_),                                             \
-            cscmv_analysis_template<typename rocsparse::indextype_traits<I_>::type_t, \
-                                    typename rocsparse::indextype_traits<J_>::type_t, \
-                                    typename rocsparse::datatype_traits<A_>::type_t>  \
-    }
+#define CSCMV_ANALYSIS_CONFIG(I_, J_, A_)                                      \
+    {cscmv_analysis_tuple(I_, J_, A_),                                         \
+     cscmv_analysis_template<typename rocsparse::indextype_traits<I_>::type_t, \
+                             typename rocsparse::indextype_traits<J_>::type_t, \
+                             typename rocsparse::datatype_traits<A_>::type_t>}
 
     static const std::map<cscmv_analysis_tuple, cscmv_analysis_t> s_cscmv_analysis_dispatch{
         {CSCMV_ANALYSIS_CONFIG(
@@ -87,13 +85,13 @@ namespace rocsparse
              rocsparse_indextype_i64, rocsparse_indextype_i64, rocsparse_datatype_i8_r),
          CSCMV_ANALYSIS_CONFIG(
              rocsparse_indextype_i64, rocsparse_indextype_i32, rocsparse_datatype_i8_r),
-            
+
          CSCMV_ANALYSIS_CONFIG(
-                rocsparse_indextype_i32, rocsparse_indextype_i32, rocsparse_datatype_f16_r),
+             rocsparse_indextype_i32, rocsparse_indextype_i32, rocsparse_datatype_f16_r),
          CSCMV_ANALYSIS_CONFIG(
-                rocsparse_indextype_i64, rocsparse_indextype_i64, rocsparse_datatype_f16_r),
+             rocsparse_indextype_i64, rocsparse_indextype_i64, rocsparse_datatype_f16_r),
          CSCMV_ANALYSIS_CONFIG(
-                rocsparse_indextype_i64, rocsparse_indextype_i32, rocsparse_datatype_f16_r)}};
+             rocsparse_indextype_i64, rocsparse_indextype_i32, rocsparse_datatype_f16_r)}};
 
     static rocsparse_status cscmv_analysis_find(cscmv_analysis_t*   function_,
                                                 rocsparse_indextype i_type_,

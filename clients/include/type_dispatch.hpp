@@ -406,7 +406,7 @@ auto rocsparse_iaxyt_dispatch(const Arguments& arg)
 
     bool f16r_f16r_f32r_f32r_case
         = (A == rocsparse_datatype_f16_r && X == rocsparse_datatype_f16_r
-            && Y == rocsparse_datatype_f32_r && T == rocsparse_datatype_f32_r);
+           && Y == rocsparse_datatype_f32_r && T == rocsparse_datatype_f32_r);
 
     bool f32r_f32c_f32c_f32c_case
         = (A == rocsparse_datatype_f32_r && X == rocsparse_datatype_f32_c
@@ -514,10 +514,10 @@ auto rocsparse_ijaxyt_dispatch(const Arguments& arg)
     bool i8r_i8r_f32r_f32r_case
         = (A == rocsparse_datatype_i8_r && X == rocsparse_datatype_i8_r
            && Y == rocsparse_datatype_f32_r && T == rocsparse_datatype_f32_r);
-    
+
     bool f16r_f16r_f32r_f32r_case
         = (A == rocsparse_datatype_f16_r && X == rocsparse_datatype_f16_r
-            && Y == rocsparse_datatype_f32_r && T == rocsparse_datatype_f32_r);
+           && Y == rocsparse_datatype_f32_r && T == rocsparse_datatype_f32_r);
 
     bool f32r_f32c_f32c_f32c_case
         = (A == rocsparse_datatype_f32_r && X == rocsparse_datatype_f32_c

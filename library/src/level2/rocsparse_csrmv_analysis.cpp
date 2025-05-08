@@ -45,13 +45,11 @@ namespace rocsparse
     using csrmv_analysis_tuple
         = std::tuple<rocsparse_indextype, rocsparse_indextype, rocsparse_datatype>;
 
-#define CSRMV_ANALYSIS_CONFIG(I_, J_, A_)                                             \
-    {                                                                                 \
-        csrmv_analysis_tuple(I_, J_, A_),                                             \
-            csrmv_analysis_template<typename rocsparse::indextype_traits<I_>::type_t, \
-                                    typename rocsparse::indextype_traits<J_>::type_t, \
-                                    typename rocsparse::datatype_traits<A_>::type_t>  \
-    }
+#define CSRMV_ANALYSIS_CONFIG(I_, J_, A_)                                      \
+    {csrmv_analysis_tuple(I_, J_, A_),                                         \
+     csrmv_analysis_template<typename rocsparse::indextype_traits<I_>::type_t, \
+                             typename rocsparse::indextype_traits<J_>::type_t, \
+                             typename rocsparse::datatype_traits<A_>::type_t>}
 
     static const std::map<csrmv_analysis_tuple, csrmv_analysis_t> s_csrmv_analysis_dispatch{
         {CSRMV_ANALYSIS_CONFIG(
@@ -87,7 +85,6 @@ namespace rocsparse
              rocsparse_indextype_i64, rocsparse_indextype_i64, rocsparse_datatype_i8_r),
          CSRMV_ANALYSIS_CONFIG(
              rocsparse_indextype_i64, rocsparse_indextype_i32, rocsparse_datatype_i8_r),
-            
          CSRMV_ANALYSIS_CONFIG(
              rocsparse_indextype_i32, rocsparse_indextype_i32, rocsparse_datatype_f16_r),
          CSRMV_ANALYSIS_CONFIG(

@@ -51,15 +51,13 @@ namespace rocsparse
                                    rocsparse_datatype,
                                    rocsparse_datatype>;
 
-#define ELLMV_CONFIG(T, I, A, X, Y)                                         \
-    {                                                                       \
-        ellmv_tuple(T, I, A, X, Y),                                         \
-            ellmv_template<typename rocsparse::datatype_traits<T>::type_t,  \
-                           typename rocsparse::indextype_traits<I>::type_t, \
-                           typename rocsparse::datatype_traits<A>::type_t,  \
-                           typename rocsparse::datatype_traits<X>::type_t,  \
-                           typename rocsparse::datatype_traits<Y>::type_t>  \
-    }
+#define ELLMV_CONFIG(T, I, A, X, Y)                                  \
+    {ellmv_tuple(T, I, A, X, Y),                                     \
+     ellmv_template<typename rocsparse::datatype_traits<T>::type_t,  \
+                    typename rocsparse::indextype_traits<I>::type_t, \
+                    typename rocsparse::datatype_traits<A>::type_t,  \
+                    typename rocsparse::datatype_traits<X>::type_t,  \
+                    typename rocsparse::datatype_traits<Y>::type_t>}
 
     static const std::map<ellmv_tuple, ellmv_t> s_ellmv_dispatch{
         {ELLMV_CONFIG(rocsparse_datatype_f32_r,
@@ -134,9 +132,6 @@ namespace rocsparse
                       rocsparse_datatype_i8_r,
                       rocsparse_datatype_f32_r),
 
-
-
-
          ELLMV_CONFIG(rocsparse_datatype_f32_r,
                       rocsparse_indextype_i32,
                       rocsparse_datatype_f16_r,
@@ -148,11 +143,6 @@ namespace rocsparse
                       rocsparse_datatype_f16_r,
                       rocsparse_datatype_f16_r,
                       rocsparse_datatype_f32_r),
-
-
-
-
-
 
          ELLMV_CONFIG(rocsparse_datatype_f32_c,
                       rocsparse_indextype_i32,

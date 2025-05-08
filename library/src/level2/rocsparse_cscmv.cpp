@@ -54,16 +54,14 @@ namespace rocsparse
                                    rocsparse_datatype,
                                    rocsparse_datatype>;
 
-#define CSCMV_CONFIG(T, I, J, A, X, Y)                                      \
-    {                                                                       \
-        cscmv_tuple(T, I, J, A, X, Y),                                      \
-            cscmv_template<typename rocsparse::datatype_traits<T>::type_t,  \
-                           typename rocsparse::indextype_traits<I>::type_t, \
-                           typename rocsparse::indextype_traits<J>::type_t, \
-                           typename rocsparse::datatype_traits<A>::type_t,  \
-                           typename rocsparse::datatype_traits<X>::type_t,  \
-                           typename rocsparse::datatype_traits<Y>::type_t>  \
-    }
+#define CSCMV_CONFIG(T, I, J, A, X, Y)                               \
+    {cscmv_tuple(T, I, J, A, X, Y),                                  \
+     cscmv_template<typename rocsparse::datatype_traits<T>::type_t,  \
+                    typename rocsparse::indextype_traits<I>::type_t, \
+                    typename rocsparse::indextype_traits<J>::type_t, \
+                    typename rocsparse::datatype_traits<A>::type_t,  \
+                    typename rocsparse::datatype_traits<X>::type_t,  \
+                    typename rocsparse::datatype_traits<Y>::type_t>}
 
     static const std::map<cscmv_tuple, cscmv_t> s_cscmv_dispatch{
         {CSCMV_CONFIG(rocsparse_datatype_f32_r,
@@ -192,10 +190,6 @@ namespace rocsparse
                       rocsparse_datatype_i8_r,
                       rocsparse_datatype_f32_r),
 
-
-
-
-
          CSCMV_CONFIG(rocsparse_datatype_f32_r,
                       rocsparse_indextype_i32,
                       rocsparse_indextype_i32,
@@ -216,12 +210,6 @@ namespace rocsparse
                       rocsparse_datatype_f16_r,
                       rocsparse_datatype_f16_r,
                       rocsparse_datatype_f32_r),
-
-
-
-
-
-
 
          CSCMV_CONFIG(rocsparse_datatype_f32_c,
                       rocsparse_indextype_i32,
