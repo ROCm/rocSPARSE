@@ -945,7 +945,6 @@ try
         {
             dest_csrmv_info = new _rocsparse_csrmv_info();
             dest->set_csrmv_info(dest_csrmv_info);
-            //	  dest->shared_csrmv_info = std::shared_ptr<_rocsparse_csrmv_info>(descr->csrmv_info);
         }
 
         RETURN_IF_ROCSPARSE_ERROR(rocsparse::copy_csrmv_info(dest_csrmv_info, src_csrmv_info));
