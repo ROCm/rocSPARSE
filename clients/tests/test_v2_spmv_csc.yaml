@@ -94,7 +94,7 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
   matrix_type: [rocsparse_matrix_type_general]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit]
 
 - name: v2_spmv_csc
   category: quick
@@ -123,7 +123,7 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
   matrix_type: [rocsparse_matrix_type_general]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit]
 
 
 - name: v2_spmv_csc
@@ -153,7 +153,7 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
   matrix_type: [rocsparse_matrix_type_general]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit]
 
 
 - name: v2_spmv_csc
@@ -182,7 +182,7 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   matrix_type: [rocsparse_matrix_type_general]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit]
   filename: [mac_econ_fwd500,
              nos2,
              nos4]
@@ -239,7 +239,7 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   matrix_type: [rocsparse_matrix_type_general]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream, rocsparse_spmv_alg_csr_lrb]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit, rocsparse_spmv_alg_csr_lrb]
   filename: [bibd_22_8,
              bmwcra_1,
              amazon0312,
@@ -260,7 +260,7 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   matrix_type: [rocsparse_matrix_type_general]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit]
   filename: [Chevron2,
              qc2534]
 
@@ -294,7 +294,7 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   matrix_type: [rocsparse_matrix_type_general]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream, rocsparse_spmv_alg_csr_lrb]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit, rocsparse_spmv_alg_csr_lrb]
   filename: [mplate,
              Chevron3]
 
@@ -326,7 +326,7 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
   matrix_type: [rocsparse_matrix_type_general]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit]
   graph_test: true
 
 
@@ -362,7 +362,7 @@ Tests:
   matrix: [rocsparse_matrix_random]
   matrix_type: [rocsparse_matrix_type_symmetric, rocsparse_matrix_type_triangular]
   uplo: [rocsparse_fill_mode_lower]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit]
 
 - name: v2_spmv_csc
   category: quick
@@ -392,7 +392,7 @@ Tests:
   matrix: [rocsparse_matrix_random]
   matrix_type: [rocsparse_matrix_type_symmetric, rocsparse_matrix_type_triangular]
   uplo: [rocsparse_fill_mode_lower]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit]
 
 
 
@@ -408,7 +408,7 @@ Tests:
   matrix: [rocsparse_matrix_random]
   matrix_type: [rocsparse_matrix_type_symmetric, rocsparse_matrix_type_triangular]
   uplo: [rocsparse_fill_mode_upper]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit]
 
 
 - name: v2_spmv_csc
@@ -437,7 +437,7 @@ Tests:
   matrix: [rocsparse_matrix_random]
   matrix_type: [rocsparse_matrix_type_symmetric]
   uplo: [rocsparse_fill_mode_upper]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit]
 
 - name: v2_spmv_csc
   category: nightly
@@ -466,7 +466,7 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   matrix_type: [rocsparse_matrix_type_symmetric, rocsparse_matrix_type_triangular]
   uplo: [rocsparse_fill_mode_lower, rocsparse_fill_mode_upper]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit]
   filename: [mac_econ_fwd500,
              nos2,
              nos4,
@@ -525,7 +525,7 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   matrix_type: [rocsparse_matrix_type_symmetric, rocsparse_matrix_type_triangular]
   uplo: [rocsparse_fill_mode_lower, rocsparse_fill_mode_upper]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit]
   filename: [bmwcra_1,
              amazon0312,
              Chebyshev4,
@@ -546,7 +546,7 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   matrix_type: [rocsparse_matrix_type_symmetric, rocsparse_matrix_type_triangular]
   uplo: [rocsparse_fill_mode_lower, rocsparse_fill_mode_upper]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit]
   filename: [Chevron2,
              qc2534]
 
@@ -580,7 +580,7 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   matrix_type: [rocsparse_matrix_type_symmetric, rocsparse_matrix_type_triangular]
   uplo: [rocsparse_fill_mode_upper]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit]
   filename: [mplate,
              Chevron3]
 
@@ -616,7 +616,7 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   matrix_type: [rocsparse_matrix_type_general]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit]
   filename: [bmwcra_1,
              amazon0312,
              sme3Dc]
@@ -634,7 +634,7 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   matrix_type: [rocsparse_matrix_type_general]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit]
   filename: [bmwcra_1,
              amazon0312,
              sme3Dc]
@@ -651,7 +651,7 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
   matrix_type: [rocsparse_matrix_type_general]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit]
 
 
 - name: v2_spmv_csc
@@ -666,7 +666,7 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
   matrix_type: [rocsparse_matrix_type_general]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit]
 
 - name: v2_spmv_csc
   category: pre_checkin
@@ -680,5 +680,5 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
   matrix_type: [rocsparse_matrix_type_general]
-  spmv_alg: [rocsparse_spmv_alg_csr_stream]
+  spmv_alg: [rocsparse_spmv_alg_csr_rowsplit]
 
