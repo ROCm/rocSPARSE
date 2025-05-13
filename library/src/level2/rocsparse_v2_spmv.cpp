@@ -44,6 +44,7 @@ inline bool rocsparse::enum_utils::is_invalid(rocsparse_spmv_input value_)
     case rocsparse_spmv_input_operation:
     case rocsparse_spmv_input_compute_datatype:
     case rocsparse_spmv_input_scalar_datatype:
+    case rocsparse_spmv_input_alg_fallback:
     {
         return false;
     }
@@ -74,15 +75,27 @@ protected:
     rocsparse_datatype      m_scalar_datatype;
     rocsparse_datatype      m_compute_datatype;
 
-    float m_local_host_alpha_value[4];
-    float m_local_host_beta_value[4];
+    float m_local_host_alpha_value[4]{};
+    float m_local_host_beta_value[4]{};
 
     rocsparse_csrmv_info m_csrmv_info{};
     rocsparse_cscmv_info m_cscmv_info{};
     rocsparse_bsrmv_info m_bsrmv_info{};
 
+    bool m_fallback_algorithm{};
+
 public:
-    rocsparse_cscmv_info get_cscmv_info()
+    bool get_fallback_algorithm() const
+    {
+        return this->m_fallback_algorithm;
+    }
+
+    void set_fallback_algorithm(bool value)
+    {
+        this->m_fallback_algorithm = value;
+    }
+
+    rocsparse_cscmv_info get_cscmv_info() const
     {
         return this->m_cscmv_info;
     }
@@ -91,7 +104,7 @@ public:
         this->m_cscmv_info = value;
     }
 
-    rocsparse_csrmv_info get_csrmv_info()
+    rocsparse_csrmv_info get_csrmv_info() const
     {
         return this->m_csrmv_info;
     }
@@ -100,7 +113,7 @@ public:
         this->m_csrmv_info = value;
     }
 
-    rocsparse_bsrmv_info get_bsrmv_info()
+    rocsparse_bsrmv_info get_bsrmv_info() const
     {
         return this->m_bsrmv_info;
     }
@@ -112,14 +125,11 @@ public:
     ~_rocsparse_spmv_descr() = default;
 
     _rocsparse_spmv_descr()
-        : m_csrmv_info{}
-        , m_cscmv_info{}
-        , m_stage((rocsparse_v2_spmv_stage)-1)
+        : m_stage((rocsparse_v2_spmv_stage)-1)
         , m_alg((rocsparse_spmv_alg)-1)
         , m_operation((rocsparse_operation)-1)
         , m_scalar_datatype((rocsparse_datatype)-1)
         , m_compute_datatype((rocsparse_datatype)-1)
-
     {
     }
 
@@ -226,6 +236,41 @@ try
 
     switch(input)
     {
+
+    case rocsparse_spmv_input_alg_fallback:
+    {
+        switch(descr->get_stage())
+        {
+        case rocsparse_v2_spmv_stage_analysis:
+        case rocsparse_v2_spmv_stage_compute:
+        {
+            RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(
+                rocsparse_status_internal_error,
+                "The field 'rocsparse_spmv_input_alg_fallback' must be set before the stage "
+                "'rocsparse_v2_spmv_stage_analysis' is executed.");
+        }
+        }
+
+        ROCSPARSE_CHECKARG(
+            4,
+            size_in_bytes,
+            ((size_in_bytes != sizeof(int32_t)) && (size_in_bytes != sizeof(int64_t))),
+            rocsparse_status_invalid_size);
+
+        if(size_in_bytes == sizeof(int32_t))
+        {
+            const int32_t value = *reinterpret_cast<const int32_t*>(in);
+            descr->set_fallback_algorithm((value == 0) ? false : true);
+        }
+        else if(size_in_bytes == sizeof(int64_t))
+        {
+            const int64_t value = *reinterpret_cast<const int64_t*>(in);
+            descr->set_fallback_algorithm((value == 0) ? false : true);
+        }
+
+        return rocsparse_status_success;
+    }
+
     case rocsparse_spmv_input_alg:
     {
 
@@ -486,7 +531,7 @@ namespace rocsparse
 
         case rocsparse_v2_spmv_stage_compute:
         {
-            static constexpr bool    fallback_algorithm = false;
+            const bool               fallback_algorithm = spmv_descr->get_fallback_algorithm();
             const rocsparse_datatype scalar_datatype    = spmv_descr->get_scalar_datatype();
             const rocsparse_datatype compute_datatype   = spmv_descr->get_compute_datatype();
             const void*              local_alpha        = alpha;

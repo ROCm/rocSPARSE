@@ -696,10 +696,11 @@ typedef enum rocsparse_check_spmat_stage_
  */
 typedef enum rocsparse_spmv_input_
 {
-    rocsparse_spmv_input_alg, /**< Select algorithm for input on SpMV descriptor. */
-    rocsparse_spmv_input_operation, /**< Select matrix transpose operation for input on SpMV descriptor. */
-    rocsparse_spmv_input_scalar_datatype, /**< Select scalar  datatype for input on SpMV descriptor. */
-    rocsparse_spmv_input_compute_datatype /**< Select compute datatype for input on SpMV descriptor. */
+    rocsparse_spmv_input_alg, /**< Select algorithm for input on SpMV descriptor, the value type must be \ref rocsparse_spmv_alg (required). */
+    rocsparse_spmv_input_operation, /**< Select matrix transpose operation for input on SpMV descriptor, the value type must be \ref rocsparse_operation (required). */
+    rocsparse_spmv_input_scalar_datatype, /**< Select scalar  datatype for input on SpMV descriptor, the value type must be \ref rocsparse_datatype (required). */
+    rocsparse_spmv_input_compute_datatype, /**< Select compute datatype for input on SpMV descriptor, the value type must be \ref rocsparse_datatype (required). */
+    rocsparse_spmv_input_alg_fallback /**< Enable a fallback algorithm for input on SpMV descriptor, the value type must be int32_t or int64_t (optional, default is 0). */
 } rocsparse_spmv_input;
 
 /*! \ingroup types_module
