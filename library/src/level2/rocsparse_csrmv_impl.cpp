@@ -167,7 +167,7 @@ rocsparse_status rocsparse::csrmv_template(rocsparse_handle          handle,
                 "support transpose or conjugate transpose operation");
             alg = rocsparse::csrmv_alg_rowsplit;
         }
-        else if((alg != rocsparse::csrmv_alg_lrb)
+        else if((alg == rocsparse::csrmv_alg_lrb)
                 && (descr->type == rocsparse_matrix_type_symmetric))
         {
             ROCSPARSE_WARNING_MESSAGE("The csmrv routine will use the ROWSPLIT algorithm since the "
