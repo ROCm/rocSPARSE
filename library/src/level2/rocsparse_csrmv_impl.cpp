@@ -385,8 +385,7 @@ static rocsparse_status rocsparse_csrmv_impl(rocsparse_handle          handle,
                                              rocsparse_mat_info        info,
                                              const X*                  x,
                                              const T*                  beta_device_host,
-                                             Y*                        y,
-                                             bool                      force_conj)
+                                             Y*                        y)
 {
     // Check for valid handle and matrix descriptor
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
@@ -699,8 +698,7 @@ C_IMPL(rocsparse_zcsrmv_analysis, rocsparse_double_complex);
                                                        info,                \
                                                        x,                   \
                                                        beta,                \
-                                                       y,                   \
-                                                       false));             \
+                                                       y));                 \
         return rocsparse_status_success;                                    \
     }                                                                       \
     catch(...)                                                              \
