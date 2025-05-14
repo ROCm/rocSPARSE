@@ -525,23 +525,6 @@ namespace rocsparse
         switch(alg)
         {
         case rocsparse_coomv_alg_default:
-        case rocsparse_coomv_alg_segmented:
-        {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse::coomv_segmented_dispatch(handle,
-                                                                          trans,
-                                                                          m,
-                                                                          n,
-                                                                          nnz,
-                                                                          alpha_device_host,
-                                                                          descr,
-                                                                          coo_val,
-                                                                          coo_row_ind,
-                                                                          coo_col_ind,
-                                                                          x,
-                                                                          beta_device_host,
-                                                                          y));
-            return rocsparse_status_success;
-        }
         case rocsparse_coomv_alg_atomic:
         {
             RETURN_IF_ROCSPARSE_ERROR(rocsparse::coomv_atomic_dispatch(handle,
@@ -557,6 +540,23 @@ namespace rocsparse
                                                                        x,
                                                                        beta_device_host,
                                                                        y));
+            return rocsparse_status_success;
+        }
+        case rocsparse_coomv_alg_segmented:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::coomv_segmented_dispatch(handle,
+                                                                          trans,
+                                                                          m,
+                                                                          n,
+                                                                          nnz,
+                                                                          alpha_device_host,
+                                                                          descr,
+                                                                          coo_val,
+                                                                          coo_row_ind,
+                                                                          coo_col_ind,
+                                                                          x,
+                                                                          beta_device_host,
+                                                                          y));
             return rocsparse_status_success;
         }
         }
