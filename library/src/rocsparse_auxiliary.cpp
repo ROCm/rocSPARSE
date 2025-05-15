@@ -4858,6 +4858,16 @@ try
         descr->alg                     = alg;
         return rocsparse_status_success;
     }
+    case rocsparse_spgeam_input_scalar_datatype:
+    {
+        ROCSPARSE_CHECKARG(4,
+                           data_size_in_bytes,
+                           data_size_in_bytes != sizeof(rocsparse_datatype),
+                           rocsparse_status_invalid_size);
+        const rocsparse_datatype scalar_type = *reinterpret_cast<const rocsparse_datatype*>(data);
+        descr->scalar_datatype               = scalar_type;
+        return rocsparse_status_success;
+    }
     case rocsparse_spgeam_input_compute_datatype:
     {
         ROCSPARSE_CHECKARG(4,
@@ -4865,7 +4875,7 @@ try
                            data_size_in_bytes != sizeof(rocsparse_datatype),
                            rocsparse_status_invalid_size);
         const rocsparse_datatype compute_type = *reinterpret_cast<const rocsparse_datatype*>(data);
-        descr->compute_type                   = compute_type;
+        descr->compute_datatype               = compute_type;
         return rocsparse_status_success;
     }
     case rocsparse_spgeam_input_operation_A:
