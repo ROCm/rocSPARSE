@@ -141,7 +141,7 @@ namespace rocsparse
         // Stream
         hipStream_t stream = handle->stream;
 
-        if(descr == nullptr || (descr->alpha_mul && descr->beta_mul))
+        if(descr == nullptr || (descr->multiplying_by_alpha() && descr->multiplying_by_beta()))
         {
             // Pointer mode device
 #define CSRGEAM_DIM 256
@@ -197,12 +197,12 @@ namespace rocsparse
             }
 #undef CSRGEAM_DIM
         }
-        else if(descr->alpha_mul && !descr->beta_mul)
+        else if(descr->multiplying_by_alpha() && !descr->multiplying_by_beta())
         {
             RETURN_IF_ROCSPARSE_ERROR(
                 rocsparse::copy_and_scale(handle, nnz_A, csr_val_A, csr_val_C, alpha_device_host));
         }
-        else if(!descr->alpha_mul && descr->beta_mul)
+        else if(!descr->multiplying_by_alpha() && descr->multiplying_by_beta())
         {
             RETURN_IF_ROCSPARSE_ERROR(
                 rocsparse::copy_and_scale(handle, nnz_B, csr_val_B, csr_val_C, beta_device_host));

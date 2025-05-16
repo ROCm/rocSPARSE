@@ -112,14 +112,14 @@ public:
     ~_rocsparse_spmv_descr() = default;
 
     _rocsparse_spmv_descr()
-        : m_csrmv_info{}
-        , m_cscmv_info{}
-        , m_stage((rocsparse_v2_spmv_stage)-1)
+        : m_stage((rocsparse_v2_spmv_stage)-1)
         , m_alg((rocsparse_spmv_alg)-1)
         , m_operation((rocsparse_operation)-1)
         , m_scalar_datatype((rocsparse_datatype)-1)
         , m_compute_datatype((rocsparse_datatype)-1)
-
+        , m_csrmv_info{}
+        , m_cscmv_info{}
+        , m_bsrmv_info{}
     {
     }
 

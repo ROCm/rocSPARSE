@@ -100,15 +100,6 @@ namespace rocsparse
                                                    int64_t                nnz_B,
                                                    rocsparse_spgeam_descr descr);
 
-    rocsparse_status csrgeam_record_descr_alpha_beta(rocsparse_handle       handle,
-                                                     int64_t                m,
-                                                     int64_t                n,
-                                                     const void*            alpha,
-                                                     int64_t                nnz_A,
-                                                     const void*            beta,
-                                                     int64_t                nnz_B,
-                                                     rocsparse_spgeam_descr descr);
-
     rocsparse_status
         csrgeam_copy_row_pointer_and_free_memory(rocsparse_handle          handle,
                                                  int64_t                   m,

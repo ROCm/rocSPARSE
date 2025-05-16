@@ -453,32 +453,8 @@ struct _rocsparse_csrgemm_info
  * descriptor. It must be initialized using rocsparse_create_spgeam_descr().
  * It should be destroyed at the end using rocsparse_destroy_spgeam_descr().
  *******************************************************************************/
-// struct _rocsparse_spgeam_descr
-// {
-//     // C matrix row pointer data
-//     void*               csr_row_ptr_C{};
-//     int64_t             nnz_C{};
-//     int64_t             m{};
-//     rocsparse_indextype indextype{rocsparse_indextype_i32};
-
-//     // rocprim buffer data
-//     bool   rocprim_alloc{};
-//     size_t rocprim_size{};
-//     void*  rocprim_buffer{};
-
-//     // Perform alpha * A + beta * B
-//     bool alpha_mul{true};
-//     bool beta_mul{true};
-
-//     rocsparse_spgeam_alg alg{rocsparse_spgeam_alg_default};
-//     rocsparse_datatype   compute_type{rocsparse_datatype_f32_r};
-//     rocsparse_operation  trans_A{rocsparse_operation_none};
-//     rocsparse_operation  trans_B{rocsparse_operation_none};
-// };
-
 struct _rocsparse_spgeam_descr
 {
-public:
     // C matrix row pointer data
     void*               csr_row_ptr_C{};
     int64_t             nnz_C{};
@@ -490,6 +466,7 @@ public:
     size_t rocprim_size{};
     void*  rocprim_buffer{};
 
+protected:
     // Perform alpha * A + beta * B
     bool alpha_mul{true};
     bool beta_mul{true};
@@ -550,6 +527,14 @@ public:
     {
         return this->compute_datatype;
     }
+    bool multiplying_by_alpha() const
+    {
+        return this->alpha_mul;
+    }
+    bool multiplying_by_beta() const
+    {
+        return this->beta_mul;
+    }
 
     void set_stage(rocsparse_spgeam_stage value)
     {
@@ -574,6 +559,25 @@ public:
     void set_compute_datatype(rocsparse_datatype value)
     {
         this->compute_datatype = value;
+    }
+
+    void record_if_multiplying_by_alpha_beta(const void* alpha,
+                                             int64_t     nnz_A,
+                                             const void* beta,
+                                             int64_t     nnz_B)
+    {
+        this->alpha_mul = (alpha != nullptr);
+        this->beta_mul  = (beta != nullptr);
+
+        if(this->alpha_mul && nnz_A == 0)
+        {
+            this->alpha_mul = false;
+        }
+
+        if(this->beta_mul && nnz_B == 0)
+        {
+            this->beta_mul = false;
+        }
     }
 };
 

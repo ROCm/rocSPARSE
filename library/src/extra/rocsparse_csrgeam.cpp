@@ -106,7 +106,7 @@ namespace rocsparse
         // Stream
         hipStream_t stream = handle->stream;
 
-        if(descr == nullptr || (descr->alpha_mul && descr->beta_mul))
+        if(descr == nullptr || (descr->multiplying_by_alpha() && descr->multiplying_by_beta()))
         {
             // Pointer mode device
 #define CSRGEAM_DIM 256
@@ -164,7 +164,7 @@ namespace rocsparse
             }
 #undef CSRGEAM_DIM
         }
-        else if(descr->alpha_mul && !descr->beta_mul)
+        else if(descr->multiplying_by_alpha() && !descr->multiplying_by_beta())
         {
             RETURN_IF_ROCSPARSE_ERROR(rocsparse::copy(
                 handle, nnz_A, csr_col_ind_A, csr_col_ind_C, descr_A->base, descr_C->base));
@@ -172,7 +172,7 @@ namespace rocsparse
             RETURN_IF_ROCSPARSE_ERROR(
                 rocsparse::copy_and_scale(handle, nnz_A, csr_val_A, csr_val_C, alpha_device_host));
         }
-        else if(!descr->alpha_mul && descr->beta_mul)
+        else if(!descr->multiplying_by_alpha() && descr->multiplying_by_beta())
         {
             RETURN_IF_ROCSPARSE_ERROR(rocsparse::copy(
                 handle, nnz_B, csr_col_ind_B, csr_col_ind_C, descr_B->base, descr_C->base));
@@ -785,7 +785,6 @@ rocsparse_status rocsparse::csrgeam(rocsparse_handle             handle,
                                     const rocsparse_spgeam_descr descr,
                                     void*                        temp_buffer)
 {
-    std::cout << "csrgeam" << std::endl;
     ROCSPARSE_ROUTINE_TRACE;
     rocsparse::csrgeam_t f;
     RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrgeam_find(

@@ -62,7 +62,7 @@ namespace rocsparse
         // Stream
         hipStream_t stream = handle->stream;
 
-        if((descr->alpha_mul && descr->beta_mul))
+        if((descr->multiplying_by_alpha() && descr->multiplying_by_beta()))
         {
 #define CSRGEAM_DIM 256
             if(handle->wavefront_size == 32)
@@ -241,7 +241,7 @@ namespace rocsparse
                 RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(descr->rocprim_buffer, handle->stream));
             }
         }
-        else if(descr->alpha_mul && !descr->beta_mul)
+        else if(descr->multiplying_by_alpha() && !descr->multiplying_by_beta())
         {
             switch(descr->indextype)
             {
@@ -273,7 +273,7 @@ namespace rocsparse
             }
             }
         }
-        else if(!descr->alpha_mul && descr->beta_mul)
+        else if(!descr->multiplying_by_alpha() && descr->multiplying_by_beta())
         {
             switch(descr->indextype)
             {
@@ -369,7 +369,7 @@ namespace rocsparse
         // Stream
         hipStream_t stream = handle->stream;
 
-        if(descr == nullptr || (descr->alpha_mul && descr->beta_mul))
+        if(descr == nullptr || (descr->multiplying_by_alpha() && descr->multiplying_by_beta()))
         {
 #define CSRGEAM_DIM 256
             if(handle->wavefront_size == 32)
@@ -456,12 +456,12 @@ namespace rocsparse
                                                csr_row_ptr_C,
                                                descr_C->base);
         }
-        else if(descr->alpha_mul && !descr->beta_mul)
+        else if(descr->multiplying_by_alpha() && !descr->multiplying_by_beta())
         {
             RETURN_IF_ROCSPARSE_ERROR(rocsparse::copy(
                 handle, (m + 1), csr_row_ptr_A, csr_row_ptr_C, descr_A->base, descr_C->base));
         }
-        else if(!descr->alpha_mul && descr->beta_mul)
+        else if(!descr->multiplying_by_alpha() && descr->multiplying_by_beta())
         {
             RETURN_IF_ROCSPARSE_ERROR(rocsparse::copy(
                 handle, (m + 1), csr_row_ptr_B, csr_row_ptr_C, descr_B->base, descr_C->base));
@@ -838,33 +838,6 @@ rocsparse_status rocsparse::csrgeam_allocate_descr_memory(rocsparse_handle      
     descr->rocprim_size   = 0;
 
     descr->m = m;
-
-    return rocsparse_status_success;
-}
-
-rocsparse_status rocsparse::csrgeam_record_descr_alpha_beta(rocsparse_handle       handle,
-                                                            int64_t                m,
-                                                            int64_t                n,
-                                                            const void*            alpha,
-                                                            int64_t                nnz_A,
-                                                            const void*            beta,
-                                                            int64_t                nnz_B,
-                                                            rocsparse_spgeam_descr descr)
-{
-    ROCSPARSE_ROUTINE_TRACE;
-
-    descr->alpha_mul = (alpha != nullptr);
-    descr->beta_mul  = (beta != nullptr);
-
-    if(descr->alpha_mul && nnz_A == 0)
-    {
-        descr->alpha_mul = false;
-    }
-
-    if(descr->beta_mul && nnz_B == 0)
-    {
-        descr->beta_mul = false;
-    }
 
     return rocsparse_status_success;
 }

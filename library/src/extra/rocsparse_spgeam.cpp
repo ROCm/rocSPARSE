@@ -106,8 +106,8 @@ namespace rocsparse
             {
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrgeam_buffer_size(
                     handle,
-                    descr->trans_A,
-                    descr->trans_B,
+                    descr->get_trans_A(),
+                    descr->get_trans_B(),
                     mat_A->rows,
                     mat_B->cols,
                     mat_A->descr,
@@ -170,11 +170,11 @@ namespace rocsparse
 
         ROCSPARSE_CHECKARG(2,
                            mat_A,
-                           (mat_A->data_type != descr->compute_datatype),
+                           (mat_A->data_type != descr->get_compute_datatype()),
                            rocsparse_status_not_implemented);
         ROCSPARSE_CHECKARG(3,
                            mat_B,
-                           (mat_B->data_type != descr->compute_datatype),
+                           (mat_B->data_type != descr->get_compute_datatype()),
                            rocsparse_status_not_implemented);
 
         ROCSPARSE_CHECKARG(
@@ -191,7 +191,7 @@ namespace rocsparse
 
             ROCSPARSE_CHECKARG(4,
                                mat_C,
-                               (mat_C->data_type != descr->compute_datatype),
+                               (mat_C->data_type != descr->get_compute_datatype()),
                                rocsparse_status_not_implemented);
 
             ROCSPARSE_CHECKARG(
@@ -234,11 +234,11 @@ namespace rocsparse
             5, mat_B, (mat_B->format != mat_A->format), rocsparse_status_not_implemented);
         ROCSPARSE_CHECKARG(3,
                            mat_A,
-                           (mat_A->data_type != descr->compute_datatype),
+                           (mat_A->data_type != descr->get_compute_datatype()),
                            rocsparse_status_not_implemented);
         ROCSPARSE_CHECKARG(5,
                            mat_B,
-                           (mat_B->data_type != descr->compute_datatype),
+                           (mat_B->data_type != descr->get_compute_datatype()),
                            rocsparse_status_not_implemented);
 
         ROCSPARSE_CHECKARG(
@@ -255,7 +255,7 @@ namespace rocsparse
                 6, mat_C, (mat_C->format != mat_A->format), rocsparse_status_not_implemented);
             ROCSPARSE_CHECKARG(6,
                                mat_C,
-                               (mat_C->data_type != descr->compute_datatype),
+                               (mat_C->data_type != descr->get_compute_datatype()),
                                rocsparse_status_not_implemented);
 
             ROCSPARSE_CHECKARG(
@@ -361,13 +361,12 @@ namespace rocsparse
                                                                                        descr));
                 }
 
-                RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrgeam_record_descr_alpha_beta(
-                    handle, mat_A->rows, mat_B->cols, alpha, mat_A->nnz, beta, mat_B->nnz, descr));
+                descr->record_if_multiplying_by_alpha_beta(alpha, mat_A->nnz, beta, mat_B->nnz);
 
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrgeam_nnz(
                     handle,
-                    descr->trans_A,
-                    descr->trans_B,
+                    descr->get_trans_A(),
+                    descr->get_trans_B(),
                     mat_A->rows,
                     mat_B->cols,
                     mat_A->descr,
@@ -426,8 +425,8 @@ namespace rocsparse
                                                                         descr));
 
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrgeam(handle,
-                                                             descr->trans_A,
-                                                             descr->trans_B,
+                                                             descr->get_trans_A(),
+                                                             descr->get_trans_B(),
                                                              mat_A->rows,
                                                              mat_B->cols,
                                                              descr->get_scalar_datatype(),
@@ -491,8 +490,8 @@ namespace rocsparse
                                                                         descr));
 
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrgeam_symbolic(handle,
-                                                                      descr->trans_A,
-                                                                      descr->trans_B,
+                                                                      descr->get_trans_A(),
+                                                                      descr->get_trans_B(),
                                                                       mat_A->rows,
                                                                       mat_B->cols,
                                                                       mat_A->descr,
@@ -541,8 +540,8 @@ namespace rocsparse
             case rocsparse_format_csr:
             {
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrgeam_numeric(handle,
-                                                                     descr->trans_A,
-                                                                     descr->trans_B,
+                                                                     descr->get_trans_A(),
+                                                                     descr->get_trans_B(),
                                                                      mat_A->rows,
                                                                      mat_B->cols,
                                                                      descr->get_scalar_datatype(),
