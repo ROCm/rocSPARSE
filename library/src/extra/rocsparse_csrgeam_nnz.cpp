@@ -1016,7 +1016,6 @@ rocsparse_status rocsparse::csrgeam_nnz(rocsparse_handle             handle,
                                         void*                        temp_buffer,
                                         bool                         called_from_spgeam)
 {
-    std::cout << "csrgeam_nnz" << std::endl;
     ROCSPARSE_ROUTINE_TRACE;
     rocsparse::csrgeam_nnz_t f;
     RETURN_IF_ROCSPARSE_ERROR(

@@ -642,7 +642,6 @@ extern "C" rocsparse_status rocsparse_spgeam(rocsparse_handle            handle,
                                              void*                       temp_buffer)
 try
 {
-    std::cout << "rocsparse_spgeam" << std::endl;
     rocsparse::log_trace("rocsparse_spgeam",
                          handle,
                          descr,
