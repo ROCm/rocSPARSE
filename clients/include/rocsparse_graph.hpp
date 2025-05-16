@@ -48,32 +48,32 @@
 #define END_GRAPH_CAPTURE()
 #endif
 
-#define TESTING_TEMPLATE(NAME_)                                                  \
-    template <typename... P>                                                     \
-    rocsparse_status rocsparse_##NAME_(rocsparse_local_handle& handle, P&&... p) \
-    {                                                                            \
-        rocsparse_status status;                                                 \
-        BEGIN_GRAPH_CAPTURE();                                                   \
-                                                                                 \
-        status = ::rocsparse_##NAME_(handle, std::forward<P>(p)...);             \
-                                                                                 \
-        END_GRAPH_CAPTURE();                                                     \
-                                                                                 \
-        return status;                                                           \
+#define TESTING_TEMPLATE(NAME_)                                                     \
+    template <typename... P>                                                        \
+    rocsparse_status rocsparse_##NAME_(rocsparse_local_handle & handle, P && ... p) \
+    {                                                                               \
+        rocsparse_status status;                                                    \
+        BEGIN_GRAPH_CAPTURE();                                                      \
+                                                                                    \
+        status = ::rocsparse_##NAME_(handle, std::forward<P>(p)...);                \
+                                                                                    \
+        END_GRAPH_CAPTURE();                                                        \
+                                                                                    \
+        return status;                                                              \
     };
 
-#define TESTING_COMPUTE_TEMPLATE(NAME_)                                          \
-    template <typename T, typename... P>                                         \
-    rocsparse_status rocsparse_##NAME_(rocsparse_local_handle& handle, P&&... p) \
-    {                                                                            \
-        rocsparse_status status;                                                 \
-        BEGIN_GRAPH_CAPTURE();                                                   \
-                                                                                 \
-        status = ::rocsparse_##NAME_<T>(handle, std::forward<P>(p)...);          \
-                                                                                 \
-        END_GRAPH_CAPTURE();                                                     \
-                                                                                 \
-        return status;                                                           \
+#define TESTING_COMPUTE_TEMPLATE(NAME_)                                             \
+    template <typename T, typename... P>                                            \
+    rocsparse_status rocsparse_##NAME_(rocsparse_local_handle & handle, P && ... p) \
+    {                                                                               \
+        rocsparse_status status;                                                    \
+        BEGIN_GRAPH_CAPTURE();                                                      \
+                                                                                    \
+        status = ::rocsparse_##NAME_<T>(handle, std::forward<P>(p)...);             \
+                                                                                    \
+        END_GRAPH_CAPTURE();                                                        \
+                                                                                    \
+        return status;                                                              \
     };
 
 namespace testing
@@ -120,13 +120,13 @@ namespace testing
     * ===========================================================================
     */
 
-    TESTING_COMPUTE_TEMPLATE(bsrmv_ex_analysis)
-    TESTING_COMPUTE_TEMPLATE(bsrmv_ex)
+    TESTING_COMPUTE_TEMPLATE(bsrmv_analysis)
+    TESTING_COMPUTE_TEMPLATE(bsrmv)
     TESTING_COMPUTE_TEMPLATE(bsrxmv)
     TESTING_TEMPLATE(bsrsv_zero_pivot)
     TESTING_COMPUTE_TEMPLATE(bsrsv_buffer_size)
     TESTING_COMPUTE_TEMPLATE(bsrsv_analysis)
-    TESTING_TEMPLATE(bsrmv_ex_clear)
+    TESTING_TEMPLATE(bsrmv_clear)
     TESTING_TEMPLATE(bsrsv_clear)
     TESTING_COMPUTE_TEMPLATE(bsrsv_solve)
     TESTING_COMPUTE_TEMPLATE(coomv)

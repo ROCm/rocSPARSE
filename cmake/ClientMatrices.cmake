@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
+# Copyright (C) 2018-2025 Advanced Micro Devices, Inc. All rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -101,10 +101,10 @@ else()
 endif()
 
 if(BUILD_ADDRESS_SANITIZER)
-  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -fsanitize=address -shared-libasan -L${ROCM_PATH}/${CMAKE_INSTALL_LIBDIR} -Wl,--enable-new-dtags,--build-id=sha1,--rpath${rpath_sep}$ENV{ROCM_ASAN_EXE_RPATH} -o ${PROJECT_BINARY_DIR}/mtx2csr.exe
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -fsanitize=address -shared-libasan -Wl,--build-id=sha1 -o ${PROJECT_BINARY_DIR}/mtx2csr.exe
     RESULT_VARIABLE STATUS)
 else()
-	execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -L${ROCM_PATH}/${CMAKE_INSTALL_LIBDIR} -Wl,--enable-new-dtags,--build-id=sha1,--rpath${rpath_sep}$ENV{ROCM_EXE_RPATH} -o ${PROJECT_BINARY_DIR}/mtx2csr.exe
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -Wl,--build-id=sha1 -o ${PROJECT_BINARY_DIR}/mtx2csr.exe
     RESULT_VARIABLE STATUS)
 endif()
 
