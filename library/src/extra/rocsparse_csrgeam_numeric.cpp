@@ -378,11 +378,13 @@ namespace rocsparse
     using csrgeam_numeric_tuple
         = std::tuple<rocsparse_datatype, rocsparse_indextype, rocsparse_indextype>;
 
+    // clang-format off
 #define CSRGEAM_NUMERIC_CONFIG(T, I, J)                                        \
     {csrgeam_numeric_tuple(T, I, J),                                           \
      csrgeam_numeric_template<typename rocsparse::datatype_traits<T>::type_t,  \
                               typename rocsparse::indextype_traits<I>::type_t, \
                               typename rocsparse::indextype_traits<J>::type_t>}
+    // clang-format on
 
     static const std::map<csrgeam_numeric_tuple, csrgeam_numeric_t> s_csrgeam_numeric_dispatch{
         {CSRGEAM_NUMERIC_CONFIG(

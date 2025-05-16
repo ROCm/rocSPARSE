@@ -315,10 +315,12 @@ namespace rocsparse
 
     using csrgeam_symbolic_tuple = std::tuple<rocsparse_indextype, rocsparse_indextype>;
 
+    // clang-format off
 #define CSRGEAM_SYMBOLIC_CONFIG(I, J)                                           \
     {csrgeam_symbolic_tuple(I, J),                                              \
      csrgeam_symbolic_template<typename rocsparse::indextype_traits<I>::type_t, \
                                typename rocsparse::indextype_traits<J>::type_t>}
+    // clang-format on
 
     static const std::map<csrgeam_symbolic_tuple, csrgeam_symbolic_t> s_csrgeam_symbolic_dispatch{
         {CSRGEAM_SYMBOLIC_CONFIG(rocsparse_indextype_i32, rocsparse_indextype_i32),

@@ -935,10 +935,12 @@ namespace rocsparse
 
     using csrgeam_nnz_tuple = std::tuple<rocsparse_indextype, rocsparse_indextype>;
 
+    // clang-format off
 #define CSRGEAM_NNZ_CONFIG(I, J)                                           \
     {csrgeam_nnz_tuple(I, J),                                              \
      csrgeam_nnz_template<typename rocsparse::indextype_traits<I>::type_t, \
                           typename rocsparse::indextype_traits<J>::type_t>}
+    // clang-format on
 
     static const std::map<csrgeam_nnz_tuple, csrgeam_nnz_t> s_csrgeam_nnz_dispatch{
         {CSRGEAM_NNZ_CONFIG(rocsparse_indextype_i32, rocsparse_indextype_i32),
