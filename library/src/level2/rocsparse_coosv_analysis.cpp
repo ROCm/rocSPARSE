@@ -22,7 +22,7 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_coosm.hpp"
+#include "rocsparse_coosv.hpp"
 #include "to_string.hpp"
 #include "utility.h"
 #include <map>
@@ -30,51 +30,46 @@
 
 namespace rocsparse
 {
-    typedef rocsparse_status (*coosm_analysis_t)(rocsparse_handle          handle,
-                                                 rocsparse_operation       trans_A,
-                                                 rocsparse_operation       trans_B,
+    typedef rocsparse_status (*coosv_analysis_t)(rocsparse_handle          handle,
+                                                 rocsparse_operation       trans,
                                                  int64_t                   m,
-                                                 int64_t                   nrhs,
                                                  int64_t                   nnz,
-                                                 const void*               alpha_device_host,
                                                  const rocsparse_mat_descr descr,
                                                  const void*               coo_val,
                                                  const void*               coo_row_ind,
                                                  const void*               coo_col_ind,
-                                                 const void*               B,
-                                                 int64_t                   ldb,
                                                  rocsparse_mat_info        info,
                                                  rocsparse_analysis_policy analysis,
                                                  rocsparse_solve_policy    solve,
                                                  void*                     temp_buffer);
 
-    using coosm_analysis_tuple = std::tuple<rocsparse_indextype, rocsparse_datatype>;
+    using coosv_analysis_tuple = std::tuple<rocsparse_indextype, rocsparse_datatype>;
 
-#define COOSM_ANALYSIS_CONFIG(I_, T_)                                                 \
+#define COOSV_ANALYSIS_CONFIG(I_, T_)                                                 \
     {                                                                                 \
-        coosm_analysis_tuple(I_, T_),                                                 \
-            coosm_analysis_template<typename rocsparse::indextype_traits<I_>::type_t, \
+        coosv_analysis_tuple(I_, T_),                                                 \
+            coosv_analysis_template<typename rocsparse::indextype_traits<I_>::type_t, \
                                     typename rocsparse::datatype_traits<T_>::type_t>  \
     }
 
-    static const std::map<coosm_analysis_tuple, coosm_analysis_t> s_coosm_analysis_dispatch{
-        {COOSM_ANALYSIS_CONFIG(rocsparse_indextype_i32, rocsparse_datatype_f32_r),
-         COOSM_ANALYSIS_CONFIG(rocsparse_indextype_i32, rocsparse_datatype_f64_r),
-         COOSM_ANALYSIS_CONFIG(rocsparse_indextype_i32, rocsparse_datatype_f32_c),
-         COOSM_ANALYSIS_CONFIG(rocsparse_indextype_i32, rocsparse_datatype_f64_c),
-         COOSM_ANALYSIS_CONFIG(rocsparse_indextype_i64, rocsparse_datatype_f32_r),
-         COOSM_ANALYSIS_CONFIG(rocsparse_indextype_i64, rocsparse_datatype_f64_r),
-         COOSM_ANALYSIS_CONFIG(rocsparse_indextype_i64, rocsparse_datatype_f32_c),
-         COOSM_ANALYSIS_CONFIG(rocsparse_indextype_i64, rocsparse_datatype_f64_c)}};
+    static const std::map<coosv_analysis_tuple, coosv_analysis_t> s_coosv_analysis_dispatch{
+        {COOSV_ANALYSIS_CONFIG(rocsparse_indextype_i32, rocsparse_datatype_f32_r),
+         COOSV_ANALYSIS_CONFIG(rocsparse_indextype_i32, rocsparse_datatype_f64_r),
+         COOSV_ANALYSIS_CONFIG(rocsparse_indextype_i32, rocsparse_datatype_f32_c),
+         COOSV_ANALYSIS_CONFIG(rocsparse_indextype_i32, rocsparse_datatype_f64_c),
+         COOSV_ANALYSIS_CONFIG(rocsparse_indextype_i64, rocsparse_datatype_f32_r),
+         COOSV_ANALYSIS_CONFIG(rocsparse_indextype_i64, rocsparse_datatype_f64_r),
+         COOSV_ANALYSIS_CONFIG(rocsparse_indextype_i64, rocsparse_datatype_f32_c),
+         COOSV_ANALYSIS_CONFIG(rocsparse_indextype_i64, rocsparse_datatype_f64_c)}};
 
-    static rocsparse_status coosm_analysis_find(coosm_analysis_t*   function_,
+    static rocsparse_status coosv_analysis_find(coosv_analysis_t*   function_,
                                                 rocsparse_indextype i_type_,
                                                 rocsparse_datatype  t_type_)
     {
-        const auto& it = rocsparse::s_coosm_analysis_dispatch.find(
-            rocsparse::coosm_analysis_tuple(i_type_, t_type_));
+        const auto& it = rocsparse::s_coosv_analysis_dispatch.find(
+            rocsparse::coosv_analysis_tuple(i_type_, t_type_));
 
-        if(it != rocsparse::s_coosm_analysis_dispatch.end())
+        if(it != rocsparse::s_coosv_analysis_dispatch.end())
         {
             function_[0] = it->second;
         }
@@ -87,7 +82,7 @@ namespace rocsparse
                       << ", t_type: " << rocsparse::to_string(t_type_) << std::endl;
 
             std::cout << "available configuration are: " << std::endl;
-            for(const auto& p : rocsparse::s_coosm_analysis_dispatch)
+            for(const auto& p : rocsparse::s_coosv_analysis_dispatch)
             {
                 const auto& t      = p.first;
                 const auto  i_type = std::get<0>(t);
@@ -113,14 +108,10 @@ namespace rocsparse
     }
 }
 
-rocsparse_status rocsparse::coosm_analysis(rocsparse_handle          handle,
-                                           rocsparse_operation       trans_A,
-                                           rocsparse_operation       trans_B,
+rocsparse_status rocsparse::coosv_analysis(rocsparse_handle          handle,
+                                           rocsparse_operation       trans,
                                            int64_t                   m,
-                                           int64_t                   nrhs,
                                            int64_t                   nnz,
-                                           rocsparse_datatype        alpha_device_host_datatype,
-                                           const void*               alpha_device_host,
                                            const rocsparse_mat_descr descr,
                                            rocsparse_datatype        coo_val_datatype,
                                            const void*               coo_val,
@@ -128,30 +119,22 @@ rocsparse_status rocsparse::coosm_analysis(rocsparse_handle          handle,
                                            const void*               coo_row_ind,
                                            rocsparse_indextype       coo_col_ind_indextype,
                                            const void*               coo_col_ind,
-                                           rocsparse_datatype        B_datatype,
-                                           const void*               B,
-                                           int64_t                   ldb,
                                            rocsparse_mat_info        info,
                                            rocsparse_analysis_policy analysis,
                                            rocsparse_solve_policy    solve,
                                            void*                     temp_buffer)
 {
-    rocsparse::coosm_analysis_t f;
+    rocsparse::coosv_analysis_t f;
     RETURN_IF_ROCSPARSE_ERROR(
-        rocsparse::coosm_analysis_find(&f, coo_row_ind_indextype, coo_val_datatype));
+        rocsparse::coosv_analysis_find(&f, coo_row_ind_indextype, coo_val_datatype));
     RETURN_IF_ROCSPARSE_ERROR(f(handle,
-                                trans_A,
-                                trans_B,
+                                trans,
                                 m,
-                                nrhs,
                                 nnz,
-                                alpha_device_host,
                                 descr,
                                 coo_val,
                                 coo_row_ind,
                                 coo_col_ind,
-                                B,
-                                ldb,
                                 info,
                                 analysis,
                                 solve,

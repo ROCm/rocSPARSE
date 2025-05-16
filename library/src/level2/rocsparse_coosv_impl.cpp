@@ -22,8 +22,8 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_coosv.hpp"
 #include "control.h"
+#include "rocsparse_coosv.hpp"
 #include "rocsparse_csrsv.hpp"
 #include "utility.h"
 
@@ -32,16 +32,21 @@
 template <typename I, typename T>
 rocsparse_status rocsparse::coosv_buffer_size_template(rocsparse_handle          handle,
                                                        rocsparse_operation       trans,
-                                                       I                         m,
+                                                       int64_t                   m_,
                                                        int64_t                   nnz,
                                                        const rocsparse_mat_descr descr,
-                                                       const T*                  coo_val,
-                                                       const I*                  coo_row_ind,
-                                                       const I*                  coo_col_ind,
+                                                       const void*               coo_val_,
+                                                       const void*               coo_row_ind_,
+                                                       const void*               coo_col_ind_,
                                                        rocsparse_mat_info        info,
                                                        size_t*                   buffer_size)
 {
     ROCSPARSE_ROUTINE_TRACE;
+
+    const I  m           = static_cast<I>(m_);
+    const T* coo_val     = reinterpret_cast<const T*>(coo_val_);
+    const I* coo_row_ind = reinterpret_cast<const I*>(coo_row_ind_);
+    const I* coo_col_ind = reinterpret_cast<const I*>(coo_col_ind_);
 
     // Check for valid handle and matrix descriptor
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
@@ -102,8 +107,8 @@ rocsparse_status rocsparse::coosv_buffer_size_template(rocsparse_handle         
     {
         // Trick since it is not used in csrsv_buffer_size, otherwise we need to create a proper ptr array for nothing.
         const int32_t* ptr = (const int32_t*)0x4;
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrsv_buffer_size_template(
-            handle, trans, m, (int32_t)nnz, descr, coo_val, ptr, coo_col_ind, info, buffer_size));
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::csrsv_buffer_size_template<int32_t, int32_t, T>(
+            handle, trans, m, nnz, descr, coo_val, ptr, coo_col_ind, info, buffer_size)));
 
         // For coosv we first convert from COO to CSR format.
         *buffer_size += sizeof(int32_t) * (m / 256 + 1) * 256;
@@ -112,8 +117,8 @@ rocsparse_status rocsparse::coosv_buffer_size_template(rocsparse_handle         
     {
         // Trick since it is not used in csrsv_buffer_size, otherwise we need to create a proper ptr array for nothing.
         const int64_t* ptr = (const int64_t*)0x4;
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrsv_buffer_size_template(
-            handle, trans, m, nnz, descr, coo_val, ptr, coo_col_ind, info, buffer_size));
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::csrsv_buffer_size_template<int64_t, int64_t, T>(
+            handle, trans, m, nnz, descr, coo_val, ptr, coo_col_ind, info, buffer_size)));
 
         // For coosv we first convert from COO to CSR format.
         *buffer_size += sizeof(int64_t) * (m / 256 + 1) * 256;
@@ -122,17 +127,17 @@ rocsparse_status rocsparse::coosv_buffer_size_template(rocsparse_handle         
     return rocsparse_status_success;
 }
 
-#define INSTANTIATE(ITYPE, TTYPE)                                    \
-    template rocsparse_status rocsparse::coosv_buffer_size_template( \
-        rocsparse_handle          handle,                            \
-        rocsparse_operation       trans,                             \
-        ITYPE                     m,                                 \
-        int64_t                   nnz,                               \
-        const rocsparse_mat_descr descr,                             \
-        const TTYPE*              coo_val,                           \
-        const ITYPE*              coo_row_ind,                       \
-        const ITYPE*              coo_col_ind,                       \
-        rocsparse_mat_info        info,                              \
+#define INSTANTIATE(I, T)                                                  \
+    template rocsparse_status rocsparse::coosv_buffer_size_template<I, T>( \
+        rocsparse_handle          handle,                                  \
+        rocsparse_operation       trans,                                   \
+        int64_t                   m,                                       \
+        int64_t                   nnz,                                     \
+        const rocsparse_mat_descr descr,                                   \
+        const void*               coo_val,                                 \
+        const void*               coo_row_ind,                             \
+        const void*               coo_col_ind,                             \
+        rocsparse_mat_info        info,                                    \
         size_t*                   buffer_size);
 
 INSTANTIATE(int32_t, float);
@@ -148,18 +153,23 @@ INSTANTIATE(int64_t, rocsparse_double_complex);
 template <typename I, typename T>
 rocsparse_status rocsparse::coosv_analysis_template(rocsparse_handle          handle,
                                                     rocsparse_operation       trans,
-                                                    I                         m,
+                                                    int64_t                   m_,
                                                     int64_t                   nnz,
                                                     const rocsparse_mat_descr descr,
-                                                    const T*                  coo_val,
-                                                    const I*                  coo_row_ind,
-                                                    const I*                  coo_col_ind,
+                                                    const void*               coo_val_,
+                                                    const void*               coo_row_ind_,
+                                                    const void*               coo_col_ind_,
                                                     rocsparse_mat_info        info,
                                                     rocsparse_analysis_policy analysis,
                                                     rocsparse_solve_policy    solve,
                                                     void*                     temp_buffer)
 {
     ROCSPARSE_ROUTINE_TRACE;
+
+    const I  m           = static_cast<I>(m_);
+    const T* coo_val     = reinterpret_cast<const T*>(coo_val_);
+    const I* coo_row_ind = reinterpret_cast<const I*>(coo_row_ind_);
+    const I* coo_col_ind = reinterpret_cast<const I*>(coo_col_ind_);
 
     // Check for valid handle and matrix descriptor
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
@@ -228,14 +238,15 @@ rocsparse_status rocsparse::coosv_analysis_template(rocsparse_handle          ha
         const T* csr_val     = coo_val;
 
         // Create column pointers
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::coo2csr_template(
-            handle, coo_row_ind, (int32_t)nnz, m, csr_row_ptr, descr->base));
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::coo2csr_template(
+            handle, coo_row_ind, static_cast<int32_t>(nnz), m, csr_row_ptr, descr->base)));
 
         // Call CSR analysis
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrsv_analysis_template(handle,
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse::csrsv_analysis_template<int32_t, int32_t, T>(handle,
                                                                      trans,
                                                                      m,
-                                                                     (int32_t)nnz,
+                                                                     nnz,
                                                                      descr,
                                                                      csr_val,
                                                                      csr_row_ptr,
@@ -243,7 +254,7 @@ rocsparse_status rocsparse::coosv_analysis_template(rocsparse_handle          ha
                                                                      info,
                                                                      analysis,
                                                                      solve,
-                                                                     ptr));
+                                                                     ptr)));
     }
     else
     {
@@ -256,10 +267,11 @@ rocsparse_status rocsparse::coosv_analysis_template(rocsparse_handle          ha
 
         // Create column pointers
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse::coo2csr_template(handle, coo_row_ind, nnz, m, csr_row_ptr, descr->base));
+            (rocsparse::coo2csr_template(handle, coo_row_ind, nnz, m, csr_row_ptr, descr->base)));
 
         // Call CSR analysis
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrsv_analysis_template(handle,
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse::csrsv_analysis_template<int64_t, int64_t, T>(handle,
                                                                      trans,
                                                                      m,
                                                                      nnz,
@@ -270,25 +282,25 @@ rocsparse_status rocsparse::coosv_analysis_template(rocsparse_handle          ha
                                                                      info,
                                                                      analysis,
                                                                      solve,
-                                                                     ptr));
+                                                                     ptr)));
     }
 
     return rocsparse_status_success;
 }
 
-#define INSTANTIATE(ITYPE, TTYPE)                                 \
-    template rocsparse_status rocsparse::coosv_analysis_template( \
-        rocsparse_handle          handle,                         \
-        rocsparse_operation       trans,                          \
-        ITYPE                     m,                              \
-        int64_t                   nnz,                            \
-        const rocsparse_mat_descr descr,                          \
-        const TTYPE*              coo_val,                        \
-        const ITYPE*              coo_row_ind,                    \
-        const ITYPE*              coo_col_ind,                    \
-        rocsparse_mat_info        info,                           \
-        rocsparse_analysis_policy analysis,                       \
-        rocsparse_solve_policy    solve,                          \
+#define INSTANTIATE(I, T)                                               \
+    template rocsparse_status rocsparse::coosv_analysis_template<I, T>( \
+        rocsparse_handle          handle,                               \
+        rocsparse_operation       trans,                                \
+        int64_t                   m,                                    \
+        int64_t                   nnz,                                  \
+        const rocsparse_mat_descr descr,                                \
+        const void*               coo_val,                              \
+        const void*               coo_row_ind,                          \
+        const void*               coo_col_ind,                          \
+        rocsparse_mat_info        info,                                 \
+        rocsparse_analysis_policy analysis,                             \
+        rocsparse_solve_policy    solve,                                \
         void*                     temp_buffer);
 
 INSTANTIATE(int32_t, float);
@@ -304,20 +316,28 @@ INSTANTIATE(int64_t, rocsparse_double_complex);
 template <typename I, typename T>
 rocsparse_status rocsparse::coosv_solve_template(rocsparse_handle          handle,
                                                  rocsparse_operation       trans,
-                                                 I                         m,
+                                                 int64_t                   m_,
                                                  int64_t                   nnz,
-                                                 const T*                  alpha_device_host,
+                                                 const void*               alpha_device_host_,
                                                  const rocsparse_mat_descr descr,
-                                                 const T*                  coo_val,
-                                                 const I*                  coo_row_ind,
-                                                 const I*                  coo_col_ind,
+                                                 const void*               coo_val_,
+                                                 const void*               coo_row_ind_,
+                                                 const void*               coo_col_ind_,
                                                  rocsparse_mat_info        info,
-                                                 const T*                  x,
-                                                 T*                        y,
+                                                 const void*               x_,
+                                                 void*                     y_,
                                                  rocsparse_solve_policy    policy,
                                                  void*                     temp_buffer)
 {
     ROCSPARSE_ROUTINE_TRACE;
+
+    const I  m                 = static_cast<I>(m_);
+    const T* alpha_device_host = reinterpret_cast<const T*>(alpha_device_host_);
+    const T* coo_val           = reinterpret_cast<const T*>(coo_val_);
+    const I* coo_row_ind       = reinterpret_cast<const I*>(coo_row_ind_);
+    const I* coo_col_ind       = reinterpret_cast<const I*>(coo_col_ind_);
+    const T* x                 = reinterpret_cast<const T*>(x_);
+    T*       y                 = reinterpret_cast<T*>(y_);
 
     // Check for valid handle and matrix descriptor
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
@@ -389,32 +409,8 @@ rocsparse_status rocsparse::coosv_solve_template(rocsparse_handle          handl
         const I* csr_col_ind = coo_col_ind;
         const T* csr_val     = coo_val;
 
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrsv_solve_template(handle,
-                                                                  trans,
-                                                                  m,
-                                                                  (int32_t)nnz,
-                                                                  alpha_device_host,
-                                                                  descr,
-                                                                  csr_val,
-                                                                  csr_row_ptr,
-                                                                  csr_col_ind,
-                                                                  info,
-                                                                  x,
-                                                                  (int64_t)1,
-                                                                  y,
-                                                                  policy,
-                                                                  ptr));
-        return rocsparse_status_success;
-    }
-    else
-    {
-        int64_t* csr_row_ptr = reinterpret_cast<int64_t*>(ptr);
-        ptr += sizeof(int64_t) * (m / 256 + 1) * 256;
-
-        const I* csr_col_ind = coo_col_ind;
-        const T* csr_val     = coo_val;
-
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrsv_solve_template(handle,
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse::csrsv_solve_template<int32_t, int32_t, T>(handle,
                                                                   trans,
                                                                   m,
                                                                   nnz,
@@ -425,29 +421,55 @@ rocsparse_status rocsparse::coosv_solve_template(rocsparse_handle          handl
                                                                   csr_col_ind,
                                                                   info,
                                                                   x,
-                                                                  (int64_t)1,
+                                                                  static_cast<int64_t>(1),
                                                                   y,
                                                                   policy,
-                                                                  ptr));
+                                                                  ptr)));
+        return rocsparse_status_success;
+    }
+    else
+    {
+        int64_t* csr_row_ptr = reinterpret_cast<int64_t*>(ptr);
+        ptr += sizeof(int64_t) * (m / 256 + 1) * 256;
+
+        const I* csr_col_ind = coo_col_ind;
+        const T* csr_val     = coo_val;
+
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse::csrsv_solve_template<int64_t, int64_t, T>(handle,
+                                                                  trans,
+                                                                  m,
+                                                                  nnz,
+                                                                  alpha_device_host,
+                                                                  descr,
+                                                                  csr_val,
+                                                                  csr_row_ptr,
+                                                                  csr_col_ind,
+                                                                  info,
+                                                                  x,
+                                                                  static_cast<int64_t>(1),
+                                                                  y,
+                                                                  policy,
+                                                                  ptr)));
         return rocsparse_status_success;
     }
 }
 
-#define INSTANTIATE(ITYPE, TTYPE)                                            \
-    template rocsparse_status rocsparse::coosv_solve_template<ITYPE, TTYPE>( \
-        rocsparse_handle          handle,                                    \
-        rocsparse_operation       trans,                                     \
-        ITYPE                     m,                                         \
-        int64_t                   nnz,                                       \
-        const TTYPE*              alpha_device_host,                         \
-        const rocsparse_mat_descr descr,                                     \
-        const TTYPE*              coo_val,                                   \
-        const ITYPE*              coo_row_ind,                               \
-        const ITYPE*              coo_col_ind,                               \
-        rocsparse_mat_info        info,                                      \
-        const TTYPE*              x,                                         \
-        TTYPE*                    y,                                         \
-        rocsparse_solve_policy    policy,                                    \
+#define INSTANTIATE(I, T)                                            \
+    template rocsparse_status rocsparse::coosv_solve_template<I, T>( \
+        rocsparse_handle          handle,                            \
+        rocsparse_operation       trans,                             \
+        int64_t                   m,                                 \
+        int64_t                   nnz,                               \
+        const void*               alpha_device_host,                 \
+        const rocsparse_mat_descr descr,                             \
+        const void*               coo_val,                           \
+        const void*               coo_row_ind,                       \
+        const void*               coo_col_ind,                       \
+        rocsparse_mat_info        info,                              \
+        const void*               x,                                 \
+        void*                     y,                                 \
+        rocsparse_solve_policy    policy,                            \
         void*                     temp_buffer);
 
 INSTANTIATE(int32_t, float);

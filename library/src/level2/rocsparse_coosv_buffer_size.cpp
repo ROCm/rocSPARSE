@@ -22,7 +22,7 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_coosm.hpp"
+#include "rocsparse_coosv.hpp"
 #include "to_string.hpp"
 #include "utility.h"
 #include <map>
@@ -30,49 +30,45 @@
 
 namespace rocsparse
 {
-    typedef rocsparse_status (*coosm_buffer_size_t)(rocsparse_handle          handle,
-                                                    rocsparse_operation       trans_A,
-                                                    rocsparse_operation       trans_B,
+    typedef rocsparse_status (*coosv_buffer_size_t)(rocsparse_handle          handle,
+                                                    rocsparse_operation       trans,
                                                     int64_t                   m,
-                                                    int64_t                   nrhs,
                                                     int64_t                   nnz,
                                                     const rocsparse_mat_descr descr,
                                                     const void*               coo_val,
                                                     const void*               coo_row_ind,
                                                     const void*               coo_col_ind,
-                                                    rocsparse_order           order_B,
                                                     rocsparse_mat_info        info,
-                                                    rocsparse_solve_policy    policy,
                                                     size_t*                   buffer_size);
 
-    using coosm_buffer_size_tuple = std::tuple<rocsparse_indextype, rocsparse_datatype>;
+    using coosv_buffer_size_tuple = std::tuple<rocsparse_indextype, rocsparse_datatype>;
 
-#define COOSM_BUFFER_SIZE_CONFIG(I_, T_)                                                 \
+#define COOSV_BUFFER_SIZE_CONFIG(I_, T_)                                                 \
     {                                                                                    \
-        coosm_buffer_size_tuple(I_, T_),                                                 \
-            coosm_buffer_size_template<typename rocsparse::indextype_traits<I_>::type_t, \
+        coosv_buffer_size_tuple(I_, T_),                                                 \
+            coosv_buffer_size_template<typename rocsparse::indextype_traits<I_>::type_t, \
                                        typename rocsparse::datatype_traits<T_>::type_t>  \
     }
 
-    static const std::map<coosm_buffer_size_tuple, coosm_buffer_size_t>
-        s_coosm_buffer_size_dispatch{
-            {COOSM_BUFFER_SIZE_CONFIG(rocsparse_indextype_i32, rocsparse_datatype_f32_r),
-             COOSM_BUFFER_SIZE_CONFIG(rocsparse_indextype_i32, rocsparse_datatype_f64_r),
-             COOSM_BUFFER_SIZE_CONFIG(rocsparse_indextype_i32, rocsparse_datatype_f32_c),
-             COOSM_BUFFER_SIZE_CONFIG(rocsparse_indextype_i32, rocsparse_datatype_f64_c),
-             COOSM_BUFFER_SIZE_CONFIG(rocsparse_indextype_i64, rocsparse_datatype_f32_r),
-             COOSM_BUFFER_SIZE_CONFIG(rocsparse_indextype_i64, rocsparse_datatype_f64_r),
-             COOSM_BUFFER_SIZE_CONFIG(rocsparse_indextype_i64, rocsparse_datatype_f32_c),
-             COOSM_BUFFER_SIZE_CONFIG(rocsparse_indextype_i64, rocsparse_datatype_f64_c)}};
+    static const std::map<coosv_buffer_size_tuple, coosv_buffer_size_t>
+        s_coosv_buffer_size_dispatch{
+            {COOSV_BUFFER_SIZE_CONFIG(rocsparse_indextype_i32, rocsparse_datatype_f32_r),
+             COOSV_BUFFER_SIZE_CONFIG(rocsparse_indextype_i32, rocsparse_datatype_f64_r),
+             COOSV_BUFFER_SIZE_CONFIG(rocsparse_indextype_i32, rocsparse_datatype_f32_c),
+             COOSV_BUFFER_SIZE_CONFIG(rocsparse_indextype_i32, rocsparse_datatype_f64_c),
+             COOSV_BUFFER_SIZE_CONFIG(rocsparse_indextype_i64, rocsparse_datatype_f32_r),
+             COOSV_BUFFER_SIZE_CONFIG(rocsparse_indextype_i64, rocsparse_datatype_f64_r),
+             COOSV_BUFFER_SIZE_CONFIG(rocsparse_indextype_i64, rocsparse_datatype_f32_c),
+             COOSV_BUFFER_SIZE_CONFIG(rocsparse_indextype_i64, rocsparse_datatype_f64_c)}};
 
-    static rocsparse_status coosm_buffer_size_find(coosm_buffer_size_t* function_,
+    static rocsparse_status coosv_buffer_size_find(coosv_buffer_size_t* function_,
                                                    rocsparse_indextype  i_type_,
                                                    rocsparse_datatype   t_type_)
     {
-        const auto& it = rocsparse::s_coosm_buffer_size_dispatch.find(
-            rocsparse::coosm_buffer_size_tuple(i_type_, t_type_));
+        const auto& it = rocsparse::s_coosv_buffer_size_dispatch.find(
+            rocsparse::coosv_buffer_size_tuple(i_type_, t_type_));
 
-        if(it != rocsparse::s_coosm_buffer_size_dispatch.end())
+        if(it != rocsparse::s_coosv_buffer_size_dispatch.end())
         {
             function_[0] = it->second;
         }
@@ -85,7 +81,7 @@ namespace rocsparse
                       << ", t_type: " << rocsparse::to_string(t_type_) << std::endl;
 
             std::cout << "available configuration are: " << std::endl;
-            for(const auto& p : rocsparse::s_coosm_buffer_size_dispatch)
+            for(const auto& p : rocsparse::s_coosv_buffer_size_dispatch)
             {
                 const auto& t      = p.first;
                 const auto  i_type = std::get<0>(t);
@@ -111,13 +107,10 @@ namespace rocsparse
     }
 }
 
-rocsparse_status rocsparse::coosm_buffer_size(rocsparse_handle          handle,
-                                              rocsparse_operation       trans_A,
-                                              rocsparse_operation       trans_B,
+rocsparse_status rocsparse::coosv_buffer_size(rocsparse_handle          handle,
+                                              rocsparse_operation       trans,
                                               int64_t                   m,
-                                              int64_t                   nrhs,
                                               int64_t                   nnz,
-                                              rocsparse_datatype        alpha_device_host_datatype,
                                               const rocsparse_mat_descr descr,
                                               rocsparse_datatype        coo_val_datatype,
                                               const void*               coo_val,
@@ -125,28 +118,13 @@ rocsparse_status rocsparse::coosm_buffer_size(rocsparse_handle          handle,
                                               const void*               coo_row_ind,
                                               rocsparse_indextype       coo_col_ind_indextype,
                                               const void*               coo_col_ind,
-                                              rocsparse_datatype        B_datatype,
-                                              rocsparse_order           order_B,
                                               rocsparse_mat_info        info,
-                                              rocsparse_solve_policy    policy,
                                               size_t*                   buffer_size)
 {
-    rocsparse::coosm_buffer_size_t f;
+    rocsparse::coosv_buffer_size_t f;
     RETURN_IF_ROCSPARSE_ERROR(
-        rocsparse::coosm_buffer_size_find(&f, coo_row_ind_indextype, coo_val_datatype));
-    RETURN_IF_ROCSPARSE_ERROR(f(handle,
-                                trans_A,
-                                trans_B,
-                                m,
-                                nrhs,
-                                nnz,
-                                descr,
-                                coo_val,
-                                coo_row_ind,
-                                coo_col_ind,
-                                order_B,
-                                info,
-                                policy,
-                                buffer_size));
+        rocsparse::coosv_buffer_size_find(&f, coo_row_ind_indextype, coo_val_datatype));
+    RETURN_IF_ROCSPARSE_ERROR(
+        f(handle, trans, m, nnz, descr, coo_val, coo_row_ind, coo_col_ind, info, buffer_size));
     return rocsparse_status_success;
 }
