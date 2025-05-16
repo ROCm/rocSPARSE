@@ -44,9 +44,9 @@ Tests:
   indextype: *i32i32_i64i32_i64i64
   precision: *single_double_precisions_complex_real
 
-# ##############################
-# # Quick
-# ##############################
+##############################
+# Quick
+##############################
 - name: spmm_csr
   category: quick
   function: spmm_csr
@@ -61,8 +61,8 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
   spmm_alg: [rocsparse_spmm_alg_csr_merge_path]
-  orderB: [rocsparse_order_row, rocsparse_order_column]
-  orderC: [rocsparse_order_row, rocsparse_order_column]
+  orderB: *all_rocsparse_order
+  orderC: *all_rocsparse_order
 
 - name: spmm_csr
   category: quick
@@ -228,9 +228,9 @@ Tests:
   orderB: [rocsparse_order_column]
   orderC: [rocsparse_order_column]
 
-# ##############################
-# # Precheckin
-# ##############################
+##############################
+# Precheckin
+##############################
 - name: spmm_csr
   category: pre_checkin
   function: spmm_csr
