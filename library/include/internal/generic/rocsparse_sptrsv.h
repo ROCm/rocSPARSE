@@ -32,6 +32,8 @@
 extern "C" {
 #endif
 
+/**/
+
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_sptrsv_buffer_size(rocsparse_handle            handle,
                                               rocsparse_sptrsv_descr      sptrsv_descr,
