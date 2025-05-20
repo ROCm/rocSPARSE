@@ -210,6 +210,8 @@ public:
     const void* boost_tol{};
     const void* boost_val{};
 
+    ~_rocsparse_mat_info();
+
     void                 set_csrmv_info(rocsparse_csrmv_info value);
     rocsparse_csrmv_info get_csrmv_info();
 
