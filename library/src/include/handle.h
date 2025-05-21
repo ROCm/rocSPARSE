@@ -604,6 +604,14 @@ public:
             this->beta_mul = false;
         }
     }
+
+    rocsparse_status csrgeam_allocate_descr_memory(rocsparse_handle handle,
+                                                   int64_t          m,
+                                                   int64_t          n,
+                                                   const void*      alpha,
+                                                   int64_t          nnz_A,
+                                                   const void*      beta,
+                                                   int64_t          nnz_B);
 };
 
 namespace rocsparse

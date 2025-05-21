@@ -914,6 +914,47 @@ bool rocsparse::check_trm_shared(const rocsparse_mat_info info, rocsparse_trm_in
     return (shared > 0) ? true : false;
 }
 
+rocsparse_status _rocsparse_spgeam_descr::csrgeam_allocate_descr_memory(rocsparse_handle handle,
+                                                                        int64_t          m,
+                                                                        int64_t          n,
+                                                                        const void*      alpha,
+                                                                        int64_t          nnz_A,
+                                                                        const void*      beta,
+                                                                        int64_t          nnz_B)
+{
+    ROCSPARSE_ROUTINE_TRACE;
+
+    // Clean up row pointer array
+    if(this->csr_row_ptr_C != nullptr)
+    {
+        RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(this->csr_row_ptr_C, handle->stream));
+    }
+
+    // Clean up rocprim buffer
+    if(this->rocprim_buffer != nullptr && this->rocprim_alloc)
+    {
+        RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(this->rocprim_buffer, handle->stream));
+    }
+
+    this->indextype = (nnz_A + nnz_B) <= std::numeric_limits<int32_t>::max()
+                          ? rocsparse_indextype_i32
+                          : rocsparse_indextype_i64;
+
+    // We do not know how many nonzeros will exist in C yet therefore use an int64_t row ptr array
+    RETURN_IF_HIP_ERROR(
+        rocsparse_hipMallocAsync(&this->csr_row_ptr_C,
+                                 rocsparse::indextype_sizeof(this->indextype) * (m + 1),
+                                 handle->stream));
+
+    this->rocprim_alloc  = false;
+    this->rocprim_buffer = nullptr;
+    this->rocprim_size   = 0;
+
+    this->m = m;
+
+    return rocsparse_status_success;
+}
+
 /********************************************************************************
  * \brief rocsparse_csrgemm_info is a structure holding the rocsparse csrgemm
  * info data gathered during csrgemm_buffer_size. It must be initialized using

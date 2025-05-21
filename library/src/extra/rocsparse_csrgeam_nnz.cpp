@@ -678,7 +678,9 @@ namespace rocsparse
 
         ROCSPARSE_CHECKARG_POINTER(13, nnz_C);
 
-        const rocsparse_status status = rocsparse::csrgeam_nnz_quickreturn(handle,
+        const rocsparse_spgeam_descr descr       = nullptr;
+        void*                        temp_buffer = nullptr;
+        const rocsparse_status       status      = rocsparse::csrgeam_nnz_quickreturn(handle,
                                                                            rocsparse_operation_none,
                                                                            rocsparse_operation_none,
                                                                            m,
@@ -694,8 +696,8 @@ namespace rocsparse
                                                                            descr_C,
                                                                            csr_row_ptr_C,
                                                                            nnz_C,
-                                                                           nullptr,
-                                                                           nullptr,
+                                                                           descr,
+                                                                           temp_buffer,
                                                                            false);
 
         if(status != rocsparse_status_continue)
@@ -766,6 +768,8 @@ namespace rocsparse
             return rocsparse_status_success;
         }
 
+        const rocsparse_spgeam_descr descr       = nullptr;
+        void*                        temp_buffer = nullptr;
         RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrgeam_nnz_core(handle,
                                                               rocsparse_operation_none,
                                                               rocsparse_operation_none,
@@ -782,59 +786,11 @@ namespace rocsparse
                                                               descr_C,
                                                               csr_row_ptr_C,
                                                               nnz_C,
-                                                              nullptr,
-                                                              nullptr,
+                                                              descr,
+                                                              temp_buffer,
                                                               false));
         return rocsparse_status_success;
     }
-}
-
-rocsparse_status rocsparse::csrgeam_allocate_descr_memory(rocsparse_handle       handle,
-                                                          int64_t                m,
-                                                          int64_t                n,
-                                                          const void*            alpha,
-                                                          int64_t                nnz_A,
-                                                          const void*            beta,
-                                                          int64_t                nnz_B,
-                                                          rocsparse_spgeam_descr descr)
-{
-    ROCSPARSE_ROUTINE_TRACE;
-
-    // Clean up row pointer array
-    if(descr->csr_row_ptr_C != nullptr)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(descr->csr_row_ptr_C, handle->stream));
-    }
-
-    // Clean up rocprim buffer
-    if(descr->rocprim_buffer != nullptr && descr->rocprim_alloc)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(descr->rocprim_buffer, handle->stream));
-    }
-
-    descr->indextype = (nnz_A + nnz_B) <= std::numeric_limits<int32_t>::max()
-                           ? rocsparse_indextype_i32
-                           : rocsparse_indextype_i64;
-
-    // We do not know how many nonzeros will exist in C yet therefore use an int64_t row ptr array
-    if(descr->indextype == rocsparse_indextype_i32)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
-            &descr->csr_row_ptr_C, sizeof(int32_t) * (m + 1), handle->stream));
-    }
-    else
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
-            &descr->csr_row_ptr_C, sizeof(int64_t) * (m + 1), handle->stream));
-    }
-
-    descr->rocprim_alloc  = false;
-    descr->rocprim_buffer = nullptr;
-    descr->rocprim_size   = 0;
-
-    descr->m = m;
-
-    return rocsparse_status_success;
 }
 
 template <typename I, typename J>
