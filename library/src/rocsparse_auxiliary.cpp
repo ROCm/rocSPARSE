@@ -935,15 +935,19 @@ try
             rocsparse::copy_trm_info(dest->bsrsmt_lower_info, src->bsrsmt_lower_info));
     }
 
-    if(src->csrmv_info != nullptr)
+    rocsparse_csrmv_info src_csrmv_info  = src->get_csrmv_info();
+    rocsparse_csrmv_info dest_csrmv_info = dest->get_csrmv_info();
+    if(src_csrmv_info != nullptr)
     {
-        index_type_J = src->csrmv_info->index_type_J;
+        index_type_J = src_csrmv_info->index_type_J;
 
-        if(dest->csrmv_info == nullptr)
+        if(dest_csrmv_info == nullptr)
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse::create_csrmv_info(&dest->csrmv_info));
+            dest_csrmv_info = new _rocsparse_csrmv_info();
+            dest->set_csrmv_info(dest_csrmv_info);
         }
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::copy_csrmv_info(dest->csrmv_info, src->csrmv_info));
+
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::copy_csrmv_info(dest_csrmv_info, src_csrmv_info));
     }
 
     if(src->csric0_info != nullptr)
@@ -1163,244 +1167,7 @@ try
         return rocsparse_status_success;
     }
 
-    // Uncouple shared meta data
-    if(info->bsrsv_lower_info == info->bsrilu0_info || info->bsrsv_lower_info == info->bsric0_info
-       || info->bsrsv_lower_info == info->bsrsm_lower_info)
-    {
-        info->bsrsv_lower_info = nullptr;
-    }
-
-    // Uncouple shared meta data
-    if(info->bsrsm_lower_info == info->bsrilu0_info || info->bsrsm_lower_info == info->bsric0_info)
-    {
-        info->bsrsm_lower_info = nullptr;
-    }
-
-    // Uncouple shared meta data
-    if(info->bsrilu0_info == info->bsric0_info)
-    {
-        info->bsrilu0_info = nullptr;
-    }
-
-    // Uncouple shared meta data
-    if(info->csrsv_lower_info == info->csrilu0_info || info->csrsv_lower_info == info->csric0_info
-       || info->csrsv_lower_info == info->csrsm_lower_info)
-    {
-        info->csrsv_lower_info = nullptr;
-    }
-
-    // Uncouple shared meta data
-    if(info->csrsm_lower_info == info->csrilu0_info || info->csrsm_lower_info == info->csric0_info)
-    {
-        info->csrsm_lower_info = nullptr;
-    }
-
-    // Uncouple shared meta data
-    if(info->csrilu0_info == info->csric0_info)
-    {
-        info->csrilu0_info = nullptr;
-    }
-
-    // Uncouple shared meta data
-    if(info->csrsv_upper_info == info->csrsm_upper_info)
-    {
-        info->csrsv_upper_info = nullptr;
-    }
-
-    // Uncouple shared meta data
-    if(info->bsrsv_upper_info == info->bsrsm_upper_info)
-    {
-        info->bsrsv_upper_info = nullptr;
-    }
-
-    // Uncouple shared meta data
-    if(info->csrsvt_lower_info == info->csrsmt_lower_info)
-    {
-        info->csrsvt_lower_info = nullptr;
-    }
-
-    // Uncouple shared meta data
-    if(info->bsrsvt_lower_info == info->bsrsmt_lower_info)
-    {
-        info->bsrsvt_lower_info = nullptr;
-    }
-
-    // Uncouple shared meta data
-    if(info->csrsvt_upper_info == info->csrsmt_upper_info)
-    {
-        info->csrsvt_upper_info = nullptr;
-    }
-
-    // Uncouple shared meta data
-    if(info->bsrsvt_upper_info == info->bsrsmt_upper_info)
-    {
-        info->bsrsvt_upper_info = nullptr;
-    }
-
-    // Clear csrmv info struct
-    if(info->csrmv_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_csrmv_info(info->csrmv_info));
-    }
-
-    // Clear bsrsvt upper info struct
-    if(info->bsrsvt_upper_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->bsrsvt_upper_info));
-    }
-
-    // Clear bsrsvt lower info struct
-    if(info->bsrsvt_lower_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->bsrsvt_lower_info));
-    }
-
-    // Clear bsric0 info struct
-    if(info->bsric0_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->bsric0_info));
-    }
-
-    // Clear bsrilu0 info struct
-    if(info->bsrilu0_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->bsrilu0_info));
-    }
-
-    // Clear csrsvt upper info struct
-    if(info->csrsvt_upper_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->csrsvt_upper_info));
-    }
-
-    // Clear csrsvt lower info struct
-    if(info->csrsvt_lower_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->csrsvt_lower_info));
-    }
-
-    // Clear csrsmt upper info struct
-    if(info->csrsmt_upper_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->csrsmt_upper_info));
-    }
-
-    // Clear csrsmt lower info struct
-    if(info->csrsmt_lower_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->csrsmt_lower_info));
-    }
-
-    // Clear bsrsmt upper info struct
-    if(info->bsrsmt_upper_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->bsrsmt_upper_info));
-    }
-
-    // Clear bsrsmt lower info struct
-    if(info->bsrsmt_lower_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->bsrsmt_lower_info));
-    }
-
-    // Clear csric0 info struct
-    if(info->csric0_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->csric0_info));
-    }
-
-    // Clear csrilu0 info struct
-    if(info->csrilu0_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->csrilu0_info));
-    }
-
-    // Clear bsrsv upper info struct
-    if(info->bsrsv_upper_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->bsrsv_upper_info));
-    }
-
-    // Clear bsrsv lower info struct
-    if(info->bsrsv_lower_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->bsrsv_lower_info));
-    }
-
-    // Clear csrsv upper info struct
-    if(info->csrsv_upper_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->csrsv_upper_info));
-    }
-
-    // Clear csrsv lower info struct
-    if(info->csrsv_lower_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->csrsv_lower_info));
-    }
-
-    // Clear csrsm upper info struct
-    if(info->csrsm_upper_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->csrsm_upper_info));
-    }
-
-    // Clear csrsm lower info struct
-    if(info->csrsm_lower_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->csrsm_lower_info));
-    }
-
-    // Clear bsrsm upper info struct
-    if(info->bsrsm_upper_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->bsrsm_upper_info));
-    }
-
-    // Clear bsrsm lower info struct
-    if(info->bsrsm_lower_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->bsrsm_lower_info));
-    }
-
-    // Clear csrgemm info struct
-    if(info->csrgemm_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_csrgemm_info(info->csrgemm_info));
-    }
-
-    // Clear csritsv info struct
-    if(info->csritsv_info != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_csritsv_info(info->csritsv_info));
-    }
-
-    // Clear zero pivot
-    if(info->zero_pivot != nullptr)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->zero_pivot));
-        info->zero_pivot = nullptr;
-    }
-
-    // Clear singular pivot
-    if(info->singular_pivot != nullptr)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->singular_pivot));
-        info->singular_pivot = nullptr;
-    }
-
-    // Clear singular tolerance
-    info->singular_tol = 0;
-
-    // Destruct
-    try
-    {
-        delete info;
-    }
-    catch(const rocsparse_status& status)
-    {
-        return status;
-    }
+    delete info;
     return rocsparse_status_success;
     // LCOV_EXCL_START
 }

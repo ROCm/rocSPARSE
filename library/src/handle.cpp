@@ -30,6 +30,185 @@
 
 ROCSPARSE_KERNEL(1) void init_kernel(){};
 
+rocsparse_csrmv_info _rocsparse_mat_info::get_csrmv_info()
+{
+    return this->csrmv_info;
+}
+
+void _rocsparse_mat_info::set_csrmv_info(rocsparse_csrmv_info value)
+{
+    this->csrmv_info = value;
+}
+
+rocsparse_bsrmv_info _rocsparse_mat_info::get_bsrmv_info()
+{
+    return this->bsrmv_info;
+}
+
+void _rocsparse_mat_info::set_bsrmv_info(rocsparse_bsrmv_info value)
+{
+    this->bsrmv_info = value;
+}
+
+_rocsparse_mat_info::~_rocsparse_mat_info()
+{
+    // Uncouple shared meta data
+    if(this->bsrsv_lower_info == this->bsrilu0_info || this->bsrsv_lower_info == this->bsric0_info
+       || this->bsrsv_lower_info == this->bsrsm_lower_info)
+    {
+        this->bsrsv_lower_info = nullptr;
+    }
+
+    // Uncouple shared meta data
+    if(this->bsrsm_lower_info == this->bsrilu0_info || this->bsrsm_lower_info == this->bsric0_info)
+    {
+        this->bsrsm_lower_info = nullptr;
+    }
+
+    // Uncouple shared meta data
+    if(this->bsrilu0_info == this->bsric0_info)
+    {
+        this->bsrilu0_info = nullptr;
+    }
+
+    // Uncouple shared meta data
+    if(this->csrsv_lower_info == this->csrilu0_info || this->csrsv_lower_info == this->csric0_info
+       || this->csrsv_lower_info == this->csrsm_lower_info)
+    {
+        this->csrsv_lower_info = nullptr;
+    }
+
+    // Uncouple shared meta data
+    if(this->csrsm_lower_info == this->csrilu0_info || this->csrsm_lower_info == this->csric0_info)
+    {
+        this->csrsm_lower_info = nullptr;
+    }
+
+    // Uncouple shared meta data
+    if(this->csrilu0_info == this->csric0_info)
+    {
+        this->csrilu0_info = nullptr;
+    }
+
+    // Uncouple shared meta data
+    if(this->csrsv_upper_info == this->csrsm_upper_info)
+    {
+        this->csrsv_upper_info = nullptr;
+    }
+
+    // Uncouple shared meta data
+    if(this->bsrsv_upper_info == this->bsrsm_upper_info)
+    {
+        this->bsrsv_upper_info = nullptr;
+    }
+
+    // Uncouple shared meta data
+    if(this->csrsvt_lower_info == this->csrsmt_lower_info)
+    {
+        this->csrsvt_lower_info = nullptr;
+    }
+
+    // Uncouple shared meta data
+    if(this->bsrsvt_lower_info == this->bsrsmt_lower_info)
+    {
+        this->bsrsvt_lower_info = nullptr;
+    }
+
+    // Uncouple shared meta data
+    if(this->csrsvt_upper_info == this->csrsmt_upper_info)
+    {
+        this->csrsvt_upper_info = nullptr;
+    }
+
+    // Uncouple shared meta data
+    if(this->bsrsvt_upper_info == this->bsrsmt_upper_info)
+    {
+        this->bsrsvt_upper_info = nullptr;
+    }
+
+    // Clear bsrsvt upper info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsrsvt_upper_info));
+
+    // Clear bsrsvt lower info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsrsvt_lower_info));
+
+    // Clear bsric0 info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsric0_info));
+
+    // Clear bsrilu0 info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsrilu0_info));
+
+    // Clear csrsvt upper info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csrsvt_upper_info));
+
+    // Clear csrsvt lower info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csrsvt_lower_info));
+
+    // Clear csrsmt upper info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csrsmt_upper_info));
+
+    // Clear csrsmt lower info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csrsmt_lower_info));
+
+    // Clear bsrsmt upper info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsrsmt_upper_info));
+
+    // Clear bsrsmt lower info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsrsmt_lower_info));
+
+    // Clear csric0 info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csric0_info));
+
+    // Clear csrilu0 info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csrilu0_info));
+
+    // Clear bsrsv upper info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsrsv_upper_info));
+
+    // Clear bsrsv lower info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsrsv_lower_info));
+
+    // Clear csrsv upper info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csrsv_upper_info));
+
+    // Clear csrsv lower info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csrsv_lower_info));
+
+    // Clear csrsm upper info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csrsm_upper_info));
+
+    // Clear csrsm lower info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csrsm_lower_info));
+
+    // Clear bsrsm upper info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsrsm_upper_info));
+
+    // Clear bsrsm lower info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsrsm_lower_info));
+
+    // Clear csrgemm info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_csrgemm_info(this->csrgemm_info));
+
+    // Clear csritsv info struct
+    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_csritsv_info(this->csritsv_info));
+
+    // Clear zero pivot
+    WARNING_IF_HIP_ERROR(rocsparse_hipFree(this->zero_pivot));
+
+    // Clear singular pivot
+    WARNING_IF_HIP_ERROR(rocsparse_hipFree(this->singular_pivot));
+
+    if(this->csrmv_info != nullptr)
+    {
+        delete this->csrmv_info;
+    }
+
+    if(this->bsrmv_info != nullptr)
+    {
+        delete this->bsrmv_info;
+    }
+}
+
 /*******************************************************************************
  * constructor
  ******************************************************************************/
@@ -239,35 +418,6 @@ rocsparse_status _rocsparse_handle::get_pointer_mode(rocsparse_pointer_mode* use
 }
 
 /********************************************************************************
- * \brief rocsparse_csrmv_info is a structure holding the rocsparse csrmv info
- * data gathered during csrmv_analysis. It must be initialized using the
- * create_csrmv_info() routine. It should be destroyed at the end
- * using destroy_csrmv_info().
- *******************************************************************************/
-rocsparse_status rocsparse::create_csrmv_info(rocsparse_csrmv_info* info)
-{
-    ROCSPARSE_ROUTINE_TRACE;
-
-    if(info == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else
-    {
-        // Allocate
-        try
-        {
-            *info = new _rocsparse_csrmv_info;
-        }
-        catch(const rocsparse_status& status)
-        {
-            return status;
-        }
-        return rocsparse_status_success;
-    }
-}
-
-/********************************************************************************
  * \brief Copy csrmv info.
  *******************************************************************************/
 rocsparse_status rocsparse::copy_csrmv_info(rocsparse_csrmv_info       dest,
@@ -471,51 +621,6 @@ rocsparse_status rocsparse::copy_csrmv_info(rocsparse_csrmv_info       dest,
     dest->csr_row_ptr = src->csr_row_ptr;
     dest->csr_col_ind = src->csr_col_ind;
 
-    return rocsparse_status_success;
-}
-
-/********************************************************************************
- * \brief Destroy csrmv info.
- *******************************************************************************/
-rocsparse_status rocsparse::destroy_csrmv_info(rocsparse_csrmv_info info)
-{
-    ROCSPARSE_ROUTINE_TRACE;
-
-    if(info == nullptr)
-    {
-        return rocsparse_status_success;
-    }
-
-    // Clean up adaptive arrays
-    if(info->adaptive.size > 0)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->adaptive.row_blocks));
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->adaptive.wg_flags));
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->adaptive.wg_ids));
-    }
-
-    if(info->lrb.size > 0)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->lrb.wg_flags));
-    }
-
-    if(info->m > 0)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->lrb.rows_offsets_scratch));
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->lrb.rows_bins));
-    }
-
-    RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->lrb.n_rows_bins));
-
-    // Destruct
-    try
-    {
-        delete info;
-    }
-    catch(const rocsparse_status& status)
-    {
-        return status;
-    }
     return rocsparse_status_success;
 }
 
@@ -1063,4 +1168,61 @@ rocsparse_status rocsparse::get_rocsparse_status_for_hip_status(hipError_t statu
     default:
         return rocsparse_status_internal_error;
     }
+}
+
+_rocsparse_lrb_info::~_rocsparse_lrb_info()
+{
+    WARNING_IF_HIP_ERROR(rocsparse_hipFree(this->wg_flags));
+    WARNING_IF_HIP_ERROR(rocsparse_hipFree(this->rows_offsets_scratch));
+    WARNING_IF_HIP_ERROR(rocsparse_hipFree(this->rows_bins));
+    WARNING_IF_HIP_ERROR(rocsparse_hipFree(this->n_rows_bins));
+
+    this->wg_flags             = nullptr;
+    this->rows_offsets_scratch = nullptr;
+    this->rows_bins            = nullptr;
+    this->n_rows_bins          = nullptr;
+}
+
+void _rocsparse_lrb_info::clear()
+{
+    THROW_IF_HIP_ERROR(rocsparse_hipFree(this->wg_flags));
+    THROW_IF_HIP_ERROR(rocsparse_hipFree(this->rows_offsets_scratch));
+    THROW_IF_HIP_ERROR(rocsparse_hipFree(this->rows_bins));
+    THROW_IF_HIP_ERROR(rocsparse_hipFree(this->n_rows_bins));
+
+    this->wg_flags             = nullptr;
+    this->rows_offsets_scratch = nullptr;
+    this->rows_bins            = nullptr;
+    this->n_rows_bins          = nullptr;
+    this->size                 = 0;
+    memset(this->nRowsBins, 0, sizeof(int64_t) * 32);
+}
+
+_rocsparse_adaptive_info::~_rocsparse_adaptive_info()
+{
+
+    WARNING_IF_HIP_ERROR(rocsparse_hipFree(this->row_blocks));
+    WARNING_IF_HIP_ERROR(rocsparse_hipFree(this->wg_flags));
+    WARNING_IF_HIP_ERROR(rocsparse_hipFree(this->wg_ids));
+
+    this->row_blocks = nullptr;
+    this->wg_flags   = nullptr;
+    this->wg_ids     = nullptr;
+    this->size       = 0;
+    this->first_row  = 0;
+    this->last_row   = 0;
+}
+
+void _rocsparse_adaptive_info::clear()
+{
+    THROW_IF_HIP_ERROR(rocsparse_hipFree(this->row_blocks));
+    THROW_IF_HIP_ERROR(rocsparse_hipFree(this->wg_flags));
+    THROW_IF_HIP_ERROR(rocsparse_hipFree(this->wg_ids));
+
+    this->row_blocks = nullptr;
+    this->wg_flags   = nullptr;
+    this->wg_ids     = nullptr;
+    this->size       = 0;
+    this->first_row  = 0;
+    this->last_row   = 0;
 }
