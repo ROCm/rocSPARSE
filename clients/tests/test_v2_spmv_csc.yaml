@@ -621,7 +621,6 @@ Tests:
              amazon0312,
              sme3Dc]
 
-
 - name: v2_spmv_csc_file
   category: quick
   function: v2_spmv_csc
@@ -647,7 +646,7 @@ Tests:
   M: [34, 104, 343, 5196]
   N: [57, 109, 458, 3425]
   alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
   matrix_type: [rocsparse_matrix_type_general]
@@ -661,7 +660,7 @@ Tests:
   M: [9827]
   N: [8912]
   alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
   matrix_type: [rocsparse_matrix_type_general]

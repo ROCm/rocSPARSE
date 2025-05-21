@@ -35,7 +35,7 @@ rocsparse_bench_app_base::rocsparse_bench_app_base(int argc, char** argv)
     , m_bench_cmdlines(argc, argv)
     , m_bench_timing(m_bench_cmdlines.get_nsamples(), m_bench_cmdlines.get_nruns())
 
-{};
+          {};
 
 rocsparse_status rocsparse_bench_app_base::run_case(int isample, int irun, int argc, char** argv)
 {
