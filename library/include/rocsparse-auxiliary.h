@@ -2644,7 +2644,7 @@ int rocsparse_state_debug();
 
 /*! \ingroup aux_module
    *  \brief Enable debug warnings
-   * \details If the debug warnings is enabled, then some specific warnings could be printed at the execution.
+   * \details If the debug warnings are enabled, then some specific warnings could be printed during the execution.
    *  \note This routine ignores the environment variable ROCSPARSE_DEBUG_WARNINGS.
    */
 ROCSPARSE_EXPORT
