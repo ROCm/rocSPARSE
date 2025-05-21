@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse_clients_envariables.hpp"
 #include "rocsparse_parse_data.hpp"
 #include "rocsparse_reproducibility.hpp"
 #include "utility.hpp"
@@ -177,6 +178,44 @@ int main(int argc, char** argv)
     // Enable debug mode for testing.
     //
     rocsparse_enable_debug();
+
+    //
+    // Enable test debug arguments.
+    //
+    if(rocsparse_clients_envariables::is_defined(
+           rocsparse_clients_envariables::TEST_DEBUG_ARGUMENTS)
+       == false)
+    {
+        rocsparse_clients_envariables::set(rocsparse_clients_envariables::TEST_DEBUG_ARGUMENTS,
+                                           true);
+    }
+
+    //
+    // Disable debug argument verbose
+    //
+    {
+        static constexpr const char* option_force_debug_arguments_verbose
+            = "--force-debug-arguments-verbose";
+        bool enable_debug_arguments_verbose = false;
+        for(int iarg = 0; iarg < argc; ++iarg)
+        {
+            if(!strcmp(argv[iarg], option_force_debug_arguments_verbose))
+            {
+                enable_debug_arguments_verbose = true;
+                (void)memcpy(argv + iarg, argv + iarg + 1, (argc - iarg) * sizeof(char*));
+                argv[--argc] = nullptr;
+                break;
+            }
+        }
+
+        if(enable_debug_arguments_verbose == false)
+        {
+            rocsparse_disable_debug_arguments_verbose();
+            std::cout << "rocsparse-test: debug arguments verbose is disabled for testings (use "
+                      << option_force_debug_arguments_verbose << " to skip the disabling)"
+                      << std::endl;
+        }
+    }
 
     //
     // Disable debug warnings
