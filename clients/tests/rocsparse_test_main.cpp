@@ -173,6 +173,36 @@ public:
 
 int main(int argc, char** argv)
 {
+    //
+    // Enable debug mode for testing.
+    //
+    rocsparse_enable_debug();
+
+    //
+    // Disable debug warnings
+    //
+    {
+        static constexpr const char* option_force_warning  = "--force-warnings";
+        bool                         enable_debug_warnings = false;
+        for(int iarg = 0; iarg < argc; ++iarg)
+        {
+            if(!strcmp(argv[iarg], option_force_warning))
+            {
+                enable_debug_warnings = true;
+                (void)memcpy(argv + iarg, argv + iarg + 1, (argc - iarg) * sizeof(char*));
+                argv[--argc] = nullptr;
+                break;
+            }
+        }
+
+        if(enable_debug_warnings == false)
+        {
+            rocsparse_disable_debug_warnings();
+            std::cout << "rocsparse-test: warnings are disabled for testings (use "
+                      << option_force_warning << " to skip the disabling)" << std::endl;
+        }
+    }
+
     // Get version
     rocsparse_handle handle;
     rocsparse_status status = rocsparse_create_handle(&handle);
