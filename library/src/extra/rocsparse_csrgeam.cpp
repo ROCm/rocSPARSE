@@ -25,6 +25,7 @@
 #include <map>
 #include <sstream>
 
+#include "../conversion/rocsparse_convert_array.hpp"
 #include "common.h"
 #include "control.h"
 #include "internal/extra/rocsparse_csrgeam.h"
@@ -546,6 +547,7 @@ namespace rocsparse
 
 template <typename T, typename I, typename J>
 rocsparse_status rocsparse::csrgeam_template(rocsparse_handle             handle,
+                                             const rocsparse_spgeam_descr descr,
                                              rocsparse_operation          trans_A,
                                              rocsparse_operation          trans_B,
                                              int64_t                      m,
@@ -566,7 +568,6 @@ rocsparse_status rocsparse::csrgeam_template(rocsparse_handle             handle
                                              void*                        csr_val_C,
                                              const void*                  csr_row_ptr_C,
                                              void*                        csr_col_ind_C,
-                                             const rocsparse_spgeam_descr descr,
                                              void*                        temp_buffer)
 {
     const rocsparse_status status = rocsparse::csrgeam_quickreturn(handle,
@@ -574,22 +575,22 @@ rocsparse_status rocsparse::csrgeam_template(rocsparse_handle             handle
                                                                    trans_B,
                                                                    m,
                                                                    n,
-                                                                   (const T*)alpha_device_host,
+                                                                   alpha_device_host,
                                                                    descr_A,
                                                                    nnz_A,
-                                                                   (const T*)csr_val_A,
-                                                                   (const I*)csr_row_ptr_A,
-                                                                   (const J*)csr_col_ind_A,
-                                                                   (const T*)beta_device_host,
+                                                                   csr_val_A,
+                                                                   csr_row_ptr_A,
+                                                                   csr_col_ind_A,
+                                                                   beta_device_host,
                                                                    descr_B,
                                                                    nnz_B,
-                                                                   (const T*)csr_val_B,
-                                                                   (const I*)csr_row_ptr_B,
-                                                                   (const J*)csr_col_ind_B,
+                                                                   csr_val_B,
+                                                                   csr_row_ptr_B,
+                                                                   csr_col_ind_B,
                                                                    descr_C,
-                                                                   (T*)csr_val_C,
-                                                                   (const I*)csr_row_ptr_C,
-                                                                   (J*)csr_col_ind_C,
+                                                                   csr_val_C,
+                                                                   csr_row_ptr_C,
+                                                                   csr_col_ind_C,
                                                                    descr,
                                                                    temp_buffer);
     if(status != rocsparse_status_continue)
@@ -627,6 +628,7 @@ rocsparse_status rocsparse::csrgeam_template(rocsparse_handle             handle
 namespace rocsparse
 {
     typedef rocsparse_status (*csrgeam_t)(rocsparse_handle             handle,
+                                          const rocsparse_spgeam_descr descr,
                                           rocsparse_operation          trans_A,
                                           rocsparse_operation          trans_B,
                                           int64_t                      m,
@@ -647,7 +649,6 @@ namespace rocsparse
                                           void*                        csr_val_C,
                                           const void*                  csr_row_ptr_C,
                                           void*                        csr_col_ind_C,
-                                          const rocsparse_spgeam_descr descr,
                                           void*                        temp_buffer);
 
     using csrgeam_tuple = std::tuple<rocsparse_datatype, rocsparse_indextype, rocsparse_indextype>;
@@ -739,6 +740,8 @@ rocsparse_status
                                                         int64_t*            nnz_C,
                                                         const rocsparse_spgeam_descr descr)
 {
+    ROCSPARSE_ROUTINE_TRACE;
+
     switch(csr_row_ptr_C_indextype)
     {
     case rocsparse_indextype_i32:
@@ -753,6 +756,7 @@ rocsparse_status
 }
 
 rocsparse_status rocsparse::csrgeam(rocsparse_handle             handle,
+                                    const rocsparse_spgeam_descr descr,
                                     rocsparse_operation          trans_A,
                                     rocsparse_operation          trans_B,
                                     int64_t                      m,
@@ -784,7 +788,6 @@ rocsparse_status rocsparse::csrgeam(rocsparse_handle             handle,
                                     const void*                  csr_row_ptr_C,
                                     rocsparse_indextype          csr_col_ind_C_indextype,
                                     void*                        csr_col_ind_C,
-                                    const rocsparse_spgeam_descr descr,
                                     void*                        temp_buffer)
 {
     ROCSPARSE_ROUTINE_TRACE;
@@ -793,6 +796,7 @@ rocsparse_status rocsparse::csrgeam(rocsparse_handle             handle,
         &f, alpha_device_host_datatype, csr_row_ptr_C_indextype, csr_col_ind_C_indextype));
 
     RETURN_IF_ROCSPARSE_ERROR(f(handle,
+                                descr,
                                 trans_A,
                                 trans_B,
                                 m,
@@ -813,7 +817,6 @@ rocsparse_status rocsparse::csrgeam(rocsparse_handle             handle,
                                 csr_val_C,
                                 csr_row_ptr_C,
                                 csr_col_ind_C,
-                                descr,
                                 temp_buffer));
 
     return rocsparse_status_success;

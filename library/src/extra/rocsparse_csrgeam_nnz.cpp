@@ -474,16 +474,11 @@ namespace rocsparse
         // Extract the number of non-zero elements of C
         if(handle->pointer_mode == rocsparse_pointer_mode_host || called_from_spgeam)
         {
-            std::cout << "*nnz_C: " << *nnz_C << " *((int64_t*)nnz_C): " << *((int64_t*)nnz_C)
-                      << std::endl;
-
             // Blocking mode
             RETURN_IF_HIP_ERROR(hipMemcpyAsync(
                 nnz_C, csr_row_ptr_C + m, sizeof(I), hipMemcpyDeviceToHost, handle->stream));
             RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
 
-            std::cout << "*nnz_C: " << *nnz_C << " *((int64_t*)nnz_C): " << *((int64_t*)nnz_C)
-                      << std::endl;
             if(*nnz_C != -1)
             {
                 // Adjust index base of nnz_C
@@ -817,7 +812,7 @@ rocsparse_status rocsparse::csrgeam_allocate_descr_memory(rocsparse_handle      
         RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(descr->rocprim_buffer, handle->stream));
     }
 
-    descr->indextype = (nnz_A + nnz_B) < std::numeric_limits<int32_t>::max()
+    descr->indextype = (nnz_A + nnz_B) <= std::numeric_limits<int32_t>::max()
                            ? rocsparse_indextype_i32
                            : rocsparse_indextype_i64;
 
@@ -825,12 +820,12 @@ rocsparse_status rocsparse::csrgeam_allocate_descr_memory(rocsparse_handle      
     if(descr->indextype == rocsparse_indextype_i32)
     {
         RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
-            (void**)&descr->csr_row_ptr_C, sizeof(int32_t) * (m + 1), handle->stream));
+            &descr->csr_row_ptr_C, sizeof(int32_t) * (m + 1), handle->stream));
     }
     else
     {
         RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
-            (void**)&descr->csr_row_ptr_C, sizeof(int64_t) * (m + 1), handle->stream));
+            &descr->csr_row_ptr_C, sizeof(int64_t) * (m + 1), handle->stream));
     }
 
     descr->rocprim_alloc  = false;
@@ -844,6 +839,7 @@ rocsparse_status rocsparse::csrgeam_allocate_descr_memory(rocsparse_handle      
 
 template <typename I, typename J>
 rocsparse_status rocsparse::csrgeam_nnz_template(rocsparse_handle             handle,
+                                                 const rocsparse_spgeam_descr descr,
                                                  rocsparse_operation          trans_A,
                                                  rocsparse_operation          trans_B,
                                                  int64_t                      m,
@@ -859,7 +855,6 @@ rocsparse_status rocsparse::csrgeam_nnz_template(rocsparse_handle             ha
                                                  const rocsparse_mat_descr    descr_C,
                                                  void*                        csr_row_ptr_C,
                                                  void*                        nnz_C,
-                                                 const rocsparse_spgeam_descr descr,
                                                  void*                        temp_buffer,
                                                  bool                         called_from_spgeam)
 {
@@ -914,6 +909,7 @@ rocsparse_status rocsparse::csrgeam_nnz_template(rocsparse_handle             ha
 namespace rocsparse
 {
     typedef rocsparse_status (*csrgeam_nnz_t)(rocsparse_handle             handle,
+                                              const rocsparse_spgeam_descr descr,
                                               rocsparse_operation          trans_A,
                                               rocsparse_operation          trans_B,
                                               int64_t                      m,
@@ -929,7 +925,6 @@ namespace rocsparse
                                               const rocsparse_mat_descr    descr_C,
                                               void*                        csr_row_ptr_C,
                                               void*                        nnz_C,
-                                              const rocsparse_spgeam_descr descr,
                                               void*                        temp_buffer,
                                               bool                         called_from_spgeam);
 
@@ -994,6 +989,7 @@ namespace rocsparse
 }
 
 rocsparse_status rocsparse::csrgeam_nnz(rocsparse_handle             handle,
+                                        const rocsparse_spgeam_descr descr,
                                         rocsparse_operation          trans_A,
                                         rocsparse_operation          trans_B,
                                         int64_t                      m,
@@ -1014,7 +1010,6 @@ rocsparse_status rocsparse::csrgeam_nnz(rocsparse_handle             handle,
                                         rocsparse_indextype          csr_row_ptr_C_indextype,
                                         void*                        csr_row_ptr_C,
                                         void*                        nnz_C,
-                                        const rocsparse_spgeam_descr descr,
                                         void*                        temp_buffer,
                                         bool                         called_from_spgeam)
 {
@@ -1024,6 +1019,7 @@ rocsparse_status rocsparse::csrgeam_nnz(rocsparse_handle             handle,
         rocsparse::csrgeam_nnz_find(&f, csr_row_ptr_A_indextype, csr_col_ind_A_indextype));
 
     RETURN_IF_ROCSPARSE_ERROR(f(handle,
+                                descr,
                                 trans_A,
                                 trans_B,
                                 m,
@@ -1039,7 +1035,6 @@ rocsparse_status rocsparse::csrgeam_nnz(rocsparse_handle             handle,
                                 descr_C,
                                 csr_row_ptr_C,
                                 nnz_C,
-                                descr,
                                 temp_buffer,
                                 called_from_spgeam));
 

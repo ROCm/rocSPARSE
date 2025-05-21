@@ -29,8 +29,26 @@
 
 namespace rocsparse
 {
+    rocsparse_status csrgeam_buffer_size(rocsparse_handle             handle,
+                                         const rocsparse_spgeam_descr descr,
+                                         rocsparse_operation          trans_A,
+                                         rocsparse_operation          trans_B,
+                                         int64_t                      m,
+                                         int64_t                      n,
+                                         const rocsparse_mat_descr    descr_A,
+                                         int64_t                      nnz_A,
+                                         const void*                  csr_row_ptr_A,
+                                         const void*                  csr_col_ind_A,
+                                         const rocsparse_mat_descr    descr_B,
+                                         int64_t                      nnz_B,
+                                         const void*                  csr_row_ptr_B,
+                                         const void*                  csr_col_ind_B,
+                                         const void*                  csr_row_ptr_C,
+                                         size_t*                      buffer_size);
+
     template <typename I, typename J>
     rocsparse_status csrgeam_nnz_template(rocsparse_handle             handle,
+                                          const rocsparse_spgeam_descr descr,
                                           rocsparse_operation          trans_A,
                                           rocsparse_operation          trans_B,
                                           int64_t                      m,
@@ -46,12 +64,12 @@ namespace rocsparse
                                           const rocsparse_mat_descr    descr_C,
                                           void*                        csr_row_ptr_C,
                                           void*                        nnz_C,
-                                          const rocsparse_spgeam_descr descr,
                                           void*                        temp_buffer,
                                           bool                         called_from_spgeam);
 
     template <typename T, typename I, typename J>
     rocsparse_status csrgeam_template(rocsparse_handle             handle,
+                                      const rocsparse_spgeam_descr descr,
                                       rocsparse_operation          trans_A,
                                       rocsparse_operation          trans_B,
                                       int64_t                      m,
@@ -72,24 +90,7 @@ namespace rocsparse
                                       void*                        csr_val_C,
                                       const void*                  csr_row_ptr_C,
                                       void*                        csr_col_ind_C,
-                                      const rocsparse_spgeam_descr descr,
                                       void*                        temp_buffer);
-
-    rocsparse_status csrgeam_buffer_size(rocsparse_handle          handle,
-                                         rocsparse_operation       trans_A,
-                                         rocsparse_operation       trans_B,
-                                         int64_t                   m,
-                                         int64_t                   n,
-                                         const rocsparse_mat_descr descr_A,
-                                         int64_t                   nnz_A,
-                                         const void*               csr_row_ptr_A,
-                                         const void*               csr_col_ind_A,
-                                         const rocsparse_mat_descr descr_B,
-                                         int64_t                   nnz_B,
-                                         const void*               csr_row_ptr_B,
-                                         const void*               csr_col_ind_B,
-                                         const void*               csr_row_ptr_C,
-                                         size_t*                   buffer_size);
 
     rocsparse_status csrgeam_allocate_descr_memory(rocsparse_handle       handle,
                                                    int64_t                m,
@@ -111,6 +112,7 @@ namespace rocsparse
                                                  const rocsparse_spgeam_descr descr);
 
     rocsparse_status csrgeam_nnz(rocsparse_handle             handle,
+                                 const rocsparse_spgeam_descr descr,
                                  rocsparse_operation          trans_A,
                                  rocsparse_operation          trans_B,
                                  int64_t                      m,
@@ -131,11 +133,11 @@ namespace rocsparse
                                  rocsparse_indextype          csr_row_ptr_C_indextype,
                                  void*                        csr_row_ptr_C,
                                  void*                        nnz_C,
-                                 const rocsparse_spgeam_descr descr,
                                  void*                        temp_buffer,
                                  bool                         called_from_spgeam);
 
     rocsparse_status csrgeam(rocsparse_handle             handle,
+                             const rocsparse_spgeam_descr descr,
                              rocsparse_operation          trans_A,
                              rocsparse_operation          trans_B,
                              int64_t                      m,
@@ -167,7 +169,6 @@ namespace rocsparse
                              const void*                  csr_row_ptr_C,
                              rocsparse_indextype          csr_col_ind_C_indextype,
                              void*                        csr_col_ind_C,
-                             const rocsparse_spgeam_descr descr,
                              void*                        temp_buffer);
 
 }

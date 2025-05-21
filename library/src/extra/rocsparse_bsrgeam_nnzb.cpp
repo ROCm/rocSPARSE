@@ -49,8 +49,11 @@ namespace rocsparse
     {
         ROCSPARSE_ROUTINE_TRACE;
 
+        const rocsparse_spgeam_descr descr       = nullptr;
+        void*                        temp_buffer = nullptr;
         RETURN_IF_ROCSPARSE_ERROR(
             (csrgeam_nnz_template<rocsparse_int, rocsparse_int>(handle,
+                                                                descr,
                                                                 rocsparse_operation_none,
                                                                 rocsparse_operation_none,
                                                                 mb,
@@ -66,8 +69,7 @@ namespace rocsparse
                                                                 descr_C,
                                                                 bsr_row_ptr_C,
                                                                 nnzb_C,
-                                                                nullptr,
-                                                                nullptr,
+                                                                temp_buffer,
                                                                 false)));
 
         return rocsparse_status_success;
