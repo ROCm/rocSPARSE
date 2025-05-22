@@ -153,8 +153,62 @@ bool rocsparse_parse_data(int& argc, char** argv, const std::string& default_fil
     }
     const char* include_path = nullptr;
     rocsparse_reproducibility_t::instance().config().set_command(command);
+
+    //
+    // Disable debug argument verbose
+    //
+    {
+        static constexpr const char* option_force_debug_arguments_verbose
+            = "--force-debug-arguments-verbose";
+        bool enable_debug_arguments_verbose = false;
+        for(int iarg = 0; iarg < argc; ++iarg)
+        {
+            if(!strcmp(argv[iarg], option_force_debug_arguments_verbose))
+            {
+                enable_debug_arguments_verbose = true;
+                (void)memcpy(argv + iarg, argv + iarg + 1, (argc - iarg) * sizeof(char*));
+                argv[--argc] = nullptr;
+                break;
+            }
+        }
+
+        if(enable_debug_arguments_verbose == false)
+        {
+            rocsparse_disable_debug_arguments_verbose();
+            std::cout << "rocsparse-test: debug arguments verbose is disabled for testings (use "
+                      << option_force_debug_arguments_verbose << " to skip the disabling)"
+                      << std::endl;
+        }
+    }
+
+    //
+    // Disable debug warnings
+    //
+    {
+        static constexpr const char* option_force_warning  = "--force-warnings";
+        bool                         enable_debug_warnings = false;
+        for(int iarg = 0; iarg < argc; ++iarg)
+        {
+            if(!strcmp(argv[iarg], option_force_warning))
+            {
+                enable_debug_warnings = true;
+                (void)memcpy(argv + iarg, argv + iarg + 1, (argc - iarg) * sizeof(char*));
+                argv[--argc] = nullptr;
+                break;
+            }
+        }
+
+        if(enable_debug_warnings == false)
+        {
+            rocsparse_disable_debug_warnings();
+            std::cout << "rocsparse-test: warnings are disabled for testings (use "
+                      << option_force_warning << " to skip the disabling)" << std::endl;
+        }
+    }
+
     for(int i = 1; argv[i]; ++i)
     {
+
         if(!strcmp(argv[i], "-I"))
         {
             include_path = argv[++i];
