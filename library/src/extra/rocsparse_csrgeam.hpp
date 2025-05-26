@@ -92,16 +92,6 @@ namespace rocsparse
                                       void*                        csr_col_ind_C,
                                       void*                        temp_buffer);
 
-    rocsparse_status
-        csrgeam_copy_row_pointer_and_free_memory(rocsparse_handle             handle,
-                                                 const rocsparse_spgeam_descr descr,
-                                                 int64_t                      m,
-                                                 int64_t                      n,
-                                                 const rocsparse_mat_descr    descr_C,
-                                                 rocsparse_indextype csr_row_ptr_C_indextype,
-                                                 void*               csr_row_ptr_C,
-                                                 int64_t*            nnz_C);
-
     rocsparse_status csrgeam_nnz(rocsparse_handle             handle,
                                  const rocsparse_spgeam_descr descr,
                                  rocsparse_operation          trans_A,

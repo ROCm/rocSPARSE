@@ -272,59 +272,6 @@ namespace rocsparse
         return rocsparse_status_continue;
     }
 
-    static template <typename I>
-    rocsparse_status
-        csrgeam_copy_row_pointer_and_free_memory_template(rocsparse_handle             handle,
-                                                          const rocsparse_spgeam_descr descr,
-                                                          int64_t                      m,
-                                                          int64_t                      n,
-                                                          const rocsparse_mat_descr    descr_C,
-                                                          void*    csr_row_ptr_C,
-                                                          int64_t* nnz_C)
-    {
-        ROCSPARSE_ROUTINE_TRACE;
-
-        if(descr != nullptr && descr->csr_row_ptr_C != nullptr)
-        {
-            switch(descr->indextype)
-            {
-            case rocsparse_indextype_i32:
-            {
-                RETURN_IF_ROCSPARSE_ERROR(
-                    rocsparse::copy(handle,
-                                    (m + 1),
-                                    static_cast<int32_t*>(descr->csr_row_ptr_C),
-                                    static_cast<I*>(csr_row_ptr_C),
-                                    rocsparse_index_base_zero,
-                                    descr_C->base));
-                break;
-            }
-            case rocsparse_indextype_i64:
-            {
-                RETURN_IF_ROCSPARSE_ERROR(
-                    rocsparse::copy(handle,
-                                    (m + 1),
-                                    static_cast<int64_t*>(descr->csr_row_ptr_C),
-                                    static_cast<I*>(csr_row_ptr_C),
-                                    rocsparse_index_base_zero,
-                                    descr_C->base));
-                break;
-            }
-            default:
-            {
-                return rocsparse_status_internal_error;
-            }
-            }
-
-            *nnz_C = descr->nnz_C;
-
-            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(descr->csr_row_ptr_C, handle->stream));
-            descr->csr_row_ptr_C = nullptr;
-        }
-
-        return rocsparse_status_success;
-    }
-
     template <typename I>
     static rocsparse_status csrgeam_checkarg(rocsparse_handle          handle, //0
                                              int64_t                   m, //1
@@ -543,31 +490,6 @@ namespace rocsparse
                                                           temp_buffer));
         return rocsparse_status_success;
     }
-}
-
-rocsparse_status
-    rocsparse::csrgeam_copy_row_pointer_and_free_memory(rocsparse_handle             handle,
-                                                        const rocsparse_spgeam_descr descr,
-                                                        int64_t                      m,
-                                                        int64_t                      n,
-                                                        const rocsparse_mat_descr    descr_C,
-                                                        rocsparse_indextype csr_row_ptr_C_indextype,
-                                                        void*               csr_row_ptr_C,
-                                                        int64_t*            nnz_C)
-{
-    ROCSPARSE_ROUTINE_TRACE;
-
-    switch(csr_row_ptr_C_indextype)
-    {
-    case rocsparse_indextype_i32:
-        return csrgeam_copy_row_pointer_and_free_memory_template<int32_t>(
-            handle, descr, m, n, descr_C, csr_row_ptr_C, nnz_C);
-    case rocsparse_indextype_i64:
-        return csrgeam_copy_row_pointer_and_free_memory_template<int64_t>(
-            handle, descr, m, n, descr_C, csr_row_ptr_C, nnz_C);
-    }
-
-    return rocsparse_status_not_implemented;
 }
 
 template <typename T, typename I, typename J>

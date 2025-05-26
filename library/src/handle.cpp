@@ -26,6 +26,8 @@
 #include "logging.h"
 #include "utility.h"
 
+#include "conversion/rocsparse_convert_array.hpp"
+
 #include <hip/hip_runtime.h>
 
 ROCSPARSE_KERNEL(1) void init_kernel(){};
@@ -951,6 +953,32 @@ rocsparse_status _rocsparse_spgeam_descr::csrgeam_allocate_descr_memory(rocspars
     this->rocprim_size   = 0;
 
     this->m = m;
+
+    return rocsparse_status_success;
+}
+
+rocsparse_status _rocsparse_spgeam_descr::csrgeam_copy_row_pointer_and_free_memory(
+    rocsparse_handle          handle,
+    int64_t                   m,
+    int64_t                   n,
+    const rocsparse_mat_descr descr_C,
+    rocsparse_indextype       csr_row_ptr_C_indextype,
+    void*                     csr_row_ptr_C,
+    int64_t*                  nnz_C)
+{
+    ROCSPARSE_ROUTINE_TRACE;
+
+    if(this->csr_row_ptr_C != nullptr)
+    {
+        return rocsparse::convert_array(handle,
+                                        m + 1,
+                                        csr_row_ptr_C_indextype,
+                                        csr_row_ptr_C,
+                                        descr_C->base,
+                                        this->indextype,
+                                        this->csr_row_ptr_C,
+                                        rocsparse_index_base_zero);
+    }
 
     return rocsparse_status_success;
 }
