@@ -116,66 +116,49 @@ namespace rocsparse
         // Stream
         hipStream_t stream = handle->stream;
 
-        if(descr == nullptr || (descr->multiplying_by_alpha() && descr->multiplying_by_beta()))
-        {
-            // Pointer mode device
+        // Pointer mode device
 #define CSRGEAM_DIM 256
-            if(handle->wavefront_size == 32)
-            {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                    (rocsparse::csrgeam_fill_symbolic_multipass_kernel<CSRGEAM_DIM, 32>),
-                    dim3((m - 1) / (CSRGEAM_DIM / 32) + 1),
-                    dim3(CSRGEAM_DIM),
-                    0,
-                    stream,
-                    m,
-                    n,
-                    csr_row_ptr_A,
-                    csr_col_ind_A,
-                    csr_row_ptr_B,
-                    csr_col_ind_B,
-                    csr_row_ptr_C,
-                    csr_col_ind_C,
-                    descr_A->base,
-                    descr_B->base,
-                    descr_C->base);
-            }
-            else
-            {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                    (rocsparse::csrgeam_fill_symbolic_multipass_kernel<CSRGEAM_DIM, 64>),
-                    dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
-                    dim3(CSRGEAM_DIM),
-                    0,
-                    stream,
-                    m,
-                    n,
-                    csr_row_ptr_A,
-                    csr_col_ind_A,
-                    csr_row_ptr_B,
-                    csr_col_ind_B,
-                    csr_row_ptr_C,
-                    csr_col_ind_C,
-                    descr_A->base,
-                    descr_B->base,
-                    descr_C->base);
-            }
-#undef CSRGEAM_DIM
-        }
-        else if(descr->multiplying_by_alpha() && !descr->multiplying_by_beta())
+        if(handle->wavefront_size == 32)
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse::copy(
-                handle, nnz_A, csr_col_ind_A, csr_col_ind_C, descr_A->base, descr_C->base));
-        }
-        else if(!descr->multiplying_by_alpha() && descr->multiplying_by_beta())
-        {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse::copy(
-                handle, nnz_B, csr_col_ind_B, csr_col_ind_C, descr_B->base, descr_C->base));
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::csrgeam_fill_symbolic_multipass_kernel<CSRGEAM_DIM, 32>),
+                dim3((m - 1) / (CSRGEAM_DIM / 32) + 1),
+                dim3(CSRGEAM_DIM),
+                0,
+                stream,
+                m,
+                n,
+                csr_row_ptr_A,
+                csr_col_ind_A,
+                csr_row_ptr_B,
+                csr_col_ind_B,
+                csr_row_ptr_C,
+                csr_col_ind_C,
+                descr_A->base,
+                descr_B->base,
+                descr_C->base);
         }
         else
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::csrgeam_fill_symbolic_multipass_kernel<CSRGEAM_DIM, 64>),
+                dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
+                dim3(CSRGEAM_DIM),
+                0,
+                stream,
+                m,
+                n,
+                csr_row_ptr_A,
+                csr_col_ind_A,
+                csr_row_ptr_B,
+                csr_col_ind_B,
+                csr_row_ptr_C,
+                csr_col_ind_C,
+                descr_A->base,
+                descr_B->base,
+                descr_C->base);
         }
+#undef CSRGEAM_DIM
 
         return rocsparse_status_success;
     }

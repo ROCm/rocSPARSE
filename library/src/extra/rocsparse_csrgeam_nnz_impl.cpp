@@ -58,241 +58,47 @@ namespace rocsparse
         // Stream
         hipStream_t stream = handle->stream;
 
-        if((descr->multiplying_by_alpha() && descr->multiplying_by_beta()))
-        {
 #define CSRGEAM_DIM 256
-            if(handle->wavefront_size == 32)
-            {
-                switch(descr->indextype)
-                {
-                case rocsparse_indextype_i32:
-                {
-                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                        (rocsparse::csrgeam_nnz_multipass_device<CSRGEAM_DIM, 32>),
-                        dim3((m - 1) / (CSRGEAM_DIM / 32) + 1),
-                        dim3(CSRGEAM_DIM),
-                        0,
-                        stream,
-                        m,
-                        n,
-                        csr_row_ptr_A,
-                        csr_col_ind_A,
-                        csr_row_ptr_B,
-                        csr_col_ind_B,
-                        static_cast<int32_t*>(descr->csr_row_ptr_C),
-                        descr_A->base,
-                        descr_B->base);
-                    break;
-                }
-                case rocsparse_indextype_i64:
-                {
-                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                        (rocsparse::csrgeam_nnz_multipass_device<CSRGEAM_DIM, 32>),
-                        dim3((m - 1) / (CSRGEAM_DIM / 32) + 1),
-                        dim3(CSRGEAM_DIM),
-                        0,
-                        stream,
-                        m,
-                        n,
-                        csr_row_ptr_A,
-                        csr_col_ind_A,
-                        csr_row_ptr_B,
-                        csr_col_ind_B,
-                        static_cast<int64_t*>(descr->csr_row_ptr_C),
-                        descr_A->base,
-                        descr_B->base);
-                    break;
-                }
-                default:
-                {
-                    return rocsparse_status_internal_error;
-                }
-                }
-            }
-            else
-            {
-                switch(descr->indextype)
-                {
-                case rocsparse_indextype_i32:
-                {
-                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                        (rocsparse::csrgeam_nnz_multipass_device<CSRGEAM_DIM, 64>),
-                        dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
-                        dim3(CSRGEAM_DIM),
-                        0,
-                        stream,
-                        m,
-                        n,
-                        csr_row_ptr_A,
-                        csr_col_ind_A,
-                        csr_row_ptr_B,
-                        csr_col_ind_B,
-                        static_cast<int32_t*>(descr->csr_row_ptr_C),
-                        descr_A->base,
-                        descr_B->base);
-                    break;
-                }
-                case rocsparse_indextype_i64:
-                {
-                    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                        (rocsparse::csrgeam_nnz_multipass_device<CSRGEAM_DIM, 64>),
-                        dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
-                        dim3(CSRGEAM_DIM),
-                        0,
-                        stream,
-                        m,
-                        n,
-                        csr_row_ptr_A,
-                        csr_col_ind_A,
-                        csr_row_ptr_B,
-                        csr_col_ind_B,
-                        static_cast<int64_t*>(descr->csr_row_ptr_C),
-                        descr_A->base,
-                        descr_B->base);
-                    break;
-                }
-                default:
-                {
-                    return rocsparse_status_internal_error;
-                }
-                }
-            }
-#undef CSRGEAM_DIM
-
-            // Exclusive sum to obtain row pointers of C
-            switch(descr->indextype)
-            {
-            case rocsparse_indextype_i32:
-            {
-                RETURN_IF_ROCSPARSE_ERROR(
-                    (rocsparse::primitives::exclusive_scan_buffer_size<int32_t, int32_t>(
-                        handle,
-                        static_cast<int32_t>(rocsparse_index_base_zero),
-                        m + 1,
-                        &descr->rocprim_size)));
-                break;
-            }
-            case rocsparse_indextype_i64:
-            {
-                RETURN_IF_ROCSPARSE_ERROR(
-                    (rocsparse::primitives::exclusive_scan_buffer_size<int64_t, int64_t>(
-                        handle,
-                        static_cast<int64_t>(rocsparse_index_base_zero),
-                        m + 1,
-                        &descr->rocprim_size)));
-                break;
-            }
-            default:
-            {
-                return rocsparse_status_internal_error;
-            }
-            }
-
-            if(handle->buffer_size >= descr->rocprim_size)
-            {
-                descr->rocprim_buffer = handle->buffer;
-                descr->rocprim_alloc  = false;
-            }
-            else
-            {
-                RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
-                    &descr->rocprim_buffer, descr->rocprim_size, handle->stream));
-                descr->rocprim_alloc = true;
-            }
-
-            switch(descr->indextype)
-            {
-            case rocsparse_indextype_i32:
-            {
-                RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::exclusive_scan(
-                    handle,
-                    static_cast<int32_t*>(descr->csr_row_ptr_C),
-                    static_cast<int32_t*>(descr->csr_row_ptr_C),
-                    static_cast<int32_t>(rocsparse_index_base_zero),
-                    m + 1,
-                    descr->rocprim_size,
-                    descr->rocprim_buffer));
-                break;
-            }
-            case rocsparse_indextype_i64:
-            {
-                RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::exclusive_scan(
-                    handle,
-                    static_cast<int64_t*>(descr->csr_row_ptr_C),
-                    static_cast<int64_t*>(descr->csr_row_ptr_C),
-                    static_cast<int64_t>(rocsparse_index_base_zero),
-                    m + 1,
-                    descr->rocprim_size,
-                    descr->rocprim_buffer));
-                break;
-            }
-            default:
-            {
-                return rocsparse_status_internal_error;
-            }
-            }
-
-            if(descr->rocprim_alloc == true)
-            {
-                RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(descr->rocprim_buffer, handle->stream));
-            }
-        }
-        else if(descr->multiplying_by_alpha() && !descr->multiplying_by_beta())
+        if(handle->wavefront_size == 32)
         {
             switch(descr->indextype)
             {
             case rocsparse_indextype_i32:
             {
-                RETURN_IF_ROCSPARSE_ERROR(
-                    rocsparse::copy(handle,
-                                    (m + 1),
-                                    csr_row_ptr_A,
-                                    static_cast<int32_t*>(descr->csr_row_ptr_C),
-                                    descr_A->base,
-                                    rocsparse_index_base_zero));
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                    (rocsparse::csrgeam_nnz_multipass_device<CSRGEAM_DIM, 32>),
+                    dim3((m - 1) / (CSRGEAM_DIM / 32) + 1),
+                    dim3(CSRGEAM_DIM),
+                    0,
+                    stream,
+                    m,
+                    n,
+                    csr_row_ptr_A,
+                    csr_col_ind_A,
+                    csr_row_ptr_B,
+                    csr_col_ind_B,
+                    static_cast<int32_t*>(descr->csr_row_ptr_C),
+                    descr_A->base,
+                    descr_B->base);
                 break;
             }
             case rocsparse_indextype_i64:
             {
-                RETURN_IF_ROCSPARSE_ERROR(
-                    rocsparse::copy(handle,
-                                    (m + 1),
-                                    csr_row_ptr_A,
-                                    static_cast<int64_t*>(descr->csr_row_ptr_C),
-                                    descr_A->base,
-                                    rocsparse_index_base_zero));
-                break;
-            }
-            default:
-            {
-                return rocsparse_status_internal_error;
-            }
-            }
-        }
-        else if(!descr->multiplying_by_alpha() && descr->multiplying_by_beta())
-        {
-            switch(descr->indextype)
-            {
-            case rocsparse_indextype_i32:
-            {
-                RETURN_IF_ROCSPARSE_ERROR(
-                    rocsparse::copy(handle,
-                                    (m + 1),
-                                    csr_row_ptr_B,
-                                    static_cast<int32_t*>(descr->csr_row_ptr_C),
-                                    descr_B->base,
-                                    rocsparse_index_base_zero));
-                break;
-            }
-            case rocsparse_indextype_i64:
-            {
-                RETURN_IF_ROCSPARSE_ERROR(
-                    rocsparse::copy(handle,
-                                    (m + 1),
-                                    csr_row_ptr_B,
-                                    static_cast<int64_t*>(descr->csr_row_ptr_C),
-                                    descr_B->base,
-                                    rocsparse_index_base_zero));
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                    (rocsparse::csrgeam_nnz_multipass_device<CSRGEAM_DIM, 32>),
+                    dim3((m - 1) / (CSRGEAM_DIM / 32) + 1),
+                    dim3(CSRGEAM_DIM),
+                    0,
+                    stream,
+                    m,
+                    n,
+                    csr_row_ptr_A,
+                    csr_col_ind_A,
+                    csr_row_ptr_B,
+                    csr_col_ind_B,
+                    static_cast<int64_t*>(descr->csr_row_ptr_C),
+                    descr_A->base,
+                    descr_B->base);
                 break;
             }
             default:
@@ -303,7 +109,130 @@ namespace rocsparse
         }
         else
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
+            switch(descr->indextype)
+            {
+            case rocsparse_indextype_i32:
+            {
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                    (rocsparse::csrgeam_nnz_multipass_device<CSRGEAM_DIM, 64>),
+                    dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
+                    dim3(CSRGEAM_DIM),
+                    0,
+                    stream,
+                    m,
+                    n,
+                    csr_row_ptr_A,
+                    csr_col_ind_A,
+                    csr_row_ptr_B,
+                    csr_col_ind_B,
+                    static_cast<int32_t*>(descr->csr_row_ptr_C),
+                    descr_A->base,
+                    descr_B->base);
+                break;
+            }
+            case rocsparse_indextype_i64:
+            {
+                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                    (rocsparse::csrgeam_nnz_multipass_device<CSRGEAM_DIM, 64>),
+                    dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
+                    dim3(CSRGEAM_DIM),
+                    0,
+                    stream,
+                    m,
+                    n,
+                    csr_row_ptr_A,
+                    csr_col_ind_A,
+                    csr_row_ptr_B,
+                    csr_col_ind_B,
+                    static_cast<int64_t*>(descr->csr_row_ptr_C),
+                    descr_A->base,
+                    descr_B->base);
+                break;
+            }
+            default:
+            {
+                return rocsparse_status_internal_error;
+            }
+            }
+        }
+#undef CSRGEAM_DIM
+
+        // Exclusive sum to obtain row pointers of C
+        switch(descr->indextype)
+        {
+        case rocsparse_indextype_i32:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::primitives::exclusive_scan_buffer_size<int32_t, int32_t>(
+                    handle,
+                    static_cast<int32_t>(rocsparse_index_base_zero),
+                    m + 1,
+                    &descr->rocprim_size)));
+            break;
+        }
+        case rocsparse_indextype_i64:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::primitives::exclusive_scan_buffer_size<int64_t, int64_t>(
+                    handle,
+                    static_cast<int64_t>(rocsparse_index_base_zero),
+                    m + 1,
+                    &descr->rocprim_size)));
+            break;
+        }
+        default:
+        {
+            return rocsparse_status_internal_error;
+        }
+        }
+
+        if(handle->buffer_size >= descr->rocprim_size)
+        {
+            descr->rocprim_buffer = handle->buffer;
+            descr->rocprim_alloc  = false;
+        }
+        else
+        {
+            RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
+                &descr->rocprim_buffer, descr->rocprim_size, handle->stream));
+            descr->rocprim_alloc = true;
+        }
+
+        switch(descr->indextype)
+        {
+        case rocsparse_indextype_i32:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::exclusive_scan(
+                handle,
+                static_cast<int32_t*>(descr->csr_row_ptr_C),
+                static_cast<int32_t*>(descr->csr_row_ptr_C),
+                static_cast<int32_t>(rocsparse_index_base_zero),
+                m + 1,
+                descr->rocprim_size,
+                descr->rocprim_buffer));
+            break;
+        }
+        case rocsparse_indextype_i64:
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::primitives::exclusive_scan(
+                handle,
+                static_cast<int64_t*>(descr->csr_row_ptr_C),
+                static_cast<int64_t*>(descr->csr_row_ptr_C),
+                static_cast<int64_t>(rocsparse_index_base_zero),
+                m + 1,
+                descr->rocprim_size,
+                descr->rocprim_buffer));
+            break;
+        }
+        default:
+        {
+            return rocsparse_status_internal_error;
+        }
+        }
+
+        if(descr->rocprim_alloc == true)
+        {
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(descr->rocprim_buffer, handle->stream));
         }
 
         // Extract the number of non-zero elements of C
@@ -365,107 +294,90 @@ namespace rocsparse
         // Stream
         hipStream_t stream = handle->stream;
 
-        if(descr == nullptr || (descr->multiplying_by_alpha() && descr->multiplying_by_beta()))
-        {
 #define CSRGEAM_DIM 256
-            if(handle->wavefront_size == 32)
-            {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                    (rocsparse::csrgeam_nnz_multipass_device<CSRGEAM_DIM, 32>),
-                    dim3((m - 1) / (CSRGEAM_DIM / 32) + 1),
-                    dim3(CSRGEAM_DIM),
-                    0,
-                    stream,
-                    m,
-                    n,
-                    csr_row_ptr_A,
-                    csr_col_ind_A,
-                    csr_row_ptr_B,
-                    csr_col_ind_B,
-                    csr_row_ptr_C,
-                    descr_A->base,
-                    descr_B->base);
-            }
-            else
-            {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                    (rocsparse::csrgeam_nnz_multipass_device<CSRGEAM_DIM, 64>),
-                    dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
-                    dim3(CSRGEAM_DIM),
-                    0,
-                    stream,
-                    m,
-                    n,
-                    csr_row_ptr_A,
-                    csr_col_ind_A,
-                    csr_row_ptr_B,
-                    csr_col_ind_B,
-                    csr_row_ptr_C,
-                    descr_A->base,
-                    descr_B->base);
-            }
-#undef CSRGEAM_DIM
-
-            // Exclusive sum to obtain row pointers of C
-            size_t rocprim_size;
-            RETURN_IF_ROCSPARSE_ERROR((rocsparse::primitives::exclusive_scan_buffer_size<I, I>(
-                handle, static_cast<I>(descr_C->base), m + 1, &rocprim_size)));
-
-            bool  rocprim_alloc;
-            void* rocprim_buffer;
-
-            if(handle->buffer_size >= rocprim_size)
-            {
-                rocprim_buffer = handle->buffer;
-                rocprim_alloc  = false;
-            }
-            else
-            {
-                RETURN_IF_HIP_ERROR(
-                    rocsparse_hipMallocAsync(&rocprim_buffer, rocprim_size, handle->stream));
-                rocprim_alloc = true;
-            }
-
-            RETURN_IF_ROCSPARSE_ERROR(
-                rocsparse::primitives::exclusive_scan(handle,
-                                                      csr_row_ptr_C,
-                                                      csr_row_ptr_C,
-                                                      static_cast<I>(descr_C->base),
-                                                      m + 1,
-                                                      rocprim_size,
-                                                      rocprim_buffer));
-
-            if(rocprim_alloc == true)
-            {
-                RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(rocprim_buffer, handle->stream));
-                RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
-            }
-
-            // Checks the exclusive scan for integer overflow. If overflow detected, sets the
-            // last entry in csr_row_ptr_C to -1
-            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrgeam_check_row_ptr<256>),
-                                               dim3(((m + 1) - 1) / 256 + 1),
-                                               dim3(256),
-                                               0,
-                                               stream,
-                                               m,
-                                               csr_row_ptr_C,
-                                               descr_C->base);
-        }
-        else if(descr->multiplying_by_alpha() && !descr->multiplying_by_beta())
+        if(handle->wavefront_size == 32)
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse::copy(
-                handle, (m + 1), csr_row_ptr_A, csr_row_ptr_C, descr_A->base, descr_C->base));
-        }
-        else if(!descr->multiplying_by_alpha() && descr->multiplying_by_beta())
-        {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse::copy(
-                handle, (m + 1), csr_row_ptr_B, csr_row_ptr_C, descr_B->base, descr_C->base));
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::csrgeam_nnz_multipass_device<CSRGEAM_DIM, 32>),
+                dim3((m - 1) / (CSRGEAM_DIM / 32) + 1),
+                dim3(CSRGEAM_DIM),
+                0,
+                stream,
+                m,
+                n,
+                csr_row_ptr_A,
+                csr_col_ind_A,
+                csr_row_ptr_B,
+                csr_col_ind_B,
+                csr_row_ptr_C,
+                descr_A->base,
+                descr_B->base);
         }
         else
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::csrgeam_nnz_multipass_device<CSRGEAM_DIM, 64>),
+                dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
+                dim3(CSRGEAM_DIM),
+                0,
+                stream,
+                m,
+                n,
+                csr_row_ptr_A,
+                csr_col_ind_A,
+                csr_row_ptr_B,
+                csr_col_ind_B,
+                csr_row_ptr_C,
+                descr_A->base,
+                descr_B->base);
         }
+#undef CSRGEAM_DIM
+
+        // Exclusive sum to obtain row pointers of C
+        size_t rocprim_size;
+        RETURN_IF_ROCSPARSE_ERROR((rocsparse::primitives::exclusive_scan_buffer_size<I, I>(
+            handle, static_cast<I>(descr_C->base), m + 1, &rocprim_size)));
+
+        bool  rocprim_alloc;
+        void* rocprim_buffer;
+
+        if(handle->buffer_size >= rocprim_size)
+        {
+            rocprim_buffer = handle->buffer;
+            rocprim_alloc  = false;
+        }
+        else
+        {
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMallocAsync(&rocprim_buffer, rocprim_size, handle->stream));
+            rocprim_alloc = true;
+        }
+
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse::primitives::exclusive_scan(handle,
+                                                  csr_row_ptr_C,
+                                                  csr_row_ptr_C,
+                                                  static_cast<I>(descr_C->base),
+                                                  m + 1,
+                                                  rocprim_size,
+                                                  rocprim_buffer));
+
+        if(rocprim_alloc == true)
+        {
+            RETURN_IF_HIP_ERROR(rocsparse_hipFreeAsync(rocprim_buffer, handle->stream));
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(handle->stream));
+        }
+
+        // Checks the exclusive scan for integer overflow. If overflow detected, sets the
+        // last entry in csr_row_ptr_C to -1
+        RETURN_IF_HIPLAUNCHKERNELGGL_ERROR((rocsparse::csrgeam_check_row_ptr<256>),
+                                           dim3(((m + 1) - 1) / 256 + 1),
+                                           dim3(256),
+                                           0,
+                                           stream,
+                                           m,
+                                           csr_row_ptr_C,
+                                           descr_C->base);
 
         // Extract the number of non-zero elements of C
         if(handle->pointer_mode == rocsparse_pointer_mode_host || called_from_spgeam)

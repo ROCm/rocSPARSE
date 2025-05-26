@@ -492,10 +492,6 @@ struct _rocsparse_spgeam_descr
     void*  rocprim_buffer{};
 
 protected:
-    // Perform alpha * A + beta * B
-    bool alpha_mul{true};
-    bool beta_mul{true};
-
     rocsparse_spgeam_stage stage;
     rocsparse_spgeam_alg   alg;
     rocsparse_datatype     scalar_datatype;
@@ -552,14 +548,6 @@ public:
     {
         return this->compute_datatype;
     }
-    bool multiplying_by_alpha() const
-    {
-        return this->alpha_mul;
-    }
-    bool multiplying_by_beta() const
-    {
-        return this->beta_mul;
-    }
 
     void set_stage(rocsparse_spgeam_stage value)
     {
@@ -584,25 +572,6 @@ public:
     void set_compute_datatype(rocsparse_datatype value)
     {
         this->compute_datatype = value;
-    }
-
-    void record_if_multiplying_by_alpha_beta(const void* alpha,
-                                             int64_t     nnz_A,
-                                             const void* beta,
-                                             int64_t     nnz_B)
-    {
-        this->alpha_mul = (alpha != nullptr);
-        this->beta_mul  = (beta != nullptr);
-
-        if(this->alpha_mul && nnz_A == 0)
-        {
-            this->alpha_mul = false;
-        }
-
-        if(this->beta_mul && nnz_B == 0)
-        {
-            this->beta_mul = false;
-        }
     }
 
     rocsparse_status csrgeam_allocate_descr_memory(rocsparse_handle handle,

@@ -50,10 +50,12 @@ namespace rocsparse
                                                rocsparse_index_base idx_base_A,
                                                rocsparse_index_base idx_base_B,
                                                rocsparse_index_base idx_base_C,
+                                               bool                 alpha_mul,
+                                               bool                 beta_mul,
                                                bool                 is_host_mode)
     {
-        ROCSPARSE_DEVICE_HOST_SCALAR_GET(alpha);
-        ROCSPARSE_DEVICE_HOST_SCALAR_GET(beta);
+        ROCSPARSE_DEVICE_HOST_SCALAR_GET_IF(alpha_mul, alpha);
+        ROCSPARSE_DEVICE_HOST_SCALAR_GET_IF(beta_mul, beta);
         rocsparse::csrgeam_fill_numeric_multipass_device<BLOCKSIZE, WFSIZE>(m,
                                                                             n,
                                                                             alpha,
@@ -137,76 +139,63 @@ namespace rocsparse
         // Stream
         hipStream_t stream = handle->stream;
 
-        if(descr == nullptr || (descr->multiplying_by_alpha() && descr->multiplying_by_beta()))
-        {
-            // Pointer mode device
+        // Pointer mode device
 #define CSRGEAM_DIM 256
-            if(handle->wavefront_size == 32)
-            {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                    (rocsparse::csrgeam_fill_numeric_multipass_kernel<CSRGEAM_DIM, 32>),
-                    dim3((m - 1) / (CSRGEAM_DIM / 32) + 1),
-                    dim3(CSRGEAM_DIM),
-                    0,
-                    stream,
-                    m,
-                    n,
-                    ROCSPARSE_DEVICE_HOST_SCALAR_ARGS(handle, alpha_device_host),
-                    csr_row_ptr_A,
-                    csr_col_ind_A,
-                    csr_val_A,
-                    ROCSPARSE_DEVICE_HOST_SCALAR_ARGS(handle, beta_device_host),
-                    csr_row_ptr_B,
-                    csr_col_ind_B,
-                    csr_val_B,
-                    csr_row_ptr_C,
-                    csr_val_C,
-                    descr_A->base,
-                    descr_B->base,
-                    descr_C->base,
-                    handle->pointer_mode == rocsparse_pointer_mode_host);
-            }
-            else
-            {
-                RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
-                    (rocsparse::csrgeam_fill_numeric_multipass_kernel<CSRGEAM_DIM, 64>),
-                    dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
-                    dim3(CSRGEAM_DIM),
-                    0,
-                    stream,
-                    m,
-                    n,
-                    ROCSPARSE_DEVICE_HOST_SCALAR_ARGS(handle, alpha_device_host),
-                    csr_row_ptr_A,
-                    csr_col_ind_A,
-                    csr_val_A,
-                    ROCSPARSE_DEVICE_HOST_SCALAR_ARGS(handle, beta_device_host),
-                    csr_row_ptr_B,
-                    csr_col_ind_B,
-                    csr_val_B,
-                    csr_row_ptr_C,
-                    csr_val_C,
-                    descr_A->base,
-                    descr_B->base,
-                    descr_C->base,
-                    handle->pointer_mode == rocsparse_pointer_mode_host);
-            }
-#undef CSRGEAM_DIM
-        }
-        else if(descr->multiplying_by_alpha() && !descr->multiplying_by_beta())
+        if(handle->wavefront_size == 32)
         {
-            RETURN_IF_ROCSPARSE_ERROR(
-                rocsparse::copy_and_scale(handle, nnz_A, csr_val_A, csr_val_C, alpha_device_host));
-        }
-        else if(!descr->multiplying_by_alpha() && descr->multiplying_by_beta())
-        {
-            RETURN_IF_ROCSPARSE_ERROR(
-                rocsparse::copy_and_scale(handle, nnz_B, csr_val_B, csr_val_C, beta_device_host));
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::csrgeam_fill_numeric_multipass_kernel<CSRGEAM_DIM, 32>),
+                dim3((m - 1) / (CSRGEAM_DIM / 32) + 1),
+                dim3(CSRGEAM_DIM),
+                0,
+                stream,
+                m,
+                n,
+                ROCSPARSE_DEVICE_HOST_SCALAR_PERMISSIVE_ARGS(handle, alpha_device_host),
+                csr_row_ptr_A,
+                csr_col_ind_A,
+                csr_val_A,
+                ROCSPARSE_DEVICE_HOST_SCALAR_PERMISSIVE_ARGS(handle, beta_device_host),
+                csr_row_ptr_B,
+                csr_col_ind_B,
+                csr_val_B,
+                csr_row_ptr_C,
+                csr_val_C,
+                descr_A->base,
+                descr_B->base,
+                descr_C->base,
+                (alpha_device_host != nullptr),
+                (beta_device_host != nullptr),
+                handle->pointer_mode == rocsparse_pointer_mode_host);
         }
         else
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
+            RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+                (rocsparse::csrgeam_fill_numeric_multipass_kernel<CSRGEAM_DIM, 64>),
+                dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
+                dim3(CSRGEAM_DIM),
+                0,
+                stream,
+                m,
+                n,
+                ROCSPARSE_DEVICE_HOST_SCALAR_PERMISSIVE_ARGS(handle, alpha_device_host),
+                csr_row_ptr_A,
+                csr_col_ind_A,
+                csr_val_A,
+                ROCSPARSE_DEVICE_HOST_SCALAR_PERMISSIVE_ARGS(handle, beta_device_host),
+                csr_row_ptr_B,
+                csr_col_ind_B,
+                csr_val_B,
+                csr_row_ptr_C,
+                csr_val_C,
+                descr_A->base,
+                descr_B->base,
+                descr_C->base,
+                (alpha_device_host != nullptr),
+                (beta_device_host != nullptr),
+                handle->pointer_mode == rocsparse_pointer_mode_host);
         }
+#undef CSRGEAM_DIM
 
         return rocsparse_status_success;
     }

@@ -361,8 +361,6 @@ namespace rocsparse
                         handle, mat_A->rows, mat_B->cols, alpha, mat_A->nnz, beta, mat_B->nnz));
                 }
 
-                descr->record_if_multiplying_by_alpha_beta(alpha, mat_A->nnz, beta, mat_B->nnz);
-
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrgeam_nnz(
                     handle,
                     descr,
