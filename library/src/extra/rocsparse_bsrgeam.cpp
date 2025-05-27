@@ -516,11 +516,9 @@ namespace rocsparse
         // Stream
         if(block_dim == 1)
         {
-            const rocsparse_spgeam_descr descr       = nullptr;
-            void*                        temp_buffer = nullptr;
+            void* temp_buffer = nullptr;
             RETURN_IF_ROCSPARSE_ERROR((rocsparse::csrgeam_template<T, rocsparse_int, rocsparse_int>(
                 handle,
-                descr,
                 rocsparse_operation_none,
                 rocsparse_operation_none,
                 mb,

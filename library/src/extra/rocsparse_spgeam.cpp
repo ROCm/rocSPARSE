@@ -421,7 +421,6 @@ namespace rocsparse
                                                                           &mat_C->nnz));
 
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrgeam(handle,
-                                                             descr,
                                                              descr->get_operation_A(),
                                                              descr->get_operation_B(),
                                                              mat_A->rows,
@@ -484,7 +483,6 @@ namespace rocsparse
                                                                           &mat_C->nnz));
 
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrgeam_symbolic(handle,
-                                                                      descr,
                                                                       descr->get_operation_A(),
                                                                       descr->get_operation_B(),
                                                                       mat_A->rows,
@@ -534,7 +532,6 @@ namespace rocsparse
             case rocsparse_format_csr:
             {
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrgeam_numeric(handle,
-                                                                     descr,
                                                                      descr->get_operation_A(),
                                                                      descr->get_operation_B(),
                                                                      mat_A->rows,

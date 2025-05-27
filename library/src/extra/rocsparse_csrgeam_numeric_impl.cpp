@@ -76,12 +76,11 @@ namespace rocsparse
 
 namespace rocsparse
 {
-    static rocsparse_status csrgeam_numeric_quickreturn(rocsparse_handle             handle,
-                                                        const rocsparse_spgeam_descr descr,
-                                                        rocsparse_operation          trans_A,
-                                                        rocsparse_operation          trans_B,
-                                                        int64_t                      m,
-                                                        int64_t                      n,
+    static rocsparse_status csrgeam_numeric_quickreturn(rocsparse_handle          handle,
+                                                        rocsparse_operation       trans_A,
+                                                        rocsparse_operation       trans_B,
+                                                        int64_t                   m,
+                                                        int64_t                   n,
                                                         const void*               alpha_device_host,
                                                         const rocsparse_mat_descr descr_A,
                                                         int64_t                   nnz_A,
@@ -111,28 +110,27 @@ namespace rocsparse
     }
 
     template <typename I, typename J, typename T>
-    static rocsparse_status csrgeam_numeric_dispatch(rocsparse_handle             handle,
-                                                     rocsparse_operation          trans_A,
-                                                     rocsparse_operation          trans_B,
-                                                     int64_t                      m,
-                                                     int64_t                      n,
-                                                     const T*                     alpha_device_host,
-                                                     const rocsparse_mat_descr    descr_A,
-                                                     int64_t                      nnz_A,
-                                                     const T*                     csr_val_A,
-                                                     const I*                     csr_row_ptr_A,
-                                                     const J*                     csr_col_ind_A,
-                                                     const T*                     beta_device_host,
-                                                     const rocsparse_mat_descr    descr_B,
-                                                     int64_t                      nnz_B,
-                                                     const T*                     csr_val_B,
-                                                     const I*                     csr_row_ptr_B,
-                                                     const J*                     csr_col_ind_B,
-                                                     const rocsparse_mat_descr    descr_C,
-                                                     T*                           csr_val_C,
-                                                     const I*                     csr_row_ptr_C,
-                                                     const J*                     csr_col_ind_C,
-                                                     const rocsparse_spgeam_descr descr)
+    static rocsparse_status csrgeam_numeric_dispatch(rocsparse_handle          handle,
+                                                     rocsparse_operation       trans_A,
+                                                     rocsparse_operation       trans_B,
+                                                     int64_t                   m,
+                                                     int64_t                   n,
+                                                     const T*                  alpha_device_host,
+                                                     const rocsparse_mat_descr descr_A,
+                                                     int64_t                   nnz_A,
+                                                     const T*                  csr_val_A,
+                                                     const I*                  csr_row_ptr_A,
+                                                     const J*                  csr_col_ind_A,
+                                                     const T*                  beta_device_host,
+                                                     const rocsparse_mat_descr descr_B,
+                                                     int64_t                   nnz_B,
+                                                     const T*                  csr_val_B,
+                                                     const I*                  csr_row_ptr_B,
+                                                     const J*                  csr_col_ind_B,
+                                                     const rocsparse_mat_descr descr_C,
+                                                     T*                        csr_val_C,
+                                                     const I*                  csr_row_ptr_C,
+                                                     const J*                  csr_col_ind_C)
     {
         ROCSPARSE_ROUTINE_TRACE;
 
@@ -201,29 +199,28 @@ namespace rocsparse
     }
 
     template <typename I, typename J, typename T>
-    static rocsparse_status csrgeam_numeric_core(rocsparse_handle             handle,
-                                                 const rocsparse_spgeam_descr descr,
-                                                 rocsparse_operation          trans_A,
-                                                 rocsparse_operation          trans_B,
-                                                 int64_t                      m,
-                                                 int64_t                      n,
-                                                 const T*                     alpha_device_host,
-                                                 const rocsparse_mat_descr    descr_A,
-                                                 int64_t                      nnz_A,
-                                                 const T*                     csr_val_A,
-                                                 const I*                     csr_row_ptr_A,
-                                                 const J*                     csr_col_ind_A,
-                                                 const T*                     beta_device_host,
-                                                 const rocsparse_mat_descr    descr_B,
-                                                 int64_t                      nnz_B,
-                                                 const T*                     csr_val_B,
-                                                 const I*                     csr_row_ptr_B,
-                                                 const J*                     csr_col_ind_B,
-                                                 const rocsparse_mat_descr    descr_C,
-                                                 T*                           csr_val_C,
-                                                 const I*                     csr_row_ptr_C,
-                                                 const J*                     csr_col_ind_C,
-                                                 void*                        temp_buffer)
+    static rocsparse_status csrgeam_numeric_core(rocsparse_handle          handle,
+                                                 rocsparse_operation       trans_A,
+                                                 rocsparse_operation       trans_B,
+                                                 int64_t                   m,
+                                                 int64_t                   n,
+                                                 const T*                  alpha_device_host,
+                                                 const rocsparse_mat_descr descr_A,
+                                                 int64_t                   nnz_A,
+                                                 const T*                  csr_val_A,
+                                                 const I*                  csr_row_ptr_A,
+                                                 const J*                  csr_col_ind_A,
+                                                 const T*                  beta_device_host,
+                                                 const rocsparse_mat_descr descr_B,
+                                                 int64_t                   nnz_B,
+                                                 const T*                  csr_val_B,
+                                                 const I*                  csr_row_ptr_B,
+                                                 const J*                  csr_col_ind_B,
+                                                 const rocsparse_mat_descr descr_C,
+                                                 T*                        csr_val_C,
+                                                 const I*                  csr_row_ptr_C,
+                                                 const J*                  csr_col_ind_C,
+                                                 void*                     temp_buffer)
     {
         ROCSPARSE_ROUTINE_TRACE;
 
@@ -247,39 +244,36 @@ namespace rocsparse
                                                                       descr_C,
                                                                       csr_val_C,
                                                                       csr_row_ptr_C,
-                                                                      csr_col_ind_C,
-                                                                      descr));
+                                                                      csr_col_ind_C));
         return rocsparse_status_success;
     }
 }
 
 template <typename T, typename I, typename J>
-rocsparse_status rocsparse::csrgeam_numeric_template(rocsparse_handle             handle,
-                                                     const rocsparse_spgeam_descr descr,
-                                                     rocsparse_operation          trans_A,
-                                                     rocsparse_operation          trans_B,
-                                                     int64_t                      m,
-                                                     int64_t                      n,
-                                                     const void*                  alpha_device_host,
-                                                     const rocsparse_mat_descr    descr_A,
-                                                     int64_t                      nnz_A,
-                                                     const void*                  csr_val_A,
-                                                     const void*                  csr_row_ptr_A,
-                                                     const void*                  csr_col_ind_A,
-                                                     const void*                  beta_device_host,
-                                                     const rocsparse_mat_descr    descr_B,
-                                                     int64_t                      nnz_B,
-                                                     const void*                  csr_val_B,
-                                                     const void*                  csr_row_ptr_B,
-                                                     const void*                  csr_col_ind_B,
-                                                     const rocsparse_mat_descr    descr_C,
-                                                     void*                        csr_val_C,
-                                                     const void*                  csr_row_ptr_C,
-                                                     const void*                  csr_col_ind_C,
-                                                     void*                        temp_buffer)
+rocsparse_status rocsparse::csrgeam_numeric_template(rocsparse_handle          handle,
+                                                     rocsparse_operation       trans_A,
+                                                     rocsparse_operation       trans_B,
+                                                     int64_t                   m,
+                                                     int64_t                   n,
+                                                     const void*               alpha_device_host,
+                                                     const rocsparse_mat_descr descr_A,
+                                                     int64_t                   nnz_A,
+                                                     const void*               csr_val_A,
+                                                     const void*               csr_row_ptr_A,
+                                                     const void*               csr_col_ind_A,
+                                                     const void*               beta_device_host,
+                                                     const rocsparse_mat_descr descr_B,
+                                                     int64_t                   nnz_B,
+                                                     const void*               csr_val_B,
+                                                     const void*               csr_row_ptr_B,
+                                                     const void*               csr_col_ind_B,
+                                                     const rocsparse_mat_descr descr_C,
+                                                     void*                     csr_val_C,
+                                                     const void*               csr_row_ptr_C,
+                                                     const void*               csr_col_ind_C,
+                                                     void*                     temp_buffer)
 {
     const rocsparse_status status = rocsparse::csrgeam_numeric_quickreturn(handle,
-                                                                           descr,
                                                                            trans_A,
                                                                            trans_B,
                                                                            m,
@@ -308,7 +302,6 @@ rocsparse_status rocsparse::csrgeam_numeric_template(rocsparse_handle           
     }
 
     RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrgeam_numeric_core(handle,
-                                                              descr,
                                                               trans_A,
                                                               trans_B,
                                                               m,
@@ -335,29 +328,28 @@ rocsparse_status rocsparse::csrgeam_numeric_template(rocsparse_handle           
 
 #define INSTANTIATE(T, I, J)                                                \
     template rocsparse_status rocsparse::csrgeam_numeric_template<T, I, J>( \
-        rocsparse_handle             handle,                                \
-        const rocsparse_spgeam_descr descr,                                 \
-        rocsparse_operation          trans_A,                               \
-        rocsparse_operation          trans_B,                               \
-        int64_t                      m,                                     \
-        int64_t                      n,                                     \
-        const void*                  alpha_device_host,                     \
-        const rocsparse_mat_descr    descr_A,                               \
-        int64_t                      nnz_A,                                 \
-        const void*                  csr_val_A,                             \
-        const void*                  csr_row_ptr_A,                         \
-        const void*                  csr_col_ind_A,                         \
-        const void*                  beta_device_host,                      \
-        const rocsparse_mat_descr    descr_B,                               \
-        int64_t                      nnz_B,                                 \
-        const void*                  csr_val_B,                             \
-        const void*                  csr_row_ptr_B,                         \
-        const void*                  csr_col_ind_B,                         \
-        const rocsparse_mat_descr    descr_C,                               \
-        void*                        csr_val_C,                             \
-        const void*                  csr_row_ptr_C,                         \
-        const void*                  csr_col_ind_C,                         \
-        void*                        temp_buffer);
+        rocsparse_handle          handle,                                   \
+        rocsparse_operation       trans_A,                                  \
+        rocsparse_operation       trans_B,                                  \
+        int64_t                   m,                                        \
+        int64_t                   n,                                        \
+        const void*               alpha_device_host,                        \
+        const rocsparse_mat_descr descr_A,                                  \
+        int64_t                   nnz_A,                                    \
+        const void*               csr_val_A,                                \
+        const void*               csr_row_ptr_A,                            \
+        const void*               csr_col_ind_A,                            \
+        const void*               beta_device_host,                         \
+        const rocsparse_mat_descr descr_B,                                  \
+        int64_t                   nnz_B,                                    \
+        const void*               csr_val_B,                                \
+        const void*               csr_row_ptr_B,                            \
+        const void*               csr_col_ind_B,                            \
+        const rocsparse_mat_descr descr_C,                                  \
+        void*                     csr_val_C,                                \
+        const void*               csr_row_ptr_C,                            \
+        const void*               csr_col_ind_C,                            \
+        void*                     temp_buffer);
 
 INSTANTIATE(float, int32_t, int32_t);
 INSTANTIATE(float, int64_t, int32_t);
