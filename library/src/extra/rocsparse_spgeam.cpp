@@ -106,7 +106,6 @@ namespace rocsparse
             {
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrgeam_buffer_size(
                     handle,
-                    descr,
                     descr->get_operation_A(),
                     descr->get_operation_B(),
                     mat_A->rows,
