@@ -55,6 +55,7 @@ namespace rocsparse
         }
         case rocsparse_itilu0_alg_sync_split_fusion:
         {
+            ROCSPARSE_DEPRECATION_MESSAGE("rocsparse_itilu0_alg_sync_split_fusion");
             RETURN_IF_ROCSPARSE_ERROR(
                 (rocsparse::csritilu0x_driver_t<
                     rocsparse_itilu0_alg_sync_split_fusion>::preprocess<I, J>::run(parameters...)));

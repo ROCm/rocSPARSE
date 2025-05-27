@@ -635,7 +635,7 @@ typedef enum rocsparse_itilu0_alg_
     = 2, /**< ASynchronous ITILU0 algorithm with explicit storage splitting */
     rocsparse_itilu0_alg_sync_split
     = 3, /**< Synchronous ITILU0 algorithm with explicit storage splitting */
-    rocsparse_itilu0_alg_sync_split_fusion [[deprecated]]
+    rocsparse_itilu0_alg_sync_split_fusion
     = 4 /**< Semi-synchronous ITILU0 algorithm with explicit storage splitting */
 } rocsparse_itilu0_alg;
 

@@ -67,3 +67,11 @@ void rocsparse::error_message(
                   << std::endl;
     }
 }
+
+void rocsparse::deprecation_message(const char* function_)
+{
+    std::cout << "// rocSPARSE.deprecated:  { \"function\": \"" << function_ <<"\","
+              << std::endl
+              << "//                          \"msg\"     : \"will be removed in a future release\" }"
+              << std::endl;
+}

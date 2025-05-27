@@ -47,9 +47,13 @@ namespace rocsparse
                        const char*      file_,
                        int              line_);
 
+    // Deprecation message
+    void deprecation_message(const char* function_);
+
 #define ROCSPARSE_MESSAGE(MESSAGE__) rocsparse::message(MESSAGE__, __FUNCTION__, __FILE__, __LINE__)
 #define ROCSPARSE_WARNING_MESSAGE(MESSAGE__) \
     rocsparse::warning_message(MESSAGE__, __FUNCTION__, __FILE__, __LINE__)
 #define ROCSPARSE_ERROR_MESSAGE(STATUS__, MESSAGE__) \
     rocsparse::error_message(STATUS__, MESSAGE__, __FUNCTION__, __FILE__, __LINE__)
+#define ROCSPARSE_DEPRECATION_MESSAGE(FUNCTION__) rocsparse::deprecation_message(FUNCTION__)
 }
