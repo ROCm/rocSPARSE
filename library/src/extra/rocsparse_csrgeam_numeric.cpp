@@ -33,6 +33,7 @@
 namespace rocsparse
 {
     typedef rocsparse_status (*csrgeam_numeric_t)(rocsparse_handle             handle,
+                                                  const rocsparse_spgeam_descr descr,
                                                   rocsparse_operation          trans_A,
                                                   rocsparse_operation          trans_B,
                                                   int64_t                      m,
@@ -53,7 +54,6 @@ namespace rocsparse
                                                   void*                        csr_val_C,
                                                   const void*                  csr_row_ptr_C,
                                                   const void*                  csr_col_ind_C,
-                                                  const rocsparse_spgeam_descr descr,
                                                   void*                        temp_buffer);
 
     using csrgeam_numeric_tuple
@@ -148,6 +148,7 @@ namespace rocsparse
 }
 
 rocsparse_status rocsparse::csrgeam_numeric(rocsparse_handle             handle,
+                                            const rocsparse_spgeam_descr descr,
                                             rocsparse_operation          trans_A,
                                             rocsparse_operation          trans_B,
                                             int64_t                      m,
@@ -179,7 +180,6 @@ rocsparse_status rocsparse::csrgeam_numeric(rocsparse_handle             handle,
                                             const void*                  csr_row_ptr_C,
                                             rocsparse_indextype          csr_col_ind_C_indextype,
                                             const void*                  csr_col_ind_C,
-                                            const rocsparse_spgeam_descr descr,
                                             void*                        temp_buffer)
 {
     ROCSPARSE_ROUTINE_TRACE;
@@ -188,6 +188,7 @@ rocsparse_status rocsparse::csrgeam_numeric(rocsparse_handle             handle,
         &f, alpha_device_host_datatype, csr_row_ptr_C_indextype, csr_col_ind_C_indextype));
 
     RETURN_IF_ROCSPARSE_ERROR(f(handle,
+                                descr,
                                 trans_A,
                                 trans_B,
                                 m,
@@ -208,7 +209,6 @@ rocsparse_status rocsparse::csrgeam_numeric(rocsparse_handle             handle,
                                 csr_val_C,
                                 csr_row_ptr_C,
                                 csr_col_ind_C,
-                                descr,
                                 temp_buffer));
 
     return rocsparse_status_success;

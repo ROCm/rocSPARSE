@@ -4651,8 +4651,8 @@ try
                            data_size_in_bytes,
                            data_size_in_bytes != sizeof(rocsparse_operation),
                            rocsparse_status_invalid_size);
-        const rocsparse_operation trans_A = *reinterpret_cast<const rocsparse_operation*>(data);
-        descr->set_trans_A(trans_A);
+        const rocsparse_operation op_A = *reinterpret_cast<const rocsparse_operation*>(data);
+        descr->set_operation_A(op_A);
         return rocsparse_status_success;
     }
     case rocsparse_spgeam_input_operation_B:
@@ -4661,8 +4661,8 @@ try
                            data_size_in_bytes,
                            data_size_in_bytes != sizeof(rocsparse_operation),
                            rocsparse_status_invalid_size);
-        const rocsparse_operation trans_B = *reinterpret_cast<const rocsparse_operation*>(data);
-        descr->set_trans_B(trans_B);
+        const rocsparse_operation op_B = *reinterpret_cast<const rocsparse_operation*>(data);
+        descr->set_operation_B(op_B);
         return rocsparse_status_success;
     }
     }

@@ -957,14 +957,14 @@ rocsparse_status _rocsparse_spgeam_descr::csrgeam_allocate_descr_memory(rocspars
     return rocsparse_status_success;
 }
 
-rocsparse_status _rocsparse_spgeam_descr::csrgeam_copy_row_pointer_and_free_memory(
-    rocsparse_handle          handle,
-    int64_t                   m,
-    int64_t                   n,
-    const rocsparse_mat_descr descr_C,
-    rocsparse_indextype       csr_row_ptr_C_indextype,
-    void*                     csr_row_ptr_C,
-    int64_t*                  nnz_C)
+rocsparse_status
+    _rocsparse_spgeam_descr::csrgeam_copy_row_pointer(rocsparse_handle          handle,
+                                                      int64_t                   m,
+                                                      int64_t                   n,
+                                                      const rocsparse_mat_descr descr_C,
+                                                      rocsparse_indextype csr_row_ptr_C_indextype,
+                                                      void*               csr_row_ptr_C,
+                                                      int64_t*            nnz_C)
 {
     ROCSPARSE_ROUTINE_TRACE;
 

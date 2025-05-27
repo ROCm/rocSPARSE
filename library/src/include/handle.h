@@ -496,8 +496,8 @@ protected:
     rocsparse_spgeam_alg   alg;
     rocsparse_datatype     scalar_datatype;
     rocsparse_datatype     compute_datatype;
-    rocsparse_operation    trans_A;
-    rocsparse_operation    trans_B;
+    rocsparse_operation    op_A;
+    rocsparse_operation    op_B;
 
     float m_local_host_alpha_value[4];
     float m_local_host_beta_value[4];
@@ -510,8 +510,8 @@ public:
         , alg((rocsparse_spgeam_alg)-1)
         , scalar_datatype((rocsparse_datatype)-1)
         , compute_datatype((rocsparse_datatype)-1)
-        , trans_A((rocsparse_operation)-1)
-        , trans_B((rocsparse_operation)-1)
+        , op_A((rocsparse_operation)-1)
+        , op_B((rocsparse_operation)-1)
     {
     }
 
@@ -532,13 +532,13 @@ public:
     {
         return this->alg;
     }
-    rocsparse_operation get_trans_A() const
+    rocsparse_operation get_operation_A() const
     {
-        return this->trans_A;
+        return this->op_A;
     }
-    rocsparse_operation get_trans_B() const
+    rocsparse_operation get_operation_B() const
     {
-        return this->trans_B;
+        return this->op_B;
     }
     rocsparse_datatype get_scalar_datatype() const
     {
@@ -557,13 +557,13 @@ public:
     {
         this->alg = value;
     }
-    void set_trans_A(rocsparse_operation value)
+    void set_operation_A(rocsparse_operation value)
     {
-        this->trans_A = value;
+        this->op_A = value;
     }
-    void set_trans_B(rocsparse_operation value)
+    void set_operation_B(rocsparse_operation value)
     {
-        this->trans_B = value;
+        this->op_B = value;
     }
     void set_scalar_datatype(rocsparse_datatype value)
     {
@@ -582,14 +582,13 @@ public:
                                                    const void*      beta,
                                                    int64_t          nnz_B);
 
-    rocsparse_status
-        csrgeam_copy_row_pointer_and_free_memory(rocsparse_handle          handle,
-                                                 int64_t                   m,
-                                                 int64_t                   n,
-                                                 const rocsparse_mat_descr descr_C,
-                                                 rocsparse_indextype       csr_row_ptr_C_indextype,
-                                                 void*                     csr_row_ptr_C,
-                                                 int64_t*                  nnz_C);
+    rocsparse_status csrgeam_copy_row_pointer(rocsparse_handle          handle,
+                                              int64_t                   m,
+                                              int64_t                   n,
+                                              const rocsparse_mat_descr descr_C,
+                                              rocsparse_indextype       csr_row_ptr_C_indextype,
+                                              void*                     csr_row_ptr_C,
+                                              int64_t*                  nnz_C);
 };
 
 namespace rocsparse

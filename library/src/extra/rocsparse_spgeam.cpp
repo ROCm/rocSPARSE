@@ -107,8 +107,8 @@ namespace rocsparse
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrgeam_buffer_size(
                     handle,
                     descr,
-                    descr->get_trans_A(),
-                    descr->get_trans_B(),
+                    descr->get_operation_A(),
+                    descr->get_operation_B(),
                     mat_A->rows,
                     mat_B->cols,
                     mat_A->descr,
@@ -278,12 +278,12 @@ namespace rocsparse
 
         ROCSPARSE_CHECKARG(1,
                            descr,
-                           rocsparse::enum_utils::is_invalid(descr->get_trans_A()),
+                           rocsparse::enum_utils::is_invalid(descr->get_operation_A()),
                            rocsparse_status_invalid_value);
 
         ROCSPARSE_CHECKARG(1,
                            descr,
-                           rocsparse::enum_utils::is_invalid(descr->get_trans_B()),
+                           rocsparse::enum_utils::is_invalid(descr->get_operation_B()),
                            rocsparse_status_invalid_value);
 
         ROCSPARSE_CHECKARG(1,
@@ -364,8 +364,8 @@ namespace rocsparse
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrgeam_nnz(
                     handle,
                     descr,
-                    descr->get_trans_A(),
-                    descr->get_trans_B(),
+                    descr->get_operation_A(),
+                    descr->get_operation_B(),
                     mat_A->rows,
                     mat_B->cols,
                     mat_A->descr,
@@ -412,19 +412,18 @@ namespace rocsparse
             {
             case rocsparse_format_csr:
             {
-                RETURN_IF_ROCSPARSE_ERROR(
-                    descr->csrgeam_copy_row_pointer_and_free_memory(handle,
-                                                                    mat_A->rows,
-                                                                    mat_B->cols,
-                                                                    mat_C->descr,
-                                                                    mat_C->row_type,
-                                                                    mat_C->row_data,
-                                                                    &mat_C->nnz));
+                RETURN_IF_ROCSPARSE_ERROR(descr->csrgeam_copy_row_pointer(handle,
+                                                                          mat_A->rows,
+                                                                          mat_B->cols,
+                                                                          mat_C->descr,
+                                                                          mat_C->row_type,
+                                                                          mat_C->row_data,
+                                                                          &mat_C->nnz));
 
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrgeam(handle,
                                                              descr,
-                                                             descr->get_trans_A(),
-                                                             descr->get_trans_B(),
+                                                             descr->get_operation_A(),
+                                                             descr->get_operation_B(),
                                                              mat_A->rows,
                                                              mat_B->cols,
                                                              descr->get_scalar_datatype(),
@@ -476,18 +475,18 @@ namespace rocsparse
             {
             case rocsparse_format_csr:
             {
-                RETURN_IF_ROCSPARSE_ERROR(
-                    descr->csrgeam_copy_row_pointer_and_free_memory(handle,
-                                                                    mat_A->rows,
-                                                                    mat_B->cols,
-                                                                    mat_C->descr,
-                                                                    mat_C->row_type,
-                                                                    mat_C->row_data,
-                                                                    &mat_C->nnz));
+                RETURN_IF_ROCSPARSE_ERROR(descr->csrgeam_copy_row_pointer(handle,
+                                                                          mat_A->rows,
+                                                                          mat_B->cols,
+                                                                          mat_C->descr,
+                                                                          mat_C->row_type,
+                                                                          mat_C->row_data,
+                                                                          &mat_C->nnz));
 
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrgeam_symbolic(handle,
-                                                                      descr->get_trans_A(),
-                                                                      descr->get_trans_B(),
+                                                                      descr,
+                                                                      descr->get_operation_A(),
+                                                                      descr->get_operation_B(),
                                                                       mat_A->rows,
                                                                       mat_B->cols,
                                                                       mat_A->descr,
@@ -507,7 +506,6 @@ namespace rocsparse
                                                                       mat_C->const_row_data,
                                                                       mat_C->col_type,
                                                                       mat_C->col_data,
-                                                                      descr,
                                                                       temp_buffer));
 
                 return rocsparse_status_success;
@@ -536,8 +534,9 @@ namespace rocsparse
             case rocsparse_format_csr:
             {
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrgeam_numeric(handle,
-                                                                     descr->get_trans_A(),
-                                                                     descr->get_trans_B(),
+                                                                     descr,
+                                                                     descr->get_operation_A(),
+                                                                     descr->get_operation_B(),
                                                                      mat_A->rows,
                                                                      mat_B->cols,
                                                                      descr->get_scalar_datatype(),
@@ -567,7 +566,6 @@ namespace rocsparse
                                                                      mat_C->const_row_data,
                                                                      mat_C->col_type,
                                                                      mat_C->col_data,
-                                                                     descr,
                                                                      temp_buffer));
 
                 return rocsparse_status_success;

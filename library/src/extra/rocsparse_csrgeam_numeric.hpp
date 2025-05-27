@@ -30,6 +30,7 @@ namespace rocsparse
 {
     template <typename T, typename I, typename J>
     rocsparse_status csrgeam_numeric_template(rocsparse_handle             handle,
+                                              const rocsparse_spgeam_descr descr,
                                               rocsparse_operation          trans_A,
                                               rocsparse_operation          trans_B,
                                               int64_t                      m,
@@ -50,10 +51,10 @@ namespace rocsparse
                                               void*                        csr_val_C,
                                               const void*                  csr_row_ptr_C,
                                               const void*                  csr_col_ind_C,
-                                              const rocsparse_spgeam_descr descr,
                                               void*                        temp_buffer);
 
     rocsparse_status csrgeam_numeric(rocsparse_handle             handle,
+                                     const rocsparse_spgeam_descr descr,
                                      rocsparse_operation          trans_A,
                                      rocsparse_operation          trans_B,
                                      int64_t                      m,
@@ -85,6 +86,5 @@ namespace rocsparse
                                      const void*                  csr_row_ptr_C,
                                      rocsparse_indextype          csr_col_ind_C_indextype,
                                      const void*                  csr_col_ind_C,
-                                     const rocsparse_spgeam_descr descr,
                                      void*                        temp_buffer);
 }
