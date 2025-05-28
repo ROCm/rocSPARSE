@@ -99,6 +99,18 @@ try
     // Check for matching types while we do not support mixed precision computation
     ROCSPARSE_CHECKARG(4, y, (y->data_type != x->data_type), rocsparse_status_not_implemented);
 
+    // brain half real ; i32
+    if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_bf16_r)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse::
+                 axpby_template<float, int32_t, rocsparse_bfloat16, rocsparse_bfloat16>)(handle,
+                                                                                         alpha,
+                                                                                         x,
+                                                                                         beta,
+                                                                                         y));
+        return rocsparse_status_success;
+    }
     // half real ; i32
     if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_f16_r)
     {
@@ -143,6 +155,18 @@ try
                                        int32_t,
                                        rocsparse_double_complex,
                                        rocsparse_double_complex>)(handle, alpha, x, beta, y));
+        return rocsparse_status_success;
+    }
+    // brain half real ; i64
+    if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_bf16_r)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse::
+                 axpby_template<float, int64_t, rocsparse_bfloat16, rocsparse_bfloat16>)(handle,
+                                                                                         alpha,
+                                                                                         x,
+                                                                                         beta,
+                                                                                         y));
         return rocsparse_status_success;
     }
     // half real ; i64

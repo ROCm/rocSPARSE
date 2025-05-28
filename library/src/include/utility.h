@@ -413,6 +413,7 @@ namespace rocsparse
         case rocsparse_datatype_u8_r:
         case rocsparse_datatype_i32_r:
         case rocsparse_datatype_u32_r:
+        case rocsparse_datatype_bf16_r:
         {
             return false;
         }
@@ -854,6 +855,12 @@ namespace rocsparse
     rocsparse_datatype get_datatype();
 
     template <>
+    inline rocsparse_datatype get_datatype<rocsparse_bfloat16>()
+    {
+        return rocsparse_datatype_bf16_r;
+    }
+
+    template <>
     inline rocsparse_datatype get_datatype<_Float16>()
     {
         return rocsparse_datatype_f16_r;
@@ -923,6 +930,10 @@ namespace rocsparse
         case rocsparse_datatype_u8_r:
         {
             return sizeof(uint8_t);
+        }
+        case rocsparse_datatype_bf16_r:
+        {
+            return sizeof(rocsparse_bfloat16);
         }
         case rocsparse_datatype_f16_r:
         {
@@ -1040,6 +1051,11 @@ namespace rocsparse
     template <rocsparse_datatype v>
     struct datatype_traits;
 
+    template <>
+    struct datatype_traits<rocsparse_datatype_bf16_r>
+    {
+        using type_t = rocsparse_bfloat16;
+    };
     template <>
     struct datatype_traits<rocsparse_datatype_f16_r>
     {

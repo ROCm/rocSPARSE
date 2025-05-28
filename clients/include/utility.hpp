@@ -143,6 +143,10 @@ inline constexpr size_t rocsparse_datatype_sizeof(rocsparse_datatype datatype_)
 {
     switch(datatype_)
     {
+    case rocsparse_datatype_bf16_r:
+    {
+        return sizeof(rocsparse_bfloat16);
+    }
     case rocsparse_datatype_f16_r:
     {
         return sizeof(_Float16);
@@ -598,7 +602,7 @@ public:
     template <memory_mode::value_t MODE, typename T, typename I = rocsparse_int>
     explicit rocsparse_local_spmat(coo_aos_matrix<MODE, T, I>& h)
         : rocsparse_local_spmat(
-            h.m, h.n, h.nnz, h.ind, h.val, get_indextype<I>(), h.base, get_datatype<T>())
+              h.m, h.n, h.nnz, h.ind, h.val, get_indextype<I>(), h.base, get_datatype<T>())
     {
     }
 
@@ -786,7 +790,7 @@ public:
     template <memory_mode::value_t MODE, typename T, typename I = rocsparse_int>
     explicit rocsparse_local_spmat(ell_matrix<MODE, T, I>& h)
         : rocsparse_local_spmat(
-            h.m, h.n, h.ind, h.val, h.width, get_indextype<I>(), h.base, get_datatype<T>())
+              h.m, h.n, h.ind, h.val, h.width, get_indextype<I>(), h.base, get_datatype<T>())
     {
     }
 

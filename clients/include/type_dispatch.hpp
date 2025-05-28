@@ -58,6 +58,7 @@ auto rocsparse_simple_dispatch(const Arguments& arg)
     case rocsparse_datatype_i32_r:
     case rocsparse_datatype_u32_r:
     case rocsparse_datatype_f16_r:
+    case rocsparse_datatype_bf16_r:
         return TEST<void>{}(arg);
     }
     return TEST<void>{}(arg);
@@ -84,6 +85,7 @@ auto rocsparse_it_dispatch(const Arguments& arg)
         case rocsparse_datatype_i32_r:
         case rocsparse_datatype_u32_r:
         case rocsparse_datatype_f16_r:
+        case rocsparse_datatype_bf16_r:
             return TEST<void>{}(arg);
         }
     }
@@ -104,6 +106,7 @@ auto rocsparse_it_dispatch(const Arguments& arg)
         case rocsparse_datatype_i32_r:
         case rocsparse_datatype_u32_r:
         case rocsparse_datatype_f16_r:
+        case rocsparse_datatype_bf16_r:
             return TEST<void>{}(arg);
         }
     }
@@ -135,6 +138,7 @@ auto rocsparse_it_plus_int8_float16_dispatch(const Arguments& arg)
         case rocsparse_datatype_u8_r:
         case rocsparse_datatype_i32_r:
         case rocsparse_datatype_u32_r:
+        case rocsparse_datatype_bf16_r:
             return TEST<void>{}(arg);
         }
     }
@@ -157,6 +161,7 @@ auto rocsparse_it_plus_int8_float16_dispatch(const Arguments& arg)
         case rocsparse_datatype_u8_r:
         case rocsparse_datatype_i32_r:
         case rocsparse_datatype_u32_r:
+        case rocsparse_datatype_bf16_r:
             return TEST<void>{}(arg);
         }
     }
@@ -187,6 +192,7 @@ auto rocsparse_ijt_dispatch(const Arguments& arg)
         case rocsparse_datatype_i32_r:
         case rocsparse_datatype_u32_r:
         case rocsparse_datatype_f16_r:
+        case rocsparse_datatype_bf16_r:
             return TEST<void>{}(arg);
         }
     }
@@ -207,6 +213,7 @@ auto rocsparse_ijt_dispatch(const Arguments& arg)
         case rocsparse_datatype_i32_r:
         case rocsparse_datatype_u32_r:
         case rocsparse_datatype_f16_r:
+        case rocsparse_datatype_bf16_r:
             return TEST<void>{}(arg);
         }
     }
@@ -227,6 +234,7 @@ auto rocsparse_ijt_dispatch(const Arguments& arg)
         case rocsparse_datatype_i32_r:
         case rocsparse_datatype_u32_r:
         case rocsparse_datatype_f16_r:
+        case rocsparse_datatype_bf16_r:
             return TEST<void>{}(arg);
         }
     }
@@ -955,6 +963,7 @@ auto rocsparse_it_sparse_to_dense_dispatch(const Arguments& arg)
         case rocsparse_datatype_u8_r:
         case rocsparse_datatype_i32_r:
         case rocsparse_datatype_u32_r:
+        case rocsparse_datatype_bf16_r:
             return TEST<void>{}(arg);
         }
     }
@@ -976,6 +985,7 @@ auto rocsparse_it_sparse_to_dense_dispatch(const Arguments& arg)
         case rocsparse_datatype_u8_r:
         case rocsparse_datatype_i32_r:
         case rocsparse_datatype_u32_r:
+        case rocsparse_datatype_bf16_r:
             return TEST<void>{}(arg);
         }
     }
@@ -1013,6 +1023,7 @@ auto rocsparse_ijt_sparse_to_dense_dispatch(const Arguments& arg)
         case rocsparse_datatype_u8_r:
         case rocsparse_datatype_i32_r:
         case rocsparse_datatype_u32_r:
+        case rocsparse_datatype_bf16_r:
             return TEST<void>{}(arg);
         }
     }
@@ -1034,6 +1045,7 @@ auto rocsparse_ijt_sparse_to_dense_dispatch(const Arguments& arg)
         case rocsparse_datatype_u8_r:
         case rocsparse_datatype_i32_r:
         case rocsparse_datatype_u32_r:
+        case rocsparse_datatype_bf16_r:
             return TEST<void>{}(arg);
         }
     }
@@ -1055,6 +1067,7 @@ auto rocsparse_ijt_sparse_to_dense_dispatch(const Arguments& arg)
         case rocsparse_datatype_u8_r:
         case rocsparse_datatype_i32_r:
         case rocsparse_datatype_u32_r:
+        case rocsparse_datatype_bf16_r:
             return TEST<void>{}(arg);
         }
     }

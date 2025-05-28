@@ -154,6 +154,11 @@ namespace rocsparse
         RETURN_IF_HIP_ERROR(hipMemcpy(hind, dind, datatype_sizeof * nmemb, hipMemcpyDeviceToHost));
         switch(datatype)
         {
+        case rocsparse_datatype_bf16_r:
+        {
+            rocsparse::internal_dnvec_print<rocsparse_bfloat16>(out, nmemb, hind);
+            break;
+        }
         case rocsparse_datatype_f16_r:
         {
             rocsparse::internal_dnvec_print<_Float16>(out, nmemb, hind);
@@ -220,6 +225,11 @@ namespace rocsparse
         RETURN_IF_HIP_ERROR(hipMemcpy(hind, dind, datatype_sizeof * m * n, hipMemcpyDeviceToHost));
         switch(datatype)
         {
+        case rocsparse_datatype_bf16_r:
+        {
+            rocsparse::internal_dnmat_print<rocsparse_bfloat16>(out, m, n, hind, m);
+            break;
+        }
         case rocsparse_datatype_f16_r:
         {
             rocsparse::internal_dnmat_print<_Float16>(out, m, n, hind, m);
