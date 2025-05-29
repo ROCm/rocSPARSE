@@ -368,6 +368,47 @@ if(BUILD_CODE_COVERAGE)
   #
 
   #
+  # Coverage cleanup
+  #
+  add_custom_target(coverage_cleanup
+    COMMAND find ${CMAKE_BINARY_DIR} -name *.profraw -delete
+    COMMAND find ${CMAKE_BINARY_DIR} -name *.profdata -delete
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    )
+
+  # code coverage tests should have its own target, instead of calling manually
+  add_custom_target(
+    code_cov_tests
+    COMMAND echo Coverage GTEST_FILTER=\${GTEST_FILTER}
+    COMMAND mkdir -p ./coverage-report/profraw/ && rm -rf ./coverage-report/profraw/*
+    COMMAND LLVM_PROFILE_FILE="./coverage-report/profraw/rocsparse-coverage_%p.profraw" ./clients/staging/rocsparse-test --gtest_filter=\"\${GTEST_FILTER}\"
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  )
+
+  # make coverage (depends on code_cov_tests)
+  add_custom_target(
+    coverage
+    COMMAND /opt/rocm/llvm/bin/llvm-profdata merge -sparse ./coverage-report/profraw/rocsparse-coverage_*.profraw -o ./coverage-report/rocsparse.profdata
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  )
+
+  add_dependencies(coverage code_cov_tests)
+
+  add_custom_command(
+    TARGET coverage
+    COMMAND /opt/rocm/llvm/bin/llvm-cov report -object ./library/src/librocsparse.so -instr-profile=./coverage-report/rocsparse.profdata
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  )
+
+  add_custom_command(
+    TARGET coverage
+    COMMAND /opt/rocm/llvm/bin/llvm-cov show -object ./library/src/librocsparse.so -instr-profile=./coverage-report/rocsparse.profdata -format=html -output-dir=coverage-report
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  )
+
+
+
+  #
   # Run coverage analysis
   #
   add_custom_target(coverage_analysis
@@ -402,11 +443,4 @@ if(BUILD_CODE_COVERAGE)
 
   add_custom_target(coverage DEPENDS coverage_output)
 
-  #
-  # Coverage cleanup
-  #
-  add_custom_target(coverage_cleanup
-    COMMAND find ${CMAKE_BINARY_DIR} -name *.gcda -delete
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    )
 endif()
