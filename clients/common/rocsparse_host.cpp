@@ -4645,8 +4645,8 @@ void host_csrgeam_nnz(J                    M,
         int nthreads = omp_get_num_threads();
         int tid      = omp_get_thread_num();
 #else
-        int           nthreads = 1;
-        int           tid      = 0;
+        int nthreads = 1;
+        int tid      = 0;
 #endif
 
         J rows_per_thread = (M + nthreads - 1) / nthreads;
@@ -4739,8 +4739,8 @@ void host_csrgeam(J                    M,
         int nthreads = omp_get_num_threads();
         int tid      = omp_get_thread_num();
 #else
-        int           nthreads = 1;
-        int           tid      = 0;
+        int nthreads = 1;
+        int tid      = 0;
 #endif
 
         J rows_per_thread = (M + nthreads - 1) / nthreads;
@@ -9577,6 +9577,7 @@ INSTANTIATE_T(rocsparse_double_complex);
 INSTANTIATE_T_REAL_ONLY(float);
 INSTANTIATE_T_REAL_ONLY(double);
 
+INSTANTIATE_IXYT_AXPBY(int32_t, rocsparse_bfloat16, rocsparse_bfloat16, float);
 INSTANTIATE_IXYT_AXPBY(int32_t, _Float16, _Float16, float);
 INSTANTIATE_IXYT_AXPBY(int32_t, float, float, float);
 INSTANTIATE_IXYT_AXPBY(int32_t, double, double, double);
@@ -9588,6 +9589,7 @@ INSTANTIATE_IXYT_AXPBY(int32_t,
                        rocsparse_double_complex,
                        rocsparse_double_complex,
                        rocsparse_double_complex);
+INSTANTIATE_IXYT_AXPBY(int64_t, rocsparse_bfloat16, rocsparse_bfloat16, float);
 INSTANTIATE_IXYT_AXPBY(int64_t, _Float16, _Float16, float);
 INSTANTIATE_IXYT_AXPBY(int64_t, float, float, float);
 INSTANTIATE_IXYT_AXPBY(int64_t, double, double, double);

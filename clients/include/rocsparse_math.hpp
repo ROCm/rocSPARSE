@@ -73,6 +73,12 @@ inline bool rocsparse_isnan(uint64_t arg)
 }
 
 template <>
+inline bool rocsparse_isnan(rocsparse_bfloat16 arg)
+{
+    return arg != arg;
+}
+
+template <>
 inline bool rocsparse_isnan(_Float16 arg)
 {
     return arg != arg;

@@ -90,6 +90,12 @@ inline rocsparse_datatype get_datatype<uint32_t>(void)
 }
 
 template <>
+inline rocsparse_datatype get_datatype<rocsparse_bfloat16>(void)
+{
+    return rocsparse_datatype_bf16_r;
+}
+
+template <>
 inline rocsparse_datatype get_datatype<_Float16>(void)
 {
     return rocsparse_datatype_f16_r;

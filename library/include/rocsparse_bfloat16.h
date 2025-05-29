@@ -69,6 +69,11 @@ struct ROCSPARSE_EXPORT rocsparse_bfloat16
     {
     }
 
+    __host__ __device__ rocsparse_bfloat16(int i)
+        : data(float_to_bfloat16((float)i))
+    {
+    }
+
     explicit __host__ __device__ rocsparse_bfloat16(float f, rocsparse_truncate_t round)
     {
         switch(round)
@@ -99,6 +104,11 @@ struct ROCSPARSE_EXPORT rocsparse_bfloat16
             float    fp32;
         } u = {uint32_t(data) << 16};
         return u.fp32;
+    }
+
+    __host__ __device__ operator int() const
+    {
+        return static_cast<int>(static_cast<float>(data));
     }
 
     explicit __host__ __device__ operator bool() const
