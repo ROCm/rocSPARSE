@@ -118,7 +118,7 @@ def runCoverageCommand (platform, project, gfilter, String dirmode = "release")
     publishHTML([allowMissing: false,
                 alwaysLinkToLastBuild: false,
                 keepAll: false,
-                reportDir: "${project.paths.project_build_prefix}/build/${dirmode}/lcoverage",
+                reportDir: "${project.paths.project_build_prefix}/build/${dirmode}/coverage-report",
                 reportFiles: "index.html",
                 reportName: "Code coverage report",
                 reportTitles: "Code coverage report"])
