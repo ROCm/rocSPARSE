@@ -54,7 +54,7 @@ rocsparse_routine::rocsparse_routine(const char* function)
 //
 //
 rocsparse_routine::rocsparse_routine()
-    : value((value_type)-1){};
+    : value((value_type)-1) {};
 
 //
 //
@@ -148,6 +148,7 @@ rocsparse_status rocsparse_routine::dispatch_precision(const char       precisio
     case rocsparse_datatype_i32_r:
     case rocsparse_datatype_u32_r:
     case rocsparse_datatype_f16_r:
+    case rocsparse_datatype_bf16_r:
         return rocsparse_status_invalid_value;
     }
     return rocsparse_status_invalid_value;

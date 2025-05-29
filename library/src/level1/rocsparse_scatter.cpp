@@ -90,6 +90,13 @@ try
         RETURN_IF_ROCSPARSE_ERROR((rocsparse::scatter_template<int32_t, _Float16>)(handle, x, y));
         return rocsparse_status_success;
     }
+    // brain half real ; i32
+    if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_bf16_r)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse::scatter_template<int32_t, rocsparse_bfloat16>)(handle, x, y));
+        return rocsparse_status_success;
+    }
     // single real ; i32
     if(x->idx_type == rocsparse_indextype_i32 && x->data_type == rocsparse_datatype_f32_r)
     {
@@ -126,6 +133,13 @@ try
     if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_f16_r)
     {
         RETURN_IF_ROCSPARSE_ERROR((rocsparse::scatter_template<int64_t, _Float16>)(handle, x, y));
+        return rocsparse_status_success;
+    }
+    // brain half real ; i64
+    if(x->idx_type == rocsparse_indextype_i64 && x->data_type == rocsparse_datatype_bf16_r)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(
+            (rocsparse::scatter_template<int64_t, rocsparse_bfloat16>)(handle, x, y));
         return rocsparse_status_success;
     }
     // single real ; i64

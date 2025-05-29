@@ -4645,8 +4645,8 @@ void host_csrgeam_nnz(J                    M,
         int nthreads = omp_get_num_threads();
         int tid      = omp_get_thread_num();
 #else
-        int           nthreads = 1;
-        int           tid      = 0;
+        int nthreads = 1;
+        int tid      = 0;
 #endif
 
         J rows_per_thread = (M + nthreads - 1) / nthreads;
@@ -4739,8 +4739,8 @@ void host_csrgeam(J                    M,
         int nthreads = omp_get_num_threads();
         int tid      = omp_get_thread_num();
 #else
-        int           nthreads = 1;
-        int           tid      = 0;
+        int nthreads = 1;
+        int tid      = 0;
 #endif
 
         J rows_per_thread = (M + nthreads - 1) / nthreads;
@@ -9558,12 +9558,14 @@ template struct rocsparse_host<rocsparse_double_complex,
 
 INSTANTIATE_GATHER_SCATTER(int32_t, int8_t);
 INSTANTIATE_GATHER_SCATTER(int32_t, _Float16);
+INSTANTIATE_GATHER_SCATTER(int32_t, rocsparse_bfloat16);
 INSTANTIATE_GATHER_SCATTER(int32_t, float);
 INSTANTIATE_GATHER_SCATTER(int32_t, double);
 INSTANTIATE_GATHER_SCATTER(int32_t, rocsparse_float_complex);
 INSTANTIATE_GATHER_SCATTER(int32_t, rocsparse_double_complex);
 INSTANTIATE_GATHER_SCATTER(int64_t, int8_t);
 INSTANTIATE_GATHER_SCATTER(int64_t, _Float16);
+INSTANTIATE_GATHER_SCATTER(int64_t, rocsparse_bfloat16);
 INSTANTIATE_GATHER_SCATTER(int64_t, float);
 INSTANTIATE_GATHER_SCATTER(int64_t, double);
 INSTANTIATE_GATHER_SCATTER(int64_t, rocsparse_float_complex);
