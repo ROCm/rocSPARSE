@@ -389,20 +389,10 @@ if(BUILD_CODE_COVERAGE)
   add_custom_target(
     coverage
     COMMAND /opt/rocm/llvm/bin/llvm-profdata merge -sparse ./coverage-report/profraw/rocsparse-coverage_*.profraw -o ./coverage-report/rocsparse.profdata
+    COMMAND /opt/rocm/llvm/bin/llvm-cov report -object ./library/src/librocsparse.so -instr-profile=./coverage-report/rocsparse.profdata
+    COMMAND /opt/rocm/llvm/bin/llvm-cov show -object ./library/src/librocsparse.so -instr-profile=./coverage-report/rocsparse.profdata -format=html -output-dir=coverage-report
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
   )
 
   add_dependencies(coverage code_cov_tests)
-
-  add_custom_command(
-    TARGET coverage
-    COMMAND /opt/rocm/llvm/bin/llvm-cov report -object ./library/src/librocsparse.so -instr-profile=./coverage-report/rocsparse.profdata
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-  )
-
-  add_custom_command(
-    TARGET coverage
-    COMMAND /opt/rocm/llvm/bin/llvm-cov show -object ./library/src/librocsparse.so -instr-profile=./coverage-report/rocsparse.profdata -format=html -output-dir=coverage-report
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-  )
 endif()
