@@ -95,15 +95,6 @@ endif()
 
 if (NOT WIN32)
   if (BUILD_SHARED_LIBS AND BUILD_WITH_ROCTX)
-    target_link_libraries(rocsparse PRIVATE -lroctx64)
-
-
-
-
-
-
-
-
 
     set(ROCTX_PATH "" CACHE STRING "Path to the roctx library (directory containing libroctx64.so)")
 
@@ -148,15 +139,6 @@ if (NOT WIN32)
         message(WARNING "Library 'roctx64' not found. ROCTX_PATH: '${ROCTX_PATH}' Default PATH: '/opt/rocm/lib'.")
       endif()
     endif()
-
-
-
-
-
-
-
-
-
   endif()
 endif()
 
