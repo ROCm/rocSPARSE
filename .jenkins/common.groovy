@@ -117,10 +117,9 @@ def runCoverageCommand (platform, project, gfilter, String dirmode = "release")
                     cd ${project.paths.project_build_prefix}/build/${dirmode}
                     export LD_LIBRARY_PATH=/opt/rocm/lib/
                     GTEST_LISTENER=NO_PASS_LINE_IN_LOG make coverage_cleanup coverage GTEST_FILTER=${gfilter}-*known_bug*
-                    llvm-cov export -object ./library/src/librocsparse.so -instr-profile=./coverage-report/rocsparse.profdata --format=lcov > coverage.info
                     curl -Os https://uploader.codecov.io/latest/linux/codecov
                     chmod +x codecov
-                    ./codecov -v -U \$http_proxy -t ${CODECOV_TOKEN} --file coverage.info --name rpp --sha ${commitSha}
+                    ./codecov -v -U \$http_proxy -t ${CODECOV_TOKEN} --file lcoverage/main_coverage.info --name rocSPARSE --sha ${commitSha}
                 """
 
         platform.runCommand(this, command)
