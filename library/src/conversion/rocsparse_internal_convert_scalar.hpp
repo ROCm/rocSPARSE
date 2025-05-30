@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2025 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,31 +25,22 @@
 #pragma once
 
 #include "rocsparse-types.h"
+#include "rocsparse_control.hpp"
+#include <limits>
 
 namespace rocsparse
 {
-    //
-    // Log a message.
-    //
-    void message(const char* msg_, const char* function_, const char* file_, int line_);
-
-    //
-    // Log a warning message.
-    //
-    void warning_message(const char* msg_, const char* function_, const char* file_, int line_);
-
-    //
-    // Log an error message.
-    //
-    void error_message(rocsparse_status status_,
-                       const char*      msg_,
-                       const char*      function_,
-                       const char*      file_,
-                       int              line_);
-
-#define ROCSPARSE_MESSAGE(MESSAGE__) rocsparse::message(MESSAGE__, __FUNCTION__, __FILE__, __LINE__)
-#define ROCSPARSE_WARNING_MESSAGE(MESSAGE__) \
-    rocsparse::warning_message(MESSAGE__, __FUNCTION__, __FILE__, __LINE__)
-#define ROCSPARSE_ERROR_MESSAGE(STATUS__, MESSAGE__) \
-    rocsparse::error_message(STATUS__, MESSAGE__, __FUNCTION__, __FILE__, __LINE__)
+  template <typename S, typename T>
+  static inline rocsparse_status internal_convert_scalar(const S s, T& t)
+  {
+    if(s <= std::numeric_limits<T>::max() && s >= std::numeric_limits<T>::min())
+      {
+	t = static_cast<T>(s);
+	return rocsparse_status_success;
+      }
+    else
+      {
+	RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_type_mismatch);
+      }
+  }
 }

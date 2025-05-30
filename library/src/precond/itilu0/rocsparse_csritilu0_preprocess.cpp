@@ -23,7 +23,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_csritilu0_preprocess.hpp"
-#include "common.h"
+#include "rocsparse_common.hpp"
 #include "internal/precond/rocsparse_csritilu0.h"
 #include "rocsparse_csritilu0_driver.hpp"
 

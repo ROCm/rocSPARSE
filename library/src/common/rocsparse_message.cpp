@@ -23,10 +23,10 @@
  *
  * ************************************************************************ */
 
-#include "control.h"
-#include "debug.h"
-#include "envariables.h"
-#include "to_string.hpp"
+#include "rocsparse_control.hpp"
+#include "rocsparse_debug.hpp"
+#include "rocsparse_envariables.hpp"
+#include "rocsparse_enum_utils.hpp"
 #include <map>
 
 void rocsparse::message(const char* msg_, const char* function_, const char* file_, int line_)
@@ -62,7 +62,7 @@ void rocsparse::error_message(
                   << "//                            \"line\"    : \"" << line_ << "\"," << std::endl
                   << "//                            \"file\"    : \"" << file_ << "\"," << std::endl
                   << "//                            \"status\"  : \""
-                  << rocsparse::to_string(status_) << "\"," << std::endl
+                  << rocsparse::enum_utils::to_string(status_) << "\"," << std::endl
                   << "//                            \"msg\"     : \"" << msg_ << "\" }"
                   << std::endl;
     }

@@ -22,9 +22,9 @@
  *
  * ************************************************************************ */
 
-#include "control.h"
+#include "rocsparse_control.hpp"
 #include "internal/level3/rocsparse_bsrsm.h"
-#include "utility.h"
+#include "rocsparse_utility.hpp"
 
 #include "../level2/rocsparse_csrsv.hpp"
 #include "rocsparse_bsrsm.hpp"

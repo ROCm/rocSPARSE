@@ -23,8 +23,8 @@
  * ************************************************************************ */
 
 #include "rocsparse_common.h"
-#include "common.h"
-#include "utility.h"
+#include "rocsparse_common.hpp"
+#include "rocsparse_utility.hpp"
 
 #include <hip/hip_runtime.h>
 

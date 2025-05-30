@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "envariables.h"
+#include "rocsparse_envariables.hpp"
 #include "rocsparse-types.h"
 
 namespace rocsparse

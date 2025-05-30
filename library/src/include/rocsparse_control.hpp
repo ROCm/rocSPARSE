@@ -24,9 +24,9 @@
 
 #pragma once
 
-#include "argdescr.h"
-#include "common.h"
-#include "message.h"
+#include "rocsparse_argdescr.hpp"
+#include "rocsparse_common.hpp"
+#include "rocsparse_message.hpp"
 #include <iostream>
 
 /*******************************************************************************
@@ -41,8 +41,10 @@
 #define ROCSPARSE_COV_EXCL_START (void)("LCOV_EXCL_START")
 #define ROCSPARSE_COV_EXCL_STOP (void)("LCOV_EXCL_STOP")
 
+
 namespace rocsparse
 {
+  rocsparse_status exception_to_rocsparse_status(std::exception_ptr e = std::current_exception());
     /*******************************************************************************
  * \brief convert hipError_t to rocsparse_status
  ******************************************************************************/
@@ -239,6 +241,7 @@ namespace rocsparse
             throw TMP_STATUS_FOR_CHECK;                                         \
         }                                                                       \
     } while(false)
+
 
 //
 //

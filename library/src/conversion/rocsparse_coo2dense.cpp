@@ -21,14 +21,14 @@
 * THE SOFTWARE.
 *
 * ************************************************************************ */
-#include "control.h"
-#include "utility.h"
+#include "rocsparse_control.hpp"
+#include "rocsparse_utility.hpp"
 
 #include "internal/conversion/rocsparse_coo2dense.h"
 #include "rocsparse_common.h"
 #include "rocsparse_coo2dense.hpp"
 
-#include "common.h"
+#include "rocsparse_common.hpp"
 #include "coo2dense_device.h"
 
 template <typename I, typename T>

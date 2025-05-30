@@ -21,8 +21,8 @@
  *
  * ************************************************************************ */
 #include "rocsparse_blas_rocblas.hpp"
-#include "control.h"
-#include "handle.h"
+#include "rocsparse_control.hpp"
+#include "rocsparse_handle.hpp"
 
 #ifdef ROCSPARSE_WITH_ROCBLAS
 

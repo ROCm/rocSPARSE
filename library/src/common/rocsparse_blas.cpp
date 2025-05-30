@@ -20,12 +20,28 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#include "control.h"
-#include "handle.h"
+#include "rocsparse_control.hpp"
+#include "rocsparse_handle.hpp"
 #include "rocsparse_blas_rocblas.hpp"
-#include "utility.h"
+#include "rocsparse_utility.hpp"
 
-const char* rocsparse::to_string(rocsparse::blas_impl value)
+template <>
+bool rocsparse::enum_utils::is_invalid(rocsparse::blas_impl value)
+{
+  switch(value)
+    {
+    case rocsparse::blas_impl_none:
+    case rocsparse::blas_impl_default:
+    case rocsparse::blas_impl_rocblas:
+      {
+	return false;
+      }
+    }
+  return true;
+}
+
+template<>
+const char* rocsparse::enum_utils::to_string(rocsparse::blas_impl value)
 {
 
 #define CASE(C) \

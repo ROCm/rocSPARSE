@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2024 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2025 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
  *
  * ************************************************************************ */
 
-#include "common.h"
+#include "rocsparse_common.hpp"
 #include "rocsparse_csritilu0_driver.hpp"
 
 template <>
@@ -42,7 +42,7 @@ struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_async_split>
                                     void*                buffer_)
         {
             RETURN_IF_ROCSPARSE_ERROR(
-                (rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::
+                (rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split>::
                      history<T, J>::run(handle_, alg_, niter_, data_, buffer_size_, buffer_)));
             return rocsparse_status_success;
         }
@@ -68,7 +68,7 @@ struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_async_split>
         {
             RETURN_IF_ROCSPARSE_ERROR(
                 (rocsparse::csritilu0_driver_t<
-                    rocsparse_itilu0_alg_sync_split_fusion>::buffer_size<I, J>::run(handle_,
+                    rocsparse_itilu0_alg_sync_split>::buffer_size<I, J>::run(handle_,
                                                                                     alg_,
                                                                                     options_,
                                                                                     nsweeps_,
@@ -105,7 +105,7 @@ struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_async_split>
         {
             RETURN_IF_ROCSPARSE_ERROR(
                 (rocsparse::csritilu0_driver_t<
-                    rocsparse_itilu0_alg_sync_split_fusion>::preprocess<I, J>::run(handle_,
+                    rocsparse_itilu0_alg_sync_split>::preprocess<I, J>::run(handle_,
                                                                                    alg_,
                                                                                    options_,
                                                                                    nsweeps_,
@@ -145,7 +145,7 @@ struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_async_split>
         {
             RETURN_IF_ROCSPARSE_ERROR(
                 (rocsparse::csritilu0_driver_t<
-                    rocsparse_itilu0_alg_sync_split_fusion>::compute<T, I, J>::run(handle_,
+                    rocsparse_itilu0_alg_sync_split>::compute<T, I, J>::run(handle_,
                                                                                    alg_,
                                                                                    options_,
                                                                                    nsweeps_,

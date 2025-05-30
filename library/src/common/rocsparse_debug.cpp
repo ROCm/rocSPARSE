@@ -25,12 +25,12 @@
 
 #include "rocsparse-auxiliary.h"
 
-#include "control.h"
-#include "envariables.h"
+#include "rocsparse_control.hpp"
+#include "rocsparse_envariables.hpp"
 #include <map>
 #include <mutex>
 
-#include "debug.h"
+#include "rocsparse_debug.hpp"
 
 static std::mutex s_mutex;
 

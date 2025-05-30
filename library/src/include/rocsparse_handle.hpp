@@ -27,7 +27,7 @@
 #include "rocsparse-auxiliary.h"
 #include "rocsparse-version.h"
 
-#include "rocsparse_blas.h"
+#include "rocsparse_blas.hpp"
 #include <fstream>
 #include <hip/hip_runtime_api.h>
 

@@ -1,5 +1,6 @@
+/*! \file */
 /* ************************************************************************
- * Copyright (C) 2025 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2025 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,48 +21,35 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#include "utility.h"
+
+#pragma once
+
+#include "rocsparse-types.h"
 
 namespace rocsparse
 {
-    rocsparse_indextype determine_I_index_type(rocsparse_const_spmat_descr mat)
-    {
-        switch(mat->format)
-        {
-        case rocsparse_format_coo:
-        case rocsparse_format_coo_aos:
-        case rocsparse_format_csr:
-        case rocsparse_format_ell:
-        case rocsparse_format_bell:
-        case rocsparse_format_bsr:
-        {
-            return mat->row_type;
-        }
-        case rocsparse_format_csc:
-        {
-            return mat->col_type;
-        }
-        }
-    }
+    //
+    // Log a message.
+    //
+    void message(const char* msg_, const char* function_, const char* file_, int line_);
 
-    rocsparse_indextype determine_J_index_type(rocsparse_const_spmat_descr mat)
-    {
-        switch(mat->format)
-        {
-        case rocsparse_format_coo:
-        case rocsparse_format_coo_aos:
-        case rocsparse_format_csr:
-        case rocsparse_format_ell:
-        case rocsparse_format_bell:
-        case rocsparse_format_bsr:
-        {
-            return mat->col_type;
-        }
-        case rocsparse_format_csc:
-        {
-            return mat->row_type;
-        }
-        }
-    }
+    //
+    // Log a warning message.
+    //
+    void warning_message(const char* msg_, const char* function_, const char* file_, int line_);
 
+    //
+    // Log an error message.
+    //
+    void error_message(rocsparse_status status_,
+                       const char*      msg_,
+                       const char*      function_,
+                       const char*      file_,
+                       int              line_);
+
+#define ROCSPARSE_MESSAGE(MESSAGE__) rocsparse::message(MESSAGE__, __FUNCTION__, __FILE__, __LINE__)
+#define ROCSPARSE_WARNING_MESSAGE(MESSAGE__) \
+    rocsparse::warning_message(MESSAGE__, __FUNCTION__, __FILE__, __LINE__)
+#define ROCSPARSE_ERROR_MESSAGE(STATUS__, MESSAGE__) \
+    rocsparse::error_message(STATUS__, MESSAGE__, __FUNCTION__, __FILE__, __LINE__)
 }
