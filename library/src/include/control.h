@@ -171,6 +171,8 @@ namespace rocsparse
         }                                                                                   \
     } while(false)
 
+
+
 //
 //
 //

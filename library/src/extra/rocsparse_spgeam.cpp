@@ -589,7 +589,8 @@ extern "C" rocsparse_status rocsparse_spgeam_buffer_size(rocsparse_handle       
                                                          rocsparse_const_spmat_descr mat_B,
                                                          rocsparse_const_spmat_descr mat_C,
                                                          rocsparse_spgeam_stage      stage,
-                                                         size_t* buffer_size_in_bytes)
+                                                         size_t* buffer_size_in_bytes,
+							 rocsparse_error *           p_error)
 try
 {
     rocsparse::log_trace("rocsparse_spgeam_buffer_size",
@@ -629,7 +630,8 @@ extern "C" rocsparse_status rocsparse_spgeam(rocsparse_handle            handle,
                                              rocsparse_spmat_descr       mat_C,
                                              rocsparse_spgeam_stage      stage,
                                              size_t                      buffer_size,
-                                             void*                       temp_buffer)
+                                             void*                       temp_buffer,
+					     rocsparse_error *           p_error)
 try
 {
     rocsparse::log_trace("rocsparse_spgeam",

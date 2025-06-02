@@ -57,22 +57,25 @@ public:
         void*                   buffer = (void*)0x4;
         rocsparse_dnvec_descr   x      = (rocsparse_dnvec_descr)0x4;
         rocsparse_dnvec_descr   y      = (rocsparse_dnvec_descr)0x4;
+	rocsparse_error *      p_error = nullptr;
 
         {
             size_t* buffer_size_in_bytes = (size_t*)0x4;
-#define PARAMS_BUFFER_SIZE handle, descr, mat, x, y, stage, buffer_size_in_bytes
+#define PARAMS_BUFFER_SIZE handle, descr, mat, x, y, stage, buffer_size_in_bytes, p_error
 
-            bad_arg_analysis(rocsparse_v2_spmv_buffer_size, PARAMS_BUFFER_SIZE);
+            static constexpr int nex   = 1;
+            static const int ex[nex] = {7};
+            select_bad_arg_analysis(rocsparse_v2_spmv_buffer_size, nex, ex, PARAMS_BUFFER_SIZE);
 #undef PARAMS_BUFFER_SIZE
         }
 
         {
             const size_t buffer_size_in_bytes = 10;
 
-#define PARAMS handle, descr, alpha, mat, x, beta, y, stage, buffer_size_in_bytes, buffer
+#define PARAMS handle, descr, alpha, mat, x, beta, y, stage, buffer_size_in_bytes, buffer, p_error
 
-            static const int nex   = 1;
-            static const int ex[2] = {8};
+            static constexpr int nex   = 2;
+            static const int ex[nex] = {8, 10};
             select_bad_arg_analysis(rocsparse_v2_spmv, nex, ex, PARAMS);
 #undef PARAMS
         }
@@ -100,7 +103,7 @@ public:
         device_scalar<T> d_beta(h_beta);
 
 #define PARAMS(alpha_, A_, x_, beta_, y_, stage) \
-    handle, trans, alpha_, A_, x_, beta_, y_, ttype, alg, stage, &buffer_size, dbuffer
+	handle, trans, alpha_, A_, x_, beta_, y_, ttype, alg, stage, &buffer_size, dbuffer, nullptr
 
         //
         // INITIALIZATE THE SPARSE MATRIX
@@ -166,19 +169,19 @@ public:
         CHECK_ROCSPARSE_ERROR(rocsparse_create_spmv_descr(&spmv_descr));
 
         CHECK_ROCSPARSE_ERROR(rocsparse_spmv_set_input(
-            handle, spmv_descr, rocsparse_spmv_input_alg, &alg, sizeof(alg)));
+            handle, spmv_descr, rocsparse_spmv_input_alg, &alg, sizeof(alg), nullptr));
         CHECK_ROCSPARSE_ERROR(rocsparse_spmv_set_input(
-            handle, spmv_descr, rocsparse_spmv_input_operation, &trans, sizeof(trans)));
+            handle, spmv_descr, rocsparse_spmv_input_operation, &trans, sizeof(trans), nullptr));
 
         CHECK_ROCSPARSE_ERROR(rocsparse_spmv_set_input(
-            handle, spmv_descr, rocsparse_spmv_input_compute_datatype, &ttype, sizeof(ttype)));
+            handle, spmv_descr, rocsparse_spmv_input_compute_datatype, &ttype, sizeof(ttype), nullptr));
 
         CHECK_ROCSPARSE_ERROR(rocsparse_spmv_set_input(
-            handle, spmv_descr, rocsparse_spmv_input_scalar_datatype, &ttype, sizeof(ttype)));
+            handle, spmv_descr, rocsparse_spmv_input_scalar_datatype, &ttype, sizeof(ttype), nullptr));
 
         size_t buffer_size = 0;
         CHECK_ROCSPARSE_ERROR(rocsparse_v2_spmv_buffer_size(
-            handle, spmv_descr, matA, x, y, rocsparse_v2_spmv_stage_analysis, &buffer_size));
+            handle, spmv_descr, matA, x, y, rocsparse_v2_spmv_stage_analysis, &buffer_size, nullptr));
 
         void* dbuffer = nullptr;
         CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
@@ -193,12 +196,12 @@ public:
                                                 y,
                                                 rocsparse_v2_spmv_stage_analysis,
                                                 buffer_size,
-                                                dbuffer));
+                                                dbuffer, nullptr));
 
         CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
         dbuffer = nullptr;
         CHECK_ROCSPARSE_ERROR(rocsparse_v2_spmv_buffer_size(
-            handle, spmv_descr, matA, x, y, rocsparse_v2_spmv_stage_compute, &buffer_size));
+            handle, spmv_descr, matA, x, y, rocsparse_v2_spmv_stage_compute, &buffer_size, nullptr));
         CHECK_HIP_ERROR(rocsparse_hipMalloc(&dbuffer, buffer_size));
 
         if(arg.unit_check)
@@ -213,7 +216,8 @@ public:
                                                              y,
                                                              rocsparse_v2_spmv_stage_compute,
                                                              buffer_size,
-                                                             dbuffer));
+                                                             dbuffer,
+							     nullptr));
 
             host_dense_matrix<Y> hy_copy(hy);
             traits::host_calculation(trans, h_alpha, hA, hx, h_beta, hy, alg, matrix_type);
@@ -238,7 +242,7 @@ public:
                                                              y,
                                                              rocsparse_v2_spmv_stage_compute,
                                                              buffer_size,
-                                                             dbuffer));
+                                                             dbuffer, nullptr));
 
             CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
@@ -263,7 +267,8 @@ public:
                                                    y,
                                                    rocsparse_v2_spmv_stage_compute,
                                                    buffer_size,
-                                                   dbuffer);
+                                                   dbuffer,
+						   nullptr);
 
             const double gflop_count = traits::gflop_count(hA, *h_beta != static_cast<T>(0));
             const double gbyte_count = traits::byte_count(hA, *h_beta != static_cast<T>(0));
