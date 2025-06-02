@@ -4645,8 +4645,8 @@ void host_csrgeam_nnz(J                    M,
         int nthreads = omp_get_num_threads();
         int tid      = omp_get_thread_num();
 #else
-        int           nthreads = 1;
-        int           tid      = 0;
+        int nthreads = 1;
+        int tid      = 0;
 #endif
 
         J rows_per_thread = (M + nthreads - 1) / nthreads;
@@ -4739,8 +4739,8 @@ void host_csrgeam(J                    M,
         int nthreads = omp_get_num_threads();
         int tid      = omp_get_thread_num();
 #else
-        int           nthreads = 1;
-        int           tid      = 0;
+        int nthreads = 1;
+        int tid      = 0;
 #endif
 
         J rows_per_thread = (M + nthreads - 1) / nthreads;
@@ -9601,22 +9601,26 @@ INSTANTIATE_IXYT_AXPBY(int64_t,
                        rocsparse_double_complex);
 
 INSTANTIATE_COO2DENSE(int32_t, _Float16);
+INSTANTIATE_COO2DENSE(int32_t, rocsparse_bfloat16);
 INSTANTIATE_COO2DENSE(int32_t, float);
 INSTANTIATE_COO2DENSE(int32_t, double);
 INSTANTIATE_COO2DENSE(int32_t, rocsparse_float_complex);
 INSTANTIATE_COO2DENSE(int32_t, rocsparse_double_complex);
 INSTANTIATE_COO2DENSE(int64_t, _Float16);
+INSTANTIATE_COO2DENSE(int64_t, rocsparse_bfloat16);
 INSTANTIATE_COO2DENSE(int64_t, float);
 INSTANTIATE_COO2DENSE(int64_t, double);
 INSTANTIATE_COO2DENSE(int64_t, rocsparse_float_complex);
 INSTANTIATE_COO2DENSE(int64_t, rocsparse_double_complex);
 
 INSTANTIATE_DENSE2COO(int32_t, _Float16);
+INSTANTIATE_DENSE2COO(int32_t, rocsparse_bfloat16);
 INSTANTIATE_DENSE2COO(int32_t, float);
 INSTANTIATE_DENSE2COO(int32_t, double);
 INSTANTIATE_DENSE2COO(int32_t, rocsparse_float_complex);
 INSTANTIATE_DENSE2COO(int32_t, rocsparse_double_complex);
 INSTANTIATE_DENSE2COO(int64_t, _Float16);
+INSTANTIATE_DENSE2COO(int64_t, rocsparse_bfloat16);
 INSTANTIATE_DENSE2COO(int64_t, float);
 INSTANTIATE_DENSE2COO(int64_t, double);
 INSTANTIATE_DENSE2COO(int64_t, rocsparse_float_complex);
@@ -9645,62 +9649,74 @@ INSTANTIATE_IJT(int64_t, int64_t, rocsparse_float_complex);
 INSTANTIATE_IJT(int64_t, int64_t, rocsparse_double_complex);
 
 INSTANTIATE_CSX2DENSE(rocsparse_direction_row, int32_t, int32_t, _Float16);
+INSTANTIATE_CSX2DENSE(rocsparse_direction_row, int32_t, int32_t, rocsparse_bfloat16);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_row, int32_t, int32_t, float);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_row, int32_t, int32_t, double);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_row, int32_t, int32_t, rocsparse_float_complex);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_row, int32_t, int32_t, rocsparse_double_complex);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_row, int64_t, int32_t, _Float16);
+INSTANTIATE_CSX2DENSE(rocsparse_direction_row, int64_t, int32_t, rocsparse_bfloat16);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_row, int64_t, int32_t, float);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_row, int64_t, int32_t, double);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_row, int64_t, int32_t, rocsparse_float_complex);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_row, int64_t, int32_t, rocsparse_double_complex);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_row, int64_t, int64_t, _Float16);
+INSTANTIATE_CSX2DENSE(rocsparse_direction_row, int64_t, int64_t, rocsparse_bfloat16);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_row, int64_t, int64_t, float);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_row, int64_t, int64_t, double);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_row, int64_t, int64_t, rocsparse_float_complex);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_row, int64_t, int64_t, rocsparse_double_complex);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_column, int32_t, int32_t, _Float16);
+INSTANTIATE_CSX2DENSE(rocsparse_direction_column, int32_t, int32_t, rocsparse_bfloat16);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_column, int32_t, int32_t, float);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_column, int32_t, int32_t, double);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_column, int32_t, int32_t, rocsparse_float_complex);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_column, int32_t, int32_t, rocsparse_double_complex);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_column, int64_t, int32_t, _Float16);
+INSTANTIATE_CSX2DENSE(rocsparse_direction_column, int64_t, int32_t, rocsparse_bfloat16);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_column, int64_t, int32_t, float);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_column, int64_t, int32_t, double);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_column, int64_t, int32_t, rocsparse_float_complex);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_column, int64_t, int32_t, rocsparse_double_complex);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_column, int64_t, int64_t, _Float16);
+INSTANTIATE_CSX2DENSE(rocsparse_direction_column, int64_t, int64_t, rocsparse_bfloat16);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_column, int64_t, int64_t, float);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_column, int64_t, int64_t, double);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_column, int64_t, int64_t, rocsparse_float_complex);
 INSTANTIATE_CSX2DENSE(rocsparse_direction_column, int64_t, int64_t, rocsparse_double_complex);
 
 INSTANTIATE_DENSE2CSX(rocsparse_direction_row, int32_t, int32_t, _Float16);
+INSTANTIATE_DENSE2CSX(rocsparse_direction_row, int32_t, int32_t, rocsparse_bfloat16);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_row, int32_t, int32_t, float);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_row, int32_t, int32_t, double);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_row, int32_t, int32_t, rocsparse_float_complex);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_row, int32_t, int32_t, rocsparse_double_complex);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_row, int64_t, int32_t, _Float16);
+INSTANTIATE_DENSE2CSX(rocsparse_direction_row, int64_t, int32_t, rocsparse_bfloat16);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_row, int64_t, int32_t, float);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_row, int64_t, int32_t, double);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_row, int64_t, int32_t, rocsparse_float_complex);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_row, int64_t, int32_t, rocsparse_double_complex);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_row, int64_t, int64_t, _Float16);
+INSTANTIATE_DENSE2CSX(rocsparse_direction_row, int64_t, int64_t, rocsparse_bfloat16);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_row, int64_t, int64_t, float);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_row, int64_t, int64_t, double);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_row, int64_t, int64_t, rocsparse_float_complex);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_row, int64_t, int64_t, rocsparse_double_complex);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_column, int32_t, int32_t, _Float16);
+INSTANTIATE_DENSE2CSX(rocsparse_direction_column, int32_t, int32_t, rocsparse_bfloat16);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_column, int32_t, int32_t, float);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_column, int32_t, int32_t, double);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_column, int32_t, int32_t, rocsparse_float_complex);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_column, int32_t, int32_t, rocsparse_double_complex);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_column, int64_t, int32_t, _Float16);
+INSTANTIATE_DENSE2CSX(rocsparse_direction_column, int64_t, int32_t, rocsparse_bfloat16);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_column, int64_t, int32_t, float);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_column, int64_t, int32_t, double);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_column, int64_t, int32_t, rocsparse_float_complex);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_column, int64_t, int32_t, rocsparse_double_complex);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_column, int64_t, int64_t, _Float16);
+INSTANTIATE_DENSE2CSX(rocsparse_direction_column, int64_t, int64_t, rocsparse_bfloat16);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_column, int64_t, int64_t, float);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_column, int64_t, int64_t, double);
 INSTANTIATE_DENSE2CSX(rocsparse_direction_column, int64_t, int64_t, rocsparse_float_complex);

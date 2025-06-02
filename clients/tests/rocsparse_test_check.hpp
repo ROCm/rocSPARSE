@@ -37,8 +37,8 @@ private:
         case rocsparse_test_numeric_types_enum::all:
         {
             return std::is_same<T, int8_t>{} || std::is_same<T, _Float16>{}
-                   || std::is_same<T, float>{} || std::is_same<T, double>{}
-                   || std::is_same<T, rocsparse_float_complex>{}
+                   || std::is_same<T, rocsparse_bfloat16>{} || std::is_same<T, float>{}
+                   || std::is_same<T, double>{} || std::is_same<T, rocsparse_float_complex>{}
                    || std::is_same<T, rocsparse_double_complex>{};
         }
         case rocsparse_test_numeric_types_enum::real_only:

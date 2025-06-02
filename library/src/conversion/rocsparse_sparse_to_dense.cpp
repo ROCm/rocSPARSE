@@ -55,6 +55,13 @@ namespace rocsparse
             return rocsparse_status_success;
         }
         if(itype == rocsparse_indextype_i32 && jtype == rocsparse_indextype_i32
+           && ctype == rocsparse_datatype_bf16_r)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::sparse_to_dense_template<int32_t, int32_t, rocsparse_bfloat16>(p...)));
+            return rocsparse_status_success;
+        }
+        if(itype == rocsparse_indextype_i32 && jtype == rocsparse_indextype_i32
            && ctype == rocsparse_datatype_f32_r)
         {
             RETURN_IF_ROCSPARSE_ERROR(
@@ -92,6 +99,13 @@ namespace rocsparse
             return rocsparse_status_success;
         }
         if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i32
+           && ctype == rocsparse_datatype_bf16_r)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::sparse_to_dense_template<int64_t, int32_t, rocsparse_bfloat16>(p...)));
+            return rocsparse_status_success;
+        }
+        if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i32
            && ctype == rocsparse_datatype_f32_r)
         {
             RETURN_IF_ROCSPARSE_ERROR(
@@ -126,6 +140,13 @@ namespace rocsparse
         {
             RETURN_IF_ROCSPARSE_ERROR(
                 (rocsparse::sparse_to_dense_template<int64_t, int64_t, _Float16>(p...)));
+            return rocsparse_status_success;
+        }
+        if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i64
+           && ctype == rocsparse_datatype_bf16_r)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(
+                (rocsparse::sparse_to_dense_template<int64_t, int64_t, rocsparse_bfloat16>(p...)));
             return rocsparse_status_success;
         }
         if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i64
