@@ -25,7 +25,7 @@
 
 #include "rocsparse_control.hpp"
 #include "rocsparse_envariables.hpp"
-#include "memstat.h"
+#include "rocsparse_memstat.hpp"
 #include "rocsparse-types.h"
 #include <chrono>
 #include <fstream>
