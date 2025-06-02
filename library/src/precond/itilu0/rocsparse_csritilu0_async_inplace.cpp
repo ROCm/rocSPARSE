@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2024 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2025 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -894,7 +894,7 @@ namespace rocsparse
             m_tsizes[buffer]    = buffer_size_;
         }
 
-        buffer_layout_inplace_t(){};
+        buffer_layout_inplace_t() {};
 
     private:
         void*  m_buffer{};
@@ -1332,6 +1332,7 @@ struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
             case rocsparse_datatype_i32_r:
             case rocsparse_datatype_u32_r:
             case rocsparse_datatype_f16_r:
+            case rocsparse_datatype_bf16_r:
             {
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_not_implemented);
             }
@@ -1616,27 +1617,26 @@ struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_async_inplace>
             else
             {
 
-                RETURN_IF_ROCSPARSE_ERROR(
-                    (compute_iter<BLOCKSIZE, T, I, J>::light_run)(handle_,
-                                                                  options_,
-                                                                  nmaxiter_[0]
-                                                                      + nmaxiter_[0] * nfreeiter_,
-                                                                  m_,
-                                                                  nnz_,
-                                                                  ptr_,
-                                                                  ptr_ + 1,
-                                                                  p_coo_row_ind,
-                                                                  ind_,
-                                                                  val_,
-                                                                  base_,
-                                                                  p_lptr_begin,
-                                                                  p_lptr_end,
-                                                                  ind_,
-                                                                  p_uptr_begin,
-                                                                  p_uptr_end,
-                                                                  p_uind,
-                                                                  p_uperm,
-                                                                  sol_));
+                RETURN_IF_ROCSPARSE_ERROR((compute_iter<BLOCKSIZE, T, I, J>::light_run)(
+                    handle_,
+                    options_,
+                    nmaxiter_[0] + nmaxiter_[0] * nfreeiter_,
+                    m_,
+                    nnz_,
+                    ptr_,
+                    ptr_ + 1,
+                    p_coo_row_ind,
+                    ind_,
+                    val_,
+                    base_,
+                    p_lptr_begin,
+                    p_lptr_end,
+                    ind_,
+                    p_uptr_begin,
+                    p_uptr_end,
+                    p_uind,
+                    p_uperm,
+                    sol_));
             }
             return rocsparse_status_success;
         }

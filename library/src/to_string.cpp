@@ -273,6 +273,7 @@ const char* rocsparse::to_string(rocsparse_datatype value_)
         CASE(rocsparse_datatype_u8_r);
         CASE(rocsparse_datatype_i32_r);
         CASE(rocsparse_datatype_u32_r);
+        CASE(rocsparse_datatype_bf16_r);
     }
     // LCOV_EXCL_START
     THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
