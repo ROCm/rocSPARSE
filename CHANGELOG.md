@@ -3,7 +3,7 @@
 Documentation for rocSPARSE is available at
 [https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/](https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/).
 
-## rocSPARSE 4.0.0 for ROCm 7.0.0
+## rocSPARSE 4.0.1 for ROCm 7.0.0
 
 ### Added
 
