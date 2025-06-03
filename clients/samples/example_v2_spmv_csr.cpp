@@ -109,7 +109,7 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
 
     const rocsparse_spmv_alg spmv_alg = rocsparse_spmv_alg_csr_adaptive;
     ROCSPARSE_CHECK(rocsparse_spmv_set_input(
-					     handle, spmv_descr, rocsparse_spmv_input_alg, &spmv_alg, sizeof(spmv_alg), nullptr));
+        handle, spmv_descr, rocsparse_spmv_input_alg, &spmv_alg, sizeof(spmv_alg), nullptr));
 
     const rocsparse_operation spmv_operation = rocsparse_operation_none;
     ROCSPARSE_CHECK(rocsparse_spmv_set_input(handle,
@@ -117,7 +117,7 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
                                              rocsparse_spmv_input_operation,
                                              &spmv_operation,
                                              sizeof(spmv_operation),
-					     nullptr));
+                                             nullptr));
 
     const rocsparse_datatype spmv_scalar_datatype = utils_datatype<T>();
     ROCSPARSE_CHECK(rocsparse_spmv_set_input(handle,
@@ -125,7 +125,7 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
                                              rocsparse_spmv_input_scalar_datatype,
                                              &spmv_scalar_datatype,
                                              sizeof(spmv_scalar_datatype),
-					      nullptr));
+                                             nullptr));
 
     const rocsparse_datatype spmv_compute_datatype = utils_datatype<T>();
     ROCSPARSE_CHECK(rocsparse_spmv_set_input(handle,
@@ -133,18 +133,12 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
                                              rocsparse_spmv_input_compute_datatype,
                                              &spmv_compute_datatype,
                                              sizeof(spmv_compute_datatype),
-					      nullptr));
+                                             nullptr));
 
     // Call spmv to get buffer size
     size_t buffer_size;
-    ROCSPARSE_CHECK(rocsparse_v2_spmv_buffer_size(handle,
- spmv_descr,
- A,
- x,
- y,
- rocsparse_v2_spmv_stage_analysis,
- &buffer_size,
- nullptr));
+    ROCSPARSE_CHECK(rocsparse_v2_spmv_buffer_size(
+        handle, spmv_descr, A, x, y, rocsparse_v2_spmv_stage_analysis, &buffer_size, nullptr));
 
     void* temp_buffer;
     HIP_CHECK(hipMalloc(&temp_buffer, buffer_size));
@@ -160,18 +154,11 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
                                       rocsparse_v2_spmv_stage_analysis,
                                       buffer_size,
                                       temp_buffer,
-				      nullptr));
+                                      nullptr));
 
     HIP_CHECK(hipFree(temp_buffer));
     ROCSPARSE_CHECK(rocsparse_v2_spmv_buffer_size(
-						  handle,
- spmv_descr,
- A,
- x,
- y,
- rocsparse_v2_spmv_stage_compute,
- &buffer_size,
-nullptr));
+        handle, spmv_descr, A, x, y, rocsparse_v2_spmv_stage_compute, &buffer_size, nullptr));
 
     HIP_CHECK(hipMalloc(&temp_buffer, buffer_size));
 
@@ -189,7 +176,7 @@ nullptr));
                                           rocsparse_v2_spmv_stage_compute,
                                           buffer_size,
                                           temp_buffer,
-					  nullptr));
+                                          nullptr));
     }
 
     // Device synchronization
@@ -214,7 +201,7 @@ nullptr));
                                               rocsparse_v2_spmv_stage_compute,
                                               buffer_size,
                                               temp_buffer,
-					      nullptr));
+                                              nullptr));
         }
 
         // Device synchronization

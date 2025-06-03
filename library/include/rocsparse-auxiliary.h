@@ -86,7 +86,6 @@ rocsparse_status rocsparse_destroy_handle(rocsparse_handle handle);
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_destroy_error(rocsparse_error error);
 
-
 /*! \ingroup aux_module
  *  \brief Eerror message from a rocsparse error descriptor.
  *
@@ -101,7 +100,7 @@ rocsparse_status rocsparse_destroy_error(rocsparse_error error);
  *  \retval rocsparse_status_internal_error an internal error occurred.
  */
 ROCSPARSE_EXPORT
-const char * rocsparse_error_message(rocsparse_error error);
+const char* rocsparse_error_message(rocsparse_error error);
 
 /*! \ingroup aux_module
  *  \brief Return the string representation of a rocSPARSE status code enum name
@@ -1394,7 +1393,7 @@ rocsparse_status rocsparse_spgeam_set_input(rocsparse_handle       handle,
                                             rocsparse_spgeam_input input,
                                             const void*            data,
                                             size_t                 data_size_in_bytes,
-					    rocsparse_error*       error);
+                                            rocsparse_error*       error);
 
 /*! \ingroup aux_module
  *  \brief Get the requested \ref rocsparse_spgeam_output data from the SpGEAM descriptor
@@ -1423,7 +1422,7 @@ rocsparse_status rocsparse_spgeam_get_output(rocsparse_handle        handle,
                                              rocsparse_spgeam_output output,
                                              void*                   data,
                                              size_t                  data_size_in_bytes,
-					     rocsparse_error*       error);
+                                             rocsparse_error*        error);
 
 /*! \ingroup aux_module
    *  \brief Sparse matrix spmv.
@@ -1482,7 +1481,7 @@ rocsparse_status rocsparse_spmv_set_input(rocsparse_handle     handle,
                                           rocsparse_spmv_input input,
                                           const void*          in,
                                           size_t               size_in_bytes,
-					  rocsparse_error*     error);
+                                          rocsparse_error*     error);
 
 /*! \ingroup aux_module
  *  \brief Get the fields of the sparse COO matrix descriptor

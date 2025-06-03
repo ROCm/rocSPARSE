@@ -69,7 +69,7 @@ rocsparse_status rocsparse_spgeam_buffer_size(rocsparse_handle            handle
                                               rocsparse_const_spmat_descr mat_C,
                                               rocsparse_spgeam_stage      stage,
                                               size_t*                     buffer_size,
-					      rocsparse_error*            error);
+                                              rocsparse_error*            error);
 
 /*! \ingroup generic_module
 *  \brief Sparse matrix sparse matrix addition
@@ -374,7 +374,7 @@ rocsparse_status rocsparse_spgeam(rocsparse_handle            handle,
                                   rocsparse_spgeam_stage      stage,
                                   size_t                      buffer_size,
                                   void*                       temp_buffer,
-				  rocsparse_error*            error);
+                                  rocsparse_error*            error);
 
 #ifdef __cplusplus
 }

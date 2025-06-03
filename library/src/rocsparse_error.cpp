@@ -27,43 +27,49 @@
 #include "rocsparse_error.hpp"
 #include "to_string.hpp"
 
-_rocsparse_error::_rocsparse_error(rocsparse_status status) : m_status(status) {}
+_rocsparse_error::_rocsparse_error(rocsparse_status status)
+    : m_status(status)
+{
+}
 
-rocsparse_status _rocsparse_error::get_status() const { return this->m_status; }
+rocsparse_status _rocsparse_error::get_status() const
+{
+    return this->m_status;
+}
 
-extern "C" const char * rocsparse_error_message(rocsparse_error error)
-  try
+extern "C" const char* rocsparse_error_message(rocsparse_error error)
+try
+{
+    ROCSPARSE_ROUTINE_TRACE;
+    if(error != nullptr)
     {
-      if (error != nullptr)
-	{
-	  return rocsparse::to_string(error->get_status());
-	}
-      else
-	{
-	  return nullptr;
-	}
-            // LCOV_EXCL_START
+        return rocsparse::to_string(error->get_status());
     }
-  catch(...)
+    else
     {
-      return nullptr;
+        return nullptr;
     }
+    // LCOV_EXCL_START
+}
+catch(...)
+{
+    return nullptr;
+}
 // LCOV_EXCL_STOP
 
 extern "C" rocsparse_status rocsparse_destroy_error(rocsparse_error error)
-  try
+try
+{
+    ROCSPARSE_ROUTINE_TRACE;
+    if(error != nullptr)
     {
-      if (error != nullptr)
-	{
-	  delete error;
-	}
-      return rocsparse_status_success;
-      // LCOV_EXCL_START
+        delete error;
     }
-  catch(...)
-    {
-      RETURN_ROCSPARSE_EXCEPTION();
-    }
+    return rocsparse_status_success;
+    // LCOV_EXCL_START
+}
+catch(...)
+{
+    RETURN_ROCSPARSE_EXCEPTION();
+}
 // LCOV_EXCL_STOP
-
-

@@ -227,7 +227,7 @@ extern "C" rocsparse_status rocsparse_spmv_set_input(rocsparse_handle     handle
                                                      rocsparse_spmv_input input,
                                                      const void*          in,
                                                      size_t               size_in_bytes,
-						     rocsparse_error *    p_error)
+                                                     rocsparse_error*     p_error)
 try
 {
     ROCSPARSE_ROUTINE_TRACE;
@@ -751,7 +751,7 @@ extern "C" rocsparse_status rocsparse_v2_spmv_buffer_size(rocsparse_handle      
                                                           rocsparse_const_dnvec_descr y, //4
                                                           rocsparse_v2_spmv_stage     stage, // 5
                                                           size_t* buffer_size_in_bytes, // 6
-							  rocsparse_error *           p_error)
+                                                          rocsparse_error* p_error)
 try
 {
     ROCSPARSE_ROUTINE_TRACE;
@@ -829,7 +829,7 @@ extern "C" rocsparse_status rocsparse_v2_spmv(rocsparse_handle            handle
                                               rocsparse_v2_spmv_stage     stage, // 7
                                               size_t                      buffer_size_in_bytes, // 8
                                               void*                       buffer, // 9
-					      rocsparse_error *           p_error)
+                                              rocsparse_error*            p_error)
 try
 {
     ROCSPARSE_ROUTINE_TRACE;

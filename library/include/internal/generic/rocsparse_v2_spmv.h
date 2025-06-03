@@ -70,7 +70,7 @@ rocsparse_status rocsparse_v2_spmv_buffer_size(rocsparse_handle            handl
                                                rocsparse_const_dnvec_descr y,
                                                rocsparse_v2_spmv_stage     stage,
                                                size_t*                     buffer_size_in_bytes,
-					       rocsparse_error*            error);
+                                               rocsparse_error*            error);
 
 /*! \ingroup generic_module
 *  \brief Sparse matrix vector multiplication
@@ -417,7 +417,7 @@ rocsparse_status rocsparse_v2_spmv(rocsparse_handle            handle,
                                    rocsparse_v2_spmv_stage     stage,
                                    size_t                      buffer_size_in_bytes,
                                    void*                       buffer,
-				   rocsparse_error*            error);
+                                   rocsparse_error*            error);
 #ifdef __cplusplus
 }
 #endif

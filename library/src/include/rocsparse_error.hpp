@@ -29,9 +29,10 @@
 struct _rocsparse_error
 {
 protected:
-  rocsparse_status m_status{};
+    rocsparse_status m_status{};
+
 public:
-  _rocsparse_error(rocsparse_status status);
-  ~_rocsparse_error() = default;
-  rocsparse_status get_status() const;
+    _rocsparse_error(rocsparse_status status);
+    ~_rocsparse_error() = default;
+    rocsparse_status get_status() const;
 };
