@@ -40,6 +40,7 @@ namespace rocsparse
                                             const void**                 local_alpha,
                                             const void**                 local_beta)
     {
+        ROCSPARSE_ROUTINE_TRACE;
         const rocsparse_datatype scalar_datatype  = descr->get_scalar_datatype();
         const rocsparse_datatype compute_datatype = descr->get_compute_datatype();
 
@@ -95,6 +96,7 @@ namespace rocsparse
                                                rocsparse_spgeam_stage      stage,
                                                size_t*                     buffer_size)
     {
+        ROCSPARSE_ROUTINE_TRACE;
         const rocsparse_format format_A = mat_A->format;
         switch(stage)
         {
@@ -152,6 +154,7 @@ namespace rocsparse
                                                         rocsparse_spgeam_stage      stage, //5
                                                         size_t*                     buffer_size) //6
     {
+        ROCSPARSE_ROUTINE_TRACE;
         ROCSPARSE_CHECKARG_HANDLE(0, handle);
         ROCSPARSE_CHECKARG_POINTER(1, descr);
         ROCSPARSE_CHECKARG_POINTER(2, mat_A);
@@ -215,6 +218,7 @@ namespace rocsparse
                                             size_t                      buffer_size, //8
                                             void*                       temp_buffer) //9
     {
+        ROCSPARSE_ROUTINE_TRACE;
         ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
         ROCSPARSE_CHECKARG_POINTER(1, descr);
@@ -345,6 +349,7 @@ namespace rocsparse
                                    size_t                       buffer_size,
                                    void*                        temp_buffer)
     {
+        ROCSPARSE_ROUTINE_TRACE;
         const rocsparse_format format_A = mat_A->format;
         switch(stage)
         {
@@ -589,9 +594,11 @@ extern "C" rocsparse_status rocsparse_spgeam_buffer_size(rocsparse_handle       
                                                          rocsparse_const_spmat_descr mat_B,
                                                          rocsparse_const_spmat_descr mat_C,
                                                          rocsparse_spgeam_stage      stage,
-                                                         size_t* buffer_size_in_bytes)
+                                                         size_t*          buffer_size_in_bytes,
+                                                         rocsparse_error* p_error)
 try
 {
+    ROCSPARSE_ROUTINE_TRACE;
     rocsparse::log_trace("rocsparse_spgeam_buffer_size",
                          handle,
                          descr,
@@ -629,9 +636,11 @@ extern "C" rocsparse_status rocsparse_spgeam(rocsparse_handle            handle,
                                              rocsparse_spmat_descr       mat_C,
                                              rocsparse_spgeam_stage      stage,
                                              size_t                      buffer_size,
-                                             void*                       temp_buffer)
+                                             void*                       temp_buffer,
+                                             rocsparse_error*            p_error)
 try
 {
+    ROCSPARSE_ROUTINE_TRACE;
     rocsparse::log_trace("rocsparse_spgeam",
                          handle,
                          descr,
