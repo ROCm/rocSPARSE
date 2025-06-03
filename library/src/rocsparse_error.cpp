@@ -37,7 +37,7 @@ rocsparse_status _rocsparse_error::get_status() const
     return this->m_status;
 }
 
-extern "C" const char* rocsparse_error_message(rocsparse_error error)
+extern "C" const char* rocsparse_error_get_message(rocsparse_error error)
 try
 {
     ROCSPARSE_ROUTINE_TRACE;

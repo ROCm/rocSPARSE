@@ -100,7 +100,7 @@ rocsparse_status rocsparse_destroy_error(rocsparse_error error);
  *  \retval rocsparse_status_internal_error an internal error occurred.
  */
 ROCSPARSE_EXPORT
-const char* rocsparse_error_message(rocsparse_error error);
+const char* rocsparse_error_get_message(rocsparse_error error);
 
 /*! \ingroup aux_module
  *  \brief Return the string representation of a rocSPARSE status code enum name
