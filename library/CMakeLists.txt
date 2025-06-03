@@ -94,7 +94,7 @@ if (BUILD_WITH_ROCBLAS AND rocblas_FOUND)
 endif()
 
 if (NOT WIN32)
-  if (BUILD_SHARED_LIBS AND BUILD_WITH_ROCTX)
+  if (BUILD_SHARED_LIBS)
 
     set(ROCTX_PATH "" CACHE STRING "Path to the roctx library (directory containing libroctx64.so)")
 

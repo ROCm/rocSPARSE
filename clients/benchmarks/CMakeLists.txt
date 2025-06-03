@@ -231,50 +231,47 @@ if (NOT WIN32)
 endif()
 
 if (NOT WIN32)
-  if (BUILD_WITH_ROCTX)
+  set(ROCTX_PATH "" CACHE STRING "Path to the roctx library (directory containing libroctx64.so)")
 
-    set(ROCTX_PATH "" CACHE STRING "Path to the roctx library (directory containing libroctx64.so)")
+  find_path(ROCTRACER_INCLUDE_DIR
+    NAMES roctracer/roctx.h
+    HINTS
+    ${ROCTX_PATH}
+    ${ROCTX_PATH}/include
+    /opt/rocm/include
+    ${ROCTX_PATH}/../include
+    DOC "Path to the roctracer include directory containing roctx.h")
 
-    find_path(ROCTRACER_INCLUDE_DIR
-      NAMES roctracer/roctx.h
-      HINTS
-      ${ROCTX_PATH}
-      ${ROCTX_PATH}/include
-      /opt/rocm/include
-      ${ROCTX_PATH}/../include
-      DOC "Path to the roctracer include directory containing roctx.h")
+  find_library(ROCTX_LIBRARY
+    NAMES roctx64
+    HINTS
+    ${ROCTX_PATH} # User-provided path
+    ${ROCTX_PATH}/lib
+    PATHS
+    /opt/rocm/lib # Default ROCm path
+    NO_DEFAULT_PATH
+  )
 
-    find_library(ROCTX_LIBRARY
-      NAMES roctx64
-      HINTS
-      ${ROCTX_PATH} # User-provided path
-      ${ROCTX_PATH}/lib
-      PATHS
-      /opt/rocm/lib # Default ROCm path
-      NO_DEFAULT_PATH
-    )
+  if(ROCTRACER_INCLUDE_DIR AND ROCTX_LIBRARY)
+    message(STATUS "Found roctracer include directory: ${ROCTRACER_INCLUDE_DIR}")
+    message(STATUS "Found roctx library: ${ROCTX_LIBRARY}")
 
-    if(ROCTRACER_INCLUDE_DIR AND ROCTX_LIBRARY)
-      message(STATUS "Found roctracer include directory: ${ROCTRACER_INCLUDE_DIR}")
-      message(STATUS "Found roctx library: ${ROCTX_LIBRARY}")
+    # Add the include directory
+    target_include_directories(rocsparse-bench PRIVATE ${ROCTRACER_INCLUDE_DIR})
 
-      # Add the include directory
-      target_include_directories(rocsparse-bench PRIVATE ${ROCTRACER_INCLUDE_DIR})
+    # Link the rocTx lib
+    target_link_libraries(rocsparse-bench PRIVATE ${ROCTX_LIBRARY})
+    target_compile_definitions( rocsparse-bench PRIVATE ROCSPARSE_CLIENTS_WITH_ROCTX )
+    message(STATUS "ROCTX tracing support enabled for target rocsparse-bench.")
+  else()
+    message(WARNING "ROCTX tracing will be disabled for target rocsparse-bench.")
 
-      # Link the rocTx lib
-      target_link_libraries(rocsparse-bench PRIVATE ${ROCTX_LIBRARY})
-      target_compile_definitions( rocsparse-bench PRIVATE ROCSPARSE_CLIENTS_WITH_ROCTX )
-      message(STATUS "ROCTX tracing support enabled for target rocsparse-bench.")
-    else()
-      message(WARNING "ROCTX tracing will be disabled for target rocsparse-bench.")
+    if(NOT ROCTRACER_INCLUDE_DIR)
+      message(WARNING "Header 'roctracer/roctx.h' not found.")
+    endif()
 
-      if(NOT ROCTRACER_INCLUDE_DIR)
-        message(WARNING "Header 'roctracer/roctx.h' not found.")
-      endif()
-
-      if(NOT ROCTX_LIBRARY)
-        message(WARNING "Library 'roctx64' not found. ROCTX_PATH: '${ROCTX_PATH}' Default PATH: '/opt/rocm/lib'.")
-      endif()
+    if(NOT ROCTX_LIBRARY)
+      message(WARNING "Library 'roctx64' not found. ROCTX_PATH: '${ROCTX_PATH}' Default PATH: '/opt/rocm/lib'.")
     endif()
   endif()
 endif()
