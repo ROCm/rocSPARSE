@@ -617,6 +617,11 @@ try
         T_size = sizeof(_Float16);
         break;
     }
+    case rocsparse_datatype_bf16_r:
+    {
+        T_size = sizeof(rocsparse_bfloat16);
+        break;
+    }
     case rocsparse_datatype_f32_r:
     {
         T_size = sizeof(float);

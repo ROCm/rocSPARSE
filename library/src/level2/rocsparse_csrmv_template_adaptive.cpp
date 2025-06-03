@@ -64,8 +64,8 @@ namespace rocsparse
     {
 #if defined(__INTEL_COMPILER)
         return WG_SIZE >> (_bit_scan_reverse(num_rows - 1) + 1);
-#elif(defined(__clang__) && __has_builtin(__builtin_clz)) \
-    || !defined(__clang) && defined(__GNUG__)             \
+#elif (defined(__clang__) && __has_builtin(__builtin_clz)) \
+    || !defined(__clang) && defined(__GNUG__)              \
            && ((__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) > 30202)
         return (WG_SIZE >> (8 * sizeof(int) - __builtin_clz(num_rows - 1)));
 #elif defined(_MSC_VER) && (_MSC_VER >= 1400)
@@ -780,6 +780,9 @@ INSTANTIATE(int64_t, int64_t, int8_t);
 INSTANTIATE(int32_t, int32_t, _Float16);
 INSTANTIATE(int64_t, int32_t, _Float16);
 INSTANTIATE(int64_t, int64_t, _Float16);
+INSTANTIATE(int32_t, int32_t, rocsparse_bfloat16);
+INSTANTIATE(int64_t, int32_t, rocsparse_bfloat16);
+INSTANTIATE(int64_t, int64_t, rocsparse_bfloat16);
 
 #undef INSTANTIATE
 
@@ -855,6 +858,9 @@ INSTANTIATE(float, int64_t, int64_t, int8_t, int8_t, float);
 INSTANTIATE(float, int32_t, int32_t, _Float16, _Float16, float);
 INSTANTIATE(float, int64_t, int32_t, _Float16, _Float16, float);
 INSTANTIATE(float, int64_t, int64_t, _Float16, _Float16, float);
+INSTANTIATE(float, int32_t, int32_t, rocsparse_bfloat16, rocsparse_bfloat16, float);
+INSTANTIATE(float, int64_t, int32_t, rocsparse_bfloat16, rocsparse_bfloat16, float);
+INSTANTIATE(float, int64_t, int64_t, rocsparse_bfloat16, rocsparse_bfloat16, float);
 INSTANTIATE(rocsparse_float_complex,
             int32_t,
             int32_t,

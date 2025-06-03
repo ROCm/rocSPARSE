@@ -4645,8 +4645,8 @@ void host_csrgeam_nnz(J                    M,
         int nthreads = omp_get_num_threads();
         int tid      = omp_get_thread_num();
 #else
-        int           nthreads = 1;
-        int           tid      = 0;
+        int nthreads = 1;
+        int tid      = 0;
 #endif
 
         J rows_per_thread = (M + nthreads - 1) / nthreads;
@@ -4739,8 +4739,8 @@ void host_csrgeam(J                    M,
         int nthreads = omp_get_num_threads();
         int tid      = omp_get_thread_num();
 #else
-        int           nthreads = 1;
-        int           tid      = 0;
+        int nthreads = 1;
+        int tid      = 0;
 #endif
 
         J rows_per_thread = (M + nthreads - 1) / nthreads;
@@ -9742,6 +9742,9 @@ INSTANTIATE_IJAXYT(int64_t, int64_t, int8_t, int8_t, float, float);
 INSTANTIATE_IJAXYT(int32_t, int32_t, _Float16, _Float16, float, float);
 INSTANTIATE_IJAXYT(int64_t, int32_t, _Float16, _Float16, float, float);
 INSTANTIATE_IJAXYT(int64_t, int64_t, _Float16, _Float16, float, float);
+INSTANTIATE_IJAXYT(int32_t, int32_t, rocsparse_bfloat16, rocsparse_bfloat16, float, float);
+INSTANTIATE_IJAXYT(int64_t, int32_t, rocsparse_bfloat16, rocsparse_bfloat16, float, float);
+INSTANTIATE_IJAXYT(int64_t, int64_t, rocsparse_bfloat16, rocsparse_bfloat16, float, float);
 INSTANTIATE_IJAXYT(int32_t, int32_t, float, double, double, double);
 INSTANTIATE_IJAXYT(int64_t, int32_t, float, double, double, double);
 INSTANTIATE_IJAXYT(int64_t, int64_t, float, double, double, double);
@@ -9934,6 +9937,8 @@ INSTANTIATE_IAXYT(int32_t, int8_t, int8_t, float, float);
 INSTANTIATE_IAXYT(int64_t, int8_t, int8_t, float, float);
 INSTANTIATE_IAXYT(int32_t, _Float16, _Float16, float, float);
 INSTANTIATE_IAXYT(int64_t, _Float16, _Float16, float, float);
+INSTANTIATE_IAXYT(int32_t, rocsparse_bfloat16, rocsparse_bfloat16, float, float);
+INSTANTIATE_IAXYT(int64_t, rocsparse_bfloat16, rocsparse_bfloat16, float, float);
 INSTANTIATE_IAXYT(
     int32_t, float, rocsparse_float_complex, rocsparse_float_complex, rocsparse_float_complex);
 INSTANTIATE_IAXYT(

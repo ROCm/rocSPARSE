@@ -95,8 +95,8 @@ namespace rocsparse
 
 #define LBSR_IND(j, bi, bj, dir) \
     ((dir == rocsparse_direction_row) ? LBSR_IND_R(j, bi, bj) : LBSR_IND_C(j, bi, bj))
-#define LBSR_IND_R(j, bi, bj) (size_t(block_dim) * block_dim * (j) + (bi)*block_dim + (bj))
-#define LBSR_IND_C(j, bi, bj) (size_t(block_dim) * block_dim * (j) + (bi) + (bj)*block_dim)
+#define LBSR_IND_R(j, bi, bj) (size_t(block_dim) * block_dim * (j) + (bi) * block_dim + (bj))
+#define LBSR_IND_C(j, bi, bj) (size_t(block_dim) * block_dim * (j) + (bi) + (bj) * block_dim)
 
                     sum = rocsparse::fma<T>(
                         bsr_val[LBSR_IND(j, bi, bj, dir)], x[block_dim * col + bj], sum);
@@ -322,6 +322,9 @@ INSTANTIATE_MIXED(float, int64_t, int64_t, int8_t, int8_t, float);
 INSTANTIATE_MIXED(float, int32_t, int32_t, _Float16, _Float16, float);
 INSTANTIATE_MIXED(float, int64_t, int32_t, _Float16, _Float16, float);
 INSTANTIATE_MIXED(float, int64_t, int64_t, _Float16, _Float16, float);
+INSTANTIATE_MIXED(float, int32_t, int32_t, rocsparse_bfloat16, rocsparse_bfloat16, float);
+INSTANTIATE_MIXED(float, int64_t, int32_t, rocsparse_bfloat16, rocsparse_bfloat16, float);
+INSTANTIATE_MIXED(float, int64_t, int64_t, rocsparse_bfloat16, rocsparse_bfloat16, float);
 INSTANTIATE_MIXED(rocsparse_float_complex,
                   int32_t,
                   int32_t,

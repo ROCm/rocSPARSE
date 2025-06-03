@@ -396,6 +396,7 @@ namespace rocsparse
         case rocsparse_datatype_u8_r:
         case rocsparse_datatype_i32_r:
         case rocsparse_datatype_u32_r:
+        case rocsparse_datatype_bf16_r:
         {
             return false;
         }
@@ -910,6 +911,10 @@ namespace rocsparse
         case rocsparse_datatype_f16_r:
         {
             return sizeof(_Float16);
+        }
+        case rocsparse_datatype_bf16_r:
+        {
+            return sizeof(rocsparse_bfloat16);
         }
         case rocsparse_datatype_f32_r:
         {
