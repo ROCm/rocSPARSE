@@ -4603,7 +4603,8 @@ rocsparse_status rocsparse_spgeam_set_input(rocsparse_handle       handle,
                                             rocsparse_spgeam_descr descr,
                                             rocsparse_spgeam_input input,
                                             const void*            data,
-                                            size_t                 data_size_in_bytes)
+                                            size_t                 data_size_in_bytes,
+                                            rocsparse_error*       p_error)
 try
 {
     ROCSPARSE_ROUTINE_TRACE;
@@ -4680,7 +4681,8 @@ rocsparse_status rocsparse_spgeam_get_output(rocsparse_handle        handle,
                                              rocsparse_spgeam_descr  descr,
                                              rocsparse_spgeam_output output,
                                              void*                   data,
-                                             size_t                  data_size_in_bytes)
+                                             size_t                  data_size_in_bytes,
+                                             rocsparse_error*        p_error)
 try
 {
     ROCSPARSE_ROUTINE_TRACE;
