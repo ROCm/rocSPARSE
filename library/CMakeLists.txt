@@ -94,25 +94,10 @@ if (BUILD_WITH_ROCBLAS AND rocblas_FOUND)
 endif()
 
 if (NOT WIN32)
-  if (BUILD_SHARED_LIBS)
-
-    find_package(roctx)
-
-    if(ROCTX_FOUND)
-      target_link_libraries(rocsparse PRIVATE roctx::roctx)
-      target_compile_definitions( rocsparse PRIVATE ROCSPARSE_BUILT_WITH_ROCTX )
-      message(STATUS "ROCTX tracing support enabled for target rocsparse.")
-    else()
-      message(WARNING "ROCTX tracing will be disabled for target rocsparse.")
-
-      if(NOT ROCTX_INCLUDE_DIR)
-        message(WARNING "Header 'roctracer/roctx.h' not found.")
-      endif()
-
-      if(NOT ROCTX_LIBRARY)
-        message(WARNING "Library 'roctx64' not found.")
-      endif()
-    endif()
+  if (BUILD_SHARED_LIBS AND BUILD_WITH_ROCTX)
+    find_package(roctx REQUIRED)
+    target_link_libraries(rocsparse PRIVATE roctx::roctx)
+    target_compile_definitions( rocsparse PRIVATE ROCSPARSE_BUILT_WITH_ROCTX )
   endif()
 endif()
 

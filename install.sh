@@ -308,6 +308,7 @@ build_address_sanitizer=false
 build_memstat=false
 build_rocsparse_ILP64=false
 build_with_rocblas=true
+build_with_roctx=true
 build_with_offload_compress=true
 matrices_dir=
 matrices_dir_install=
@@ -387,6 +388,9 @@ while true; do
             shift ;;
         --no-rocblas)
             build_with_rocblas=false
+            shift ;;
+        --no-roctx)
+            build_with_roctx=false
             shift ;;
         -k|--relwithdebinfo)
             build_release=false
@@ -589,6 +593,13 @@ pushd .
     cmake_common_options+=("-DBUILD_WITH_ROCBLAS=ON")
   else
     cmake_common_options+=("-DBUILD_WITH_ROCBLAS=OFF")
+  fi
+
+  # roctx
+  if [[ "${build_with_roctx}" == true ]]; then
+    cmake_common_options+=("-DBUILD_WITH_ROCTX=ON")
+  else
+    cmake_common_options+=("-DBUILD_WITH_ROCTX=OFF")
   fi
 
   # freorg backward compatible support enable
