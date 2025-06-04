@@ -29,9 +29,9 @@
 namespace rocsparse
 {
 
-  rocsparse_status calculate_nnz(int64_t m,
-				 rocsparse_indextype indextype,
-				 const void* ptr,
-				 int64_t* nnz,
-				 hipStream_t stream);
+    rocsparse_status calculate_nnz(int64_t             m,
+                                   rocsparse_indextype indextype,
+                                   const void*         ptr,
+                                   int64_t*            nnz,
+                                   hipStream_t         stream);
 }

@@ -21,34 +21,32 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_control.hpp"
 #include "rocsparse_assign_async.hpp"
+#include "rocsparse_control.hpp"
 
 namespace rocsparse
 {
 
-template <typename T>
-ROCSPARSE_KERNEL(1)
-void assign_kernel(T* dest, T value)
-{
-  *dest = value;
-}
+    template <typename T>
+    ROCSPARSE_KERNEL(1)
+    void assign_kernel(T* dest, T value)
+    {
+        *dest = value;
+    }
 
 }
-
 
 template <typename T>
 rocsparse_status rocsparse::assign_async(T* dest, T value, hipStream_t stream)
 {
-  // Use a kernel instead of memcpy, because memcpy is synchronous if the source is not in
-  // pinned memory.
-  // Memset lacks a 64bit option, but would involve a similar implicit kernel anyways.
-  RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(rocsparse::assign_kernel, dim3(1), dim3(1), 0, stream, dest, value);
-  return rocsparse_status_success;
+    // Use a kernel instead of memcpy, because memcpy is synchronous if the source is not in
+    // pinned memory.
+    // Memset lacks a 64bit option, but would involve a similar implicit kernel anyways.
+    RETURN_IF_HIPLAUNCHKERNELGGL_ERROR(
+        rocsparse::assign_kernel, dim3(1), dim3(1), 0, stream, dest, value);
+    return rocsparse_status_success;
 }
 
-template
-rocsparse_status rocsparse::assign_async(int32_t* dest, int32_t value, hipStream_t stream);
+template rocsparse_status rocsparse::assign_async(int32_t* dest, int32_t value, hipStream_t stream);
 
-template
-rocsparse_status rocsparse::assign_async(int64_t* dest, int64_t value, hipStream_t stream);
+template rocsparse_status rocsparse::assign_async(int64_t* dest, int64_t value, hipStream_t stream);

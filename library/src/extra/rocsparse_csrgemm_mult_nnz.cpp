@@ -22,9 +22,9 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_control.hpp"
 #include "csrgemm_device.h"
 #include "rocsparse_common.h"
+#include "rocsparse_control.hpp"
 #include "rocsparse_csrgemm_mult.hpp"
 #include "rocsparse_csrgemm_nnz_calc.hpp"
 #include "rocsparse_utility.hpp"

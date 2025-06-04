@@ -28,65 +28,65 @@
 
 namespace rocsparse
 {
-  template <rocsparse_datatype v>
-  struct datatype_traits;
+    template <rocsparse_datatype v>
+    struct datatype_traits;
 
-  template <>
-  struct datatype_traits<rocsparse_datatype_f16_r>
-  {
-    using type_t = _Float16;
-  };
+    template <>
+    struct datatype_traits<rocsparse_datatype_f16_r>
+    {
+        using type_t = _Float16;
+    };
 
-  template <>
-  struct datatype_traits<rocsparse_datatype_f32_r>
-  {
-    using type_t = float;
-  };
+    template <>
+    struct datatype_traits<rocsparse_datatype_f32_r>
+    {
+        using type_t = float;
+    };
 
-  template <>
-  struct datatype_traits<rocsparse_datatype_f64_r>
-  {
-    using type_t = double;
-  };
+    template <>
+    struct datatype_traits<rocsparse_datatype_f64_r>
+    {
+        using type_t = double;
+    };
 
-  template <>
-  struct datatype_traits<rocsparse_datatype_f32_c>
-  {
-    using type_t = rocsparse_float_complex;
-  };
+    template <>
+    struct datatype_traits<rocsparse_datatype_f32_c>
+    {
+        using type_t = rocsparse_float_complex;
+    };
 
-  template <>
-  struct datatype_traits<rocsparse_datatype_f64_c>
-  {
-    using type_t = rocsparse_double_complex;
-  };
+    template <>
+    struct datatype_traits<rocsparse_datatype_f64_c>
+    {
+        using type_t = rocsparse_double_complex;
+    };
 
-  template <>
-  struct datatype_traits<rocsparse_datatype_u32_r>
-  {
-    using type_t = uint32_t;
-  };
+    template <>
+    struct datatype_traits<rocsparse_datatype_u32_r>
+    {
+        using type_t = uint32_t;
+    };
 
-  template <>
-  struct datatype_traits<rocsparse_datatype_i32_r>
-  {
-    using type_t = int32_t;
-  };
+    template <>
+    struct datatype_traits<rocsparse_datatype_i32_r>
+    {
+        using type_t = int32_t;
+    };
 
-  template <>
-  struct datatype_traits<rocsparse_datatype_u8_r>
-  {
-    using type_t = uint8_t;
-  };
+    template <>
+    struct datatype_traits<rocsparse_datatype_u8_r>
+    {
+        using type_t = uint8_t;
+    };
 
-  template <>
-  struct datatype_traits<rocsparse_datatype_i8_r>
-  {
-    using type_t = int8_t;
-  };
+    template <>
+    struct datatype_traits<rocsparse_datatype_i8_r>
+    {
+        using type_t = int8_t;
+    };
 
-  template <typename T>
-  rocsparse_datatype get_datatype();
+    template <typename T>
+    rocsparse_datatype get_datatype();
 
-  size_t datatype_sizeof(rocsparse_datatype that);
+    size_t datatype_sizeof(rocsparse_datatype that);
 }

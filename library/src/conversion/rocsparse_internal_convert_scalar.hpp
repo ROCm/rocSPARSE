@@ -30,17 +30,17 @@
 
 namespace rocsparse
 {
-  template <typename S, typename T>
-  static inline rocsparse_status internal_convert_scalar(const S s, T& t)
-  {
-    if(s <= std::numeric_limits<T>::max() && s >= std::numeric_limits<T>::min())
-      {
-	t = static_cast<T>(s);
-	return rocsparse_status_success;
-      }
-    else
-      {
-	RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_type_mismatch);
-      }
-  }
+    template <typename S, typename T>
+    static inline rocsparse_status internal_convert_scalar(const S s, T& t)
+    {
+        if(s <= std::numeric_limits<T>::max() && s >= std::numeric_limits<T>::min())
+        {
+            t = static_cast<T>(s);
+            return rocsparse_status_success;
+        }
+        else
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_type_mismatch);
+        }
+    }
 }

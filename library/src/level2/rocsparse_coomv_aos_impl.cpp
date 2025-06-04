@@ -22,8 +22,8 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_control.hpp"
 #include "rocsparse_common.h"
+#include "rocsparse_control.hpp"
 #include "rocsparse_coomv_aos.hpp"
 #include "rocsparse_utility.hpp"
 

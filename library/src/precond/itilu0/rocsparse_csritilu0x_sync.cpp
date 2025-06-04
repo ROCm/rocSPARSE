@@ -24,8 +24,8 @@
 
 #include "../conversion/rocsparse_csr2csc.hpp"
 #include "../conversion/rocsparse_identity.hpp"
-#include "rocsparse_common.hpp"
 #include "common.hpp"
+#include "rocsparse_common.hpp"
 #include "rocsparse_csritilu0x_driver.hpp"
 #include <iomanip>
 
@@ -398,8 +398,7 @@ private:
     }
 
 public:
-
-      template <typename T, typename J>
+    template <typename T, typename J>
     struct history
     {
         static rocsparse_status run(rocsparse_handle handle_,

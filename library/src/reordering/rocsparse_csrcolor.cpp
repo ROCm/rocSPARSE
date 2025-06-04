@@ -23,8 +23,8 @@
  * ************************************************************************ */
 
 #include "internal/reordering/rocsparse_csrcolor.h"
-#include "rocsparse_control.hpp"
 #include "csrcolor_device.hpp"
+#include "rocsparse_control.hpp"
 #include "rocsparse_csrcolor.hpp"
 #include "rocsparse_primitives.hpp"
 #include "rocsparse_utility.hpp"

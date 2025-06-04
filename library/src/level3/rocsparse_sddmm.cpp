@@ -24,47 +24,48 @@
 #include <map>
 #include <sstream>
 
+#include "internal/generic/rocsparse_sddmm.h"
 #include "rocsparse_common.hpp"
 #include "rocsparse_control.hpp"
 #include "rocsparse_determine_indextype.hpp"
-#include "rocsparse_handle.hpp"
-#include "internal/generic/rocsparse_sddmm.h"
 #include "rocsparse_enum_utils.hpp"
+#include "rocsparse_handle.hpp"
 #include "rocsparse_utility.hpp"
 
 #include "rocsparse_sddmm.hpp"
 
-
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_sddmm_alg value_)
 {
-#define CASE(C) case C: return #C
-  switch(value_)
+#define CASE(C) \
+    case C:     \
+        return #C
+    switch(value_)
     {
-      CASE(rocsparse_sddmm_alg_default);
-      CASE(rocsparse_sddmm_alg_dense);
+        CASE(rocsparse_sddmm_alg_default);
+        CASE(rocsparse_sddmm_alg_dense);
 #undef CASE
     }
-  // LCOV_EXCL_START
-  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-  // LCOV_EXCL_STOP
+    // LCOV_EXCL_START
+    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+    // LCOV_EXCL_STOP
 }
 
 template <>
 bool rocsparse::enum_utils::is_invalid(rocsparse_sddmm_alg value_)
 {
-  switch(value_)
+    switch(value_)
     {
     case rocsparse_sddmm_alg_default:
-      {
-	return false;
-      }
-    case rocsparse_sddmm_alg_dense:
-      {
-	return false;
-      }
+    {
+        return false;
     }
-  return true;
+    case rocsparse_sddmm_alg_dense:
+    {
+        return false;
+    }
+    }
+    return true;
 }
 
 namespace rocsparse

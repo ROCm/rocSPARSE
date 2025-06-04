@@ -21,64 +21,58 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_control.hpp"
 #include "rocsparse_calculate_nnz.hpp"
+#include "rocsparse_control.hpp"
 #include "rocsparse_indextype_utils.hpp"
 
-rocsparse_status rocsparse::calculate_nnz(int64_t m,
-					  rocsparse_indextype indextype,
-					  const void* ptr,
-					  int64_t* nnz,
-					  hipStream_t stream)
+rocsparse_status rocsparse::calculate_nnz(
+    int64_t m, rocsparse_indextype indextype, const void* ptr, int64_t* nnz, hipStream_t stream)
 {
-  if(m == 0)
+    if(m == 0)
     {
-      nnz[0] = 0;
-      return rocsparse_status_success;
+        nnz[0] = 0;
+        return rocsparse_status_success;
     }
-  const char* p
-    = reinterpret_cast<const char*>(ptr) + rocsparse::indextype_sizeof(indextype) * m;
-  int64_t end, start;
-  switch(indextype)
+    const char* p = reinterpret_cast<const char*>(ptr) + rocsparse::indextype_sizeof(indextype) * m;
+    int64_t     end, start;
+    switch(indextype)
     {
     case rocsparse_indextype_i32:
-      {
-	int32_t u, v;
-	RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-					   &u, ptr, rocsparse::indextype_sizeof(indextype), hipMemcpyDeviceToHost, stream));
-	RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-					   &v, p, rocsparse::indextype_sizeof(indextype), hipMemcpyDeviceToHost, stream));
-	RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
-	start = u;
-	end   = v;
-	break;
-      }
-    case rocsparse_indextype_i64:
-      {
-	int64_t u, v;
-	RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-					   &u, ptr, rocsparse::indextype_sizeof(indextype), hipMemcpyDeviceToHost, stream));
-	RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-					   &v, p, rocsparse::indextype_sizeof(indextype), hipMemcpyDeviceToHost, stream));
-	RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
-	start = u;
-	end   = v;
-	break;
-      }
-    case rocsparse_indextype_u16:
-      {
-	uint16_t u, v;
-	RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-					   &u, ptr, rocsparse::indextype_sizeof(indextype), hipMemcpyDeviceToHost, stream));
-	RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-					   &v, p, rocsparse::indextype_sizeof(indextype), hipMemcpyDeviceToHost, stream));
-	start = u;
-	end   = v;
-	break;
-      }
+    {
+        int32_t u, v;
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &u, ptr, rocsparse::indextype_sizeof(indextype), hipMemcpyDeviceToHost, stream));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &v, p, rocsparse::indextype_sizeof(indextype), hipMemcpyDeviceToHost, stream));
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
+        start = u;
+        end   = v;
+        break;
     }
-  nnz[0] = end - start;
-  return rocsparse_status_success;
+    case rocsparse_indextype_i64:
+    {
+        int64_t u, v;
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &u, ptr, rocsparse::indextype_sizeof(indextype), hipMemcpyDeviceToHost, stream));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &v, p, rocsparse::indextype_sizeof(indextype), hipMemcpyDeviceToHost, stream));
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
+        start = u;
+        end   = v;
+        break;
+    }
+    case rocsparse_indextype_u16:
+    {
+        uint16_t u, v;
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &u, ptr, rocsparse::indextype_sizeof(indextype), hipMemcpyDeviceToHost, stream));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &v, p, rocsparse::indextype_sizeof(indextype), hipMemcpyDeviceToHost, stream));
+        start = u;
+        end   = v;
+        break;
+    }
+    }
+    nnz[0] = end - start;
+    return rocsparse_status_success;
 }
-
-
