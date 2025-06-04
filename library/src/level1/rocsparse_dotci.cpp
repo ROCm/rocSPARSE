@@ -23,8 +23,8 @@
  * ************************************************************************ */
 
 #include "internal/level1/rocsparse_dotci.h"
-#include "rocsparse_control.hpp"
 #include "dotci_device.h"
+#include "rocsparse_control.hpp"
 #include "rocsparse_dotci.hpp"
 #include "rocsparse_utility.hpp"
 

@@ -28,31 +28,29 @@
 template <>
 bool rocsparse::enum_utils::is_invalid(rocsparse_extract_stage value)
 {
-  switch(value)
+    switch(value)
     {
     case rocsparse_extract_stage_analysis:
     case rocsparse_extract_stage_compute:
-      {
-	return false;
-      }
+    {
+        return false;
     }
-  return true;
+    }
+    return true;
 }
 
-
-    template <>
-    bool rocsparse::enum_utils::is_invalid(rocsparse_extract_alg value)
+template <>
+bool rocsparse::enum_utils::is_invalid(rocsparse_extract_alg value)
+{
+    switch(value)
     {
-        switch(value)
-        {
-        case rocsparse_extract_alg_default:
-        {
-            return false;
-        }
-        }
-        return true;
+    case rocsparse_extract_alg_default:
+    {
+        return false;
     }
-
+    }
+    return true;
+}
 
 namespace rocsparse
 {

@@ -28,10 +28,10 @@
 #include "../conversion/rocsparse_csr2coo.hpp"
 #include "../conversion/rocsparse_identity.hpp"
 #include "../level1/rocsparse_gthr.hpp"
-#include "rocsparse_control.hpp"
 #include "csrsv_device.h"
 #include "rocsparse_assign_async.hpp"
 #include "rocsparse_common.h"
+#include "rocsparse_control.hpp"
 #include "rocsparse_primitives.hpp"
 #include "rocsparse_utility.hpp"
 
@@ -184,7 +184,7 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
 
     // Initialize zero pivot
     RETURN_IF_ROCSPARSE_ERROR(
-			rocsparse::assign_async(*zero_pivot, std::numeric_limits<J>::max(), stream));
+        rocsparse::assign_async(*zero_pivot, std::numeric_limits<J>::max(), stream));
 
     // Determine archid and ASIC revision
     const std::string gcn_arch_name = rocsparse::handle_get_arch_name(handle);

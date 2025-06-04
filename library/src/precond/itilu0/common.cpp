@@ -22,10 +22,10 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_common.hpp"
+#include "common.hpp"
 #include "../conversion/rocsparse_csxsldu.hpp"
 #include "../conversion/rocsparse_identity.hpp"
-#include "common.hpp"
+#include "rocsparse_common.hpp"
 #include "rocsparse_csritilu0_driver.hpp"
 #include "rocsparse_csritilu0x_buffer_size.hpp"
 #include "rocsparse_csritilu0x_compute.hpp"

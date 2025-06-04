@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2025 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -98,8 +98,8 @@ extern "C" {
 *    rocsparse_int n   = 6;
 *    rocsparse_int nnz = 12;
 *
-*    std::vector<rocsparse_int> hcsr_row_ptr = {0, 4, 6, 10, 12}; 
-*    std::vector<rocsparse_int> hcsr_col_ind = {0, 1, 2, 3, 0, 1, 0, 1, 2, 3, 0, 1}; 
+*    std::vector<rocsparse_int> hcsr_row_ptr = {0, 4, 6, 10, 12};
+*    std::vector<rocsparse_int> hcsr_col_ind = {0, 1, 2, 3, 0, 1, 0, 1, 2, 3, 0, 1};
 *    std::vector<float> hcsr_val     = {1, 2, 3, 4, 3, 4, 6, 5, 3, 4, 1, 2};
 *
 *    rocsparse_int* dcsr_row_ptr = nullptr;
@@ -161,7 +161,7 @@ extern "C" {
 *                       dcsr_row_ptr2,
 *                       dcsr_col_ind2,
 *                       temp_buffer);
-*    
+*
 *    rocsparse_destroy_handle(handle);
 *    rocsparse_destroy_mat_descr(descr);
 *    rocsparse_destroy_hyb_mat(hyb);

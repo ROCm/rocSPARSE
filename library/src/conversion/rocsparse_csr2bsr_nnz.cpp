@@ -22,9 +22,9 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_control.hpp"
 #include "internal/conversion/rocsparse_csr2bsr.h"
 #include "rocsparse_common.h"
+#include "rocsparse_control.hpp"
 #include "rocsparse_csr2bsr.hpp"
 #include "rocsparse_utility.hpp"
 

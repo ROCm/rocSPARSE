@@ -22,9 +22,9 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse_common.h"
 #include "rocsparse_common.hpp"
 #include "rocsparse_control.hpp"
-#include "rocsparse_common.h"
 #include "rocsparse_csrmv.hpp"
 #include "rocsparse_utility.hpp"
 

@@ -22,10 +22,10 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_control.hpp"
 #include "internal/level2/rocsparse_bsrsv.h"
 #include "rocsparse_assign_async.hpp"
 #include "rocsparse_bsrsv.hpp"
+#include "rocsparse_control.hpp"
 #include "rocsparse_utility.hpp"
 
 #include "bsrsv_device.h"
@@ -393,9 +393,10 @@ namespace rocsparse
         // If diag type is unit, re-initialize zero pivot to remove structural zeros
         if(descr->diag_type == rocsparse_diag_type_unit)
         {
-	  RETURN_IF_ROCSPARSE_ERROR(rocsparse::assign_async(reinterpret_cast<rocsparse_int*>(info->zero_pivot),
-							    std::numeric_limits<rocsparse_int>::max(),
-							    stream));
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse::assign_async(reinterpret_cast<rocsparse_int*>(info->zero_pivot),
+                                        std::numeric_limits<rocsparse_int>::max(),
+                                        stream));
         }
 
         // Pointers to differentiate between transpose mode

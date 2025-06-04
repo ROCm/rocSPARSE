@@ -20,9 +20,9 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+#include "rocsparse-types.h"
 #include "rocsparse_control.hpp"
 #include "rocsparse_handle.hpp"
-#include "rocsparse-types.h"
 #include "rocsparse_utility.hpp"
 
 #include "rocsparse_csr2ell.hpp"

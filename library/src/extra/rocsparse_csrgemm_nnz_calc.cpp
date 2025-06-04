@@ -24,8 +24,8 @@
 
 #include "rocsparse_csrgemm_nnz_calc.hpp"
 #include "../conversion/rocsparse_identity.hpp"
-#include "rocsparse_control.hpp"
 #include "csrgemm_device.h"
+#include "rocsparse_control.hpp"
 #include "rocsparse_csrgemm.hpp"
 #include "rocsparse_utility.hpp"
 

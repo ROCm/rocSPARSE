@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2025 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -77,7 +77,7 @@ extern "C" {
  *  @param[in]
  *  csr_col_ind_C array of \p nnz_C elements containing the column indices of the sparse CSR matrix \f$C\f$.
  *  @param[out]
- *  buffer_size   number of bytes of the temporary storage buffer required by 
+ *  buffer_size   number of bytes of the temporary storage buffer required by
  *                \ref rocsparse_sprune_csr2csr_nnz "rocsparse_Xprune_csr2csr_nnz()" and
  *                \ref rocsparse_sprune_csr2csr "rocsparse_Xprune_csr2csr()".
  *
@@ -161,7 +161,7 @@ rocsparse_status rocsparse_dprune_csr2csr_buffer_size(rocsparse_handle          
  *  @param[out]
  *  nnz_total_dev_host_ptr total number of nonzero elements in device or host memory.
  *  @param[out]
- *  temp_buffer            buffer allocated by the user whose size is determined by calling 
+ *  temp_buffer            buffer allocated by the user whose size is determined by calling
  *                         \ref rocsparse_sprune_csr2csr_buffer_size "rocsparse_Xprune_csr2csr_buffer_size()".
  *
  *  \retval     rocsparse_status_success the operation completed successfully.
@@ -211,15 +211,15 @@ rocsparse_status rocsparse_dprune_csr2csr_nnz(rocsparse_handle          handle,
  *  This function converts the sparse CSR matrix \f$A\f$ into a sparse CSR matrix \f$C\f$ by pruning values in \f$A\f$
  *  that are less than a threshold.
  *
- *  The conversion involves three steps. The user first calls 
- *  \ref rocsparse_sprune_csr2csr_buffer_size "rocsparse_Xprune_csr2csr_buffer_size()" 
- *  to determine the size of the temporary storage buffer. The user allocates this buffer as well as the array 
- *  \p csr_row_ptr_C to have \p m+1 elements. The user then calls 
+ *  The conversion involves three steps. The user first calls
+ *  \ref rocsparse_sprune_csr2csr_buffer_size "rocsparse_Xprune_csr2csr_buffer_size()"
+ *  to determine the size of the temporary storage buffer. The user allocates this buffer as well as the array
+ *  \p csr_row_ptr_C to have \p m+1 elements. The user then calls
  *  \ref rocsparse_sprune_csr2csr_nnz "rocsparse_Xprune_csr2csr_nnz()" which fills
  *  in the \p csr_row_ptr_C array and stores the number of elements that are larger than the pruning threshold
- *  in \p nnz_total_dev_host_ptr. Now that the number of nonzeros larger than the pruning threshold is known, the 
+ *  in \p nnz_total_dev_host_ptr. Now that the number of nonzeros larger than the pruning threshold is known, the
  *  user uses this information to allocate the \p csr_col_ind_C and \p csr_val_C arrays and then calls
- *  \p rocsparse_prune_csr2csr to complete the conversion. Once the conversion is complete, the temporary storage 
+ *  \p rocsparse_prune_csr2csr to complete the conversion. Once the conversion is complete, the temporary storage
  *  buffer can be freed.
  *
  *  \note
@@ -280,8 +280,8 @@ rocsparse_status rocsparse_dprune_csr2csr_nnz(rocsparse_handle          handle,
  *    rocsparse_int nnz_A = 11;
  *    float threshold = 5.0f;
  *
- *    std::vector<rocsparse_int> hcsr_row_ptr_A = {0, 2, 4, 7, 11}; 
- *    std::vector<rocsparse_int> hcsr_col_ind_A = {0, 1, 0, 3, 0, 1, 3, 0, 1, 2, 3}; 
+ *    std::vector<rocsparse_int> hcsr_row_ptr_A = {0, 2, 4, 7, 11};
+ *    std::vector<rocsparse_int> hcsr_col_ind_A = {0, 1, 0, 3, 0, 1, 3, 0, 1, 2, 3};
  *    std::vector<float> hcsr_val_A = {1, 2, 3, 4, 5, 6, 4, 7, 4, 2, 5};
  *
  *    rocsparse_int* dcsr_row_ptr_A = nullptr;
@@ -365,7 +365,7 @@ rocsparse_status rocsparse_dprune_csr2csr_nnz(rocsparse_handle          handle,
  *                             dcsr_row_ptr_C,
  *                             dcsr_col_ind_C,
  *                             temp_buffer);
- *  
+ *
  *    rocsparse_destroy_handle(handle);
  *    rocsparse_destroy_mat_descr(descr_A);
  *    rocsparse_destroy_mat_descr(descr_C);

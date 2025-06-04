@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2025 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -33,10 +33,10 @@ extern "C" {
 #endif
 /*! \ingroup conv_module
 *  \details
-*  This function takes a sparse ELL matrix as input and computes the row offset array, \p csr_row_ptr, 
-*  and the total number of nonzeros, \p csr_nnz, that will result from converting the ELL format input 
-*  matrix to a CSR format output matrix. This function is the first step in the conversion and is used in 
-*  conjunction with \ref rocsparse_sell2csr "rocsparse_Xell2csr()". It is assumed that \p csr_row_ptr has 
+*  This function takes a sparse ELL matrix as input and computes the row offset array, \p csr_row_ptr,
+*  and the total number of nonzeros, \p csr_nnz, that will result from converting the ELL format input
+*  matrix to a CSR format output matrix. This function is the first step in the conversion and is used in
+*  conjunction with \ref rocsparse_sell2csr "rocsparse_Xell2csr()". It is assumed that \p csr_row_ptr has
 *  been allocated with size \p m+1.
 *
 *  \note
@@ -94,8 +94,8 @@ rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle          handle,
 *  \details
 *  \p rocsparse_ell2csr converts a ELL matrix into a CSR matrix. It is assumed
 *  that \p csr_row_ptr has already been filled and that \p csr_val and \p csr_col_ind
-*  are allocated by the user. Allocation size for \p csr_row_ptr is computed as 
-*  \p m+1. Allocation size for \p csr_val and \p csr_col_ind is computed using 
+*  are allocated by the user. Allocation size for \p csr_row_ptr is computed as
+*  \p m+1. Allocation size for \p csr_val and \p csr_col_ind is computed using
 *  \ref rocsparse_ell2csr_nnz() which also fills in \p csr_row_ptr.
 *
 *  \note

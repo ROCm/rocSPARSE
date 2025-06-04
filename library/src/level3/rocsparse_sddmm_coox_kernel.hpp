@@ -21,10 +21,10 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse.h"
 #include "rocsparse_common.hpp"
 #include "rocsparse_control.hpp"
 #include "rocsparse_handle.hpp"
-#include "rocsparse.h"
 #include "rocsparse_sddmm.hpp"
 #include "rocsparse_utility.hpp"
 

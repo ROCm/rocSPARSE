@@ -23,9 +23,9 @@
  * ************************************************************************ */
 
 #include "../conversion/rocsparse_coo2csr.hpp"
-#include "rocsparse_control.hpp"
 #include "internal/level2/rocsparse_coomv.h"
 #include "rocsparse_common.h"
+#include "rocsparse_control.hpp"
 #include "rocsparse_coomv.hpp"
 #include "rocsparse_utility.hpp"
 

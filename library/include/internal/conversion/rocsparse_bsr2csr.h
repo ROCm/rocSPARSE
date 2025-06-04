@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2025 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -110,8 +110,8 @@ extern "C" {
 *
 *    std::vector<rocsparse_int> hbsr_row_ptr = {0, 2, 5};
 *    std::vector<rocsparse_int> hbsr_col_ind = {0, 1, 0, 1, 2};
-*    std::vector<float> hbsr_val = {1.0f, 0.0f, 4.0f, 2.0f, 
-*                                   2.0f, 3.0f, 1.0f, 5.0f, 
+*    std::vector<float> hbsr_val = {1.0f, 0.0f, 4.0f, 2.0f,
+*                                   2.0f, 3.0f, 1.0f, 5.0f,
 *                                   5.0f, 9.0f, 2.0f, 3.0f,
 *                                   2.0f, 9.0f, 7.0f, 1.0f,
 *                                   8.0f, 6.0f, 6.0f, 1.0f};

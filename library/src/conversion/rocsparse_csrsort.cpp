@@ -24,8 +24,8 @@
 #include "internal/conversion/rocsparse_csrsort.h"
 #include "rocsparse_utility.hpp"
 
-#include "rocsparse_control.hpp"
 #include "csrsort_device.h"
+#include "rocsparse_control.hpp"
 
 #include "rocsparse_primitives.hpp"
 

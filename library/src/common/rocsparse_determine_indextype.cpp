@@ -23,9 +23,9 @@
 #include "rocsparse_determine_indextype.hpp"
 #include "rocsparse_handle.hpp"
 
-rocsparse_indextype  rocsparse::determine_I_indextype(rocsparse_const_spmat_descr mat)
+rocsparse_indextype rocsparse::determine_I_indextype(rocsparse_const_spmat_descr mat)
 {
-  switch(mat->format)
+    switch(mat->format)
     {
     case rocsparse_format_coo:
     case rocsparse_format_coo_aos:
@@ -33,19 +33,19 @@ rocsparse_indextype  rocsparse::determine_I_indextype(rocsparse_const_spmat_desc
     case rocsparse_format_ell:
     case rocsparse_format_bell:
     case rocsparse_format_bsr:
-      {
-	return mat->row_type;
-      }
+    {
+        return mat->row_type;
+    }
     case rocsparse_format_csc:
-      {
-	return mat->col_type;
-      }
+    {
+        return mat->col_type;
+    }
     }
 }
 
-rocsparse_indextype  rocsparse::determine_J_indextype(rocsparse_const_spmat_descr mat)
+rocsparse_indextype rocsparse::determine_J_indextype(rocsparse_const_spmat_descr mat)
 {
-  switch(mat->format)
+    switch(mat->format)
     {
     case rocsparse_format_coo:
     case rocsparse_format_coo_aos:
@@ -53,12 +53,12 @@ rocsparse_indextype  rocsparse::determine_J_indextype(rocsparse_const_spmat_desc
     case rocsparse_format_ell:
     case rocsparse_format_bell:
     case rocsparse_format_bsr:
-      {
-	return mat->col_type;
-      }
+    {
+        return mat->col_type;
+    }
     case rocsparse_format_csc:
-      {
-	return mat->row_type;
-      }
+    {
+        return mat->row_type;
+    }
     }
 }

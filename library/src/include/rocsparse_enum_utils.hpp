@@ -26,16 +26,16 @@
 
 namespace rocsparse
 {
-  //
-  // Provide some utility methods for enums.
-  //
-  struct enum_utils
-  {
-    template <typename U>
-    static bool is_invalid(U value_);
+    //
+    // Provide some utility methods for enums.
+    //
+    struct enum_utils
+    {
+        template <typename U>
+        static bool is_invalid(U value_);
 
-    template <typename U>
-    static const char* to_string(U value_);
-  };
+        template <typename U>
+        static const char* to_string(U value_);
+    };
 
 }
