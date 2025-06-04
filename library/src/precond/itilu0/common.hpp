@@ -28,6 +28,7 @@
 
 namespace rocsparse
 {
+
     template <uint32_t BLOCKSIZE, typename T, typename I>
     void set_identity_array(rocsparse_handle handle_, I size_, T* x_);
     template <uint32_t BLOCKSIZE, typename T, typename I>

@@ -23,9 +23,11 @@
 
 # rocSPARSE source
 set(rocsparse_source
+
 # Auxiliary
   src/auxiliary/handle.cpp
   src/auxiliary/rocsparse_auxiliary.cpp
+  src/auxiliary/rocsparse_error.cpp
 
 # Common
   src/common/rocsparse_common.cpp
@@ -41,6 +43,7 @@ set(rocsparse_source
   src/common/rocsparse_argdescr.cpp
   src/common/rocsparse_message.cpp
   src/common/rocsparse_determine_indextype.cpp
+
 
 # Primitives
   src/primitives/rocsparse_radix_sort_pairs.cpp
