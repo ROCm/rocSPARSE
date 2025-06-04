@@ -25,6 +25,7 @@
 #include "../csrmm_common.h"
 #include "rocsparse_scalar.hpp"
 
+
 namespace rocsparse
 {
 

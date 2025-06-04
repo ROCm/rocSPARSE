@@ -23,8 +23,8 @@
  * ************************************************************************ */
 
 #include "internal/level1/rocsparse_doti.h"
-#include "doti_device.h"
 #include "rocsparse_control.hpp"
+#include "doti_device.h"
 #include "rocsparse_doti.hpp"
 #include "rocsparse_utility.hpp"
 

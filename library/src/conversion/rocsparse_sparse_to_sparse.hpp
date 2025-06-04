@@ -21,8 +21,8 @@
  *
  * ************************************************************************ */
 #pragma once
-#include "internal/generic/rocsparse_sparse_to_sparse.h"
 #include "rocsparse_control.hpp"
+#include "internal/generic/rocsparse_sparse_to_sparse.h"
 
 struct _rocsparse_sparse_to_sparse_descr
 {

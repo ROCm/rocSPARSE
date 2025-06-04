@@ -23,8 +23,8 @@
  * ************************************************************************ */
 
 #include "internal/conversion/rocsparse_hyb2csr.h"
-#include "internal/conversion/rocsparse_coo2csr.h"
 #include "rocsparse_control.hpp"
+#include "internal/conversion/rocsparse_coo2csr.h"
 #include "rocsparse_hyb2csr.hpp"
 #include "rocsparse_utility.hpp"
 

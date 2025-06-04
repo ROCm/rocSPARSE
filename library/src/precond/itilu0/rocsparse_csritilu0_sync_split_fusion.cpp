@@ -42,8 +42,8 @@ struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
                                     void*                buffer_)
         {
             RETURN_IF_ROCSPARSE_ERROR(
-                (rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split>::history<T, J>::run(
-                    handle_, alg_, niter_, data_, buffer_size_, buffer_)));
+                (rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split>::
+                     history<T, J>::run(handle_, alg_, niter_, data_, buffer_size_, buffer_)));
             return rocsparse_status_success;
         }
     };
@@ -69,16 +69,16 @@ struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             RETURN_IF_ROCSPARSE_ERROR(
                 (rocsparse::csritilu0_driver_t<
                     rocsparse_itilu0_alg_sync_split>::buffer_size<I, J>::run(handle_,
-                                                                             alg_,
-                                                                             options_,
-                                                                             nsweeps_,
-                                                                             m_,
-                                                                             nnz_,
-                                                                             ptr_,
-                                                                             ind_,
-                                                                             base_,
-                                                                             datatype_,
-                                                                             buffer_size_)));
+                                                                                    alg_,
+                                                                                    options_,
+                                                                                    nsweeps_,
+                                                                                    m_,
+                                                                                    nnz_,
+                                                                                    ptr_,
+                                                                                    ind_,
+                                                                                    base_,
+                                                                                    datatype_,
+                                                                                    buffer_size_)));
             return rocsparse_status_success;
         }
     };
@@ -106,17 +106,17 @@ struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             RETURN_IF_ROCSPARSE_ERROR(
                 (rocsparse::csritilu0_driver_t<
                     rocsparse_itilu0_alg_sync_split>::preprocess<I, J>::run(handle_,
-                                                                            alg_,
-                                                                            options_,
-                                                                            nsweeps_,
-                                                                            m_,
-                                                                            nnz_,
-                                                                            ptr_,
-                                                                            ind_,
-                                                                            base_,
-                                                                            datatype_,
-                                                                            buffer_size_,
-                                                                            buffer_)));
+                                                                                   alg_,
+                                                                                   options_,
+                                                                                   nsweeps_,
+                                                                                   m_,
+                                                                                   nnz_,
+                                                                                   ptr_,
+                                                                                   ind_,
+                                                                                   base_,
+                                                                                   datatype_,
+                                                                                   buffer_size_,
+                                                                                   buffer_)));
             return rocsparse_status_success;
         }
     };
@@ -146,28 +146,27 @@ struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>
             RETURN_IF_ROCSPARSE_ERROR(
                 (rocsparse::csritilu0_driver_t<
                     rocsparse_itilu0_alg_sync_split>::compute<T, I, J>::run(handle_,
-                                                                            alg_,
-                                                                            options_,
-                                                                            nsweeps_,
-                                                                            nfreeiter_,
-                                                                            tol_,
-                                                                            m_,
-                                                                            nnz_,
-                                                                            ptr_,
-                                                                            ind_,
-                                                                            val_,
-                                                                            x_,
-                                                                            base_,
-                                                                            buffer_size_,
-                                                                            buffer_)));
+                                                                                   alg_,
+                                                                                   options_,
+                                                                                   nsweeps_,
+                                                                                   nfreeiter_,
+                                                                                   tol_,
+                                                                                   m_,
+                                                                                   nnz_,
+                                                                                   ptr_,
+                                                                                   ind_,
+                                                                                   val_,
+                                                                                   x_,
+                                                                                   base_,
+                                                                                   buffer_size_,
+                                                                                   buffer_)));
             return rocsparse_status_success;
         }
     };
 };
 
-#define INSTANTIATE(T, I, J)                       \
-    template struct rocsparse::csritilu0_driver_t< \
-        rocsparse_itilu0_alg_sync_split_fusion>::compute<T, I, J>
+#define INSTANTIATE(T, I, J) \
+    template struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::compute<T, I, J>
 
 INSTANTIATE(float, rocsparse_int, rocsparse_int);
 INSTANTIATE(double, rocsparse_int, rocsparse_int);
@@ -176,20 +175,19 @@ INSTANTIATE(rocsparse_double_complex, rocsparse_int, rocsparse_int);
 
 #undef INSTANTIATE
 
-#define INSTANTIATE(T, J)                          \
-    template struct rocsparse::csritilu0_driver_t< \
-        rocsparse_itilu0_alg_sync_split_fusion>::history<T, J>
+#define INSTANTIATE(T, J) \
+    template struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::history<T, J>
 
 INSTANTIATE(float, rocsparse_int);
 INSTANTIATE(double, rocsparse_int);
 
 #undef INSTANTIATE
 
-#define INSTANTIATE(I, J)                                           \
-    template struct rocsparse::csritilu0_driver_t<                  \
-        rocsparse_itilu0_alg_sync_split_fusion>::buffer_size<I, J>; \
-    template struct rocsparse::csritilu0_driver_t<                  \
-        rocsparse_itilu0_alg_sync_split_fusion>::preprocess<I, J>;
+#define INSTANTIATE(I, J)                                                                         \
+    template struct rocsparse::csritilu0_driver_t<                                                \
+        rocsparse_itilu0_alg_sync_split_fusion>::buffer_size<I, J>;                                      \
+    template struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::preprocess<I, \
+                                                                                               J>;
 
 INSTANTIATE(rocsparse_int, rocsparse_int);
 

@@ -25,14 +25,14 @@
 #pragma once
 
 #include "rocsparse_control.hpp"
+#include "rocsparse_handle.hpp"
+#include "rocsparse_logging.hpp"
+#include "rocsparse_scalar.hpp"
+#include "rocsparse_indextype_utils.hpp"
 #include "rocsparse_datatype_utils.hpp"
 #include "rocsparse_enum_utils.hpp"
 #include "rocsparse_floating_data_t.hpp"
-#include "rocsparse_handle.hpp"
-#include "rocsparse_indextype_utils.hpp"
-#include "rocsparse_logging.hpp"
 #include "rocsparse_memstat.hpp"
-#include "rocsparse_scalar.hpp"
 
 namespace rocsparse
 {

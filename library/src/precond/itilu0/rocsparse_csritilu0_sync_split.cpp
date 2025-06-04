@@ -24,8 +24,8 @@
 
 #include "../conversion/rocsparse_csxsldu.hpp"
 #include "../conversion/rocsparse_identity.hpp"
-#include "common.hpp"
 #include "rocsparse_common.hpp"
+#include "common.hpp"
 #include "rocsparse_csritilu0_driver.hpp"
 #include "rocsparse_csritilu0x_buffer_size.hpp"
 #include "rocsparse_csritilu0x_compute.hpp"
@@ -485,8 +485,9 @@ struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split>
     };
 };
 
-#define INSTANTIATE(T, I, J) \
-    template struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split>::compute<T, I, J>
+#define INSTANTIATE(T, I, J)                       \
+    template struct rocsparse::csritilu0_driver_t< \
+        rocsparse_itilu0_alg_sync_split>::compute<T, I, J>
 
 INSTANTIATE(float, rocsparse_int, rocsparse_int);
 INSTANTIATE(double, rocsparse_int, rocsparse_int);
@@ -495,19 +496,20 @@ INSTANTIATE(rocsparse_double_complex, rocsparse_int, rocsparse_int);
 
 #undef INSTANTIATE
 
-#define INSTANTIATE(T, J) \
-    template struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split>::history<T, J>
+#define INSTANTIATE(T, J)                          \
+    template struct rocsparse::csritilu0_driver_t< \
+        rocsparse_itilu0_alg_sync_split>::history<T, J>
 
 INSTANTIATE(float, rocsparse_int);
 INSTANTIATE(double, rocsparse_int);
 
 #undef INSTANTIATE
 
-#define INSTANTIATE(I, J)                                                                         \
-    template struct rocsparse::csritilu0_driver_t<                                                \
-        rocsparse_itilu0_alg_sync_split>::buffer_size<I, J>;                                      \
-    template struct rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split>::preprocess<I, \
-                                                                                               J>;
+#define INSTANTIATE(I, J)                                           \
+    template struct rocsparse::csritilu0_driver_t<                  \
+        rocsparse_itilu0_alg_sync_split>::buffer_size<I, J>; \
+    template struct rocsparse::csritilu0_driver_t<                  \
+        rocsparse_itilu0_alg_sync_split>::preprocess<I, J>;
 
 INSTANTIATE(rocsparse_int, rocsparse_int);
 

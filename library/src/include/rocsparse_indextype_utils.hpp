@@ -28,29 +28,30 @@
 
 namespace rocsparse
 {
-    template <rocsparse_indextype v>
-    struct indextype_traits;
+  template <rocsparse_indextype v>
+  struct indextype_traits;
 
-    template <>
-    struct indextype_traits<rocsparse_indextype_u16>
-    {
-        using type_t = uint16_t;
-    };
+  template <>
+  struct indextype_traits<rocsparse_indextype_u16>
+  {
+    using type_t = uint16_t;
+  };
 
-    template <>
-    struct indextype_traits<rocsparse_indextype_i32>
-    {
-        using type_t = int32_t;
-    };
+  template <>
+  struct indextype_traits<rocsparse_indextype_i32>
+  {
+    using type_t = int32_t;
+  };
 
-    template <>
-    struct indextype_traits<rocsparse_indextype_i64>
-    {
-        using type_t = int64_t;
-    };
+  template <>
+  struct indextype_traits<rocsparse_indextype_i64>
+  {
+    using type_t = int64_t;
+  };
 
-    template <typename T>
-    rocsparse_indextype get_indextype();
 
-    size_t indextype_sizeof(rocsparse_indextype that);
+  template <typename T>
+  rocsparse_indextype get_indextype();
+
+  size_t indextype_sizeof(rocsparse_indextype that);
 }

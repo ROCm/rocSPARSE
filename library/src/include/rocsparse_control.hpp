@@ -41,9 +41,10 @@
 #define ROCSPARSE_COV_EXCL_START (void)("LCOV_EXCL_START")
 #define ROCSPARSE_COV_EXCL_STOP (void)("LCOV_EXCL_STOP")
 
+
 namespace rocsparse
 {
-    rocsparse_status exception_to_rocsparse_status(std::exception_ptr e = std::current_exception());
+  rocsparse_status exception_to_rocsparse_status(std::exception_ptr e = std::current_exception());
     /*******************************************************************************
  * \brief convert hipError_t to rocsparse_status
  ******************************************************************************/
@@ -240,6 +241,7 @@ namespace rocsparse
             throw TMP_STATUS_FOR_CHECK;                                         \
         }                                                                       \
     } while(false)
+
 
 //
 //

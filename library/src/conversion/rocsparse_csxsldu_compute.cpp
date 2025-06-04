@@ -22,10 +22,10 @@
  *
  * ************************************************************************ */
 
-#include "internal/conversion/rocsparse_csr2csc.h"
-#include "rocsparse_common.h"
 #include "rocsparse_common.hpp"
 #include "rocsparse_control.hpp"
+#include "internal/conversion/rocsparse_csr2csc.h"
+#include "rocsparse_common.h"
 #include "rocsparse_csr2csc.hpp"
 #include "rocsparse_csxsldu.hpp"
 #include "rocsparse_utility.hpp"

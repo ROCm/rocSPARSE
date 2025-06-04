@@ -26,10 +26,10 @@
 #include "rocsparse_csrmv.hpp"
 #include "rocsparse_gebsrmv.hpp"
 
-#include "gebsrmv_device.h"
-#include "rocsparse_common.h"
 #include "rocsparse_control.hpp"
+#include "gebsrmv_device.h"
 #include "rocsparse_handle.hpp"
+#include "rocsparse_common.h"
 #include "rocsparse_utility.hpp"
 
 #include <hip/hip_runtime.h>

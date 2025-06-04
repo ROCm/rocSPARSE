@@ -22,10 +22,10 @@
  *
  * ************************************************************************ */
 
-#include "internal/level2/rocsparse_csrmv.h"
-#include "rocsparse_common.h"
 #include "rocsparse_common.hpp"
 #include "rocsparse_control.hpp"
+#include "internal/level2/rocsparse_csrmv.h"
+#include "rocsparse_common.h"
 #include "rocsparse_utility.hpp"
 
 #include "rocsparse_csrmv.hpp"

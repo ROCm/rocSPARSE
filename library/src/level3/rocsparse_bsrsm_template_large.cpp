@@ -24,9 +24,9 @@
 
 #include "bsrsm_device.h"
 #include "bsrsm_device_large.h"
+#include "rocsparse_control.hpp"
 #include "rocsparse_bsrsm.hpp"
 #include "rocsparse_common.h"
-#include "rocsparse_control.hpp"
 #include "rocsparse_utility.hpp"
 
 namespace rocsparse

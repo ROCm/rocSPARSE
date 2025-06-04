@@ -24,10 +24,10 @@
 #include "internal/level3/rocsparse_csrsm.h"
 #include "rocsparse_csrsm.hpp"
 
-#include "rocsparse_assign_async.hpp"
-#include "rocsparse_common.h"
 #include "rocsparse_common.hpp"
 #include "rocsparse_control.hpp"
+#include "rocsparse_assign_async.hpp"
+#include "rocsparse_common.h"
 #include "rocsparse_utility.hpp"
 
 #include "../level1/rocsparse_gthr.hpp"
@@ -150,8 +150,7 @@ namespace rocsparse
         // If diag type is unit, re-initialize zero pivot to remove structural zeros
         if(descr->diag_type == rocsparse_diag_type_unit)
         {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse::assign_async(
-                reinterpret_cast<J*>(info->zero_pivot), std::numeric_limits<J>::max(), stream));
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse::assign_async(reinterpret_cast<J*>(info->zero_pivot), std::numeric_limits<J>::max(), stream));
         }
 
         // Leading dimension

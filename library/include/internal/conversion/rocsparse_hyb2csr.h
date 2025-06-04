@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023-2025 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -35,7 +35,7 @@ extern "C" {
 /*! \ingroup conv_module
 *  \details
 *  \p rocsparse_hyb2csr_buffer_size returns the size of the temporary storage buffer
-*  required by \ref rocsparse_shyb2csr "rocsparse_Xhyb2csr()". The temporary storage
+*  required by \ref rocsparse_shyb2csr "rocsparse_Xhyb2csr()". The temporary storage 
 *  buffer must be allocated by the user.
 *
 *  \note
@@ -78,13 +78,13 @@ rocsparse_status rocsparse_hyb2csr_buffer_size(rocsparse_handle          handle,
 *  \brief Convert a sparse HYB matrix into a sparse CSR matrix
 *
 *  \details
-*  \p rocsparse_hyb2csr converts a HYB matrix into a CSR matrix. This requires a HYB input structure,
-*  \ref rocsparse_hyb_mat, which is created using \ref rocsparse_create_hyb_mat and is filled with data
+*  \p rocsparse_hyb2csr converts a HYB matrix into a CSR matrix. This requires a HYB input structure, 
+*  \ref rocsparse_hyb_mat, which is created using \ref rocsparse_create_hyb_mat and is filled with data 
 *  using the conversion routine \ref rocsparse_scsr2hyb "rocsparse_Xcsr2hyb()".
 *
-*  Converting back to a sparse CSR matrix from a sparse HYB matrix requires two steps. First, the user calls
-*  \ref rocsparse_hyb2csr_buffer_size in order to determine the size of the required temporary
-*  storage buffer. Once this is determined, the user allocates this buffer. Finally, the user calls
+*  Converting back to a sparse CSR matrix from a sparse HYB matrix requires two steps. First, the user calls 
+*  \ref rocsparse_hyb2csr_buffer_size in order to determine the size of the required temporary 
+*  storage buffer. Once this is determined, the user allocates this buffer. Finally, the user calls 
 *  \ref rocsparse_shyb2csr "rocsparse_Xhyb2csr()" to complete the conversion.
 *
 *  \note
@@ -131,8 +131,8 @@ rocsparse_status rocsparse_hyb2csr_buffer_size(rocsparse_handle          handle,
 *    rocsparse_int n   = 6;
 *    rocsparse_int nnz = 12;
 *
-*    std::vector<rocsparse_int> hcsr_row_ptr = {0, 4, 6, 10, 12};
-*    std::vector<rocsparse_int> hcsr_col_ind = {0, 1, 2, 3, 0, 1, 0, 1, 2, 3, 0, 1};
+*    std::vector<rocsparse_int> hcsr_row_ptr = {0, 4, 6, 10, 12}; 
+*    std::vector<rocsparse_int> hcsr_col_ind = {0, 1, 2, 3, 0, 1, 0, 1, 2, 3, 0, 1}; 
 *    std::vector<float> hcsr_val     = {1, 2, 3, 4, 3, 4, 6, 5, 3, 4, 1, 2};
 *
 *    rocsparse_int* dcsr_row_ptr = nullptr;
@@ -194,7 +194,7 @@ rocsparse_status rocsparse_hyb2csr_buffer_size(rocsparse_handle          handle,
 *                       dcsr_row_ptr2,
 *                       dcsr_col_ind2,
 *                       temp_buffer);
-*
+*    
 *    rocsparse_destroy_handle(handle);
 *    rocsparse_destroy_mat_descr(descr);
 *    rocsparse_destroy_hyb_mat(hyb);

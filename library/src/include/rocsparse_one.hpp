@@ -28,8 +28,8 @@
 
 namespace rocsparse
 {
-    void one(const rocsparse_handle handle, float** one);
-    void one(const rocsparse_handle handle, double** one);
-    void one(const rocsparse_handle handle, rocsparse_float_complex** one);
-    void one(const rocsparse_handle handle, rocsparse_double_complex** one);
+  void one(const rocsparse_handle handle, float** one);
+  void one(const rocsparse_handle handle, double** one);
+  void one(const rocsparse_handle handle, rocsparse_float_complex** one);
+  void one(const rocsparse_handle handle, rocsparse_double_complex** one);
 }

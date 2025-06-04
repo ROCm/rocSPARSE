@@ -23,11 +23,11 @@
  * ************************************************************************ */
 
 #include "internal/conversion/rocsparse_gebsr2gebsc.h"
+#include "rocsparse_common.hpp"
+#include "rocsparse_control.hpp"
 #include "internal/conversion/rocsparse_coo2csr.h"
 #include "internal/conversion/rocsparse_csr2coo.h"
 #include "internal/conversion/rocsparse_inverse_permutation.h"
-#include "rocsparse_common.hpp"
-#include "rocsparse_control.hpp"
 #include "rocsparse_gebsr2gebsc.hpp"
 #include "rocsparse_utility.hpp"
 

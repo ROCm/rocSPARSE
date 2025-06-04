@@ -23,8 +23,8 @@
  * ************************************************************************ */
 
 #include "rocsparse_csr2ell_strided_batched.hpp"
-#include "internal/conversion/rocsparse_csr2ell.h"
 #include "rocsparse_control.hpp"
+#include "internal/conversion/rocsparse_csr2ell.h"
 #include "rocsparse_csr2ell.hpp"
 #include "rocsparse_utility.hpp"
 

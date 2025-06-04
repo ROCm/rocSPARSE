@@ -20,25 +20,27 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#include "rocsparse_one.hpp"
 #include "rocsparse_handle.hpp"
+#include "rocsparse_one.hpp"
+
+
 
 void rocsparse::one(const rocsparse_handle handle, float** one)
 {
-    *one = (float*)handle->sone;
+  *one = (float*)handle->sone;
 }
 
-void rocsparse::one(const rocsparse_handle handle, double** one)
+void  rocsparse::one(const rocsparse_handle handle, double** one)
 {
-    *one = (double*)handle->done;
+  *one = (double*)handle->done;
 }
 
-void rocsparse::one(const rocsparse_handle handle, rocsparse_float_complex** one)
+void  rocsparse::one(const rocsparse_handle handle, rocsparse_float_complex** one)
 {
-    *one = (rocsparse_float_complex*)handle->sone;
+  *one = (rocsparse_float_complex*)handle->sone;
 }
 
-void rocsparse::one(const rocsparse_handle handle, rocsparse_double_complex** one)
+void  rocsparse::one(const rocsparse_handle handle, rocsparse_double_complex** one)
 {
-    *one = (rocsparse_double_complex*)handle->done;
+  *one = (rocsparse_double_complex*)handle->done;
 }

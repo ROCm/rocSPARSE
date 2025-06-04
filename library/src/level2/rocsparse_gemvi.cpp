@@ -26,8 +26,8 @@
 #include "rocsparse_common.h"
 #include "rocsparse_gemvi.hpp"
 
-#include "gemvi_device.h"
 #include "rocsparse_control.hpp"
+#include "gemvi_device.h"
 #include "rocsparse_utility.hpp"
 
 namespace rocsparse

@@ -28,8 +28,8 @@
 #include "internal/level2/rocsparse_csrsv.h"
 
 #include "../level2/rocsparse_csrsv.hpp"
-#include "csric0_device.h"
 #include "rocsparse_control.hpp"
+#include "csric0_device.h"
 #include "rocsparse_utility.hpp"
 
 template <typename T>

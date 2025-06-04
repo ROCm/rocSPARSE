@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023-2025 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -39,7 +39,7 @@ extern "C" {
 *  \p rocsparse_csr2coo converts the CSR array containing the row offsets, that point
 *  to the start of every row, into a COO array of row indices.
 *
-*  \p rocsparse_csr2coo can also be used to convert a CSC array containing the column offsets
+*  \p rocsparse_csr2coo can also be used to convert a CSC array containing the column offsets 
 *  into a COO array of column indices.
 *
 *  \note

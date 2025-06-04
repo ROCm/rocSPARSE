@@ -28,8 +28,8 @@
 #include "rocsparse_common.h"
 #include "rocsparse_coo2dense.hpp"
 
-#include "coo2dense_device.h"
 #include "rocsparse_common.hpp"
+#include "coo2dense_device.h"
 
 template <typename I, typename T>
 rocsparse_status rocsparse::coo2dense_template(rocsparse_handle          handle, //0

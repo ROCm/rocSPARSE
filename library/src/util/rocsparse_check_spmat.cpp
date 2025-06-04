@@ -33,24 +33,24 @@
 #include "rocsparse_check_matrix_gebsr.hpp"
 #include "rocsparse_determine_indextype.hpp"
 
+
+
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_check_spmat_stage value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_check_spmat_stage_buffer_size);
-        CASE(rocsparse_check_spmat_stage_compute);
+      CASE(rocsparse_check_spmat_stage_buffer_size);
+      CASE(rocsparse_check_spmat_stage_compute);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
-template <>
+template<>
 const char* rocsparse::enum_utils::to_string(rocsparse_data_status data_status)
 {
     switch(data_status)
@@ -78,18 +78,18 @@ const char* rocsparse::enum_utils::to_string(rocsparse_data_status data_status)
 }
 
 template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_check_spmat_stage value_)
-{
-    switch(value_)
+    bool rocsparse::enum_utils::is_invalid(rocsparse_check_spmat_stage value_)
     {
-    case rocsparse_check_spmat_stage_buffer_size:
-    case rocsparse_check_spmat_stage_compute:
-    {
-        return false;
+        switch(value_)
+        {
+        case rocsparse_check_spmat_stage_buffer_size:
+        case rocsparse_check_spmat_stage_compute:
+        {
+            return false;
+        }
+        }
+        return true;
     }
-    }
-    return true;
-}
 
 namespace rocsparse
 {

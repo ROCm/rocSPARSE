@@ -23,9 +23,9 @@
  * ************************************************************************ */
 
 #include "internal/generic/rocsparse_axpby.h"
+#include "rocsparse_control.hpp"
 #include "rocsparse_axpyi.hpp"
 #include "rocsparse_common.h"
-#include "rocsparse_control.hpp"
 #include "rocsparse_utility.hpp"
 
 namespace rocsparse

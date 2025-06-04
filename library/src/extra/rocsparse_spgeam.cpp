@@ -85,142 +85,140 @@ rocsparse_status
     ROCSPARSE_ROUTINE_TRACE;
 
     if(this->csr_row_ptr_C != nullptr)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::convert_array(handle,
-                                                           m + 1,
-                                                           csr_row_ptr_C_indextype,
-                                                           csr_row_ptr_C,
-                                                           descr_C->base,
-                                                           this->indextype,
-                                                           this->csr_row_ptr_C,
-                                                           rocsparse_index_base_zero));
-        return rocsparse_status_success;
+      {
+      RETURN_IF_ROCSPARSE_ERROR(rocsparse::convert_array(handle,
+							 m + 1,
+							 csr_row_ptr_C_indextype,
+							 csr_row_ptr_C,
+							 descr_C->base,
+							 this->indextype,
+							 this->csr_row_ptr_C,
+							 rocsparse_index_base_zero));
+      return rocsparse_status_success;
     }
 
     return rocsparse_status_success;
 }
 
+
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_spgeam_alg value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_spgeam_alg_default);
+      CASE(rocsparse_spgeam_alg_default);
 #undef CASE
     }
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_spgeam_stage value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_spgeam_stage_analysis);
-        CASE(rocsparse_spgeam_stage_compute);
-        CASE(rocsparse_spgeam_stage_symbolic);
-        CASE(rocsparse_spgeam_stage_numeric);
+      CASE(rocsparse_spgeam_stage_analysis);
+      CASE(rocsparse_spgeam_stage_compute);
+      CASE(rocsparse_spgeam_stage_symbolic);
+      CASE(rocsparse_spgeam_stage_numeric);
 #undef CASE
     }
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_spgeam_input value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_spgeam_input_alg);
-        CASE(rocsparse_spgeam_input_scalar_datatype);
-        CASE(rocsparse_spgeam_input_compute_datatype);
-        CASE(rocsparse_spgeam_input_operation_A);
-        CASE(rocsparse_spgeam_input_operation_B);
+      CASE(rocsparse_spgeam_input_alg);
+      CASE(rocsparse_spgeam_input_scalar_datatype);
+      CASE(rocsparse_spgeam_input_compute_datatype);
+      CASE(rocsparse_spgeam_input_operation_A);
+      CASE(rocsparse_spgeam_input_operation_B);
 #undef CASE
     }
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_spgeam_output value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_spgeam_output_nnz);
+      CASE(rocsparse_spgeam_output_nnz);
 #undef CASE
     }
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
 }
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_spgeam_alg value_)
-{
-    switch(value_)
-    {
-    case rocsparse_spgeam_alg_default:
-    {
-        return false;
-    }
-    }
-    return true;
-}
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_spgeam_stage value_)
-{
-    switch(value_)
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_spgeam_alg value_)
     {
-    case rocsparse_spgeam_stage_analysis:
-    case rocsparse_spgeam_stage_compute:
-    case rocsparse_spgeam_stage_symbolic:
-    case rocsparse_spgeam_stage_numeric:
-    {
-        return false;
+        switch(value_)
+        {
+        case rocsparse_spgeam_alg_default:
+        {
+            return false;
+        }
+        }
+        return true;
     }
-    }
-    return true;
-}
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_spgeam_input value_)
-{
-    switch(value_)
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_spgeam_stage value_)
     {
-    case rocsparse_spgeam_input_alg:
-    case rocsparse_spgeam_input_scalar_datatype:
-    case rocsparse_spgeam_input_compute_datatype:
-    case rocsparse_spgeam_input_operation_A:
-    case rocsparse_spgeam_input_operation_B:
-    {
-        return false;
+        switch(value_)
+        {
+        case rocsparse_spgeam_stage_analysis:
+        case rocsparse_spgeam_stage_compute:
+        case rocsparse_spgeam_stage_symbolic:
+        case rocsparse_spgeam_stage_numeric:
+        {
+            return false;
+        }
+        }
+        return true;
     }
-    }
-    return true;
-}
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_spgeam_output value_)
-{
-    switch(value_)
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_spgeam_input value_)
     {
-    case rocsparse_spgeam_output_nnz:
+        switch(value_)
+        {
+        case rocsparse_spgeam_input_alg:
+        case rocsparse_spgeam_input_scalar_datatype:
+        case rocsparse_spgeam_input_compute_datatype:
+        case rocsparse_spgeam_input_operation_A:
+        case rocsparse_spgeam_input_operation_B:
+        {
+            return false;
+        }
+        }
+        return true;
+    }
+
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_spgeam_output value_)
     {
-        return false;
+        switch(value_)
+        {
+        case rocsparse_spgeam_output_nnz:
+        {
+            return false;
+        }
+        }
+        return true;
     }
-    }
-    return true;
-}
+
+
+
+
 
 namespace rocsparse
 {

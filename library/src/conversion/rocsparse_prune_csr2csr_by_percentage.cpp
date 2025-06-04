@@ -23,8 +23,8 @@
  * ************************************************************************ */
 
 #include "internal/conversion/rocsparse_prune_csr2csr_by_percentage.h"
-#include "rocsparse_calculate_nnz.hpp"
 #include "rocsparse_control.hpp"
+#include "rocsparse_calculate_nnz.hpp"
 #include "rocsparse_nnz_compress.hpp"
 #include "rocsparse_prune_csr2csr_by_percentage.hpp"
 #include "rocsparse_utility.hpp"

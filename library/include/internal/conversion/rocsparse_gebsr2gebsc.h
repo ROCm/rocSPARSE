@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023-2025 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -35,7 +35,7 @@ extern "C" {
 /*! \ingroup conv_module
 *  \details
 *  \p rocsparse_gebsr2gebsc_buffer_size returns the size of the temporary storage buffer
-*  required by \ref rocsparse_sgebsr2gebsc "rocsparse_Xgebsr2gebsc()".
+*  required by \ref rocsparse_sgebsr2gebsc "rocsparse_Xgebsr2gebsc()". 
 *  The temporary storage buffer must be allocated by the user.
 *
 *  \note
@@ -130,19 +130,19 @@ rocsparse_status rocsparse_zgebsr2gebsc_buffer_size(rocsparse_handle            
 *  \brief Convert a sparse GEneral BSR matrix into a sparse GEneral BSC matrix
 *
 *  \details
-*  \p rocsparse_gebsr2gebsc converts a GEneral BSR matrix into a GEneral BSC matrix. The resulting
-*  matrix can also be seen as the transpose of the input matrix. \p rocsparse_gebsr2gebsc can also
-*  be used to convert a GEneral BSC matrix into a GEneral BSR matrix.
+*  \p rocsparse_gebsr2gebsc converts a GEneral BSR matrix into a GEneral BSC matrix. The resulting 
+*  matrix can also be seen as the transpose of the input matrix. \p rocsparse_gebsr2gebsc can also 
+*  be used to convert a GEneral BSC matrix into a GEneral BSR matrix. 
 *
-*  The conversion of a sparse matrix from GEneral BSR to GEneral BSC format involves two steps. First, the
-*  user calls \ref rocsparse_sgebsr2gebsc_buffer_size "rocsparse_Xgebsr2gebsc_buffer_size()" in order to
-*  determine the size of the required tempory storage buffer. The user then allocates this buffer. Secondly,
-*  the user calls \p rocsparse_gebsr2gebsc to complete the conversion. Once the conversion is complete, the
+*  The conversion of a sparse matrix from GEneral BSR to GEneral BSC format involves two steps. First, the 
+*  user calls \ref rocsparse_sgebsr2gebsc_buffer_size "rocsparse_Xgebsr2gebsc_buffer_size()" in order to 
+*  determine the size of the required tempory storage buffer. The user then allocates this buffer. Secondly, 
+*  the user calls \p rocsparse_gebsr2gebsc to complete the conversion. Once the conversion is complete, the 
 *  user must free the temporary buffer.
 *
-*  \p rocsparse_gebsr2gebsc takes a \ref rocsparse_action parameter as input. This \p copy_values parameter
-*  decides whether \p bsc_row_ind and \p bsc_val are filled during conversion (\ref rocsparse_action_numeric)
-*  or whether only \p bsc_row_ind is filled (\ref rocsparse_action_symbolic). Using
+*  \p rocsparse_gebsr2gebsc takes a \ref rocsparse_action parameter as input. This \p copy_values parameter 
+*  decides whether \p bsc_row_ind and \p bsc_val are filled during conversion (\ref rocsparse_action_numeric) 
+*  or whether only \p bsc_row_ind is filled (\ref rocsparse_action_symbolic). Using 
 *  \ref rocsparse_action_symbolic is useful for example if only the sparsity pattern is required.
 *
 *  \note
@@ -214,8 +214,8 @@ rocsparse_status rocsparse_zgebsr2gebsc_buffer_size(rocsparse_handle            
 *      rocsparse_int row_block_dim = 2;
 *      rocsparse_int col_block_dim = 2;
 *
-*      std::vector<rocsparse_int> hbsr_row_ptr_A = {0, 2, 4};
-*      std::vector<rocsparse_int> hbsr_col_ind_A = {0, 1, 0, 1};
+*      std::vector<rocsparse_int> hbsr_row_ptr_A = {0, 2, 4}; 
+*      std::vector<rocsparse_int> hbsr_col_ind_A = {0, 1, 0, 1}; 
 *      std::vector<float> hbsr_val_A     = {1, 2, 0, 4, 0, 3, 5, 0, 6, 0, 1, 2, 0, 7, 3, 4};
 *
 *      rocsparse_int* dbsr_row_ptr_A = nullptr;

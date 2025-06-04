@@ -28,6 +28,6 @@
 
 namespace rocsparse
 {
-    rocsparse_indextype determine_I_indextype(rocsparse_const_spmat_descr mat);
-    rocsparse_indextype determine_J_indextype(rocsparse_const_spmat_descr mat);
+  rocsparse_indextype determine_I_indextype(rocsparse_const_spmat_descr mat);
+  rocsparse_indextype determine_J_indextype(rocsparse_const_spmat_descr mat);
 }

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023-2025 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -51,7 +51,7 @@ extern "C" {
 *  @param[in]
 *  nnz         number of non-zero entries of the sparse COO matrix.
 *  @param[in]
-*  descr       the descriptor of the column-oriented dense matrix \p A, the supported matrix type is
+*  descr       the descriptor of the column-oriented dense matrix \p A, the supported matrix type is 
 *              \ref rocsparse_matrix_type_general and also any valid value of the \ref rocsparse_index_base.
 *  @param[in]
 *  coo_val     array of nnz nonzero elements of matrix \p A.

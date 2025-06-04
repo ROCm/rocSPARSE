@@ -24,9 +24,9 @@
 
 #include "rocsparse_csrgemm_symbolic.hpp"
 #include "../conversion/rocsparse_identity.hpp"
-#include "internal/extra/rocsparse_csrgemm.h"
 #include "rocsparse_common.hpp"
 #include "rocsparse_control.hpp"
+#include "internal/extra/rocsparse_csrgemm.h"
 #include "rocsparse_csrgemm.hpp"
 #include "rocsparse_utility.hpp"
 
@@ -489,7 +489,7 @@ INSTANTIATE(int64_t, int64_t);
     }                                                                            \
     catch(...)                                                                   \
     {                                                                            \
-        RETURN_ROCSPARSE_EXCEPTION();                                            \
+      RETURN_ROCSPARSE_EXCEPTION();					         \
     }
 
 C_IMPL(rocsparse_csrgemm_symbolic);

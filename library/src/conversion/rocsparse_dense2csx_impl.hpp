@@ -25,8 +25,8 @@
 
 #include "rocsparse_utility.hpp"
 
-#include "rocsparse_common.h"
 #include "rocsparse_control.hpp"
+#include "rocsparse_common.h"
 #include "rocsparse_dense2csx.hpp"
 #include "rocsparse_primitives.hpp"
 

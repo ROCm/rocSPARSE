@@ -22,11 +22,11 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse_common.hpp"
+#include "rocsparse_control.hpp"
 #include "internal/level2/rocsparse_csritsv.h"
 #include "rocsparse_assign_async.hpp"
 #include "rocsparse_common.h"
-#include "rocsparse_common.hpp"
-#include "rocsparse_control.hpp"
 #include "rocsparse_csritsv.hpp"
 #include "rocsparse_utility.hpp"
 
@@ -300,10 +300,8 @@ rocsparse_status rocsparse::csritsv_solve_ex_template(rocsparse_handle handle,
         }
         else
         {
-            RETURN_IF_ROCSPARSE_ERROR(
-                rocsparse::assign_async(reinterpret_cast<rocsparse_int*>(info->zero_pivot),
-                                        (rocsparse_int)descr->base,
-                                        stream));
+	  RETURN_IF_ROCSPARSE_ERROR(rocsparse::assign_async(
+                reinterpret_cast<rocsparse_int*>(info->zero_pivot), (rocsparse_int)descr->base, stream));
             return rocsparse_status_success;
         }
     }

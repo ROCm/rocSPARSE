@@ -22,10 +22,10 @@
  *
  * ************************************************************************ */
 
-#include "internal/extra/rocsparse_csrgeam.h"
-#include "rocsparse_common.h"
 #include "rocsparse_common.hpp"
 #include "rocsparse_control.hpp"
+#include "internal/extra/rocsparse_csrgeam.h"
+#include "rocsparse_common.h"
 #include "rocsparse_csrgeam.hpp"
 #include "rocsparse_primitives.hpp"
 #include "rocsparse_utility.hpp"

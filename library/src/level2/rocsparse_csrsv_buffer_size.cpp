@@ -22,8 +22,8 @@
  *
  * ************************************************************************ */
 
-#include "internal/level2/rocsparse_csrsv.h"
 #include "rocsparse_control.hpp"
+#include "internal/level2/rocsparse_csrsv.h"
 #include "rocsparse_csrsv.hpp"
 #include "rocsparse_primitives.hpp"
 #include "rocsparse_utility.hpp"

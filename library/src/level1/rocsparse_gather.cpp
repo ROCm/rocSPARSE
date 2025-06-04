@@ -22,9 +22,9 @@
  * ************************************************************************ */
 
 #include "internal/generic/rocsparse_gather.h"
-#include "internal/level1/rocsparse_gthr.h"
 #include "rocsparse_control.hpp"
 #include "rocsparse_handle.hpp"
+#include "internal/level1/rocsparse_gthr.h"
 #include "rocsparse_utility.hpp"
 
 #include "rocsparse_gthr.hpp"

@@ -24,79 +24,78 @@
 #include <map>
 #include <sstream>
 
-#include "rocsparse.h"
-#include "rocsparse_common.h"
 #include "rocsparse_common.hpp"
 #include "rocsparse_control.hpp"
 #include "rocsparse_determine_indextype.hpp"
-#include "rocsparse_enum_utils.hpp"
 #include "rocsparse_handle.hpp"
+#include "rocsparse.h"
+#include "rocsparse_common.h"
+#include "rocsparse_enum_utils.hpp"
 #include "rocsparse_utility.hpp"
 
 #include "rocsparse_coosm.hpp"
 #include "rocsparse_csrsm.hpp"
 
+
+
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_spsm_alg value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_spsm_alg_default);
+      CASE(rocsparse_spsm_alg_default);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_spsm_stage value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_spsm_stage_buffer_size);
-        CASE(rocsparse_spsm_stage_preprocess);
-        CASE(rocsparse_spsm_stage_compute);
+      CASE(rocsparse_spsm_stage_buffer_size);
+      CASE(rocsparse_spsm_stage_preprocess);
+      CASE(rocsparse_spsm_stage_compute);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_spsm_alg value_)
-{
-    switch(value_)
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_spsm_alg value_)
     {
-    case rocsparse_spsm_alg_default:
-    {
-        return false;
+        switch(value_)
+        {
+        case rocsparse_spsm_alg_default:
+        {
+            return false;
+        }
+        }
+        return true;
     }
-    }
-    return true;
-}
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_spsm_stage value_)
-{
-    switch(value_)
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_spsm_stage value_)
     {
-    case rocsparse_spsm_stage_buffer_size:
-    case rocsparse_spsm_stage_preprocess:
-    case rocsparse_spsm_stage_compute:
-    {
-        return false;
+        switch(value_)
+        {
+        case rocsparse_spsm_stage_buffer_size:
+        case rocsparse_spsm_stage_preprocess:
+        case rocsparse_spsm_stage_compute:
+        {
+            return false;
+        }
+        }
+        return true;
     }
-    }
-    return true;
-}
+
 
 namespace rocsparse
 {

@@ -22,40 +22,45 @@
  * ************************************************************************ */
 #include "rocsparse_indextype_utils.hpp"
 
+
+
+
 template <>
 rocsparse_indextype rocsparse::get_indextype<int32_t>()
 {
-    return rocsparse_indextype_i32;
+  return rocsparse_indextype_i32;
 }
 
 template <>
 rocsparse_indextype rocsparse::get_indextype<uint16_t>()
 {
-    return rocsparse_indextype_u16;
+  return rocsparse_indextype_u16;
 }
 
 template <>
 rocsparse_indextype rocsparse::get_indextype<int64_t>()
 {
-    return rocsparse_indextype_i64;
+  return rocsparse_indextype_i64;
 }
 
 size_t rocsparse::indextype_sizeof(rocsparse_indextype that)
 {
-    switch(that)
+  switch(that)
     {
 
     case rocsparse_indextype_i32:
-    {
-        return sizeof(int32_t);
-    }
+      {
+	return sizeof(int32_t);
+      }
     case rocsparse_indextype_i64:
-    {
-        return sizeof(int64_t);
-    }
+      {
+	return sizeof(int64_t);
+      }
     case rocsparse_indextype_u16:
-    {
-        return sizeof(uint16_t);
-    }
+      {
+	return sizeof(uint16_t);
+      }
     }
 }
+
+

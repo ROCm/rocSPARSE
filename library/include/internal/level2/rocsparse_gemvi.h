@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023-2025 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -35,7 +35,7 @@ extern "C" {
 /*! \ingroup level2_module
  *  \details
  *  \p rocsparse_gemvi_buffer_size returns the size of the temporary storage buffer
- *  required by \ref rocsparse_sgemvi "rocsparse_Xgemvi()". The temporary storage
+ *  required by \ref rocsparse_sgemvi "rocsparse_Xgemvi()". The temporary storage 
  *  buffer must be allocated by the user.
  *
  *  \note
@@ -119,9 +119,9 @@ rocsparse_status rocsparse_zgemvi_buffer_size(rocsparse_handle    handle,
  *    \right.
  *  \f]
  *
- *  Performing the above operation involves two steps. First, the user calls
- *  \ref rocsparse_sgemvi_buffer_size "rocsparse_Xgemvi_buffer_size()" in order to determine the size of
- *  the temporary storage buffer. Next, the user allocates this temporary buffer and passes it to
+ *  Performing the above operation involves two steps. First, the user calls 
+ *  \ref rocsparse_sgemvi_buffer_size "rocsparse_Xgemvi_buffer_size()" in order to determine the size of 
+ *  the temporary storage buffer. Next, the user allocates this temporary buffer and passes it to 
  *  \p rocsparse_gemvi to complete the computation. Once all calls to \p rocsparse_gemvi are complete the
  *  temporary storage buffer can be freed.
  *

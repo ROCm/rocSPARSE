@@ -24,10 +24,10 @@
 #include <map>
 #include <sstream>
 
-#include "rocsparse.h"
 #include "rocsparse_control.hpp"
-#include "rocsparse_enum_utils.hpp"
 #include "rocsparse_handle.hpp"
+#include "rocsparse.h"
+#include "rocsparse_enum_utils.hpp"
 #include "rocsparse_utility.hpp"
 
 #include "rocsparse_bellmm.hpp"
@@ -37,85 +37,83 @@
 #include "rocsparse_csrmm.hpp"
 #include "rocsparse_determine_indextype.hpp"
 
+
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_spmm_alg value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_spmm_alg_default);
-        CASE(rocsparse_spmm_alg_csr);
-        CASE(rocsparse_spmm_alg_coo_segmented);
-        CASE(rocsparse_spmm_alg_coo_atomic);
-        CASE(rocsparse_spmm_alg_csr_row_split);
-        CASE(rocsparse_spmm_alg_csr_nnz_split);
-        CASE(rocsparse_spmm_alg_csr_merge_path);
-        CASE(rocsparse_spmm_alg_coo_segmented_atomic);
-        CASE(rocsparse_spmm_alg_bell);
-        CASE(rocsparse_spmm_alg_bsr);
+      CASE(rocsparse_spmm_alg_default);
+      CASE(rocsparse_spmm_alg_csr);
+      CASE(rocsparse_spmm_alg_coo_segmented);
+      CASE(rocsparse_spmm_alg_coo_atomic);
+      CASE(rocsparse_spmm_alg_csr_row_split);
+      CASE(rocsparse_spmm_alg_csr_nnz_split);
+      CASE(rocsparse_spmm_alg_csr_merge_path);
+      CASE(rocsparse_spmm_alg_coo_segmented_atomic);
+      CASE(rocsparse_spmm_alg_bell);
+      CASE(rocsparse_spmm_alg_bsr);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_spmm_stage value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_spmm_stage_buffer_size);
-        CASE(rocsparse_spmm_stage_preprocess);
-        CASE(rocsparse_spmm_stage_compute);
+      CASE(rocsparse_spmm_stage_buffer_size);
+      CASE(rocsparse_spmm_stage_preprocess);
+      CASE(rocsparse_spmm_stage_compute);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_spmm_alg value_)
-{
-    switch(value_)
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_spmm_alg value_)
     {
-    case rocsparse_spmm_alg_default:
-    case rocsparse_spmm_alg_csr:
-    case rocsparse_spmm_alg_coo_segmented:
-    case rocsparse_spmm_alg_coo_atomic:
-    case rocsparse_spmm_alg_csr_row_split:
-    case rocsparse_spmm_alg_csr_nnz_split:
-    case rocsparse_spmm_alg_csr_merge_path:
-    case rocsparse_spmm_alg_coo_segmented_atomic:
-    case rocsparse_spmm_alg_bell:
-    case rocsparse_spmm_alg_bsr:
-    {
-        return false;
+        switch(value_)
+        {
+        case rocsparse_spmm_alg_default:
+        case rocsparse_spmm_alg_csr:
+        case rocsparse_spmm_alg_coo_segmented:
+        case rocsparse_spmm_alg_coo_atomic:
+        case rocsparse_spmm_alg_csr_row_split:
+        case rocsparse_spmm_alg_csr_nnz_split:
+        case rocsparse_spmm_alg_csr_merge_path:
+        case rocsparse_spmm_alg_coo_segmented_atomic:
+        case rocsparse_spmm_alg_bell:
+        case rocsparse_spmm_alg_bsr:
+        {
+            return false;
+        }
+        }
+        return true;
     }
-    }
-    return true;
-}
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_spmm_stage value_)
-{
-    switch(value_)
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_spmm_stage value_)
     {
-    case rocsparse_spmm_stage_buffer_size:
-    case rocsparse_spmm_stage_preprocess:
-    case rocsparse_spmm_stage_compute:
-    {
-        return false;
+        switch(value_)
+        {
+        case rocsparse_spmm_stage_buffer_size:
+        case rocsparse_spmm_stage_preprocess:
+        case rocsparse_spmm_stage_compute:
+        {
+            return false;
+        }
+        }
+        return true;
     }
-    }
-    return true;
-}
+
 
 namespace rocsparse
 {
@@ -1031,13 +1029,14 @@ try
     }
 
     rocsparse::spmm_template_t spmm_function;
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse::spmm_template_find(&spmm_function,
-                                                            compute_type,
-                                                            rocsparse::determine_I_indextype(mat_A),
-                                                            rocsparse::determine_J_indextype(mat_A),
-                                                            mat_A->data_type,
-                                                            mat_B->data_type,
-                                                            mat_C->data_type));
+    RETURN_IF_ROCSPARSE_ERROR(
+        rocsparse::spmm_template_find(&spmm_function,
+                                      compute_type,
+                                      rocsparse::determine_I_indextype(mat_A),
+                                      rocsparse::determine_J_indextype(mat_A),
+                                      mat_A->data_type,
+                                      mat_B->data_type,
+                                      mat_C->data_type));
 
     RETURN_IF_ROCSPARSE_ERROR(spmm_function(handle,
                                             trans_A,

@@ -26,6 +26,7 @@
 #include "rocsparse_utility.hpp"
 #include <iostream>
 
+
 namespace rocsparse
 {
     template <uint32_t BLOCKSIZE, typename T, typename I>

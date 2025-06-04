@@ -22,9 +22,9 @@
  * ************************************************************************ */
 
 #include "rocsparse_gcsc2csr.hpp"
+#include "rocsparse_internal_convert_scalar.hpp"
 #include "rocsparse_control.hpp"
 #include "rocsparse_csr2csc.hpp"
-#include "rocsparse_internal_convert_scalar.hpp"
 #include "rocsparse_utility.hpp"
 
 rocsparse_status rocsparse::gcsc2csr_buffer_size(rocsparse_handle    handle,

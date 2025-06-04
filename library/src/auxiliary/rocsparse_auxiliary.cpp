@@ -21,9 +21,9 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse.h"
 #include "rocsparse_control.hpp"
 #include "rocsparse_handle.hpp"
+#include "rocsparse.h"
 #include "rocsparse_utility.hpp"
 #include <iomanip>
 #include <map>
@@ -79,513 +79,490 @@ const char* rocsparse::enum_utils::to_string(rocsparse_status status)
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_pointer_mode value)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value)
+#define CASE(C) case C: return #C
+  switch(value)
     {
-        CASE(rocsparse_pointer_mode_device);
-        CASE(rocsparse_pointer_mode_host);
+      CASE(rocsparse_pointer_mode_device);
+      CASE(rocsparse_pointer_mode_host);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_spmat_attribute value)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value)
+#define CASE(C) case C: return #C
+  switch(value)
     {
-        CASE(rocsparse_spmat_fill_mode);
-        CASE(rocsparse_spmat_diag_type);
-        CASE(rocsparse_spmat_matrix_type);
-        CASE(rocsparse_spmat_storage_mode);
+      CASE(rocsparse_spmat_fill_mode);
+      CASE(rocsparse_spmat_diag_type);
+      CASE(rocsparse_spmat_matrix_type);
+      CASE(rocsparse_spmat_storage_mode);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_diag_type value)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value)
+#define CASE(C) case C: return #C
+  switch(value)
     {
-        CASE(rocsparse_diag_type_unit);
-        CASE(rocsparse_diag_type_non_unit);
+      CASE(rocsparse_diag_type_unit);
+      CASE(rocsparse_diag_type_non_unit);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_fill_mode value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_fill_mode_lower);
-        CASE(rocsparse_fill_mode_upper);
+      CASE(rocsparse_fill_mode_lower);
+      CASE(rocsparse_fill_mode_upper);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_storage_mode value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_storage_mode_sorted);
-        CASE(rocsparse_storage_mode_unsorted);
+      CASE(rocsparse_storage_mode_sorted);
+      CASE(rocsparse_storage_mode_unsorted);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_index_base value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_index_base_zero);
-        CASE(rocsparse_index_base_one);
+      CASE(rocsparse_index_base_zero);
+      CASE(rocsparse_index_base_one);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_matrix_type value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_matrix_type_general);
-        CASE(rocsparse_matrix_type_symmetric);
-        CASE(rocsparse_matrix_type_hermitian);
-        CASE(rocsparse_matrix_type_triangular);
+      CASE(rocsparse_matrix_type_general);
+      CASE(rocsparse_matrix_type_symmetric);
+      CASE(rocsparse_matrix_type_hermitian);
+      CASE(rocsparse_matrix_type_triangular);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_direction value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_direction_row);
-        CASE(rocsparse_direction_column);
+      CASE(rocsparse_direction_row);
+      CASE(rocsparse_direction_column);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_operation value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_operation_none);
-        CASE(rocsparse_operation_transpose);
-        CASE(rocsparse_operation_conjugate_transpose);
+      CASE(rocsparse_operation_none);
+      CASE(rocsparse_operation_transpose);
+      CASE(rocsparse_operation_conjugate_transpose);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_indextype value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_indextype_u16);
-        CASE(rocsparse_indextype_i32);
-        CASE(rocsparse_indextype_i64);
+      CASE(rocsparse_indextype_u16);
+      CASE(rocsparse_indextype_i32);
+      CASE(rocsparse_indextype_i64);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_datatype value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_datatype_f16_r);
-        CASE(rocsparse_datatype_f32_r);
-        CASE(rocsparse_datatype_f64_r);
-        CASE(rocsparse_datatype_f32_c);
-        CASE(rocsparse_datatype_f64_c);
-        CASE(rocsparse_datatype_i8_r);
-        CASE(rocsparse_datatype_u8_r);
-        CASE(rocsparse_datatype_i32_r);
-        CASE(rocsparse_datatype_u32_r);
+      CASE(rocsparse_datatype_f16_r);
+      CASE(rocsparse_datatype_f32_r);
+      CASE(rocsparse_datatype_f64_r);
+      CASE(rocsparse_datatype_f32_c);
+      CASE(rocsparse_datatype_f64_c);
+      CASE(rocsparse_datatype_i8_r);
+      CASE(rocsparse_datatype_u8_r);
+      CASE(rocsparse_datatype_i32_r);
+      CASE(rocsparse_datatype_u32_r);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_order value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_order_row);
-        CASE(rocsparse_order_column);
+      CASE(rocsparse_order_row);
+      CASE(rocsparse_order_column);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_action value)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value)
+#define CASE(C) case C: return #C
+  switch(value)
     {
-        CASE(rocsparse_action_numeric);
-        CASE(rocsparse_action_symbolic);
+      CASE(rocsparse_action_numeric);
+      CASE(rocsparse_action_symbolic);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
+
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_solve_policy value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_solve_policy_auto);
+      CASE(rocsparse_solve_policy_auto);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_analysis_policy value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_analysis_policy_reuse);
-        CASE(rocsparse_analysis_policy_force);
+      CASE(rocsparse_analysis_policy_reuse);
+      CASE(rocsparse_analysis_policy_force);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
 template <>
 const char* rocsparse::enum_utils::to_string(rocsparse_format value_)
 {
-#define CASE(C) \
-    case C:     \
-        return #C
-    switch(value_)
+#define CASE(C) case C: return #C
+  switch(value_)
     {
-        CASE(rocsparse_format_coo);
-        CASE(rocsparse_format_coo_aos);
-        CASE(rocsparse_format_csr);
-        CASE(rocsparse_format_csc);
-        CASE(rocsparse_format_ell);
-        CASE(rocsparse_format_bell);
-        CASE(rocsparse_format_bsr);
+      CASE(rocsparse_format_coo);
+      CASE(rocsparse_format_coo_aos);
+      CASE(rocsparse_format_csr);
+      CASE(rocsparse_format_csc);
+      CASE(rocsparse_format_ell);
+      CASE(rocsparse_format_bell);
+      CASE(rocsparse_format_bsr);
 #undef CASE
     }
-    // LCOV_EXCL_START
-    THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
-    // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
+  // LCOV_EXCL_STOP
 }
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_spmat_attribute value)
-{
-    switch(value)
-    {
-    case rocsparse_spmat_fill_mode:
-    case rocsparse_spmat_diag_type:
-    case rocsparse_spmat_matrix_type:
-    case rocsparse_spmat_storage_mode:
-    {
-        return false;
-    }
-    }
-    return true;
-}
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_pointer_mode value)
-{
-    switch(value)
-    {
-    case rocsparse_pointer_mode_device:
-    case rocsparse_pointer_mode_host:
-    {
-        return false;
-    }
-    }
-    return true;
-}
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_diag_type value)
-{
-    switch(value)
-    {
-    case rocsparse_diag_type_unit:
-    case rocsparse_diag_type_non_unit:
-    {
-        return false;
-    }
-    }
-    return true;
-}
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_fill_mode value_)
-{
-    switch(value_)
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_spmat_attribute value)
     {
-    case rocsparse_fill_mode_lower:
-    case rocsparse_fill_mode_upper:
-    {
-        return false;
+        switch(value)
+        {
+        case rocsparse_spmat_fill_mode:
+        case rocsparse_spmat_diag_type:
+        case rocsparse_spmat_matrix_type:
+        case rocsparse_spmat_storage_mode:
+        {
+            return false;
+        }
+        }
+        return true;
     }
-    }
-    return true;
-}
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_storage_mode value_)
-{
-    switch(value_)
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_pointer_mode value)
     {
-    case rocsparse_storage_mode_sorted:
-    case rocsparse_storage_mode_unsorted:
-    {
-        return false;
+        switch(value)
+        {
+        case rocsparse_pointer_mode_device:
+        case rocsparse_pointer_mode_host:
+        {
+            return false;
+        }
+        }
+        return true;
     }
-    }
-    return true;
-}
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_index_base value_)
-{
-    switch(value_)
-    {
-    case rocsparse_index_base_zero:
-    case rocsparse_index_base_one:
-    {
-        return false;
-    }
-    }
-    return true;
-}
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_matrix_type value_)
-{
-    switch(value_)
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_diag_type value)
     {
-    case rocsparse_matrix_type_general:
-    case rocsparse_matrix_type_symmetric:
-    case rocsparse_matrix_type_hermitian:
-    case rocsparse_matrix_type_triangular:
-    {
-        return false;
+        switch(value)
+        {
+        case rocsparse_diag_type_unit:
+        case rocsparse_diag_type_non_unit:
+        {
+            return false;
+        }
+        }
+        return true;
     }
-    }
-    return true;
-}
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_direction value_)
-{
-    switch(value_)
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_fill_mode value_)
     {
-    case rocsparse_direction_row:
-    case rocsparse_direction_column:
-    {
-        return false;
+        switch(value_)
+        {
+        case rocsparse_fill_mode_lower:
+        case rocsparse_fill_mode_upper:
+        {
+            return false;
+        }
+        }
+        return true;
     }
-    }
-    return true;
-}
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_operation value_)
-{
-    switch(value_)
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_storage_mode value_)
     {
-    case rocsparse_operation_none:
-    case rocsparse_operation_transpose:
-    case rocsparse_operation_conjugate_transpose:
-    {
-        return false;
+        switch(value_)
+        {
+        case rocsparse_storage_mode_sorted:
+        case rocsparse_storage_mode_unsorted:
+        {
+            return false;
+        }
+        }
+        return true;
     }
-    }
-    return true;
-}
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_indextype value_)
-{
-    switch(value_)
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_index_base value_)
     {
-    case rocsparse_indextype_u16:
-    case rocsparse_indextype_i32:
-    case rocsparse_indextype_i64:
-    {
-        return false;
+        switch(value_)
+        {
+        case rocsparse_index_base_zero:
+        case rocsparse_index_base_one:
+        {
+            return false;
+        }
+        }
+        return true;
     }
-    }
-    return true;
-}
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_datatype value_)
-{
-    switch(value_)
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_matrix_type value_)
     {
-    case rocsparse_datatype_f16_r:
-    case rocsparse_datatype_f32_r:
-    case rocsparse_datatype_f64_r:
-    case rocsparse_datatype_f32_c:
-    case rocsparse_datatype_f64_c:
-    case rocsparse_datatype_i8_r:
-    case rocsparse_datatype_u8_r:
-    case rocsparse_datatype_i32_r:
-    case rocsparse_datatype_u32_r:
-    {
-        return false;
+        switch(value_)
+        {
+        case rocsparse_matrix_type_general:
+        case rocsparse_matrix_type_symmetric:
+        case rocsparse_matrix_type_hermitian:
+        case rocsparse_matrix_type_triangular:
+        {
+            return false;
+        }
+        }
+        return true;
     }
-    }
-    return true;
-}
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_order value_)
-{
-    switch(value_)
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_direction value_)
     {
-    case rocsparse_order_row:
-    case rocsparse_order_column:
-    {
-        return false;
+        switch(value_)
+        {
+        case rocsparse_direction_row:
+        case rocsparse_direction_column:
+        {
+            return false;
+        }
+        }
+        return true;
     }
-    }
-    return true;
-}
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_action value)
-{
-    switch(value)
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_operation value_)
     {
-    case rocsparse_action_numeric:
-    case rocsparse_action_symbolic:
-    {
-        return false;
+        switch(value_)
+        {
+        case rocsparse_operation_none:
+        case rocsparse_operation_transpose:
+        case rocsparse_operation_conjugate_transpose:
+        {
+            return false;
+        }
+        }
+        return true;
     }
-    }
-    return true;
-}
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_solve_policy value_)
-{
-    switch(value_)
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_indextype value_)
     {
-    case rocsparse_solve_policy_auto:
-    {
-        return false;
+        switch(value_)
+        {
+        case rocsparse_indextype_u16:
+        case rocsparse_indextype_i32:
+        case rocsparse_indextype_i64:
+        {
+            return false;
+        }
+        }
+        return true;
     }
-    }
-    return true;
-}
 
-template <>
-bool rocsparse::enum_utils::is_invalid(rocsparse_analysis_policy value_)
-{
-    switch(value_)
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_datatype value_)
     {
-    case rocsparse_analysis_policy_reuse:
-    case rocsparse_analysis_policy_force:
+        switch(value_)
+        {
+        case rocsparse_datatype_f16_r:
+        case rocsparse_datatype_f32_r:
+        case rocsparse_datatype_f64_r:
+        case rocsparse_datatype_f32_c:
+        case rocsparse_datatype_f64_c:
+        case rocsparse_datatype_i8_r:
+        case rocsparse_datatype_u8_r:
+        case rocsparse_datatype_i32_r:
+        case rocsparse_datatype_u32_r:
+        {
+            return false;
+        }
+        }
+        return true;
+    }
+
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_order value_)
     {
-        return false;
+        switch(value_)
+        {
+        case rocsparse_order_row:
+        case rocsparse_order_column:
+        {
+            return false;
+        }
+        }
+        return true;
     }
+
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_action value)
+    {
+        switch(value)
+        {
+        case rocsparse_action_numeric:
+        case rocsparse_action_symbolic:
+        {
+            return false;
+        }
+        }
+        return true;
     }
-    return true;
-}
+
+
+
+
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_solve_policy value_)
+    {
+        switch(value_)
+        {
+        case rocsparse_solve_policy_auto:
+        {
+            return false;
+        }
+        }
+        return true;
+    }
+
+    template <>
+    bool rocsparse::enum_utils::is_invalid(rocsparse_analysis_policy value_)
+    {
+        switch(value_)
+        {
+        case rocsparse_analysis_policy_reuse:
+        case rocsparse_analysis_policy_force:
+        {
+            return false;
+        }
+        }
+        return true;
+    }
+
 
 #ifdef __cplusplus
 extern "C" {

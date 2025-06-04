@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2023-2025 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -35,10 +35,10 @@ extern "C" {
 *  \brief Convert a sparse general BSR matrix into a sparse CSR matrix
 *
 *  \details
-*  \p rocsparse_gebsr2csr converts a BSR matrix into a CSR matrix. The input matrix is assumed
-*  to be allocated such that array \p bsr_row_ptr has length \p mb+1, \p bsr_col_ind has length \p nnzb, and
-*  \p bsr_val has length \p nnzb*row_block_dim*col_block_dim. The output matrix is assumed to be
-*  allocated such that array \p csr_row_ptr has length \p m+1, \p csr_col_ind has length \p nnz, and
+*  \p rocsparse_gebsr2csr converts a BSR matrix into a CSR matrix. The input matrix is assumed 
+*  to be allocated such that array \p bsr_row_ptr has length \p mb+1, \p bsr_col_ind has length \p nnzb, and 
+*  \p bsr_val has length \p nnzb*row_block_dim*col_block_dim. The output matrix is assumed to be 
+*  allocated such that array \p csr_row_ptr has length \p m+1, \p csr_col_ind has length \p nnz, and 
 *  \p csr_val has length \p nnz where:
 *  \f[
 *    m = mb * row\_block\_dim \\
