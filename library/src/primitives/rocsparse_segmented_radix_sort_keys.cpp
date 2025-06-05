@@ -22,9 +22,9 @@
  *
  * ************************************************************************ */
 
-#include "control.h"
-#include "rocsparse_primitives.h"
-#include "utility.h"
+#include "rocsparse_control.hpp"
+#include "rocsparse_primitives.hpp"
+#include "rocsparse_utility.hpp"
 
 #include <rocprim/rocprim.hpp>
 
@@ -214,7 +214,7 @@ rocsparse_status rocsparse::primitives::sort_csr_column_indices(rocsparse_handle
             size_t           segments,                                              \
             uint32_t         startbit,                                              \
             uint32_t         endbit,                                                \
-            size_t * buffer_size);                                                  \
+            size_t*          buffer_size);                                                   \
     template rocsparse_status rocsparse::primitives::segmented_radix_sort_keys(     \
         rocsparse_handle      handle,                                               \
         double_buffer<KTYPE>& keys,                                                 \

@@ -30,11 +30,11 @@
 #include "../conversion/rocsparse_csxsldu.hpp"
 #include "../conversion/rocsparse_identity.hpp"
 #include "../level1/rocsparse_gthr.hpp"
-#include "common.h"
 #include "common.hpp"
+#include "rocsparse_common.hpp"
 #include "rocsparse_csritilu0_driver.hpp"
 #include "rocsparse_csritilu0x_driver.hpp"
-#include "rocsparse_primitives.h"
+#include "rocsparse_primitives.hpp"
 
 namespace rocsparse
 {

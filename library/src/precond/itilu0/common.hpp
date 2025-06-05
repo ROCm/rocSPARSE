@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2022-2024 Advanced Micro Devices, Inc.
+ * Copyright (C) 2022-2025 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,12 @@
  * ************************************************************************ */
 
 #include "rocsparse-types.h"
-#include "utility.h"
+#include "rocsparse_utility.hpp"
 #include <iostream>
 
 namespace rocsparse
 {
+
     template <uint32_t BLOCKSIZE, typename T, typename I>
     void set_identity_array(rocsparse_handle handle_, I size_, T* x_);
     template <uint32_t BLOCKSIZE, typename T, typename I>
@@ -171,7 +172,7 @@ namespace rocsparse
         }
 
     protected:
-        buffer_layout_crtp_t(){};
+        buffer_layout_crtp_t() {};
         void*  m_buffer;
         size_t m_buffer_size;
     };
@@ -294,7 +295,7 @@ namespace rocsparse
             m_tpointers[parent_t::buffer] = buffer_;
             m_tsizes[parent_t::buffer]    = buffer_size_;
         }
-        buffer_layout_contiguous_t(){};
+        buffer_layout_contiguous_t() {};
 
     private:
         size_t m_isizes[7]{};

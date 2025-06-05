@@ -22,9 +22,9 @@
  *
  * ************************************************************************ */
 
-#include "control.h"
-#include "rocsparse_primitives.h"
-#include "utility.h"
+#include "rocsparse_control.hpp"
+#include "rocsparse_primitives.hpp"
+#include "rocsparse_utility.hpp"
 
 #include <rocprim/rocprim.hpp>
 
@@ -73,7 +73,7 @@ rocsparse_status rocsparse::primitives::exclusive_scan(rocsparse_handle handle,
 
 #define INSTANTIATE(ITYPE, JTYPE)                                                                   \
     template rocsparse_status rocsparse::primitives::exclusive_scan_buffer_size<ITYPE, JTYPE>(      \
-        rocsparse_handle handle, JTYPE initial_value, size_t length, size_t * buffer_size);         \
+        rocsparse_handle handle, JTYPE initial_value, size_t length, size_t* buffer_size);          \
     template rocsparse_status rocsparse::primitives::exclusive_scan(rocsparse_handle handle,        \
                                                                     ITYPE*           input,         \
                                                                     JTYPE*           output,        \
