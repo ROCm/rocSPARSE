@@ -13,6 +13,11 @@ rocsparse_handle
 
 .. doxygentypedef:: rocsparse_handle
 
+rocsparse_error
+---------------
+
+.. doxygentypedef:: rocsparse_error
+
 rocsparse_int
 -------------
 
