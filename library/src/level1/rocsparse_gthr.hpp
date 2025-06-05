@@ -23,7 +23,7 @@
  * ************************************************************************ */
 
 #pragma once
-#include "handle.h"
+#include "rocsparse_handle.hpp"
 
 namespace rocsparse
 {

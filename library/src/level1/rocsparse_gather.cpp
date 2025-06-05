@@ -22,10 +22,10 @@
  * ************************************************************************ */
 
 #include "internal/generic/rocsparse_gather.h"
-#include "control.h"
-#include "handle.h"
+#include "rocsparse_control.hpp"
 #include "rocsparse_gthr.hpp"
-#include "utility.h"
+#include "rocsparse_handle.hpp"
+#include "rocsparse_utility.hpp"
 
 extern "C" rocsparse_status rocsparse_gather(rocsparse_handle            handle,
                                              rocsparse_const_dnvec_descr y,

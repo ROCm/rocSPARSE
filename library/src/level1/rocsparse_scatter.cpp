@@ -22,11 +22,10 @@
  * ************************************************************************ */
 
 #include "internal/generic/rocsparse_scatter.h"
-#include "control.h"
-#include "handle.h"
-#include "utility.h"
-
+#include "rocsparse_control.hpp"
+#include "rocsparse_handle.hpp"
 #include "rocsparse_sctr.hpp"
+#include "rocsparse_utility.hpp"
 
 extern "C" rocsparse_status rocsparse_scatter(rocsparse_handle            handle,
                                               rocsparse_const_spvec_descr x,
