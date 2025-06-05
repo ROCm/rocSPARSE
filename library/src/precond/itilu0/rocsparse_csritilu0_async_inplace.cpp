@@ -894,7 +894,7 @@ namespace rocsparse
             m_tsizes[buffer]    = buffer_size_;
         }
 
-        buffer_layout_inplace_t() {};
+        buffer_layout_inplace_t(){};
 
     private:
         void*  m_buffer{};
