@@ -138,12 +138,12 @@ namespace rocsparse
             T* csrt_val = reinterpret_cast<T*>(ptr);
 
             // Gather values
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse::gthr_template(handle,
-                                                               nnz,
-                                                               csr_val,
-                                                               csrt_val,
-                                                               (const I*)csrsv->trmt_perm,
-                                                               rocsparse_index_base_zero));
+            RETURN_IF_ROCSPARSE_ERROR((rocsparse::gthr_template<I, T>(handle,
+                                                                      nnz,
+                                                                      csr_val,
+                                                                      csrt_val,
+                                                                      (const I*)csrsv->trmt_perm,
+                                                                      rocsparse_index_base_zero)));
 
             if(trans == rocsparse_operation_conjugate_transpose)
             {

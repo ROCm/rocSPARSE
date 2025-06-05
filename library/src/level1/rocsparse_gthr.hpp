@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2018-2025 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,19 @@ namespace rocsparse
 {
     template <typename I, typename T>
     rocsparse_status gthr_template(rocsparse_handle     handle,
-                                   I                    nnz,
-                                   const T*             y,
-                                   T*                   x_val,
-                                   const I*             x_ind,
+                                   int64_t              nnz,
+                                   const void*          y,
+                                   void*                x_val,
+                                   const void*          x_ind,
                                    rocsparse_index_base idx_base);
+
+    rocsparse_status gthr(rocsparse_handle     handle,
+                          int64_t              nnz,
+                          rocsparse_datatype   y_datatype,
+                          const void*          y,
+                          rocsparse_datatype   x_datatype,
+                          void*                x_val,
+                          rocsparse_indextype  x_indextype,
+                          const void*          x_ind,
+                          rocsparse_index_base idx_base);
 }
