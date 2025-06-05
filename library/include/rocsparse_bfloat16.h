@@ -31,13 +31,11 @@
 
 #if __cplusplus < 201103L || (!defined(__HCC__) && !defined(__HIPCC__))
 
-// If this is a C compiler, C++ compiler below C++11, or a host-only compiler, we only
-// include a minimal definition of rocsparse_bfloat16
+/* If this is a C compiler, C++ compiler below C++11, or a host-only compiler, we only
+   include a minimal definition of rocsparse_bfloat16 */
 
 #include <stdint.h>
-/*! \ingroup types_module
-* \brief Struct to represent a 16 bit Brain floating-point number.
-*/
+/*! \brief Struct to represent a 16 bit brain floating-point number. */
 typedef struct
 {
     uint16_t data; /**< brain float storage. */
@@ -52,9 +50,7 @@ typedef struct
 #include <ostream>
 #include <type_traits>
 
-/*! \ingroup types_module
-* \brief Struct to represent a 16 bit Brain floating-point number.
-*/
+/*! \brief Struct to represent a 16 bit brain floating-point number. */
 struct ROCSPARSE_EXPORT rocsparse_bfloat16
 {
     uint16_t data;
