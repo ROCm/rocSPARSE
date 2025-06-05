@@ -59,6 +59,16 @@ rocsparse_get_git_rev()
 
 .. doxygenfunction:: rocsparse_get_git_rev
 
+rocsparse_destroy_error()
+-------------------------
+
+.. doxygenfunction:: rocsparse_destroy_error
+
+rocsparse_error_get_message()
+-----------------------------
+
+.. doxygenfunction:: rocsparse_error_get_message
+
 rocsparse_create_mat_descr()
 ----------------------------
 

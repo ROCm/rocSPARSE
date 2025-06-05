@@ -31,6 +31,10 @@ Auxiliary functions
 +-----------------------------------------------------+
 |:cpp:func:`rocsparse_get_git_rev`                    |
 +-----------------------------------------------------+
+|:cpp:func:`rocsparse_destroy_error`                  |
++-----------------------------------------------------+
+|:cpp:func:`rocsparse_error_get_message`              |
++-----------------------------------------------------+
 |:cpp:func:`rocsparse_create_mat_descr`               |
 +-----------------------------------------------------+
 |:cpp:func:`rocsparse_destroy_mat_descr`              |
