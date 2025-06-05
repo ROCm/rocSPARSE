@@ -34,9 +34,9 @@ namespace rocsparse
         T                        value;
         const T*                 pointer;
         __forceinline__ __host__ const_host_device_scalar(const T* scalar)
-            : pointer(scalar) {};
+            : pointer(scalar){};
         __forceinline__ __host__ const_host_device_scalar(const T& scalar)
-            : value(scalar) {};
+            : value(scalar){};
         static __forceinline__ __device__ T zero()
         {
             return static_cast<T>(0);
