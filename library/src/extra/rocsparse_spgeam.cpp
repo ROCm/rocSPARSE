@@ -391,6 +391,13 @@ namespace rocsparse
                     temp_buffer,
                     true));
 
+                if(mat_C != nullptr && mat_C->row_type == rocsparse_indextype_i32)
+                {
+                    // Temporary hack to handle the fact that we pass mat_C->nnz as an int64_t* but internally in order to match
+                    // the legacy API we handle nnz_C using int32_t* when csr_row_ptr_C is int32_t*
+                    mat_C->nnz = *reinterpret_cast<const int32_t*>(&mat_C->nnz);
+                }
+
                 return rocsparse_status_success;
             }
             case rocsparse_format_bsr:
