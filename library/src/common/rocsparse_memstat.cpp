@@ -242,7 +242,7 @@ private:
         }
     };
 
-    memstat(const memstat&)            = delete;
+    memstat(const memstat&) = delete;
     memstat& operator=(const memstat&) = delete;
 
     struct stat
