@@ -20,8 +20,8 @@
  *
  * ************************************************************************ */
 
-/*!\file
- * \brief rocsparse_bfloat16.h provides struct for rocsparse_bfloat16 typedef
+/*! \file
+ *  \brief rocsparse_bfloat16.h provides struct for rocsparse_bfloat16 typedef
  */
 
 #ifndef ROCSPARSE_BFLOAT16_H
@@ -40,7 +40,7 @@
 */
 typedef struct
 {
-    uint16_t data;
+    uint16_t data; /**< brain float storage. */
 } rocsparse_bfloat16;
 
 #else // __cplusplus < 201103L || (!defined(__HCC__) && !defined(__HIPCC__))
