@@ -25,8 +25,8 @@
 
 #include "rocsparse_control.hpp"
 #include "rocsparse_debug.hpp"
-#include "rocsparse_envariables.hpp"
 #include "rocsparse_enum_utils.hpp"
+#include "rocsparse_envariables.hpp"
 #include <map>
 
 void rocsparse::message(const char* msg_, const char* function_, const char* file_, int line_)
