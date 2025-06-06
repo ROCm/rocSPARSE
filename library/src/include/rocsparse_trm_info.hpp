@@ -73,9 +73,4 @@ namespace rocsparse
  *******************************************************************************/
     rocsparse_status destroy_trm_info(rocsparse_trm_info info);
 
-    /********************************************************************************
- * \brief check_trm_shared checks if the given trm info structure
- * shares its meta data with another trm info structure.
- *******************************************************************************/
-    bool check_trm_shared(const rocsparse_mat_info info, rocsparse_trm_info trm);
 }

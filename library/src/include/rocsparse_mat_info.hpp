@@ -90,3 +90,13 @@ public:
     void                 set_bsrmv_info(rocsparse_bsrmv_info value);
     rocsparse_bsrmv_info get_bsrmv_info();
 };
+
+namespace rocsparse
+{
+    /********************************************************************************
+   * \brief check_trm_shared checks if the given trm info structure
+   * shares its meta data with another trm info structure.
+   *******************************************************************************/
+    bool check_trm_shared(const rocsparse_mat_info info, rocsparse_trm_info trm);
+
+}
