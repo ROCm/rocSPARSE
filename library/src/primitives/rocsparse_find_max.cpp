@@ -60,7 +60,7 @@ rocsparse_status rocsparse::primitives::find_max(
 
 #define INSTANTIATE(ITYPE, JTYPE)                                                           \
     template rocsparse_status rocsparse::primitives::find_max_buffer_size<ITYPE, JTYPE>(    \
-        rocsparse_handle handle, size_t length, size_t* buffer_size);                       \
+        rocsparse_handle handle, size_t length, size_t * buffer_size);                      \
     template rocsparse_status rocsparse::primitives::find_max(rocsparse_handle handle,      \
                                                               ITYPE*           input,       \
                                                               JTYPE*           max,         \
