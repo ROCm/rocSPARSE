@@ -269,6 +269,7 @@ const char* rocsparse::enum_utils::to_string(rocsparse_datatype value_)
         CASE(rocsparse_datatype_u8_r);
         CASE(rocsparse_datatype_i32_r);
         CASE(rocsparse_datatype_u32_r);
+        CASE(rocsparse_datatype_bf16_r);
 #undef CASE
     }
     // LCOV_EXCL_START
@@ -525,6 +526,7 @@ bool rocsparse::enum_utils::is_invalid(rocsparse_datatype value_)
     case rocsparse_datatype_u8_r:
     case rocsparse_datatype_i32_r:
     case rocsparse_datatype_u32_r:
+    case rocsparse_datatype_bf16_r:
     {
         return false;
     }
