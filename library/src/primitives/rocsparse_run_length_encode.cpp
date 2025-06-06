@@ -73,7 +73,7 @@ rocsparse_status rocsparse::primitives::run_length_encode(rocsparse_handle handl
 
 #define INSTANTIATE(JTYPE)                                                                       \
     template rocsparse_status rocsparse::primitives::run_length_encode_buffer_size<JTYPE>(       \
-        rocsparse_handle handle, size_t length, size_t* buffer_size);                            \
+        rocsparse_handle handle, size_t length, size_t * buffer_size);                           \
     template rocsparse_status rocsparse::primitives::run_length_encode(rocsparse_handle handle,  \
                                                                        JTYPE*           input,   \
                                                                        JTYPE* unique_output,     \
