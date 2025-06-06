@@ -60,7 +60,7 @@ rocsparse_status rocsparse::primitives::find_sum(
 
 #define INSTANTIATE(ITYPE, JTYPE)                                                           \
     template rocsparse_status rocsparse::primitives::find_sum_buffer_size<ITYPE, JTYPE>(    \
-        rocsparse_handle handle, size_t length, size_t* buffer_size);                       \
+        rocsparse_handle handle, size_t length, size_t * buffer_size);                      \
     template rocsparse_status rocsparse::primitives::find_sum(rocsparse_handle handle,      \
                                                               ITYPE*           input,       \
                                                               JTYPE*           sum,         \
