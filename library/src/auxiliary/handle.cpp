@@ -21,8 +21,8 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_handle.hpp"
 #include "rocsparse_control.hpp"
+#include "rocsparse_handle.hpp"
 #include "rocsparse_logging.hpp"
 #include "rocsparse_utility.hpp"
 
@@ -916,7 +916,6 @@ bool rocsparse::check_trm_shared(const rocsparse_mat_info info, rocsparse_trm_in
     return (shared > 0) ? true : false;
 }
 
-
 /********************************************************************************
  * \brief rocsparse_csrgemm_info is a structure holding the rocsparse csrgemm
  * info data gathered during csrgemm_buffer_size. It must be initialized using
@@ -1134,29 +1133,28 @@ std::string rocsparse::handle_get_xnack_mode(rocsparse_handle handle)
     return XnackMode<hipDeviceProp_t>{}(handle->properties);
 }
 
-
 // Convert the current C++ exception to rocsparse_status
 // This allows extern "C" functions to return this function in a catch(...) block
 // while converting all C++ exceptions to an equivalent rocsparse_status here
 rocsparse_status rocsparse::exception_to_rocsparse_status(std::exception_ptr e)
-  try
-    {
-      if(e)
-	std::rethrow_exception(e);
-      return rocsparse_status_success;
-    }
-  catch(const rocsparse_status& status)
-    {
-      return status;
-    }
-  catch(const std::bad_alloc&)
-    {
-      return rocsparse_status_memory_error;
-    }
-  catch(...)
-    {
-      return rocsparse_status_thrown_exception;
-    }
+try
+{
+    if(e)
+        std::rethrow_exception(e);
+    return rocsparse_status_success;
+}
+catch(const rocsparse_status& status)
+{
+    return status;
+}
+catch(const std::bad_alloc&)
+{
+    return rocsparse_status_memory_error;
+}
+catch(...)
+{
+    return rocsparse_status_thrown_exception;
+}
 
 /*******************************************************************************
  * \brief convert hipError_t to rocsparse_status
