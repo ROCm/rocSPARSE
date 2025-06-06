@@ -140,7 +140,7 @@ rocsparse_status rocsparse::primitives::radix_sort_pairs(rocsparse_handle handle
         size_t           length,                                                                 \
         uint32_t         startbit,                                                               \
         uint32_t         endbit,                                                                 \
-        size_t *         buffer_size,                                                            \
+        size_t * buffer_size,                                                                    \
         bool using_double_buffers);                                                              \
     template rocsparse_status rocsparse::primitives::radix_sort_pairs(                           \
         rocsparse_handle      handle,                                                            \
