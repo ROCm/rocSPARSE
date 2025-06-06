@@ -23,7 +23,7 @@
 
 #include "rocsparse_trm_info.hpp"
 #include "rocsparse_control.hpp"
-#include "rocsparse_memstat.hpp"
+#include "rocsparse_utility.hpp"
 
 /********************************************************************************
  * \brief rocsparse_trm_info is a structure holding the rocsparse bsrsv, csrsv,

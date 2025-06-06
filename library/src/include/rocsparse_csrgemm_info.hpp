@@ -24,6 +24,8 @@
 
 #pragma once
 
+#include "rocsparse-types.h"
+
 /********************************************************************************
  * \brief rocsparse_csrgemm_info is a structure holding the rocsparse csrgemm
  * info data gathered during csrgemm_buffer_size. It must be initialized using
