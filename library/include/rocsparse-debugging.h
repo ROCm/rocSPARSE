@@ -28,7 +28,6 @@
 #ifndef ROCSPARSE_DEBUGGING_H
 #define ROCSPARSE_DEBUGGING_H
 
-#include "rocsparse-types.h"
 #include "rocsparse/rocsparse-export.h"
 
 #ifdef __cplusplus
