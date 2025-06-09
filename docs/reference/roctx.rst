@@ -2,7 +2,7 @@
   :description: rocSPARSE profiling functions API documentation
   :keywords: rocSPARSE, ROCm, API, documentation, exported functions
 
-.. _debugging_:
+.. _rocsparse_roctx_:
 
 
 ********************************************************************
