@@ -9,7 +9,7 @@
 Debugging rocSPARSE functions
 ********************************************************************
 
-This module contains all routines useful got debugging rocSPARSE programs.
+This module contains all routines useful for debugging rocSPARSE programs.
 
 rocsparse_enable_debug_kernel_launch()
 --------------------------------------
