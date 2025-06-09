@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights Reserved.
+* Copyright (C) 2021-2025 Advanced Micro Devices, Inc. All rights Reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 #pragma once
 
 #include "rocsparse/rocsparse-auxiliary.h"
+#include "rocsparse/rocsparse-debugging.h"
 #include "rocsparse_clients_envariables.hpp"
 #include <iostream>
 #include <sstream>
@@ -120,7 +121,7 @@ private:
             }
         }
 
-        val(){};
+        val() {};
         val(const val& v) = delete;
         explicit val(int n)
             : argc(n)
@@ -589,7 +590,7 @@ private:
         {
             char* name{};
             explicit cmdline_arg(char* name_)
-                : name(name_){};
+                : name(name_) {};
         };
 
         //
@@ -600,7 +601,7 @@ private:
             char*                    name{};
             std::vector<cmdline_arg> args{};
             explicit cmdline_option(char* name_)
-                : name(name_){};
+                : name(name_) {};
         };
 
         static inline bool is_option(const char* arg)
