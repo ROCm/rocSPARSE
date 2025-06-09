@@ -42,8 +42,8 @@ ROCSPARSE_EXPORT
 void rocsparse_enable_roctx();
 
 /*! \ingroup aux_module
- * \brief Disable rocTX instrumentation.
- *  \note This routine ignores the environment variable ROCSPARSE_ROCTX.
+ * \details Disable rocTX instrumentation.
+ * \note This routine ignores the environment variable ROCSPARSE_ROCTX.
  */
 ROCSPARSE_EXPORT void rocsparse_disable_roctx();
 
