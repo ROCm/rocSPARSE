@@ -26,51 +26,87 @@
 
 #include "rocsparse_mat_descr.hpp"
 
-typedef struct _rocsparse_trm_info
-{
-    // maximum non-zero entries per row
-    int64_t max_nnz{};
-
-    // device array to hold row permutation
-    void* row_map{};
-    // device array to hold pointer to diagonal entry
-    void* trm_diag_ind{};
-    // device pointers to hold transposed data
-    void* trmt_perm{};
-    void* trmt_row_ptr{};
-    void* trmt_col_ind{};
-
-    // some data to verify correct execution
-    int64_t                     m{};
-    int64_t                     nnz{};
-    const _rocsparse_mat_descr* descr{};
-    const void*                 trm_row_ptr{};
-    const void*                 trm_col_ind{};
-
-    rocsparse_indextype index_type_I = rocsparse_indextype_u16;
-    rocsparse_indextype index_type_J = rocsparse_indextype_u16;
-
-} * rocsparse_trm_info;
-
 namespace rocsparse
 {
-    /********************************************************************************
- * \brief rocsparse_trm_info is a structure holding the rocsparse bsrsv, csrsv,
- * csrsm, csrilu0 and csric0 data gathered during csrsv_analysis,
- * csrilu0_analysis and csric0_analysis. It must be initialized using the
- * create_trm_info() routine. It should be destroyed at the end
- * using destroy_trm_info().
- *******************************************************************************/
-    rocsparse_status create_trm_info(rocsparse_trm_info* info);
 
     /********************************************************************************
- * \brief Copy trm info.
- *******************************************************************************/
-    rocsparse_status copy_trm_info(rocsparse_trm_info dest, const rocsparse_trm_info src);
+   * \brief trm_info_t is a structure holding the rocsparse bsrsv, csrsv,
+   * csrsm, csrilu0 and csric0 data gathered during csrsv_analysis,
+   * csrilu0_analysis and csric0_analysis.
+   *******************************************************************************/
+    struct trm_info_t
+    {
+    protected:
+        // maximum non-zero entries per row
+        int64_t max_nnz;
 
-    /********************************************************************************
- * \brief Destroy trm info.
- *******************************************************************************/
-    rocsparse_status destroy_trm_info(rocsparse_trm_info info);
+        // device array to hold row permutation
+        void* row_map;
+        // device array to hold pointer to diagonal entry
+        void* diag_ind;
+        // device pointers to hold transposed data
+        void* transposed_perm;
+        void* transposed_row_ptr;
+        void* transposed_col_ind;
+
+        // some data to verify correct execution
+        int64_t                     m;
+        int64_t                     nnz;
+        const _rocsparse_mat_descr* descr;
+        const void*                 row_ptr;
+        const void*                 col_ind;
+        rocsparse_indextype         index_type_I;
+        rocsparse_indextype         index_type_J;
+
+    public:
+        trm_info_t(const trm_info_t&);
+        trm_info_t();
+        ~trm_info_t();
+
+        trm_info_t& operator=(const trm_info_t&);
+        int64_t     get_max_nnz() const;
+        void        set_max_nnz(int64_t);
+
+        int64_t get_m() const;
+        void    set_m(int64_t);
+
+        const void* get_row_map() const;
+        void*       get_row_map();
+        void        set_row_map(void*);
+        const void* get_diag_ind() const;
+        void*       get_diag_ind();
+        void        set_diag_ind(void*);
+
+        const void* get_transposed_perm() const;
+        void*       get_transposed_perm();
+        void        set_transposed_perm(void*);
+        const void* get_transposed_row_ptr() const;
+        void*       get_transposed_row_ptr();
+        void        set_transposed_row_ptr(void*);
+
+        const void* get_transposed_col_ind() const;
+        void*       get_transposed_col_ind();
+        void        set_transposed_col_ind(void*);
+
+        const void* get_row_ptr();
+        void        set_row_ptr(const void*);
+
+        const void* get_col_ind();
+        void        set_col_ind(const void*);
+
+        const _rocsparse_mat_descr* get_descr() const;
+        void                        set_descr(const _rocsparse_mat_descr*);
+        rocsparse_indextype         get_offset_indextype() const;
+        rocsparse_indextype         get_index_indextype() const;
+        void                        set_offset_indextype(rocsparse_indextype);
+        void                        set_index_indextype(rocsparse_indextype);
+
+        int64_t get_nnz() const;
+        void    set_nnz(int64_t);
+
+        static void recreate(trm_info_t**);
+        static void destroy(trm_info_t*);
+        static void copy(trm_info_t* __restrict__*, const trm_info_t* __restrict__);
+    };
 
 }

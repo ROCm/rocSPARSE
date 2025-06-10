@@ -44,26 +44,26 @@ protected:
     rocsparse_bsrmv_info bsrmv_info{};
 
 public:
-    rocsparse_trm_info     bsrsv_upper_info{};
-    rocsparse_trm_info     bsrsv_lower_info{};
-    rocsparse_trm_info     bsrsvt_upper_info{};
-    rocsparse_trm_info     bsrsvt_lower_info{};
-    rocsparse_trm_info     bsric0_info{};
-    rocsparse_trm_info     bsrilu0_info{};
-    rocsparse_trm_info     bsrsm_upper_info{};
-    rocsparse_trm_info     bsrsm_lower_info{};
-    rocsparse_trm_info     bsrsmt_upper_info{};
-    rocsparse_trm_info     bsrsmt_lower_info{};
-    rocsparse_trm_info     csric0_info{};
-    rocsparse_trm_info     csrilu0_info{};
-    rocsparse_trm_info     csrsv_upper_info{};
-    rocsparse_trm_info     csrsv_lower_info{};
-    rocsparse_trm_info     csrsvt_upper_info{};
-    rocsparse_trm_info     csrsvt_lower_info{};
-    rocsparse_trm_info     csrsm_upper_info{};
-    rocsparse_trm_info     csrsm_lower_info{};
-    rocsparse_trm_info     csrsmt_upper_info{};
-    rocsparse_trm_info     csrsmt_lower_info{};
+    rocsparse::trm_info_t* bsrsv_upper_info{};
+    rocsparse::trm_info_t* bsrsv_lower_info{};
+    rocsparse::trm_info_t* bsrsvt_upper_info{};
+    rocsparse::trm_info_t* bsrsvt_lower_info{};
+    rocsparse::trm_info_t* bsric0_info{};
+    rocsparse::trm_info_t* bsrilu0_info{};
+    rocsparse::trm_info_t* bsrsm_upper_info{};
+    rocsparse::trm_info_t* bsrsm_lower_info{};
+    rocsparse::trm_info_t* bsrsmt_upper_info{};
+    rocsparse::trm_info_t* bsrsmt_lower_info{};
+    rocsparse::trm_info_t* csric0_info{};
+    rocsparse::trm_info_t* csrilu0_info{};
+    rocsparse::trm_info_t* csrsv_upper_info{};
+    rocsparse::trm_info_t* csrsv_lower_info{};
+    rocsparse::trm_info_t* csrsvt_upper_info{};
+    rocsparse::trm_info_t* csrsvt_lower_info{};
+    rocsparse::trm_info_t* csrsm_upper_info{};
+    rocsparse::trm_info_t* csrsm_lower_info{};
+    rocsparse::trm_info_t* csrsmt_upper_info{};
+    rocsparse::trm_info_t* csrsmt_lower_info{};
     rocsparse_csrgemm_info csrgemm_info{};
     rocsparse_csritsv_info csritsv_info{};
 
@@ -97,6 +97,6 @@ namespace rocsparse
    * \brief check_trm_shared checks if the given trm info structure
    * shares its meta data with another trm info structure.
    *******************************************************************************/
-    bool check_trm_shared(const rocsparse_mat_info info, rocsparse_trm_info trm);
+    bool check_trm_shared(const rocsparse_mat_info info, rocsparse::trm_info_t* trm);
 
 }

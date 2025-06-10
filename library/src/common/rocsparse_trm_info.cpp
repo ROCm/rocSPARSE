@@ -25,241 +25,356 @@
 #include "rocsparse_control.hpp"
 #include "rocsparse_utility.hpp"
 
-/********************************************************************************
- * \brief rocsparse_trm_info is a structure holding the rocsparse bsrsv, csrsv,
- * csrsm, csrilu0 and csric0 data gathered during csrsv_analysis,
- * csrilu0_analysis and csric0_analysis. It must be initialized using the
- * create_trm_info() routine. It should be destroyed at the end
- * using destroy_trm_info().
- *******************************************************************************/
-rocsparse_status rocsparse::create_trm_info(rocsparse_trm_info* info)
+rocsparse::trm_info_t::~trm_info_t()
+{
+    WARNING_IF_HIP_ERROR(rocsparse_hipFree(this->row_map));
+    this->row_map = nullptr;
+
+    WARNING_IF_HIP_ERROR(rocsparse_hipFree(this->diag_ind));
+    this->diag_ind = nullptr;
+
+    WARNING_IF_HIP_ERROR(rocsparse_hipFree(this->transposed_perm));
+    this->transposed_perm = nullptr;
+
+    WARNING_IF_HIP_ERROR(rocsparse_hipFree(this->transposed_row_ptr));
+    this->transposed_row_ptr = nullptr;
+
+    WARNING_IF_HIP_ERROR(rocsparse_hipFree(this->transposed_col_ind));
+    this->transposed_col_ind = nullptr;
+}
+
+void rocsparse::trm_info_t::set_max_nnz(const int64_t value)
+{
+    this->max_nnz = value;
+}
+int64_t rocsparse::trm_info_t::get_max_nnz() const
+{
+    return this->max_nnz;
+}
+
+void rocsparse::trm_info_t::set_row_map(void* const value)
+{
+    this->row_map = value;
+}
+const void* rocsparse::trm_info_t::get_row_map() const
+{
+    return this->row_map;
+}
+void* rocsparse::trm_info_t::get_row_map()
+{
+    return this->row_map;
+}
+
+void rocsparse::trm_info_t::set_diag_ind(void* const value)
+{
+    this->diag_ind = value;
+}
+const void* rocsparse::trm_info_t::get_diag_ind() const
+{
+    return this->diag_ind;
+}
+void* rocsparse::trm_info_t::get_diag_ind()
+{
+    return this->diag_ind;
+}
+
+void rocsparse::trm_info_t::set_transposed_perm(void* const value)
+{
+    this->transposed_perm = value;
+}
+const void* rocsparse::trm_info_t::get_transposed_perm() const
+{
+    return this->transposed_perm;
+}
+void* rocsparse::trm_info_t::get_transposed_perm()
+{
+    return this->transposed_perm;
+}
+
+void rocsparse::trm_info_t::set_transposed_row_ptr(void* const value)
+{
+    this->transposed_row_ptr = value;
+}
+const void* rocsparse::trm_info_t::get_transposed_row_ptr() const
+{
+    return this->transposed_row_ptr;
+}
+void* rocsparse::trm_info_t::get_transposed_row_ptr()
+{
+    return this->transposed_row_ptr;
+}
+
+void rocsparse::trm_info_t::set_transposed_col_ind(void* const value)
+{
+    this->transposed_col_ind = value;
+}
+const void* rocsparse::trm_info_t::get_transposed_col_ind() const
+{
+    return this->transposed_col_ind;
+}
+void* rocsparse::trm_info_t::get_transposed_col_ind()
+{
+    return this->transposed_col_ind;
+}
+
+void rocsparse::trm_info_t::set_m(const int64_t value)
+{
+    this->m = value;
+}
+int64_t rocsparse::trm_info_t::get_m() const
+{
+    return this->m;
+}
+
+void rocsparse::trm_info_t::set_nnz(const int64_t value)
+{
+    this->nnz = value;
+}
+int64_t rocsparse::trm_info_t::get_nnz() const
+{
+    return this->nnz;
+}
+
+void rocsparse::trm_info_t::set_row_ptr(const void* const value)
+{
+    this->row_ptr = value;
+}
+const void* rocsparse::trm_info_t::get_row_ptr()
+{
+    return this->row_ptr;
+}
+
+void rocsparse::trm_info_t::set_col_ind(const void* const value)
+{
+    this->col_ind = value;
+}
+const void* rocsparse::trm_info_t::get_col_ind()
+{
+    return this->col_ind;
+}
+
+const _rocsparse_mat_descr* rocsparse::trm_info_t::get_descr() const
+{
+    return this->descr;
+}
+void rocsparse::trm_info_t::set_descr(const _rocsparse_mat_descr* const value)
+{
+    this->descr = value;
+}
+
+rocsparse_indextype rocsparse::trm_info_t::get_offset_indextype() const
+{
+    return this->index_type_I;
+}
+rocsparse_indextype rocsparse::trm_info_t::get_index_indextype() const
+{
+    return this->index_type_J;
+}
+
+void rocsparse::trm_info_t::set_offset_indextype(const rocsparse_indextype value)
+{
+    this->index_type_I = value;
+}
+void rocsparse::trm_info_t::set_index_indextype(const rocsparse_indextype value)
+{
+    this->index_type_J = value;
+}
+
+void rocsparse::trm_info_t::recreate(rocsparse::trm_info_t** const dp_that)
+{
+    if(dp_that[0] != nullptr)
+    {
+        delete dp_that[0];
+        dp_that[0] = nullptr;
+    }
+
+    dp_that[0] = new rocsparse::trm_info_t();
+}
+
+void rocsparse::trm_info_t::destroy(rocsparse::trm_info_t* const p_that)
+{
+    if(p_that != nullptr)
+    {
+        delete p_that;
+    }
+}
+
+rocsparse::trm_info_t::trm_info_t()
+    : max_nnz(0)
+    , row_map(nullptr)
+    , diag_ind(nullptr)
+    , transposed_perm(nullptr)
+    , transposed_row_ptr(nullptr)
+    , transposed_col_ind(nullptr)
+    , m(0)
+    , nnz(0)
+    , descr(nullptr)
+    , row_ptr(nullptr)
+    , col_ind(nullptr)
+    , index_type_I((rocsparse_indextype)-1)
+    , index_type_J((rocsparse_indextype)-1)
+{
+}
+
+rocsparse::trm_info_t::trm_info_t(const rocsparse::trm_info_t& that)
+{
+    this->max_nnz      = that.max_nnz;
+    this->m            = that.m;
+    this->nnz          = that.nnz;
+    this->index_type_I = that.index_type_I;
+    this->index_type_J = that.index_type_J;
+
+    // Not owned by the info struct. Just pointers to externally allocated memory
+    this->descr   = that.descr;
+    this->row_ptr = that.row_ptr;
+    this->col_ind = that.col_ind;
+
+    const size_t I_size = rocsparse::indextype_sizeof(that.index_type_I);
+    const size_t J_size = rocsparse::indextype_sizeof(that.index_type_J);
+
+    if(that.row_map != nullptr)
+    {
+        THROW_IF_HIP_ERROR(rocsparse_hipMalloc(&(this->row_map), J_size * that.m));
+        THROW_IF_HIP_ERROR(
+            hipMemcpy(this->row_map, that.row_map, J_size * that.m, hipMemcpyDeviceToDevice));
+    }
+
+    if(that.diag_ind != nullptr)
+    {
+        THROW_IF_HIP_ERROR(rocsparse_hipMalloc(&(this->diag_ind), I_size * that.m));
+        THROW_IF_HIP_ERROR(
+            hipMemcpy(this->diag_ind, that.diag_ind, I_size * that.m, hipMemcpyDeviceToDevice));
+    }
+
+    if(that.transposed_perm != nullptr)
+    {
+        THROW_IF_HIP_ERROR(rocsparse_hipMalloc(&(this->transposed_perm), I_size * that.nnz));
+        THROW_IF_HIP_ERROR(hipMemcpy(this->transposed_perm,
+                                     that.transposed_perm,
+                                     I_size * that.nnz,
+                                     hipMemcpyDeviceToDevice));
+    }
+
+    if(that.transposed_row_ptr != nullptr)
+    {
+        THROW_IF_HIP_ERROR(rocsparse_hipMalloc(&(this->transposed_row_ptr), I_size * (that.m + 1)));
+        THROW_IF_HIP_ERROR(hipMemcpy(this->transposed_row_ptr,
+                                     that.transposed_row_ptr,
+                                     I_size * (that.m + 1),
+                                     hipMemcpyDeviceToDevice));
+    }
+
+    if(that.transposed_col_ind != nullptr)
+    {
+        THROW_IF_HIP_ERROR(rocsparse_hipMalloc(&(this->transposed_col_ind), J_size * that.nnz));
+
+        THROW_IF_HIP_ERROR(hipMemcpy(this->transposed_col_ind,
+                                     that.transposed_col_ind,
+                                     J_size * that.nnz,
+                                     hipMemcpyDeviceToDevice));
+    }
+}
+
+rocsparse::trm_info_t& rocsparse::trm_info_t::operator=(const rocsparse::trm_info_t& that)
+{
+    bool invalid = false;
+    invalid |= (this->max_nnz != that.max_nnz);
+    invalid |= (this->m != that.m);
+    invalid |= (this->nnz != that.nnz);
+    invalid |= (this->index_type_I != that.index_type_I);
+    invalid |= (this->index_type_J != that.index_type_J);
+    if(invalid)
+    {
+        THROW_IF_ROCSPARSE_ERROR(rocsparse_status_internal_error);
+    }
+
+    const size_t I_size = rocsparse::indextype_sizeof(that.index_type_I);
+    const size_t J_size = rocsparse::indextype_sizeof(that.index_type_J);
+
+    if(that.row_map != nullptr)
+    {
+        if(this->row_map == nullptr)
+        {
+            THROW_IF_HIP_ERROR(rocsparse_hipMalloc(&(this->row_map), J_size * that.m));
+        }
+        THROW_IF_HIP_ERROR(
+            hipMemcpy(this->row_map, that.row_map, J_size * that.m, hipMemcpyDeviceToDevice));
+    }
+
+    if(that.diag_ind != nullptr)
+    {
+        if(this->diag_ind == nullptr)
+        {
+            THROW_IF_HIP_ERROR(rocsparse_hipMalloc(&(this->diag_ind), I_size * that.m));
+        }
+        THROW_IF_HIP_ERROR(
+            hipMemcpy(this->diag_ind, that.diag_ind, I_size * that.m, hipMemcpyDeviceToDevice));
+    }
+
+    if(that.transposed_perm != nullptr)
+    {
+        if(this->transposed_perm == nullptr)
+        {
+            THROW_IF_HIP_ERROR(rocsparse_hipMalloc(&(this->transposed_perm), I_size * that.nnz));
+        }
+        THROW_IF_HIP_ERROR(hipMemcpy(this->transposed_perm,
+                                     that.transposed_perm,
+                                     I_size * that.nnz,
+                                     hipMemcpyDeviceToDevice));
+    }
+
+    if(that.transposed_row_ptr != nullptr)
+    {
+        if(this->transposed_row_ptr == nullptr)
+        {
+            THROW_IF_HIP_ERROR(
+                rocsparse_hipMalloc(&(this->transposed_row_ptr), I_size * (that.m + 1)));
+        }
+        THROW_IF_HIP_ERROR(hipMemcpy(this->transposed_row_ptr,
+                                     that.transposed_row_ptr,
+                                     I_size * (that.m + 1),
+                                     hipMemcpyDeviceToDevice));
+    }
+
+    if(that.transposed_col_ind != nullptr)
+    {
+        if(this->transposed_col_ind == nullptr)
+        {
+            THROW_IF_HIP_ERROR(rocsparse_hipMalloc(&(this->transposed_col_ind), J_size * that.nnz));
+        }
+        THROW_IF_HIP_ERROR(hipMemcpy(this->transposed_col_ind,
+                                     that.transposed_col_ind,
+                                     J_size * that.nnz,
+                                     hipMemcpyDeviceToDevice));
+    }
+
+    this->max_nnz      = that.max_nnz;
+    this->m            = that.m;
+    this->nnz          = that.nnz;
+    this->index_type_I = that.index_type_I;
+    this->index_type_J = that.index_type_J;
+
+    // Not owned by the info struct. Just pointers to externally allocated memory
+    this->descr   = that.descr;
+    this->row_ptr = that.row_ptr;
+    this->col_ind = that.col_ind;
+    return *this;
+}
+
+void rocsparse::trm_info_t::copy(rocsparse::trm_info_t* __restrict__* const p_dest,
+                                 const rocsparse::trm_info_t* const __restrict__ that)
 {
     ROCSPARSE_ROUTINE_TRACE;
 
-    if(info == nullptr)
+    if(p_dest[0] == nullptr)
     {
-        return rocsparse_status_invalid_pointer;
+        p_dest[0] = new rocsparse::trm_info_t(that[0]);
     }
     else
     {
-        // Allocate
-        try
+        if(p_dest[0] != that)
         {
-            *info = new _rocsparse_trm_info;
-        }
-        catch(const rocsparse_status& status)
-        {
-            return status;
-        }
-        return rocsparse_status_success;
-    }
-}
-
-/********************************************************************************
- * \brief Copy trm info.
- *******************************************************************************/
-rocsparse_status rocsparse::copy_trm_info(rocsparse_trm_info dest, const rocsparse_trm_info src)
-{
-    ROCSPARSE_ROUTINE_TRACE;
-
-    if(dest == nullptr || src == nullptr || dest == src)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // check if destination already contains data. If it does, verify its allocated arrays are the same size as source
-    bool previously_created = false;
-    previously_created |= (dest->max_nnz != 0);
-
-    previously_created |= (dest->row_map != nullptr);
-    previously_created |= (dest->trm_diag_ind != nullptr);
-    previously_created |= (dest->trmt_perm != nullptr);
-    previously_created |= (dest->trmt_row_ptr != nullptr);
-    previously_created |= (dest->trmt_col_ind != nullptr);
-
-    previously_created |= (dest->m != 0);
-    previously_created |= (dest->nnz != 0);
-    previously_created |= (dest->descr != nullptr);
-    previously_created |= (dest->trm_row_ptr != nullptr);
-    previously_created |= (dest->trm_col_ind != nullptr);
-    previously_created |= (dest->index_type_I != rocsparse_indextype_u16);
-    previously_created |= (dest->index_type_J != rocsparse_indextype_u16);
-
-    if(previously_created)
-    {
-        // Sparsity pattern of dest and src must match
-        bool invalid = false;
-        invalid |= (dest->max_nnz != src->max_nnz);
-        invalid |= (dest->m != src->m);
-        invalid |= (dest->nnz != src->nnz);
-        invalid |= (dest->index_type_I != src->index_type_I);
-        invalid |= (dest->index_type_J != src->index_type_J);
-
-        if(invalid)
-        {
-            return rocsparse_status_invalid_pointer;
+            p_dest[0][0] = that[0];
         }
     }
-
-    size_t I_size = sizeof(uint16_t);
-    switch(src->index_type_I)
-    {
-    case rocsparse_indextype_u16:
-    {
-        I_size = sizeof(uint16_t);
-        break;
-    }
-    case rocsparse_indextype_i32:
-    {
-        I_size = sizeof(int32_t);
-        break;
-    }
-    case rocsparse_indextype_i64:
-    {
-        I_size = sizeof(int64_t);
-        break;
-    }
-    }
-
-    size_t J_size = sizeof(uint16_t);
-    switch(src->index_type_J)
-    {
-    case rocsparse_indextype_u16:
-    {
-        J_size = sizeof(uint16_t);
-        break;
-    }
-    case rocsparse_indextype_i32:
-    {
-        J_size = sizeof(int32_t);
-        break;
-    }
-    case rocsparse_indextype_i64:
-    {
-        J_size = sizeof(int64_t);
-        break;
-    }
-    }
-
-    if(src->row_map != nullptr)
-    {
-        if(dest->row_map == nullptr)
-        {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&(dest->row_map), J_size * src->m));
-        }
-        RETURN_IF_HIP_ERROR(
-            hipMemcpy(dest->row_map, src->row_map, J_size * src->m, hipMemcpyDeviceToDevice));
-    }
-
-    if(src->trm_diag_ind != nullptr)
-    {
-        if(dest->trm_diag_ind == nullptr)
-        {
-            RETURN_IF_HIP_ERROR(
-                rocsparse_hipMalloc((void**)&(dest->trm_diag_ind), I_size * src->m));
-        }
-        RETURN_IF_HIP_ERROR(hipMemcpy(
-            dest->trm_diag_ind, src->trm_diag_ind, I_size * src->m, hipMemcpyDeviceToDevice));
-    }
-
-    if(src->trmt_perm != nullptr)
-    {
-        if(dest->trmt_perm == nullptr)
-        {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&(dest->trmt_perm), I_size * src->nnz));
-        }
-        RETURN_IF_HIP_ERROR(
-            hipMemcpy(dest->trmt_perm, src->trmt_perm, I_size * src->nnz, hipMemcpyDeviceToDevice));
-    }
-
-    if(src->trmt_row_ptr != nullptr)
-    {
-        if(dest->trmt_row_ptr == nullptr)
-        {
-            RETURN_IF_HIP_ERROR(
-                rocsparse_hipMalloc((void**)&(dest->trmt_row_ptr), I_size * (src->m + 1)));
-        }
-        RETURN_IF_HIP_ERROR(hipMemcpy(
-            dest->trmt_row_ptr, src->trmt_row_ptr, I_size * (src->m + 1), hipMemcpyDeviceToDevice));
-    }
-
-    if(src->trmt_col_ind != nullptr)
-    {
-        if(dest->trmt_col_ind == nullptr)
-        {
-            RETURN_IF_HIP_ERROR(
-                rocsparse_hipMalloc((void**)&(dest->trmt_col_ind), J_size * src->nnz));
-        }
-        RETURN_IF_HIP_ERROR(hipMemcpy(
-            dest->trmt_col_ind, src->trmt_col_ind, J_size * src->nnz, hipMemcpyDeviceToDevice));
-    }
-
-    dest->max_nnz      = src->max_nnz;
-    dest->m            = src->m;
-    dest->nnz          = src->nnz;
-    dest->index_type_I = src->index_type_I;
-    dest->index_type_J = src->index_type_J;
-
-    // Not owned by the info struct. Just pointers to externally allocated memory
-    dest->descr       = src->descr;
-    dest->trm_row_ptr = src->trm_row_ptr;
-    dest->trm_col_ind = src->trm_col_ind;
-
-    return rocsparse_status_success;
-}
-
-/********************************************************************************
- * \brief Destroy trm info.
- *******************************************************************************/
-rocsparse_status rocsparse::destroy_trm_info(rocsparse_trm_info info)
-{
-    ROCSPARSE_ROUTINE_TRACE;
-
-    if(info == nullptr)
-    {
-        return rocsparse_status_success;
-    }
-
-    // Clean up
-    if(info->row_map != nullptr)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->row_map));
-        info->row_map = nullptr;
-    }
-
-    if(info->trm_diag_ind != nullptr)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->trm_diag_ind));
-        info->trm_diag_ind = nullptr;
-    }
-
-    // Clear trmt arrays
-    if(info->trmt_perm != nullptr)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->trmt_perm));
-        info->trmt_perm = nullptr;
-    }
-
-    if(info->trmt_row_ptr != nullptr)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->trmt_row_ptr));
-        info->trmt_row_ptr = nullptr;
-    }
-
-    if(info->trmt_col_ind != nullptr)
-    {
-        RETURN_IF_HIP_ERROR(rocsparse_hipFree(info->trmt_col_ind));
-        info->trmt_col_ind = nullptr;
-    }
-
-    // Destruct
-    try
-    {
-        delete info;
-    }
-    catch(const rocsparse_status& status)
-    {
-        return status;
-    }
-    return rocsparse_status_success;
 }

@@ -122,64 +122,64 @@ _rocsparse_mat_info::~_rocsparse_mat_info()
     }
 
     // Clear bsrsvt upper info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsrsvt_upper_info));
+    rocsparse::trm_info_t::destroy(this->bsrsvt_upper_info);
 
     // Clear bsrsvt lower info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsrsvt_lower_info));
+    rocsparse::trm_info_t::destroy(this->bsrsvt_lower_info);
 
     // Clear bsric0 info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsric0_info));
+    rocsparse::trm_info_t::destroy(this->bsric0_info);
 
     // Clear bsrilu0 info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsrilu0_info));
+    rocsparse::trm_info_t::destroy(this->bsrilu0_info);
 
     // Clear csrsvt upper info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csrsvt_upper_info));
+    rocsparse::trm_info_t::destroy(this->csrsvt_upper_info);
 
     // Clear csrsvt lower info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csrsvt_lower_info));
+    rocsparse::trm_info_t::destroy(this->csrsvt_lower_info);
 
     // Clear csrsmt upper info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csrsmt_upper_info));
+    rocsparse::trm_info_t::destroy(this->csrsmt_upper_info);
 
     // Clear csrsmt lower info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csrsmt_lower_info));
+    rocsparse::trm_info_t::destroy(this->csrsmt_lower_info);
 
     // Clear bsrsmt upper info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsrsmt_upper_info));
+    rocsparse::trm_info_t::destroy(this->bsrsmt_upper_info);
 
     // Clear bsrsmt lower info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsrsmt_lower_info));
+    rocsparse::trm_info_t::destroy(this->bsrsmt_lower_info);
 
     // Clear csric0 info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csric0_info));
+    rocsparse::trm_info_t::destroy(this->csric0_info);
 
     // Clear csrilu0 info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csrilu0_info));
+    rocsparse::trm_info_t::destroy(this->csrilu0_info);
 
     // Clear bsrsv upper info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsrsv_upper_info));
+    rocsparse::trm_info_t::destroy(this->bsrsv_upper_info);
 
     // Clear bsrsv lower info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsrsv_lower_info));
+    rocsparse::trm_info_t::destroy(this->bsrsv_lower_info);
 
     // Clear csrsv upper info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csrsv_upper_info));
+    rocsparse::trm_info_t::destroy(this->csrsv_upper_info);
 
     // Clear csrsv lower info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csrsv_lower_info));
+    rocsparse::trm_info_t::destroy(this->csrsv_lower_info);
 
     // Clear csrsm upper info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csrsm_upper_info));
+    rocsparse::trm_info_t::destroy(this->csrsm_upper_info);
 
     // Clear csrsm lower info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->csrsm_lower_info));
+    rocsparse::trm_info_t::destroy(this->csrsm_lower_info);
 
     // Clear bsrsm upper info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsrsm_upper_info));
+    rocsparse::trm_info_t::destroy(this->bsrsm_upper_info);
 
     // Clear bsrsm lower info struct
-    WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(this->bsrsm_lower_info));
+    rocsparse::trm_info_t::destroy(this->bsrsm_lower_info);
 
     // Clear csrgemm info struct
     WARNING_IF_ROCSPARSE_ERROR(rocsparse::destroy_csrgemm_info(this->csrgemm_info));
@@ -208,7 +208,7 @@ _rocsparse_mat_info::~_rocsparse_mat_info()
  * \brief check_trm_shared checks if the given trm info structure
  * shares its meta data with another trm info structure.
  *******************************************************************************/
-bool rocsparse::check_trm_shared(const rocsparse_mat_info info, rocsparse_trm_info trm)
+bool rocsparse::check_trm_shared(const rocsparse_mat_info info, rocsparse::trm_info_t* trm)
 {
     ROCSPARSE_ROUTINE_TRACE;
 

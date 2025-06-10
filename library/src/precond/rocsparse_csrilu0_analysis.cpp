@@ -94,11 +94,7 @@ namespace rocsparse
         // User is explicitly asking to force a re-analysis, or no valid data has been
         // found to be re-used.
 
-        // Clear csrilu0 info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::destroy_trm_info(info->csrilu0_info));
-
-        // Create csrilu0 info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse::create_trm_info(&info->csrilu0_info));
+        rocsparse::trm_info_t::recreate(&info->csrilu0_info);
 
         // Perform analysis
         RETURN_IF_ROCSPARSE_ERROR(rocsparse::trm_analysis(handle,
