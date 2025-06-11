@@ -36,7 +36,7 @@ rocsparse_status rocsparse::copy_csrmv_info(rocsparse_csrmv_info       dest,
 
     if(dest == nullptr || src == nullptr || dest == src)
     {
-        return rocsparse_status_invalid_pointer;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
     }
 
     // check if destination already contains data. If it does, verify its allocated arrays are the same size as source
@@ -84,7 +84,7 @@ rocsparse_status rocsparse::copy_csrmv_info(rocsparse_csrmv_info       dest,
 
         if(invalid)
         {
-            return rocsparse_status_invalid_pointer;
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_pointer);
         }
     }
 

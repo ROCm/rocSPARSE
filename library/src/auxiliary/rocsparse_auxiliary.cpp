@@ -1443,7 +1443,7 @@ try
             dest->set_csrmv_info(dest_csrmv_info);
         }
 
-        rocsparse::copy_csrmv_info(dest_csrmv_info, src_csrmv_info);
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse::copy_csrmv_info(dest_csrmv_info, src_csrmv_info));
     }
 
     if(src->csric0_info != nullptr)
