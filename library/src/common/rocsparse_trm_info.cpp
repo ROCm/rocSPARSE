@@ -199,25 +199,11 @@ void rocsparse::trm_info_t::destroy(rocsparse::trm_info_t* const p_that)
     }
 }
 
-rocsparse::trm_info_t::trm_info_t()
-    : max_nnz(0)
-    , row_map(nullptr)
-    , diag_ind(nullptr)
-    , transposed_perm(nullptr)
-    , transposed_row_ptr(nullptr)
-    , transposed_col_ind(nullptr)
-    , m(0)
-    , nnz(0)
-    , descr(nullptr)
-    , row_ptr(nullptr)
-    , col_ind(nullptr)
-    , index_type_I((rocsparse_indextype)-1)
-    , index_type_J((rocsparse_indextype)-1)
-{
-}
+rocsparse::trm_info_t::trm_info_t() {}
 
 rocsparse::trm_info_t::trm_info_t(const rocsparse::trm_info_t& that)
 {
+
     this->max_nnz      = that.max_nnz;
     this->m            = that.m;
     this->nnz          = that.nnz;
@@ -234,7 +220,7 @@ rocsparse::trm_info_t::trm_info_t(const rocsparse::trm_info_t& that)
 
     if(that.row_map != nullptr)
     {
-        THROW_IF_HIP_ERROR(rocsparse_hipMalloc(&(this->row_map), J_size * that.m));
+        THROW_IF_HIP_ERROR(rocsparse_hipMalloc(&this->row_map, J_size * that.m));
         THROW_IF_HIP_ERROR(
             hipMemcpy(this->row_map, that.row_map, J_size * that.m, hipMemcpyDeviceToDevice));
     }

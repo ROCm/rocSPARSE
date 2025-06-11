@@ -132,8 +132,8 @@ rocsparse_status rocsparse::copy_csrmv_info(rocsparse_csrmv_info       dest,
     {
         if(dest->adaptive.row_blocks == nullptr)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->adaptive.row_blocks,
-                                                    I_size * src->adaptive.size));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMalloc(&dest->adaptive.row_blocks, I_size * src->adaptive.size));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(dest->adaptive.row_blocks,
                                       src->adaptive.row_blocks,
@@ -145,7 +145,7 @@ rocsparse_status rocsparse::copy_csrmv_info(rocsparse_csrmv_info       dest,
     {
         if(dest->adaptive.wg_flags == nullptr)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->adaptive.wg_flags,
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&dest->adaptive.wg_flags,
                                                     sizeof(uint32_t) * src->adaptive.size));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(dest->adaptive.wg_flags,
@@ -159,7 +159,7 @@ rocsparse_status rocsparse::copy_csrmv_info(rocsparse_csrmv_info       dest,
         if(dest->adaptive.wg_ids == nullptr)
         {
             RETURN_IF_HIP_ERROR(
-                rocsparse_hipMalloc((void**)&dest->adaptive.wg_ids, J_size * src->adaptive.size));
+                rocsparse_hipMalloc(&dest->adaptive.wg_ids, J_size * src->adaptive.size));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(dest->adaptive.wg_ids,
                                       src->adaptive.wg_ids,
@@ -172,7 +172,7 @@ rocsparse_status rocsparse::copy_csrmv_info(rocsparse_csrmv_info       dest,
         if(dest->lrb.wg_flags == nullptr)
         {
             RETURN_IF_HIP_ERROR(
-                rocsparse_hipMalloc((void**)&dest->lrb.wg_flags, sizeof(uint32_t) * src->lrb.size));
+                rocsparse_hipMalloc(&dest->lrb.wg_flags, sizeof(uint32_t) * src->lrb.size));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(dest->lrb.wg_flags,
                                       src->lrb.wg_flags,
@@ -185,7 +185,7 @@ rocsparse_status rocsparse::copy_csrmv_info(rocsparse_csrmv_info       dest,
         if(dest->lrb.rows_offsets_scratch == nullptr)
         {
             RETURN_IF_HIP_ERROR(
-                rocsparse_hipMalloc((void**)&dest->lrb.rows_offsets_scratch, J_size * src->m));
+                rocsparse_hipMalloc(&dest->lrb.rows_offsets_scratch, J_size * src->m));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(dest->lrb.rows_offsets_scratch,
                                       src->lrb.rows_offsets_scratch,
@@ -197,7 +197,7 @@ rocsparse_status rocsparse::copy_csrmv_info(rocsparse_csrmv_info       dest,
     {
         if(dest->lrb.rows_bins == nullptr)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->lrb.rows_bins, J_size * src->m));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&dest->lrb.rows_bins, J_size * src->m));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(
             dest->lrb.rows_bins, src->lrb.rows_bins, J_size * src->m, hipMemcpyDeviceToDevice));
@@ -207,7 +207,7 @@ rocsparse_status rocsparse::copy_csrmv_info(rocsparse_csrmv_info       dest,
     {
         if(dest->lrb.n_rows_bins == nullptr)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->lrb.n_rows_bins, J_size * 32));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&dest->lrb.n_rows_bins, J_size * 32));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(
             dest->lrb.n_rows_bins, src->lrb.n_rows_bins, J_size * 32, hipMemcpyDeviceToDevice));

@@ -114,7 +114,7 @@ namespace rocsparse
             if(info->singular_pivot == nullptr)
             {
                 RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
-                    (void**)&(info->singular_pivot), sizeof(rocsparse_int), handle->stream));
+                    &info->singular_pivot, sizeof(rocsparse_int), handle->stream));
             }
             RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->singular_pivot,
                                                info->zero_pivot,

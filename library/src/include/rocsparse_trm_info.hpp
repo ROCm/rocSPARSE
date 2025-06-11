@@ -38,25 +38,25 @@ namespace rocsparse
     {
     protected:
         // maximum non-zero entries per row
-        int64_t max_nnz;
+        int64_t max_nnz{0};
 
         // device array to hold row permutation
-        void* row_map;
+        void* row_map{nullptr};
         // device array to hold pointer to diagonal entry
-        void* diag_ind;
+        void* diag_ind{nullptr};
         // device pointers to hold transposed data
-        void* transposed_perm;
-        void* transposed_row_ptr;
-        void* transposed_col_ind;
+        void* transposed_perm{nullptr};
+        void* transposed_row_ptr{nullptr};
+        void* transposed_col_ind{nullptr};
 
         // some data to verify correct execution
-        int64_t                     m;
-        int64_t                     nnz;
-        const _rocsparse_mat_descr* descr;
-        const void*                 row_ptr;
-        const void*                 col_ind;
-        rocsparse_indextype         index_type_I;
-        rocsparse_indextype         index_type_J;
+        int64_t                     m{0};
+        int64_t                     nnz{0};
+        const _rocsparse_mat_descr* descr{nullptr};
+        const void*                 row_ptr{nullptr};
+        const void*                 col_ind{nullptr};
+        rocsparse_indextype         index_type_I{(rocsparse_indextype)-1};
+        rocsparse_indextype         index_type_J{(rocsparse_indextype)-1};
 
     public:
         trm_info_t(const trm_info_t&);

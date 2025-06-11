@@ -1217,8 +1217,8 @@ try
     {
         if(dest->ell_col_ind == nullptr)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&(dest->ell_col_ind),
-                                                    sizeof(rocsparse_int) * src->ell_nnz));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMalloc(&dest->ell_col_ind, sizeof(rocsparse_int) * src->ell_nnz));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(dest->ell_col_ind,
                                       src->ell_col_ind,
@@ -1230,8 +1230,7 @@ try
     {
         if(dest->ell_val == nullptr)
         {
-            RETURN_IF_HIP_ERROR(
-                rocsparse_hipMalloc((void**)&(dest->ell_val), T_size * src->ell_nnz));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&dest->ell_val, T_size * src->ell_nnz));
         }
         RETURN_IF_HIP_ERROR(
             hipMemcpy(dest->ell_val, src->ell_val, T_size * src->ell_nnz, hipMemcpyDeviceToDevice));
@@ -1241,8 +1240,8 @@ try
     {
         if(dest->coo_row_ind == nullptr)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&(dest->coo_row_ind),
-                                                    sizeof(rocsparse_int) * src->coo_nnz));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMalloc(&dest->coo_row_ind, sizeof(rocsparse_int) * src->coo_nnz));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(dest->coo_row_ind,
                                       src->coo_row_ind,
@@ -1254,8 +1253,8 @@ try
     {
         if(dest->coo_col_ind == nullptr)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&(dest->coo_col_ind),
-                                                    sizeof(rocsparse_int) * src->coo_nnz));
+            RETURN_IF_HIP_ERROR(
+                rocsparse_hipMalloc(&dest->coo_col_ind, sizeof(rocsparse_int) * src->coo_nnz));
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(dest->coo_col_ind,
                                       src->coo_col_ind,
@@ -1267,8 +1266,7 @@ try
     {
         if(dest->coo_val == nullptr)
         {
-            RETURN_IF_HIP_ERROR(
-                rocsparse_hipMalloc((void**)&(dest->coo_val), T_size * src->coo_nnz));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&dest->coo_val, T_size * src->coo_nnz));
         }
         RETURN_IF_HIP_ERROR(
             hipMemcpy(dest->coo_val, src->coo_val, T_size * src->coo_nnz, hipMemcpyDeviceToDevice));
@@ -1526,7 +1524,7 @@ try
         const size_t J_size = rocsparse::indextype_sizeof(index_type_J);
         if(dest->zero_pivot == nullptr)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->zero_pivot, J_size));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&dest->zero_pivot, J_size));
         }
         RETURN_IF_HIP_ERROR(
             hipMemcpy(dest->zero_pivot, src->zero_pivot, J_size, hipMemcpyDeviceToDevice));
@@ -1538,7 +1536,7 @@ try
         const size_t J_size = rocsparse::indextype_sizeof(index_type_J);
         if(dest->singular_pivot == nullptr)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc((void**)&dest->singular_pivot, J_size));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMalloc(&dest->singular_pivot, J_size));
         }
         RETURN_IF_HIP_ERROR(
             hipMemcpy(dest->singular_pivot, src->singular_pivot, J_size, hipMemcpyDeviceToDevice));

@@ -46,7 +46,6 @@ void _rocsparse_adaptive_info::clear()
     THROW_IF_HIP_ERROR(rocsparse_hipFree(this->row_blocks));
     THROW_IF_HIP_ERROR(rocsparse_hipFree(this->wg_flags));
     THROW_IF_HIP_ERROR(rocsparse_hipFree(this->wg_ids));
-
     this->row_blocks = nullptr;
     this->wg_flags   = nullptr;
     this->wg_ids     = nullptr;
