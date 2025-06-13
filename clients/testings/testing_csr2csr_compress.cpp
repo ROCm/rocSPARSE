@@ -213,21 +213,25 @@ void testing_csr2csr_compress(const Arguments& arg)
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
 
-        size_t total_memory     = 0;
-        size_t available_memory = 0;
-        RETURN_IF_HIP_ERROR(hipMemGetInfo(&available_memory, &total_memory));
-        std::cout << "AAAA total_memory: " << total_memory
-                  << " available_memory: " << available_memory << std::endl;
+        {
+            size_t total_memory     = 0;
+            size_t available_memory = 0;
+            RETURN_IF_HIP_ERROR(hipMemGetInfo(&available_memory, &total_memory));
+            std::cout << "AAAA total_memory: " << total_memory
+                      << " available_memory: " << available_memory << std::endl;
+        }
 
         device_vector<rocsparse_int> dnnz_C(1);
         CHECK_ROCSPARSE_ERROR(rocsparse_nnz_compress<T>(
             handle, M, descr_A, dcsr_val_A, dcsr_row_ptr_A, dnnz_per_row, dnnz_C, tol));
 
-        size_t total_memory     = 0;
-        size_t available_memory = 0;
-        RETURN_IF_HIP_ERROR(hipMemGetInfo(&available_memory, &total_memory));
-        std::cout << "DDDD total_memory: " << total_memory
-                  << " available_memory: " << available_memory << std::endl;
+        {
+            size_t total_memory     = 0;
+            size_t available_memory = 0;
+            RETURN_IF_HIP_ERROR(hipMemGetInfo(&available_memory, &total_memory));
+            std::cout << "DDDD total_memory: " << total_memory
+                      << " available_memory: " << available_memory << std::endl;
+        }
 
         rocsparse_int hnnz_C_copied_from_device = 0;
         CHECK_HIP_ERROR(hipMemcpy(
