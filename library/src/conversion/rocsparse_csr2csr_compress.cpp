@@ -118,6 +118,12 @@ rocsparse_status rocsparse::csr2csr_compress_template(rocsparse_handle          
     }
     else
     {
+        size_t total_memory     = 0;
+        size_t available_memory = 0;
+        RETURN_IF_HIP_ERROR(hipMemGetInfo(&available_memory, &total_memory));
+        std::cout << "EEEE total_memory: " << total_memory
+                  << " available_memory: " << available_memory
+                  << " temp_storage_size_bytes: " << temp_storage_size_bytes << std::endl;
         RETURN_IF_HIP_ERROR(
             rocsparse_hipMallocAsync(&temp_storage_ptr, temp_storage_size_bytes, handle->stream));
         temp_alloc = true;

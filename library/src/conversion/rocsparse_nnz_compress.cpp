@@ -347,6 +347,11 @@ rocsparse_status rocsparse::nnz_compress_template(rocsparse_handle          hand
     rocsparse_int* dnnz_C;
     if(handle->pointer_mode == rocsparse_pointer_mode_host)
     {
+        size_t total_memory     = 0;
+        size_t available_memory = 0;
+        RETURN_IF_HIP_ERROR(hipMemGetInfo(&available_memory, &total_memory));
+        std::cout << "BBBB total_memory: " << total_memory
+                  << " available_memory: " << available_memory << std::endl;
         RETURN_IF_HIP_ERROR(
             rocsparse_hipMallocAsync(&dnnz_C, sizeof(rocsparse_int), handle->stream));
     }
@@ -370,6 +375,12 @@ rocsparse_status rocsparse::nnz_compress_template(rocsparse_handle          hand
     }
     else
     {
+        size_t total_memory     = 0;
+        size_t available_memory = 0;
+        RETURN_IF_HIP_ERROR(hipMemGetInfo(&available_memory, &total_memory));
+        std::cout << "CCCC total_memory: " << total_memory
+                  << " available_memory: " << available_memory
+                  << " temp_storage_size_bytes: " << temp_storage_size_bytes << std::endl;
         RETURN_IF_HIP_ERROR(
             rocsparse_hipMallocAsync(&temp_storage_ptr, temp_storage_size_bytes, handle->stream));
         temp_alloc = true;
