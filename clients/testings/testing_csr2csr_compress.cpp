@@ -216,7 +216,7 @@ void testing_csr2csr_compress(const Arguments& arg)
         {
             size_t total_memory     = 0;
             size_t available_memory = 0;
-            RETURN_IF_HIP_ERROR(hipMemGetInfo(&available_memory, &total_memory));
+            CHECK_HIP_ERROR(hipMemGetInfo(&available_memory, &total_memory));
             std::cout << "AAAA total_memory: " << total_memory
                       << " available_memory: " << available_memory << std::endl;
         }
@@ -228,7 +228,7 @@ void testing_csr2csr_compress(const Arguments& arg)
         {
             size_t total_memory     = 0;
             size_t available_memory = 0;
-            RETURN_IF_HIP_ERROR(hipMemGetInfo(&available_memory, &total_memory));
+            CHECK_HIP_ERROR(hipMemGetInfo(&available_memory, &total_memory));
             std::cout << "DDDD total_memory: " << total_memory
                       << " available_memory: " << available_memory << std::endl;
         }
