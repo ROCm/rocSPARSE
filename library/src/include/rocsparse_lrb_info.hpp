@@ -38,4 +38,4 @@ typedef struct _rocsparse_lrb_info
     ~_rocsparse_lrb_info();
     void clear();
 
-}* rocsparse_lrb_info;
+} * rocsparse_lrb_info;

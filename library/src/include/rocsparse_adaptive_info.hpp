@@ -37,4 +37,4 @@ typedef struct _rocsparse_adaptive_info
 public:
     ~_rocsparse_adaptive_info();
     void clear();
-}* rocsparse_adaptive_info;
+} * rocsparse_adaptive_info;

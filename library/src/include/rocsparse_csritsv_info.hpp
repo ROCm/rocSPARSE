@@ -61,7 +61,7 @@ public:
             delete this->m_csrmv_info;
         }
     }
-}* rocsparse_csritsv_info;
+} * rocsparse_csritsv_info;
 
 namespace rocsparse
 {
