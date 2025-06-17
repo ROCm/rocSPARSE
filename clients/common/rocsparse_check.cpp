@@ -91,19 +91,19 @@
     } while(0)
 
 template <>
+void unit_check_general(
+    int64_t M, int64_t N, const _Float16* A, int64_t LDA, const _Float16* B, int64_t LDB)
+{
+    ROCSPARSE_UNIT_CHECK(M, N, A, LDA, B, LDB, ASSERT_FLOAT_EQ);
+}
+
+template <>
 void unit_check_general(int64_t                   M,
                         int64_t                   N,
                         const rocsparse_bfloat16* A,
                         int64_t                   LDA,
                         const rocsparse_bfloat16* B,
                         int64_t                   LDB)
-{
-    ROCSPARSE_UNIT_CHECK(M, N, A, LDA, B, LDB, ASSERT_FLOAT_EQ);
-}
-
-template <>
-void unit_check_general(
-    int64_t M, int64_t N, const _Float16* A, int64_t LDA, const _Float16* B, int64_t LDB)
 {
     ROCSPARSE_UNIT_CHECK(M, N, A, LDA, B, LDB, ASSERT_FLOAT_EQ);
 }

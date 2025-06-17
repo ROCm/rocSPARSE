@@ -1168,14 +1168,14 @@ try
     size_t T_size = sizeof(float);
     switch(src->data_type_T)
     {
-    case rocsparse_datatype_bf16_r:
-    {
-        T_size = sizeof(rocsparse_bfloat16);
-        break;
-    }
     case rocsparse_datatype_f16_r:
     {
         T_size = sizeof(_Float16);
+        break;
+    }
+    case rocsparse_datatype_bf16_r:
+    {
+        T_size = sizeof(rocsparse_bfloat16);
         break;
     }
     case rocsparse_datatype_f32_r:
