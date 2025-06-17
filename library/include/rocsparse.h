@@ -29,6 +29,7 @@
 #define ROCSPARSE_H
 
 #include "rocsparse-auxiliary.h"
+#include "rocsparse-debugging.h"
 #include "rocsparse-functions.h"
 #include "rocsparse-roctx.h"
 #include "rocsparse-version.h"

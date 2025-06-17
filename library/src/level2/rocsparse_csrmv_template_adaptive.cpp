@@ -64,8 +64,8 @@ namespace rocsparse
     {
 #if defined(__INTEL_COMPILER)
         return WG_SIZE >> (_bit_scan_reverse(num_rows - 1) + 1);
-#elif(defined(__clang__) && __has_builtin(__builtin_clz)) \
-    || !defined(__clang) && defined(__GNUG__)             \
+#elif (defined(__clang__) && __has_builtin(__builtin_clz)) \
+    || !defined(__clang) && defined(__GNUG__)              \
            && ((__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) > 30202)
         return (WG_SIZE >> (8 * sizeof(int) - __builtin_clz(num_rows - 1)));
 #elif defined(_MSC_VER) && (_MSC_VER >= 1400)
@@ -415,14 +415,15 @@ rocsparse_status
         // Allocate memory on device to hold csrmv info, if required
         if(csrmv_info->adaptive.size > 0)
         {
-            RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync((void**)&csrmv_info->adaptive.row_blocks,
+
+            RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(&csrmv_info->adaptive.row_blocks,
                                                          sizeof(I) * csrmv_info->adaptive.size,
                                                          handle->stream));
             RETURN_IF_HIP_ERROR(
-                rocsparse_hipMallocAsync((void**)&csrmv_info->adaptive.wg_flags,
+                rocsparse_hipMallocAsync(&csrmv_info->adaptive.wg_flags,
                                          sizeof(uint32_t) * csrmv_info->adaptive.size,
                                          handle->stream));
-            RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync((void**)&csrmv_info->adaptive.wg_ids,
+            RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(&csrmv_info->adaptive.wg_ids,
                                                          sizeof(J) * csrmv_info->adaptive.size,
                                                          handle->stream));
 
