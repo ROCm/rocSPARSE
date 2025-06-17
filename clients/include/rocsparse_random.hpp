@@ -113,7 +113,7 @@ public:
         return random_nan_data<_Float16, uint16_t, 10, 5>();
     }
 
-    // Random NaN brain half
+    // Random NaN bfloat16
     explicit operator rocsparse_bfloat16()
     {
         return random_nan_data<rocsparse_bfloat16, uint16_t, 7, 8>();

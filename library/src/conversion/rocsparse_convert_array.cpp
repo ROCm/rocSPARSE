@@ -676,7 +676,6 @@ namespace rocsparse
                 (rocsparse::convert_data_array_compute_dispatch<uint32_t>)(source_datatype_, p...));
             return rocsparse_status_success;
         }
-
         case rocsparse_datatype_f16_r:
         {
             RETURN_IF_ROCSPARSE_ERROR(
