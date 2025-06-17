@@ -41,7 +41,6 @@ const char* rocsparse::enum_utils::to_string(rocsparse_itilu0_alg value)
         CASE(rocsparse_itilu0_alg_async_inplace);
         CASE(rocsparse_itilu0_alg_async_split);
         CASE(rocsparse_itilu0_alg_sync_split);
-        CASE(rocsparse_itilu0_alg_sync_split_fusion);
 #undef CASE
     }
     // LCOV_EXCL_START
@@ -58,7 +57,6 @@ bool rocsparse::enum_utils::is_invalid(rocsparse_itilu0_alg value)
     case rocsparse_itilu0_alg_async_inplace:
     case rocsparse_itilu0_alg_async_split:
     case rocsparse_itilu0_alg_sync_split:
-    case rocsparse_itilu0_alg_sync_split_fusion:
     {
         return false;
     }
@@ -94,14 +92,6 @@ namespace rocsparse
             RETURN_IF_ROCSPARSE_ERROR(
                 (rocsparse::csritilu0_driver_t<
                     rocsparse_itilu0_alg_sync_split>::buffer_size<I, J>::run(parameters...)));
-            return rocsparse_status_success;
-        }
-
-        case rocsparse_itilu0_alg_sync_split_fusion:
-        {
-            RETURN_IF_ROCSPARSE_ERROR(
-                (rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::
-                     buffer_size<I, J>::run(parameters...)));
             return rocsparse_status_success;
         }
         }

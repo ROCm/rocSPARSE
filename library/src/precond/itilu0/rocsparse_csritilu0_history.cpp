@@ -56,13 +56,6 @@ namespace rocsparse
                      history<rocsparse::floating_data_t<T>, J>::run(parameters...)));
             return rocsparse_status_success;
         }
-        case rocsparse_itilu0_alg_sync_split_fusion:
-        {
-            RETURN_IF_ROCSPARSE_ERROR(
-                (rocsparse::csritilu0_driver_t<rocsparse_itilu0_alg_sync_split_fusion>::
-                     history<rocsparse::floating_data_t<T>, J>::run(parameters...)));
-            return rocsparse_status_success;
-        }
         }
 
         // LCOV_EXCL_START

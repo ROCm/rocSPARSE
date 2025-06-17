@@ -55,13 +55,6 @@ namespace rocsparse
                     rocsparse_itilu0_alg_sync_split>::compute<T, I, J>::run(parameters...)));
             return rocsparse_status_success;
         }
-        case rocsparse_itilu0_alg_sync_split_fusion:
-        {
-            RETURN_IF_ROCSPARSE_ERROR(
-                (rocsparse::csritilu0_driver_t<
-                    rocsparse_itilu0_alg_sync_split_fusion>::compute<T, I, J>::run(parameters...)));
-            return rocsparse_status_success;
-        }
         }
 
         // LCOV_EXCL_START
