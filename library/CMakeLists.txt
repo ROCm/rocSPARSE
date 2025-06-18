@@ -97,13 +97,7 @@ endif()
 if (NOT WIN32)
   if (BUILD_SHARED_LIBS AND BUILD_WITH_ROCTX)
 
-    message("ROCTX_PATH before : ${ROCTX_PATH}")
-
     set(ROCTX_PATH "" CACHE STRING "Path to the roctx library (directory containing libroctx64.so)")
-
-
-    message("ROCTX_PATH after : ${ROCTX_PATH}")
-
 
     find_path(ROCTRACER_INCLUDE_DIR
       NAMES roctracer/roctx.h
