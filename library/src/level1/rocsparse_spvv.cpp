@@ -338,7 +338,7 @@ try
 
     rocsparse::spvv_t f;
     RETURN_IF_ROCSPARSE_ERROR(
-        rocsparse::spvv_find(&f, x->data_type, x->idx_type, x->data_type, y->data_type));
+        rocsparse::spvv_find(&f, compute_type, x->idx_type, x->data_type, y->data_type));
     RETURN_IF_ROCSPARSE_ERROR(
         f(handle, trans, x, y, result, compute_type, buffer_size, temp_buffer));
 
