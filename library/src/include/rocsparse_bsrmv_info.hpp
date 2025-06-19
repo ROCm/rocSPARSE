@@ -56,4 +56,4 @@ public:
         this->m_csrmv_info = value;
     }
 
-}* rocsparse_bsrmv_info;
+} * rocsparse_bsrmv_info;

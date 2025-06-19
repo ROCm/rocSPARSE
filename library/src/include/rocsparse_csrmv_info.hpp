@@ -73,7 +73,7 @@ typedef struct _rocsparse_csrmv_info
         this->index_type_J = rocsparse_indextype_u16;
     }
 
-} *rocsparse_csrmv_info, *rocsparse_cscmv_info;
+} * rocsparse_csrmv_info, *rocsparse_cscmv_info;
 
 namespace rocsparse
 {

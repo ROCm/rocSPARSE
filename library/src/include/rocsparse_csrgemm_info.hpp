@@ -40,7 +40,7 @@ typedef struct _rocsparse_csrgemm_info
     bool mul{true};
     // Perform beta * D
     bool add{true};
-}* rocsparse_csrgemm_info;
+} * rocsparse_csrgemm_info;
 
 namespace rocsparse
 {
