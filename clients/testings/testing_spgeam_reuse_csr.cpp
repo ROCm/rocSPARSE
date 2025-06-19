@@ -595,13 +595,6 @@ static void testing_spgeam_reuse_csr_extra_wrong_stages(const Arguments& arg)
         //
         EXPECT_ROCSPARSE_STATUS(rocsparse_spgeam(PARAMS(rocsparse_spgeam_stage_symbolic_compute)),
                                 rocsparse_status_invalid_value);
-
-        //
-        // Expect an invalid status when calling numeric_compute before analysis
-        //
-        EXPECT_ROCSPARSE_STATUS(rocsparse_spgeam(PARAMS(rocsparse_spgeam_stage_numeric_compute)),
-                                rocsparse_status_invalid_value);
-
         ROCSPARSE_DEBUG_VERBOSE_ON;
     }
 

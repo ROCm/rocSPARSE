@@ -548,28 +548,8 @@ namespace rocsparse
 
         case rocsparse_spgeam_stage_numeric_compute:
         {
-            if(previous_stage == ((rocsparse_spgeam_stage)-1))
-            {
-                RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(
-                    rocsparse_status_invalid_value,
-                    "invalid stage, the stage rocsparse_spgeam_stage_analysis must be executed "
-                    "before "
-                    "the stage rocsparse_spgeam_stage_numeric_compute");
-            }
-
             switch(previous_stage)
             {
-
-            case rocsparse_spgeam_stage_analysis:
-            {
-                RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(
-                    rocsparse_status_invalid_value,
-                    "invalid stage, the stage rocsparse_spgeam_stage_symbolic_compute must be "
-                    "executed "
-                    "before "
-                    "the stage rocsparse_spgeam_stage_numeric_compute");
-            }
-
             case rocsparse_spgeam_stage_compute:
             {
                 RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(
@@ -579,6 +559,7 @@ namespace rocsparse
                     "after the stage rocsparse_spgeam_stage_compute");
             }
 
+            case rocsparse_spgeam_stage_analysis:
             case rocsparse_spgeam_stage_numeric_compute:
             case rocsparse_spgeam_stage_symbolic_compute:
             {
