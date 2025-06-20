@@ -140,19 +140,23 @@ namespace rocsparse
     using spvv_tuple = std::
         tuple<rocsparse_datatype, rocsparse_indextype, rocsparse_datatype, rocsparse_datatype>;
 
-#define SPVV_REAL_CONFIG(T, I, X, Y)                                     \
-    {spvv_tuple(T, I, X, Y),                                             \
-     spvv_template_real<typename rocsparse::datatype_traits<T>::type_t,  \
-                        typename rocsparse::indextype_traits<I>::type_t, \
-                        typename rocsparse::datatype_traits<X>::type_t,  \
-                        typename rocsparse::datatype_traits<Y>::type_t>}
+#define SPVV_REAL_CONFIG(T, I, X, Y)                                            \
+    {                                                                           \
+        spvv_tuple(T, I, X, Y),                                                 \
+            spvv_template_real<typename rocsparse::datatype_traits<T>::type_t,  \
+                               typename rocsparse::indextype_traits<I>::type_t, \
+                               typename rocsparse::datatype_traits<X>::type_t,  \
+                               typename rocsparse::datatype_traits<Y>::type_t>  \
+    }
 
-#define SPVV_COMPLEX_CONFIG(T, I, X, Y)                                     \
-    {spvv_tuple(T, I, X, Y),                                                \
-     spvv_template_complex<typename rocsparse::datatype_traits<T>::type_t,  \
-                           typename rocsparse::indextype_traits<I>::type_t, \
-                           typename rocsparse::datatype_traits<X>::type_t,  \
-                           typename rocsparse::datatype_traits<Y>::type_t>}
+#define SPVV_COMPLEX_CONFIG(T, I, X, Y)                                            \
+    {                                                                              \
+        spvv_tuple(T, I, X, Y),                                                    \
+            spvv_template_complex<typename rocsparse::datatype_traits<T>::type_t,  \
+                                  typename rocsparse::indextype_traits<I>::type_t, \
+                                  typename rocsparse::datatype_traits<X>::type_t,  \
+                                  typename rocsparse::datatype_traits<Y>::type_t>  \
+    }
 
     static const std::map<spvv_tuple, spvv_t> s_spvv_dispatch{
         {SPVV_REAL_CONFIG(rocsparse_datatype_f32_r,
