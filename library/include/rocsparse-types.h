@@ -954,9 +954,9 @@ typedef enum rocsparse_spgeam_stage_
 {
     rocsparse_spgeam_stage_analysis = 1, /**< Computes number of non-zero entries. */
     rocsparse_spgeam_stage_compute  = 2, /**< Performs the actual SpGEAM computation. */
-    rocsparse_spgeam_stage_symbolic
+    rocsparse_spgeam_stage_symbolic_compute
     = 3, /**< Performs only the symbolic SpGEAM computation to fill the column indices array. */
-    rocsparse_spgeam_stage_numeric
+    rocsparse_spgeam_stage_numeric_compute
     = 4 /**< Performs only the numeric SpGEAM computation to fill the values array. */
 } rocsparse_spgeam_stage;
 
