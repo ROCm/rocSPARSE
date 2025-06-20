@@ -40,7 +40,7 @@ Tests:
   M: [22, 54, 167]
   N: [12, 33, 77, 201]
   denseld: [100, 256]
-  baseA: *all_rocparse_index_base
+  baseA: *all_rocsparse_index_base
   order: *all_rocsparse_order
 
 - name: sparse_to_dense_coo
@@ -51,7 +51,7 @@ Tests:
   M: [512]
   N: [756]
   denseld: [1000]
-  baseA: *all_rocparse_index_base
+  baseA: *all_rocsparse_index_base
   order: *all_rocsparse_order
 
 - name: sparse_to_dense_coo
