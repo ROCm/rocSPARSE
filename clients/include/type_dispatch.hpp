@@ -254,22 +254,23 @@ auto rocsparse_ixyt_dispatch(const Arguments& arg)
 
     const auto T = arg.compute_type;
 
-    bool f32r_case = (X == rocsparse_datatype_f32_r && X == Y && X == T);
-    bool f64r_case = (X == rocsparse_datatype_f64_r && X == Y && X == T);
-    bool f32c_case = (X == rocsparse_datatype_f32_c && X == Y && X == T);
-    bool f64c_case = (X == rocsparse_datatype_f64_c && X == Y && X == T);
+    const bool f32r_case = (X == rocsparse_datatype_f32_r && X == Y && X == T);
+    const bool f64r_case = (X == rocsparse_datatype_f64_r && X == Y && X == T);
+    const bool f32c_case = (X == rocsparse_datatype_f32_c && X == Y && X == T);
+    const bool f64c_case = (X == rocsparse_datatype_f64_c && X == Y && X == T);
 
-    bool i8r_i8r_i32r_case = (X == rocsparse_datatype_i8_r && Y == rocsparse_datatype_i8_r
-                              && T == rocsparse_datatype_i32_r);
+    const bool i8r_i8r_i32r_case = (X == rocsparse_datatype_i8_r && Y == rocsparse_datatype_i8_r
+                                    && T == rocsparse_datatype_i32_r);
 
-    bool i8r_i8r_f32r_case = (X == rocsparse_datatype_i8_r && Y == rocsparse_datatype_i8_r
-                              && T == rocsparse_datatype_f32_r);
+    const bool i8r_i8r_f32r_case = (X == rocsparse_datatype_i8_r && Y == rocsparse_datatype_i8_r
+                                    && T == rocsparse_datatype_f32_r);
 
-    bool f16r_f16r_f32r_case = (X == rocsparse_datatype_f16_r && Y == rocsparse_datatype_f16_r
-                                && T == rocsparse_datatype_f32_r);
+    const bool f16r_f16r_f32r_case = (X == rocsparse_datatype_f16_r && Y == rocsparse_datatype_f16_r
+                                      && T == rocsparse_datatype_f32_r);
 
-    bool bf16r_bf16r_f32r_case = (X == rocsparse_datatype_bf16_r && Y == rocsparse_datatype_bf16_r
-                                  && T == rocsparse_datatype_f32_r);
+    const bool bf16r_bf16r_f32r_case
+        = (X == rocsparse_datatype_bf16_r && Y == rocsparse_datatype_bf16_r
+           && T == rocsparse_datatype_f32_r);
 
 #define DISPATCH_TEST(ITYPE)                                                      \
     if(f32r_case)                                                                 \
