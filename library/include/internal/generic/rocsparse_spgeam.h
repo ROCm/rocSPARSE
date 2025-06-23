@@ -114,7 +114,15 @@ rocsparse_status rocsparse_spgeam_buffer_size(rocsparse_handle            handle
 *  \p rocsparse_spgeam. Once the computation is complete and the SpGEAM descriptor is no longer needed, the user must call
 *  \ref rocsparse_destroy_spgeam_descr. See full code example below.
 *
-*  The stage \ref rocsparse_spgeam_stage_compute computes the symbolic part and the numeric of the resulting matrix C. If the user wants to perform multiple operations involving matrices of same sparsity patterns but with different numerical values, then the symbolic stages (\ref rocsparse_spgeam_stage_symbolic_analysis and \ref rocsparse_spgeam_stage_symbolic_compute) and the numeric stages (\ref rocsparse_spgeam_stage_numeric_analysis and \ref rocsparse_spgeam_stage_numeric_compute) can be used to separate the symbolic calculation from the numeric calculation. Note that the stages  \ref rocsparse_spgeam_stage_analysis and \ref rocsparse_spgeam_stage_compute cannot be mixed with the stages \ref rocsparse_spgeam_stage_symbolic_analysis, \ref rocsparse_spgeam_stage_symbolic_compute, \ref rocsparse_spgeam_stage_numeric_analysis, and \ref rocsparse_spgeam_stage_numeric_compute.
+*  The stage \ref rocsparse_spgeam_stage_compute computes the symbolic part and the numeric of the resulting matrix C. If the user wants to perform multiple operations involving matrices of same sparsity patterns but with different numerical values, then the symbolic stages (\ref rocsparse_spgeam_stage_symbolic_analysis and \ref rocsparse_spgeam_stage_symbolic_compute) and the numeric stages (\ref rocsparse_spgeam_stage_numeric_analysis and \ref rocsparse_spgeam_stage_numeric_compute) can be used to separate the symbolic calculation from the numeric calculation.
+*
+*  \note The stages  \ref rocsparse_spgeam_stage_analysis and \ref rocsparse_spgeam_stage_compute cannot be mixed with the stages \ref rocsparse_spgeam_stage_symbolic_analysis, \ref rocsparse_spgeam_stage_symbolic_compute, \ref rocsparse_spgeam_stage_numeric_analysis, and \ref rocsparse_spgeam_stage_numeric_compute.
+*  \note The stage \ref rocsparse_spgeam_stage_analysis must precede the stage \ref rocsparse_spgeam_stage_compute.
+*  \note The stage \ref rocsparse_spgeam_stage_symbolic_analysis must precede the stage \ref rocsparse_spgeam_stage_symbolic_compute.
+*  \note The stage \ref rocsparse_spgeam_stage_numeric_analysis must precede the stage \ref rocsparse_spgeam_stage_numeric_compute.
+*  \note The symbolic stages are not required to perform the numeric stages.
+*  \note The stage \ref rocsparse_spgeam_stage_numeric_analysis must be re-applied if the numeric values of the input matrices \p mat_A and \p mat_B have changed between subsquent calls of the stage \ref rocsparse_spgeam_stage_numeric_compute.
+*
 *  \p rocsparse_spgeam supports multiple combinations of index types, data types, and compute types. The tables below indicate
 *  the currently supported different index and data types that can be used for the sparse matrices \f$op(A)\f$, \f$op(B)\f$, and
 *  \f$C\f$, and the compute type for \f$\alpha\f$ and \f$\beta\f$. The advantage of using different index and data types is to save on
