@@ -9734,6 +9734,8 @@ INSTANTIATE_IXYT(int32_t, int8_t, int8_t, int32_t);
 INSTANTIATE_IXYT(int64_t, int8_t, int8_t, int32_t);
 INSTANTIATE_IXYT(int32_t, _Float16, _Float16, float);
 INSTANTIATE_IXYT(int64_t, _Float16, _Float16, float);
+INSTANTIATE_IXYT(int32_t, rocsparse_bfloat16, rocsparse_bfloat16, float);
+INSTANTIATE_IXYT(int64_t, rocsparse_bfloat16, rocsparse_bfloat16, float);
 INSTANTIATE_IXYT(int32_t, int8_t, int8_t, float);
 INSTANTIATE_IXYT(int64_t, int8_t, int8_t, float);
 
