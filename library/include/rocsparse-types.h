@@ -977,8 +977,8 @@ typedef enum rocsparse_spgeam_input_
     rocsparse_spgeam_input_compute_datatype, /**< Select compute data type for input on SpGEAM descriptor. */
     rocsparse_spgeam_input_operation_A, /**< Select A matrix transpose operation for input on SpGEAM descriptor. */
     rocsparse_spgeam_input_operation_B, /**< Select B matrix transpose operation for input on SpGEAM descriptor. */
-    rocsparse_spgeam_input_scalar_A, /**< Select scalar multiplier of matrix A for input on SpGEAM descriptor. */
-    rocsparse_spgeam_input_scalar_B /**< Select scalar multiplier of matrix B for input on SpGEAM descriptor. */
+    rocsparse_spgeam_input_scalar_alpha, /**< Select scalar multiplier alpha for input on SpGEAM descriptor. */
+    rocsparse_spgeam_input_scalar_beta /**< Select scalar multiplier beta for input on SpGEAM descriptor. */
 } rocsparse_spgeam_input;
 
 /*! \ingroup types_module

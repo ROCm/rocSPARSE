@@ -298,9 +298,9 @@ int main(int argc, char* argv[])
     HIP_CHECK(hipMalloc(&buffer, buffer_size_in_bytes));
 
     ROCSPARSE_CHECK(rocsparse_spgeam_set_input(
-        handle, descr, rocsparse_spgeam_input_scalar_A, &alpha, sizeof(&alpha), nullptr));
+        handle, descr, rocsparse_spgeam_input_scalar_alpha, &alpha, sizeof(&alpha), nullptr));
     ROCSPARSE_CHECK(rocsparse_spgeam_set_input(
-        handle, descr, rocsparse_spgeam_input_scalar_B, &beta, sizeof(&beta), nullptr));
+        handle, descr, rocsparse_spgeam_input_scalar_beta, &beta, sizeof(&beta), nullptr));
 
     ROCSPARSE_CHECK(rocsparse_spgeam(handle,
                                      descr,
@@ -391,9 +391,9 @@ int main(int argc, char* argv[])
     HIP_CHECK(hipMalloc(&buffer, buffer_size_in_bytes));
 
     ROCSPARSE_CHECK(rocsparse_spgeam_set_input(
-        handle, descr, rocsparse_spgeam_input_scalar_A, &alpha, sizeof(&alpha), nullptr));
+        handle, descr, rocsparse_spgeam_input_scalar_alpha, &alpha, sizeof(&alpha), nullptr));
     ROCSPARSE_CHECK(rocsparse_spgeam_set_input(
-        handle, descr, rocsparse_spgeam_input_scalar_B, &beta, sizeof(&beta), nullptr));
+        handle, descr, rocsparse_spgeam_input_scalar_beta, &beta, sizeof(&beta), nullptr));
 
     ROCSPARSE_CHECK(rocsparse_spgeam(handle,
                                      descr,

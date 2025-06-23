@@ -5024,7 +5024,7 @@ try
 
     switch(input)
     {
-    case rocsparse_spgeam_input_scalar_A:
+    case rocsparse_spgeam_input_scalar_alpha:
     {
         ROCSPARSE_CHECKARG(4,
                            data_size_in_bytes,
@@ -5033,7 +5033,7 @@ try
         descr->set_scalar_A(data);
         return rocsparse_status_success;
     }
-    case rocsparse_spgeam_input_scalar_B:
+    case rocsparse_spgeam_input_scalar_beta:
     {
         ROCSPARSE_CHECKARG(4,
                            data_size_in_bytes,

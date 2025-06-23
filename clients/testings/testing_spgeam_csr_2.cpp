@@ -199,14 +199,14 @@ void testing_spgeam_csr_2(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(rocsparse_spgeam_set_input(handle,
                                                          descr,
-                                                         rocsparse_spgeam_input_scalar_A,
+                                                         rocsparse_spgeam_input_scalar_alpha,
                                                          h_alpha_ptr,
                                                          sizeof(h_alpha_ptr),
                                                          nullptr));
 
         CHECK_ROCSPARSE_ERROR(rocsparse_spgeam_set_input(handle,
                                                          descr,
-                                                         rocsparse_spgeam_input_scalar_B,
+                                                         rocsparse_spgeam_input_scalar_beta,
                                                          h_beta_ptr,
                                                          sizeof(h_beta_ptr),
                                                          nullptr));
@@ -234,14 +234,14 @@ void testing_spgeam_csr_2(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(rocsparse_spgeam_set_input(handle,
                                                          descr,
-                                                         rocsparse_spgeam_input_scalar_A,
+                                                         rocsparse_spgeam_input_scalar_alpha,
                                                          d_alpha_ptr,
                                                          sizeof(d_alpha_ptr),
                                                          nullptr));
 
         CHECK_ROCSPARSE_ERROR(rocsparse_spgeam_set_input(handle,
                                                          descr,
-                                                         rocsparse_spgeam_input_scalar_B,
+                                                         rocsparse_spgeam_input_scalar_beta,
                                                          d_beta_ptr,
                                                          sizeof(d_beta_ptr),
                                                          nullptr));
@@ -274,14 +274,14 @@ void testing_spgeam_csr_2(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(rocsparse_spgeam_set_input(handle,
                                                          descr,
-                                                         rocsparse_spgeam_input_scalar_A,
+                                                         rocsparse_spgeam_input_scalar_alpha,
                                                          h_alpha_ptr,
                                                          sizeof(h_alpha_ptr),
                                                          nullptr));
 
         CHECK_ROCSPARSE_ERROR(rocsparse_spgeam_set_input(handle,
                                                          descr,
-                                                         rocsparse_spgeam_input_scalar_B,
+                                                         rocsparse_spgeam_input_scalar_beta,
                                                          h_beta_ptr,
                                                          sizeof(h_beta_ptr),
                                                          nullptr));

@@ -141,8 +141,8 @@ const char* rocsparse::enum_utils::to_string(rocsparse_spgeam_input value_)
         CASE(rocsparse_spgeam_input_compute_datatype);
         CASE(rocsparse_spgeam_input_operation_A);
         CASE(rocsparse_spgeam_input_operation_B);
-        CASE(rocsparse_spgeam_input_scalar_A);
-        CASE(rocsparse_spgeam_input_scalar_B);
+        CASE(rocsparse_spgeam_input_scalar_alpha);
+        CASE(rocsparse_spgeam_input_scalar_beta);
 #undef CASE
     }
     THROW_IF_ROCSPARSE_ERROR(rocsparse_status_invalid_value);
@@ -203,8 +203,8 @@ bool rocsparse::enum_utils::is_invalid(rocsparse_spgeam_input value_)
     case rocsparse_spgeam_input_compute_datatype:
     case rocsparse_spgeam_input_operation_A:
     case rocsparse_spgeam_input_operation_B:
-    case rocsparse_spgeam_input_scalar_A:
-    case rocsparse_spgeam_input_scalar_B:
+    case rocsparse_spgeam_input_scalar_alpha:
+    case rocsparse_spgeam_input_scalar_beta:
     {
         return false;
     }
@@ -946,11 +946,11 @@ namespace rocsparse
             RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(
                 (local_alpha == nullptr) ? rocsparse_status_invalid_pointer
                                          : rocsparse_status_success,
-                "rocsparse_spgeam_input_scalar_A must be set up.");
+                "rocsparse_spgeam_input_scalar_alpha must be set up.");
             RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(
                 (local_beta == nullptr) ? rocsparse_status_invalid_pointer
                                         : rocsparse_status_success,
-                "rocsparse_spgeam_input_scalar_B must be set up.");
+                "rocsparse_spgeam_input_scalar_beta must be set up.");
 
             RETURN_IF_ROCSPARSE_ERROR(convert_scalars(handle,
                                                       descr,
@@ -1080,12 +1080,12 @@ namespace rocsparse
             RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(
                 (local_alpha == nullptr) ? rocsparse_status_invalid_pointer
                                          : rocsparse_status_success,
-                "rocsparse_spgeam_input_scalar_A must be set up.");
+                "rocsparse_spgeam_input_scalar_alpha must be set up.");
 
             RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(
                 (local_beta == nullptr) ? rocsparse_status_invalid_pointer
                                         : rocsparse_status_success,
-                "rocsparse_spgeam_input_scalar_B must be set up.");
+                "rocsparse_spgeam_input_scalar_beta must be set up.");
 
             RETURN_IF_ROCSPARSE_ERROR(convert_scalars(handle,
                                                       descr,

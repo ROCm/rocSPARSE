@@ -306,14 +306,14 @@ void testing_spgeam_csr(const Arguments& arg)
 
         CHECK_ROCSPARSE_ERROR(rocsparse_spgeam_set_input(handle,
                                                          descr,
-                                                         rocsparse_spgeam_input_scalar_A,
+                                                         rocsparse_spgeam_input_scalar_alpha,
                                                          h_alpha_ptr,
                                                          sizeof(h_alpha_ptr),
                                                          nullptr));
 
         CHECK_ROCSPARSE_ERROR(rocsparse_spgeam_set_input(handle,
                                                          descr,
-                                                         rocsparse_spgeam_input_scalar_B,
+                                                         rocsparse_spgeam_input_scalar_beta,
                                                          h_beta_ptr,
                                                          sizeof(h_beta_ptr),
                                                          nullptr));
@@ -341,14 +341,14 @@ void testing_spgeam_csr(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(rocsparse_spgeam_set_input(handle,
                                                          descr,
-                                                         rocsparse_spgeam_input_scalar_A,
+                                                         rocsparse_spgeam_input_scalar_alpha,
                                                          d_alpha_ptr,
                                                          sizeof(d_alpha_ptr),
                                                          nullptr));
 
         CHECK_ROCSPARSE_ERROR(rocsparse_spgeam_set_input(handle,
                                                          descr,
-                                                         rocsparse_spgeam_input_scalar_B,
+                                                         rocsparse_spgeam_input_scalar_beta,
                                                          d_beta_ptr,
                                                          sizeof(d_beta_ptr),
                                                          nullptr));
@@ -381,14 +381,14 @@ void testing_spgeam_csr(const Arguments& arg)
 
         CHECK_ROCSPARSE_ERROR(rocsparse_spgeam_set_input(handle,
                                                          descr,
-                                                         rocsparse_spgeam_input_scalar_A,
+                                                         rocsparse_spgeam_input_scalar_alpha,
                                                          h_alpha_ptr,
                                                          sizeof(h_alpha_ptr),
                                                          nullptr));
 
         CHECK_ROCSPARSE_ERROR(rocsparse_spgeam_set_input(handle,
                                                          descr,
-                                                         rocsparse_spgeam_input_scalar_B,
+                                                         rocsparse_spgeam_input_scalar_beta,
                                                          h_beta_ptr,
                                                          sizeof(h_beta_ptr),
                                                          nullptr));
@@ -684,10 +684,10 @@ static void testing_spgeam_csr_extra_wrong_stages(const Arguments& arg)
         handle, descr, rocsparse_spgeam_input_compute_datatype, &ttype, sizeof(ttype), nullptr));
 
     CHECK_ROCSPARSE_ERROR(rocsparse_spgeam_set_input(
-        handle, descr, rocsparse_spgeam_input_scalar_A, &h_alpha, sizeof(&h_alpha), nullptr));
+        handle, descr, rocsparse_spgeam_input_scalar_alpha, &h_alpha, sizeof(&h_alpha), nullptr));
 
     CHECK_ROCSPARSE_ERROR(rocsparse_spgeam_set_input(
-        handle, descr, rocsparse_spgeam_input_scalar_B, &h_beta, sizeof(&h_beta), nullptr));
+        handle, descr, rocsparse_spgeam_input_scalar_beta, &h_beta, sizeof(&h_beta), nullptr));
 
     // Calculate NNZ phase
     const size_t              buffer_size_in_bytes = 64;

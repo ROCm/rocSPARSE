@@ -330,8 +330,8 @@ rocsparse_status rocsparse_spgeam_buffer_size(rocsparse_handle            handle
 *   rocsparse_spgeam_buffer_size(handle, descr, matA, matB, matC, rocsparse_spgeam_stage_compute, &buffer_size_in_bytes, p_error);
 *
 *   // Set alpha and beta
-*   rocsparse_spgeam_set_input(handle, descr, rocsparse_spgeam_input_scalar_A, &alpha, sizeof(alpha), p_error);
-*   rocsparse_spgeam_set_input(handle, descr, rocsparse_spgeam_input_scalar_B, &beta, sizeof(beta), p_error);
+*   rocsparse_spgeam_set_input(handle, descr, rocsparse_spgeam_input_scalar_alpha, &alpha, sizeof(alpha), p_error);
+*   rocsparse_spgeam_set_input(handle, descr, rocsparse_spgeam_input_scalar_beta, &beta, sizeof(beta), p_error);
 *
 *   hipMalloc(&buffer, buffer_size_in_bytes);
 *   rocsparse_spgeam(handle, descr, matA, matB, matC, rocsparse_spgeam_stage_compute, buffer_size_in_bytes, buffer, p_error);
@@ -466,8 +466,8 @@ rocsparse_status rocsparse_spgeam_buffer_size(rocsparse_handle            handle
 *   rocsparse_spgeam_set_input(handle, descr, rocsparse_spgeam_input_scalar_datatype, &scalar_datatype, sizeof(scalar_datatype), p_error);
 *
 *   // Set alpha and beta.
-*   rocsparse_spgeam_set_input(handle, descr, rocsparse_spgeam_input_scalar_A, &alpha, sizeof(alpha), p_error);
-*   rocsparse_spgeam_set_input(handle, descr, rocsparse_spgeam_input_scalar_B, &beta, sizeof(beta), p_error);
+*   rocsparse_spgeam_set_input(handle, descr, rocsparse_spgeam_input_scalar_alpha, &alpha, sizeof(alpha), p_error);
+*   rocsparse_spgeam_set_input(handle, descr, rocsparse_spgeam_input_scalar_beta, &beta, sizeof(beta), p_error);
 *
 *   // Set the compute type on the descriptor
 *   const rocsparse_datatype compute_datatype = rocsparse_datatype_f32_r;
