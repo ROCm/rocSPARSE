@@ -124,7 +124,7 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
                                                    stream));
             }
 
-            void* transposed_row_ptr = info->get_transposed_row_ptr();
+            I* transposed_row_ptr = (I*)info->get_transposed_row_ptr();
             // Create column pointers
             RETURN_IF_ROCSPARSE_ERROR(rocsparse::coo2csr_template(
                 handle, keys.current(), nnz, m, transposed_row_ptr, descr->base));
