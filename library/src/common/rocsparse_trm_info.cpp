@@ -52,11 +52,6 @@ int64_t rocsparse::trm_info_t::get_max_nnz() const
     return this->max_nnz;
 }
 
-void rocsparse::trm_info_t::set_row_map(void* const value)
-{
-    this->row_map = value;
-}
-
 const void* rocsparse::trm_info_t::get_row_map() const
 {
     return this->row_map;
@@ -72,10 +67,6 @@ void** rocsparse::trm_info_t::get_ref_row_map()
     return &this->row_map;
 }
 
-void rocsparse::trm_info_t::set_diag_ind(void* const value)
-{
-    this->diag_ind = value;
-}
 const void* rocsparse::trm_info_t::get_diag_ind() const
 {
     return this->diag_ind;
@@ -91,10 +82,6 @@ void** rocsparse::trm_info_t::get_ref_diag_ind()
     return &this->diag_ind;
 }
 
-void rocsparse::trm_info_t::set_transposed_perm(void* const value)
-{
-    this->transposed_perm = value;
-}
 const void* rocsparse::trm_info_t::get_transposed_perm() const
 {
     return this->transposed_perm;
@@ -110,10 +97,6 @@ void** rocsparse::trm_info_t::get_ref_transposed_perm()
     return &this->transposed_perm;
 }
 
-void rocsparse::trm_info_t::set_transposed_row_ptr(void* const value)
-{
-    this->transposed_row_ptr = value;
-}
 const void* rocsparse::trm_info_t::get_transposed_row_ptr() const
 {
     return this->transposed_row_ptr;
@@ -129,10 +112,6 @@ void** rocsparse::trm_info_t::get_ref_transposed_row_ptr()
     return &this->transposed_row_ptr;
 }
 
-void rocsparse::trm_info_t::set_transposed_col_ind(void* const value)
-{
-    this->transposed_col_ind = value;
-}
 const void* rocsparse::trm_info_t::get_transposed_col_ind() const
 {
     return this->transposed_col_ind;
