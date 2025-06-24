@@ -481,7 +481,7 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
 #undef CSRSV_DIM
 
     // Post processing
-    int64_t max_nnz;
+    I max_nnz;
     RETURN_IF_HIP_ERROR(
         hipMemcpyAsync(&max_nnz, d_max_nnz, sizeof(I), hipMemcpyDeviceToHost, stream));
     RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
