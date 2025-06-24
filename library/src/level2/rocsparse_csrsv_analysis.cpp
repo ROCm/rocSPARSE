@@ -86,6 +86,7 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
         void* transposed_row_ptr{};
         RETURN_IF_HIP_ERROR(
             rocsparse_hipMallocAsync(&transposed_row_ptr, sizeof(I) * (m + 1), stream));
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
         info->set_transposed_row_ptr(transposed_row_ptr);
 
@@ -96,10 +97,12 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
 
             RETURN_IF_HIP_ERROR(
                 rocsparse_hipMallocAsync(&transposed_perm, sizeof(I) * nnz, stream));
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
             info->set_transposed_perm(transposed_perm);
 
             RETURN_IF_HIP_ERROR(
                 rocsparse_hipMallocAsync(&transposed_col_ind, sizeof(J) * nnz, stream));
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
             info->set_transposed_col_ind(transposed_col_ind);
 
             // Create identity permutation
@@ -181,6 +184,7 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
     // Allocate buffer to hold diagonal entry point
     I* diag_ind{};
     RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(&diag_ind, sizeof(I) * m, stream));
+    RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
     info->set_diag_ind(diag_ind);
 
     // Allocate buffer to hold zero pivot
@@ -192,6 +196,7 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
     J* row_map{};
     // Allocate buffer to hold row map
     RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(&row_map, sizeof(J) * m, stream));
+    RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
     info->set_row_map(row_map);
     // Initialize zero pivot
     RETURN_IF_ROCSPARSE_ERROR(
@@ -477,9 +482,8 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
     int64_t max_nnz;
     RETURN_IF_HIP_ERROR(
         hipMemcpyAsync(&max_nnz, d_max_nnz, sizeof(I), hipMemcpyDeviceToHost, stream));
-    info->set_max_nnz(max_nnz);
-    // Wait for host transfer to finish
     RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
+    info->set_max_nnz(max_nnz);
 
     RETURN_IF_ROCSPARSE_ERROR(
         rocsparse::create_identity_permutation_template(handle, m, workspace));
