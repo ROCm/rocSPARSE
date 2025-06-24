@@ -83,33 +83,23 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(
             tmp_work1, csr_col_ind, sizeof(J) * nnz, hipMemcpyDeviceToDevice, stream));
 
-        void* transposed_row_ptr{};
-        RETURN_IF_HIP_ERROR(
-            rocsparse_hipMallocAsync(&transposed_row_ptr, sizeof(I) * (m + 1), stream));
-        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
-
-        info->set_transposed_row_ptr(transposed_row_ptr);
+        RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
+            info->get_ref_transposed_row_ptr(), sizeof(I) * (m + 1), stream));
 
         if(nnz > 0)
         {
-            void* transposed_perm{};
-            void* transposed_col_ind{};
-
             RETURN_IF_HIP_ERROR(
-                rocsparse_hipMallocAsync(&transposed_perm, sizeof(I) * nnz, stream));
-            RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
-            info->set_transposed_perm(transposed_perm);
+                rocsparse_hipMallocAsync(info->get_ref_transposed_perm(), sizeof(I) * nnz, stream));
+            RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
+                info->get_ref_transposed_col_ind(), sizeof(J) * nnz, stream));
 
-            RETURN_IF_HIP_ERROR(
-                rocsparse_hipMallocAsync(&transposed_col_ind, sizeof(J) * nnz, stream));
-            RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
-            info->set_transposed_col_ind(transposed_col_ind);
-
+            void* transposed_perm = info->get_transposed_perm();
             // Create identity permutation
             RETURN_IF_ROCSPARSE_ERROR(
                 rocsparse::create_identity_permutation_template(handle, nnz, (I*)transposed_perm));
 
             // Stable sort COO by columns
+            void* transposed_col_ind = info->get_transposed_col_ind();
             rocsparse::primitives::double_buffer<J> keys(tmp_work1, (J*)transposed_col_ind);
             rocsparse::primitives::double_buffer<I> vals((I*)transposed_perm, tmp_work2);
 
@@ -132,6 +122,7 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
                                                    stream));
             }
 
+            void* transposed_row_ptr = info->get_transposed_row_ptr();
             // Create column pointers
             RETURN_IF_ROCSPARSE_ERROR(rocsparse::coo2csr_template(
                 handle, keys.current(), nnz, m, (I*)transposed_row_ptr, descr->base));
@@ -150,6 +141,8 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
         }
         else
         {
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
+            void* transposed_row_ptr = info->get_transposed_row_ptr();
             RETURN_IF_ROCSPARSE_ERROR(rocsparse::valset(
                 handle, m + 1, static_cast<I>(descr->base), (I*)transposed_row_ptr));
         }
@@ -182,10 +175,7 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
     void* rocprim_buffer = reinterpret_cast<void*>(ptr);
 
     // Allocate buffer to hold diagonal entry point
-    I* diag_ind{};
-    RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(&diag_ind, sizeof(I) * m, stream));
-    RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
-    info->set_diag_ind(diag_ind);
+    RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(info->get_ref_diag_ind(), sizeof(I) * m, stream));
 
     // Allocate buffer to hold zero pivot
     if(*zero_pivot == nullptr)
@@ -193,14 +183,24 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
         RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(zero_pivot, sizeof(J), stream));
     }
 
-    J* row_map{};
     // Allocate buffer to hold row map
-    RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(&row_map, sizeof(J) * m, stream));
+    RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(info->get_ref_row_map(), sizeof(J) * m, stream));
+
+    //
+    // Synchronization needed.
+    //
     RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
-    info->set_row_map(row_map);
+
+    //
     // Initialize zero pivot
+    //
     RETURN_IF_ROCSPARSE_ERROR(
         rocsparse::assign_async(*zero_pivot, std::numeric_limits<J>::max(), stream));
+    //
+    //
+    //
+    J* row_map  = (J*)info->get_row_map();
+    I* diag_ind = (I*)info->get_diag_ind();
 
     // Determine archid and ASIC revision
     const std::string gcn_arch_name = rocsparse::handle_get_arch_name(handle);
