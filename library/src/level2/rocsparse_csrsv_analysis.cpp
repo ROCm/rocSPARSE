@@ -93,6 +93,8 @@ rocsparse_status rocsparse::trm_analysis(rocsparse_handle          handle,
             RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
                 info->get_ref_transposed_col_ind(), sizeof(J) * nnz, stream));
 
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
+
             void* transposed_perm = info->get_transposed_perm();
             // Create identity permutation
             RETURN_IF_ROCSPARSE_ERROR(
