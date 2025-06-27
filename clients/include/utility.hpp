@@ -918,11 +918,6 @@ public:
  */
 double get_time_us(void);
 
-/*! \brief  CPU Timer(in microsecond): synchronize with given queue/stream and return
- *  wall time
- */
-double get_time_us_sync(hipStream_t stream);
-
 /*! \brief Return path of this executable */
 std::string rocsparse_exepath();
 
@@ -939,8 +934,8 @@ namespace rocsparse_clients
 
     public:
         timer();
-        void  start();
-        float stop();
+        void  start(hipStream_t stream);
+        float stop(hipStream_t stream);
         ~timer();
     };
 
@@ -968,6 +963,13 @@ namespace rocsparse_clients
         const int32_t n_sub_calls  = arguments.iters_inner;
         const int32_t n_calls      = arguments.iters;
 
+        // rocSPARSE handle
+        rocsparse_handle handle;
+        ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
+
+        hipStream_t stream;
+        ROCSPARSE_CHECK(rocsparse_get_stream(handle, &stream));
+
         for(int32_t iter = 0; iter < n_cold_calls; ++iter)
         {
             const rocsparse_status status = func(arg...);
@@ -983,12 +985,12 @@ namespace rocsparse_clients
         rocsparse_clients::timer t;
         for(int32_t iter = 0; iter < n_calls; ++iter)
         {
-            t.start();
+            t.start(stream);
             for(int32_t sub_iter = 0; sub_iter < n_sub_calls; ++sub_iter)
             {
                 (void)func(arg...);
             }
-            const double t_microseconds = (t.stop() * 1000);
+            const double t_microseconds = (t.stop(stream) * 1000);
             gpu_time[iter]              = t_microseconds / n_sub_calls;
         }
 
