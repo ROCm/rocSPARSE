@@ -965,10 +965,10 @@ namespace rocsparse_clients
 
         // rocSPARSE handle
         rocsparse_handle handle;
-        ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
+        rocsparse_create_handle(&handle);
 
         hipStream_t stream;
-        ROCSPARSE_CHECK(rocsparse_get_stream(handle, &stream));
+        rocsparse_get_stream(handle, &stream);
 
         for(int32_t iter = 0; iter < n_cold_calls; ++iter)
         {
