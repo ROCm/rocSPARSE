@@ -968,7 +968,7 @@ namespace rocsparse_clients
         const int32_t n_calls      = arguments.iters;
 
         hipStream_t stream;
-        CHECK_ROCSPARSE_ERROR(rocsparse_get_stream(handle, &stream));
+        rocsparse_get_stream(handle, &stream);
 
         for(int32_t iter = 0; iter < n_cold_calls; ++iter)
         {
@@ -1019,7 +1019,7 @@ namespace rocsparse_clients
     const int32_t n_calls      = arguments_.iters;                                                 \
                                                                                                    \
     hipStream_t stream;                                                                            \
-    CHECK_ROCSPARSE_ERROR(rocsparse_get_stream(handle, &stream));                                  \
+    rocsparse_get_stream(handle, &stream);                                                         \
                                                                                                    \
     for(int32_t iter = 0; iter < n_cold_calls; ++iter)                                             \
     {                                                                                              \
