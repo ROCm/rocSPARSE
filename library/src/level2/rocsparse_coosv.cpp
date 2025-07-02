@@ -209,9 +209,7 @@ rocsparse_status rocsparse::coosv_analysis_template(rocsparse_handle          ha
     ROCSPARSE_CHECKARG_ARRAY(6, nnz, coo_row_ind);
     ROCSPARSE_CHECKARG_ARRAY(7, nnz, coo_col_ind);
 
-    const bool choose_i32
-        = (nnz <= std::numeric_limits<int32_t>::
-               max()); //(std::is_same<I, int32_t>() && nnz < std::numeric_limits<int32_t>::max());
+    const bool                choose_i32 = (nnz <= std::numeric_limits<int32_t>::max());
     const rocsparse_indextype indextype
         = choose_i32 ? rocsparse_indextype_i32 : rocsparse_indextype_i64;
 
@@ -372,11 +370,17 @@ rocsparse_status rocsparse::coosv_solve_template(rocsparse_handle          handl
     ROCSPARSE_CHECKARG_ARRAY(8, nnz, coo_col_ind);
 
     rocsparse::sorted_coo2csr_info_t* sorted_coo2csr_info = info->get_sorted_coo2csr_info();
-    const I*                          csr_col_ind         = coo_col_ind;
-    const T*                          csr_val             = coo_val;
-    const void*                       csr_row_ptr = (const void*)sorted_coo2csr_info->get_row_ptr();
-    //    const bool choose_i32 = std::is_same<I, int32_t>() && nnz < std::numeric_limits<int32_t>::max();
-    const bool choose_i32 = (nnz <= std::numeric_limits<int32_t>::max());
+    if(sorted_coo2csr_info == nullptr)
+    {
+        RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(
+            rocsparse_status_invalid_error,
+            "sorted_coo2csr_info is not available, it looks like the analysis phase of this "
+            "algorithm was not previously executed.");
+    }
+    const I*    csr_col_ind = coo_col_ind;
+    const T*    csr_val     = coo_val;
+    const void* csr_row_ptr = (const void*)sorted_coo2csr_info->get_row_ptr();
+    const bool  choose_i32  = (nnz <= std::numeric_limits<int32_t>::max());
     if(choose_i32)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrsv_solve_template(handle,
