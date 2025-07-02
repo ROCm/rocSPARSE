@@ -373,7 +373,7 @@ rocsparse_status rocsparse::coosv_solve_template(rocsparse_handle          handl
     if(sorted_coo2csr_info == nullptr)
     {
         RETURN_WITH_MESSAGE_IF_ROCSPARSE_ERROR(
-            rocsparse_status_invalid_error,
+            rocsparse_status_internal_error,
             "sorted_coo2csr_info is not available, it looks like the analysis phase of this "
             "algorithm was not previously executed.");
     }
