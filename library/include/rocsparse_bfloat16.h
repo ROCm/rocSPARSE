@@ -75,11 +75,6 @@ struct ROCSPARSE_EXPORT rocsparse_bfloat16
     {
     }
 
-    // __host__ __device__ rocsparse_bfloat16(_Float16 f)
-    //     : data(float_to_bfloat16((float)f))
-    // {
-    // }
-
     __host__ __device__ rocsparse_bfloat16(int32_t i)
         : data(float_to_bfloat16((float)i))
     {
@@ -131,11 +126,6 @@ struct ROCSPARSE_EXPORT rocsparse_bfloat16
         } u = {uint64_t(data) << 48};
         return u.fp64;
     }
-
-    // __host__ __device__ operator _Float16() const
-    // {
-    //     return static_cast<_Float16>(static_cast<float>(data));
-    // }
 
     __host__ __device__ operator int32_t() const
     {
@@ -324,9 +314,25 @@ inline __host__ __device__ rocsparse_bfloat16 operator+=(rocsparse_bfloat16 a, r
 {
     return a = a + b;
 }
+inline __host__ __device__ rocsparse_bfloat16 operator+=(rocsparse_bfloat16 a, float b)
+{
+    return a = rocsparse_bfloat16(float(a) + b);
+}
+inline __host__ __device__ float operator+=(float a, rocsparse_bfloat16 b)
+{
+    return a = a + float(b);
+}
 inline __host__ __device__ rocsparse_bfloat16 operator-=(rocsparse_bfloat16 a, rocsparse_bfloat16 b)
 {
     return a = a - b;
+}
+inline __host__ __device__ rocsparse_bfloat16 operator-=(rocsparse_bfloat16 a, float b)
+{
+    return a = rocsparse_bfloat16(float(a) - b);
+}
+inline __host__ __device__ float operator-=(float a, rocsparse_bfloat16 b)
+{
+    return a = a - float(b);
 }
 inline __host__ __device__ rocsparse_bfloat16 operator*=(rocsparse_bfloat16 a, rocsparse_bfloat16 b)
 {
@@ -343,6 +349,14 @@ inline __host__ __device__ float operator*=(float a, rocsparse_bfloat16 b)
 inline __host__ __device__ rocsparse_bfloat16 operator/=(rocsparse_bfloat16 a, rocsparse_bfloat16 b)
 {
     return a = a / b;
+}
+inline __host__ __device__ rocsparse_bfloat16 operator/=(rocsparse_bfloat16 a, float b)
+{
+    return a = rocsparse_bfloat16(float(a) / b);
+}
+inline __host__ __device__ float operator/=(float a, rocsparse_bfloat16 b)
+{
+    return a = a / float(b);
 }
 inline __host__ __device__ rocsparse_bfloat16 operator++(rocsparse_bfloat16 a)
 {
