@@ -40,7 +40,7 @@ rocsparse::sorted_coo2csr_info_t::sorted_coo2csr_info_t(int64_t             num_
     const size_t num_bytes
         = rocsparse::indextype_sizeof(this->m_row_ptr_indextype) * (this->m_num_rows + 1);
     THROW_IF_HIP_ERROR(rocsparse_hipMallocAsync(&this->m_row_ptr, num_bytes, stream));
-    std::ignore = hipStreamSynchronize(stream);
+    THROW_IF_HIP_ERROR(hipStreamSynchronize(stream));
 }
 
 hipError_t rocsparse::sorted_coo2csr_info_t::free_memory(hipStream_t stream)
@@ -53,6 +53,7 @@ hipError_t rocsparse::sorted_coo2csr_info_t::free_memory(hipStream_t stream)
     }
     else
     {
+        std::cerr << "free memory_error  .... " << std::endl;
         return e;
     }
 }
@@ -60,7 +61,11 @@ hipError_t rocsparse::sorted_coo2csr_info_t::free_memory(hipStream_t stream)
 rocsparse::sorted_coo2csr_info_t::~sorted_coo2csr_info_t()
 {
     hipStream_t default_stream = 0;
-    std::ignore                = this->free_memory(default_stream);
+    auto        e              = this->free_memory(default_stream);
+    if(e == hipSuccess)
+    {
+        std::cerr << "free memory_error in destructor .... " << std::endl;
+    }
 }
 
 rocsparse_status
