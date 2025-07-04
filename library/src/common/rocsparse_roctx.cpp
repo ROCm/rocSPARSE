@@ -43,14 +43,17 @@ void rocsparse::roctx_variables_st::set_roctx_enabled(bool value)
 {
     if(value != this->roctx_enabled)
     {
+        // LCOV_EXCL_START
         s_mutex.lock();
         this->roctx_enabled = value;
         s_mutex.unlock();
+        // LCOV_EXCL_STOP
     }
 }
 
 extern "C" {
 
+// LCOV_EXCL_START
 void rocsparse_enable_roctx()
 {
     rocsparse_roctx_variables.set_roctx_enabled(true);
@@ -65,4 +68,5 @@ int rocsparse_state_roctx()
 {
     return rocsparse_roctx_variables.get_roctx_enabled() ? 1 : 0;
 }
+// LCOV_EXCL_STOP
 }
