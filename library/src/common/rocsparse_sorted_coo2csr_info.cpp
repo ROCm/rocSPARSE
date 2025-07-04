@@ -53,7 +53,6 @@ hipError_t rocsparse::sorted_coo2csr_info_t::free_memory(hipStream_t stream)
     }
     else
     {
-        std::cerr << "free memory_error  .... " << std::endl;
         return e;
     }
 }
@@ -61,11 +60,7 @@ hipError_t rocsparse::sorted_coo2csr_info_t::free_memory(hipStream_t stream)
 rocsparse::sorted_coo2csr_info_t::~sorted_coo2csr_info_t()
 {
     hipStream_t default_stream = 0;
-    auto        e              = this->free_memory(default_stream);
-    if(e == hipSuccess)
-    {
-        std::cerr << "free memory_error in destructor .... " << std::endl;
-    }
+    std::ignore                = this->free_memory(default_stream);
 }
 
 rocsparse_status

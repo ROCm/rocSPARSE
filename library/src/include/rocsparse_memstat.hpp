@@ -38,7 +38,8 @@
 // if hip version is atleast 5.3.0 hipMallocAsync and hipFreeAsync are defined
 #if HIP_VERSION >= 50300000
 #define rocsparse_hipMallocAsync(p_, nbytes_, stream_) hipMallocAsync(p_, nbytes_, stream_)
-#define rocsparse_hipFreeAsync(p_, stream_) hipFreeAsync(p_, stream_)
+#define rocsparse_hipFreeAsync(p_, stream_) \
+    (((p_) != nullptr) ? hipFreeAsync(p_, stream_) : hipSuccess)
 #else
 #define rocsparse_hipMallocAsync(p_, nbytes_, stream_) hipMalloc(p_, nbytes_)
 #define rocsparse_hipFreeAsync(p_, stream_) hipFree(p_)
