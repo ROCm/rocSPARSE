@@ -178,7 +178,12 @@ int main(int argc, char** argv)
     // Enable debug mode for testing.
     //
     rocsparse_enable_debug();
+
+    //
+    // Add additional debug check for kernel launches.
+    //
     rocsparse_enable_debug_kernel_launch();
+
     //
     // Enable test debug arguments.
     //
