@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (C) 2025 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,29 +22,30 @@
  *
  * ************************************************************************ */
 
-/*! \file
- *  \brief rocsparse.hpp exposes C++ templated Sparse Linear Algebra interface
- *  with only the precision templated.
- */
+#include "rocsparse.hpp"
 
-#pragma once
-#ifndef ROCSPARSE_HPP
-#define ROCSPARSE_HPP
 
-#include "rocsparse.h"
-#include "rocsparse_traits.hpp"
+#define REAL_TEMPLATE_SPECIALIZATION(NAME_, ...)                              \
+    template <>                                                \
+    auto rocsparse_##NAME_<float> = rocsparse_s##NAME_; \
+    template <>                                                \
+    auto rocsparse_##NAME_<double> = rocsparse_d##NAME_
 
-#define REAL_TEMPLATE(NAME_, ...)                              \
-    template <typename T>                                      \
-    rocsparse_status (*rocsparse_##NAME_)(__VA_ARGS__);
+#define COMPLEX_TEMPLATE_SPECIALIZATION(NAME_, ...)                                             \
+    template <>                                                                  \
+    auto rocsparse_##NAME_<rocsparse_float_complex> = rocsparse_c##NAME_; \
+    template <>                                                                  \
+    auto rocsparse_##NAME_<rocsparse_double_complex> = rocsparse_z##NAME_
 
-#define COMPLEX_TEMPLATE(NAME_, ...)                                             \
-    template <typename T>                                                        \
-    rocsparse_status (*rocsparse_##NAME_)(__VA_ARGS__);
-
-#define REAL_COMPLEX_TEMPLATE(NAME_, ...)                                        \
-    template <typename T>                                                        \
-    rocsparse_status (*rocsparse_##NAME_)(__VA_ARGS__);
+#define REAL_COMPLEX_TEMPLATE_SPECIALIZATION(NAME_, ...)                                        \
+    template <>                                                                  \
+    auto rocsparse_##NAME_<float> = rocsparse_s##NAME_;                   \
+    template <>                                                                  \
+    auto rocsparse_##NAME_<double> = rocsparse_d##NAME_;                  \
+    template <>                                                                  \
+    auto rocsparse_##NAME_<rocsparse_float_complex> = rocsparse_c##NAME_; \
+    template <>                                                                  \
+    auto rocsparse_##NAME_<rocsparse_double_complex> = rocsparse_z##NAME_
 
 /*
  * ===========================================================================
@@ -52,7 +53,7 @@
  * ===========================================================================
  */
 // check_matrix_csr
-REAL_COMPLEX_TEMPLATE(check_matrix_csr_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(check_matrix_csr_buffer_size,
                       rocsparse_handle       handle,
                       rocsparse_int          m,
                       rocsparse_int          n,
@@ -66,7 +67,7 @@ REAL_COMPLEX_TEMPLATE(check_matrix_csr_buffer_size,
                       rocsparse_storage_mode storage,
                       size_t*                buffer_size);
 
-REAL_COMPLEX_TEMPLATE(check_matrix_csr,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(check_matrix_csr,
                       rocsparse_handle       handle,
                       rocsparse_int          m,
                       rocsparse_int          n,
@@ -82,7 +83,7 @@ REAL_COMPLEX_TEMPLATE(check_matrix_csr,
                       void*                  temp_buffer);
 
 // check_matrix_coo
-REAL_COMPLEX_TEMPLATE(check_matrix_coo_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(check_matrix_coo_buffer_size,
                       rocsparse_handle       handle,
                       rocsparse_int          m,
                       rocsparse_int          n,
@@ -96,7 +97,7 @@ REAL_COMPLEX_TEMPLATE(check_matrix_coo_buffer_size,
                       rocsparse_storage_mode storage,
                       size_t*                buffer_size);
 
-REAL_COMPLEX_TEMPLATE(check_matrix_coo,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(check_matrix_coo,
                       rocsparse_handle       handle,
                       rocsparse_int          m,
                       rocsparse_int          n,
@@ -112,7 +113,7 @@ REAL_COMPLEX_TEMPLATE(check_matrix_coo,
                       void*                  temp_buffer);
 
 // check_matrix_gebsr
-REAL_COMPLEX_TEMPLATE(check_matrix_gebsr_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(check_matrix_gebsr_buffer_size,
                       rocsparse_handle       handle,
                       rocsparse_direction    dir,
                       rocsparse_int          mb,
@@ -129,7 +130,7 @@ REAL_COMPLEX_TEMPLATE(check_matrix_gebsr_buffer_size,
                       rocsparse_storage_mode storage,
                       size_t*                buffer_size);
 
-REAL_COMPLEX_TEMPLATE(check_matrix_gebsr,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(check_matrix_gebsr,
                       rocsparse_handle       handle,
                       rocsparse_direction    dir,
                       rocsparse_int          mb,
@@ -148,7 +149,7 @@ REAL_COMPLEX_TEMPLATE(check_matrix_gebsr,
                       void*                  temp_buffer);
 
 // check_matrix_gebsc
-REAL_COMPLEX_TEMPLATE(check_matrix_gebsc_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(check_matrix_gebsc_buffer_size,
                       rocsparse_handle       handle,
                       rocsparse_direction    dir,
                       rocsparse_int          mb,
@@ -165,7 +166,7 @@ REAL_COMPLEX_TEMPLATE(check_matrix_gebsc_buffer_size,
                       rocsparse_storage_mode storage,
                       size_t*                buffer_size);
 
-REAL_COMPLEX_TEMPLATE(check_matrix_gebsc,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(check_matrix_gebsc,
                       rocsparse_handle       handle,
                       rocsparse_direction    dir,
                       rocsparse_int          mb,
@@ -184,7 +185,7 @@ REAL_COMPLEX_TEMPLATE(check_matrix_gebsc,
                       void*                  temp_buffer);
 
 // check_matrix_csc
-REAL_COMPLEX_TEMPLATE(check_matrix_csc_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(check_matrix_csc_buffer_size,
                       rocsparse_handle       handle,
                       rocsparse_int          m,
                       rocsparse_int          n,
@@ -198,7 +199,7 @@ REAL_COMPLEX_TEMPLATE(check_matrix_csc_buffer_size,
                       rocsparse_storage_mode storage,
                       size_t*                buffer_size);
 
-REAL_COMPLEX_TEMPLATE(check_matrix_csc,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(check_matrix_csc,
                       rocsparse_handle       handle,
                       rocsparse_int          m,
                       rocsparse_int          n,
@@ -214,7 +215,7 @@ REAL_COMPLEX_TEMPLATE(check_matrix_csc,
                       void*                  temp_buffer);
 
 // check_matrix_ell
-REAL_COMPLEX_TEMPLATE(check_matrix_ell_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(check_matrix_ell_buffer_size,
                       rocsparse_handle       handle,
                       rocsparse_int          m,
                       rocsparse_int          n,
@@ -227,7 +228,7 @@ REAL_COMPLEX_TEMPLATE(check_matrix_ell_buffer_size,
                       rocsparse_storage_mode storage,
                       size_t*                buffer_size);
 
-REAL_COMPLEX_TEMPLATE(check_matrix_ell,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(check_matrix_ell,
                       rocsparse_handle       handle,
                       rocsparse_int          m,
                       rocsparse_int          n,
@@ -247,7 +248,7 @@ REAL_COMPLEX_TEMPLATE(check_matrix_ell,
  * ===========================================================================
  */
 // axpyi
-REAL_COMPLEX_TEMPLATE(axpyi,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(axpyi,
                       rocsparse_handle     handle,
                       rocsparse_int        nnz,
                       const T*             alpha,
@@ -257,7 +258,7 @@ REAL_COMPLEX_TEMPLATE(axpyi,
                       rocsparse_index_base idx_base);
 
 // doti
-REAL_COMPLEX_TEMPLATE(doti,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(doti,
                       rocsparse_handle     handle,
                       rocsparse_int        nnz,
                       const T*             x_val,
@@ -267,7 +268,7 @@ REAL_COMPLEX_TEMPLATE(doti,
                       rocsparse_index_base idx_base);
 
 // dotci
-COMPLEX_TEMPLATE(dotci,
+COMPLEX_TEMPLATE_SPECIALIZATION(dotci,
                  rocsparse_handle     handle,
                  rocsparse_int        nnz,
                  const T*             x_val,
@@ -277,7 +278,7 @@ COMPLEX_TEMPLATE(dotci,
                  rocsparse_index_base idx_base);
 
 // gthr
-REAL_COMPLEX_TEMPLATE(gthr,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gthr,
                       rocsparse_handle     handle,
                       rocsparse_int        nnz,
                       const T*             y,
@@ -286,7 +287,7 @@ REAL_COMPLEX_TEMPLATE(gthr,
                       rocsparse_index_base idx_base);
 
 // gthrz
-REAL_COMPLEX_TEMPLATE(gthrz,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gthrz,
                       rocsparse_handle     handle,
                       rocsparse_int        nnz,
                       T*                   y,
@@ -295,7 +296,7 @@ REAL_COMPLEX_TEMPLATE(gthrz,
                       rocsparse_index_base idx_base);
 
 // roti
-REAL_TEMPLATE(roti,
+REAL_TEMPLATE_SPECIALIZATION(roti,
               rocsparse_handle     handle,
               rocsparse_int        nnz,
               T*                   x_val,
@@ -306,7 +307,7 @@ REAL_TEMPLATE(roti,
               rocsparse_index_base idx_base);
 
 // sctr
-REAL_COMPLEX_TEMPLATE(sctr,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(sctr,
                       rocsparse_handle     handle,
                       rocsparse_int        nnz,
                       const T*             x_val,
@@ -320,7 +321,7 @@ REAL_COMPLEX_TEMPLATE(sctr,
  * ===========================================================================
  */
 // bsrmv_analysis
-REAL_COMPLEX_TEMPLATE(bsrmv_analysis,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsrmv_analysis,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_operation       trans,
@@ -335,7 +336,7 @@ REAL_COMPLEX_TEMPLATE(bsrmv_analysis,
                       rocsparse_mat_info        info);
 
 // bsrmv
-REAL_COMPLEX_TEMPLATE(bsrmv,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsrmv,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_operation       trans,
@@ -354,7 +355,7 @@ REAL_COMPLEX_TEMPLATE(bsrmv,
                       T*                        y);
 
 // bsrxmv
-REAL_COMPLEX_TEMPLATE(bsrxmv,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsrxmv,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_operation       trans,
@@ -375,7 +376,7 @@ REAL_COMPLEX_TEMPLATE(bsrxmv,
                       T*                        y);
 
 // bsrsv
-REAL_COMPLEX_TEMPLATE(bsrsv_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsrsv_buffer_size,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_operation       trans,
@@ -389,7 +390,7 @@ REAL_COMPLEX_TEMPLATE(bsrsv_buffer_size,
                       rocsparse_mat_info        info,
                       size_t*                   buffer_size);
 
-REAL_COMPLEX_TEMPLATE(bsrsv_analysis,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsrsv_analysis,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_operation       trans,
@@ -405,7 +406,7 @@ REAL_COMPLEX_TEMPLATE(bsrsv_analysis,
                       rocsparse_solve_policy    solve,
                       void*                     temp_buffer);
 
-REAL_COMPLEX_TEMPLATE(bsrsv_solve,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsrsv_solve,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_operation       trans,
@@ -424,7 +425,7 @@ REAL_COMPLEX_TEMPLATE(bsrsv_solve,
                       void*                     temp_buffer);
 
 // coomv
-REAL_COMPLEX_TEMPLATE(coomv,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(coomv,
                       rocsparse_handle          handle,
                       rocsparse_operation       trans,
                       rocsparse_int             m,
@@ -440,7 +441,7 @@ REAL_COMPLEX_TEMPLATE(coomv,
                       T*                        y);
 
 // csrmv
-REAL_COMPLEX_TEMPLATE(csrmv_analysis,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csrmv_analysis,
                       rocsparse_handle          handle,
                       rocsparse_operation       trans,
                       rocsparse_int             m,
@@ -452,7 +453,7 @@ REAL_COMPLEX_TEMPLATE(csrmv_analysis,
                       const rocsparse_int*      csr_col_ind,
                       rocsparse_mat_info        info);
 
-REAL_COMPLEX_TEMPLATE(csrmv,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csrmv,
                       rocsparse_handle          handle,
                       rocsparse_operation       trans,
                       rocsparse_int             m,
@@ -469,7 +470,7 @@ REAL_COMPLEX_TEMPLATE(csrmv,
                       T*                        y);
 
 // csrsv
-REAL_COMPLEX_TEMPLATE(csrsv_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csrsv_buffer_size,
                       rocsparse_handle          handle,
                       rocsparse_operation       trans,
                       rocsparse_int             m,
@@ -481,7 +482,7 @@ REAL_COMPLEX_TEMPLATE(csrsv_buffer_size,
                       rocsparse_mat_info        info,
                       size_t*                   buffer_size);
 
-REAL_COMPLEX_TEMPLATE(csrsv_analysis,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csrsv_analysis,
                       rocsparse_handle          handle,
                       rocsparse_operation       trans,
                       rocsparse_int             m,
@@ -495,7 +496,7 @@ REAL_COMPLEX_TEMPLATE(csrsv_analysis,
                       rocsparse_solve_policy    solve,
                       void*                     temp_buffer);
 
-REAL_COMPLEX_TEMPLATE(csrsv_solve,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csrsv_solve,
                       rocsparse_handle          handle,
                       rocsparse_operation       trans,
                       rocsparse_int             m,
@@ -512,7 +513,7 @@ REAL_COMPLEX_TEMPLATE(csrsv_solve,
                       void*                     temp_buffer);
 
 // csritsv
-REAL_COMPLEX_TEMPLATE(csritsv_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csritsv_buffer_size,
                       rocsparse_handle          handle,
                       rocsparse_operation       trans,
                       rocsparse_int             m,
@@ -524,7 +525,7 @@ REAL_COMPLEX_TEMPLATE(csritsv_buffer_size,
                       rocsparse_mat_info        info,
                       size_t*                   buffer_size);
 
-REAL_COMPLEX_TEMPLATE(csritsv_analysis,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csritsv_analysis,
                       rocsparse_handle          handle,
                       rocsparse_operation       trans,
                       rocsparse_int             m,
@@ -538,7 +539,7 @@ REAL_COMPLEX_TEMPLATE(csritsv_analysis,
                       rocsparse_solve_policy    solve,
                       void*                     temp_buffer);
 
-REAL_COMPLEX_TEMPLATE(csritsv_solve,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csritsv_solve,
                       rocsparse_handle          handle,
                       rocsparse_int*            nmaxiter,
                       const floating_data_t<T>* host_tol,
@@ -557,7 +558,7 @@ REAL_COMPLEX_TEMPLATE(csritsv_solve,
                       rocsparse_solve_policy    policy,
                       void*                     temp_buffer);
 
-REAL_COMPLEX_TEMPLATE(csritsv_solve_ex,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csritsv_solve_ex,
                       rocsparse_handle          handle,
                       rocsparse_int*            nmaxiter,
                       rocsparse_int             nfreeiter,
@@ -578,7 +579,7 @@ REAL_COMPLEX_TEMPLATE(csritsv_solve_ex,
                       void*                     temp_buffer);
 
 // ellmv
-REAL_COMPLEX_TEMPLATE(ellmv,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(ellmv,
                       rocsparse_handle          handle,
                       rocsparse_operation       trans,
                       rocsparse_int             m,
@@ -593,7 +594,7 @@ REAL_COMPLEX_TEMPLATE(ellmv,
                       T*                        y);
 
 // hybmv
-REAL_COMPLEX_TEMPLATE(hybmv,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(hybmv,
                       rocsparse_handle          handle,
                       rocsparse_operation       trans,
                       const T*                  alpha,
@@ -604,7 +605,7 @@ REAL_COMPLEX_TEMPLATE(hybmv,
                       T*                        y);
 
 // gebsrmv
-REAL_COMPLEX_TEMPLATE(gebsrmv,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gebsrmv,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_operation       trans,
@@ -623,7 +624,7 @@ REAL_COMPLEX_TEMPLATE(gebsrmv,
                       T*                        y);
 
 // gemvi
-REAL_COMPLEX_TEMPLATE(gemvi_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gemvi_buffer_size,
                       rocsparse_handle    handle,
                       rocsparse_operation trans,
                       rocsparse_int       m,
@@ -631,7 +632,7 @@ REAL_COMPLEX_TEMPLATE(gemvi_buffer_size,
                       rocsparse_int       nnz,
                       size_t*             buffer_size);
 
-REAL_COMPLEX_TEMPLATE(gemvi,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gemvi,
                       rocsparse_handle     handle,
                       rocsparse_operation  trans,
                       rocsparse_int        m,
@@ -653,7 +654,7 @@ REAL_COMPLEX_TEMPLATE(gemvi,
  * ===========================================================================
  */
 // bsrmm
-REAL_COMPLEX_TEMPLATE(bsrmm,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsrmm,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_operation       trans_A,
@@ -675,7 +676,7 @@ REAL_COMPLEX_TEMPLATE(bsrmm,
                       rocsparse_int             ldc);
 
 // gebsrmm
-REAL_COMPLEX_TEMPLATE(gebsrmm,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gebsrmm,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_operation       trans_A,
@@ -698,7 +699,7 @@ REAL_COMPLEX_TEMPLATE(gebsrmm,
                       rocsparse_int             ldc);
 
 // csrmm
-REAL_COMPLEX_TEMPLATE(csrmm,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csrmm,
                       rocsparse_handle          handle,
                       rocsparse_operation       trans_A,
                       rocsparse_operation       trans_B,
@@ -718,7 +719,7 @@ REAL_COMPLEX_TEMPLATE(csrmm,
                       rocsparse_int             ldc);
 
 // csrsm
-REAL_COMPLEX_TEMPLATE(csrsm_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csrsm_buffer_size,
                       rocsparse_handle          handle,
                       rocsparse_operation       trans_A,
                       rocsparse_operation       trans_B,
@@ -736,7 +737,7 @@ REAL_COMPLEX_TEMPLATE(csrsm_buffer_size,
                       rocsparse_solve_policy    policy,
                       size_t*                   buffer_size);
 
-REAL_COMPLEX_TEMPLATE(csrsm_analysis,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csrsm_analysis,
                       rocsparse_handle          handle,
                       rocsparse_operation       trans_A,
                       rocsparse_operation       trans_B,
@@ -755,7 +756,7 @@ REAL_COMPLEX_TEMPLATE(csrsm_analysis,
                       rocsparse_solve_policy    solve,
                       void*                     temp_buffer);
 
-REAL_COMPLEX_TEMPLATE(csrsm_solve,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csrsm_solve,
                       rocsparse_handle          handle,
                       rocsparse_operation       trans_A,
                       rocsparse_operation       trans_B,
@@ -774,7 +775,7 @@ REAL_COMPLEX_TEMPLATE(csrsm_solve,
                       void*                     temp_buffer);
 
 // bsrsm
-REAL_COMPLEX_TEMPLATE(bsrsm_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsrsm_buffer_size,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_operation       trans_A,
@@ -790,7 +791,7 @@ REAL_COMPLEX_TEMPLATE(bsrsm_buffer_size,
                       rocsparse_mat_info        info,
                       size_t*                   buffer_size);
 
-REAL_COMPLEX_TEMPLATE(bsrsm_analysis,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsrsm_analysis,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_operation       trans_A,
@@ -808,7 +809,7 @@ REAL_COMPLEX_TEMPLATE(bsrsm_analysis,
                       rocsparse_solve_policy    solve,
                       void*                     temp_buffer);
 
-REAL_COMPLEX_TEMPLATE(bsrsm_solve,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsrsm_solve,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_operation       trans_A,
@@ -831,7 +832,7 @@ REAL_COMPLEX_TEMPLATE(bsrsm_solve,
                       void*                     temp_buffer);
 
 // gemmi
-REAL_COMPLEX_TEMPLATE(gemmi,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gemmi,
                       rocsparse_handle          handle,
                       rocsparse_operation       trans_A,
                       rocsparse_operation       trans_B,
@@ -856,7 +857,7 @@ REAL_COMPLEX_TEMPLATE(gemmi,
  * ===========================================================================
  */
 // bsrgeam
-REAL_COMPLEX_TEMPLATE(bsrgeam,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsrgeam,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_int             mb,
@@ -880,7 +881,7 @@ REAL_COMPLEX_TEMPLATE(bsrgeam,
                       rocsparse_int*            bsr_col_ind_C);
 
 // bsrgemm
-REAL_COMPLEX_TEMPLATE(bsrgemm_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsrgemm_buffer_size,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_operation       trans_A,
@@ -906,7 +907,7 @@ REAL_COMPLEX_TEMPLATE(bsrgemm_buffer_size,
                       rocsparse_mat_info        info_C,
                       size_t*                   buffer_size);
 
-REAL_COMPLEX_TEMPLATE(bsrgemm,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsrgemm,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_operation       trans_A,
@@ -940,7 +941,7 @@ REAL_COMPLEX_TEMPLATE(bsrgemm,
                       void*                     temp_buffer);
 
 // csrgeam
-REAL_COMPLEX_TEMPLATE(csrgeam,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csrgeam,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       rocsparse_int             n,
@@ -962,7 +963,7 @@ REAL_COMPLEX_TEMPLATE(csrgeam,
                       rocsparse_int*            csr_col_ind_C);
 
 // csrgemm
-REAL_COMPLEX_TEMPLATE(csrgemm_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csrgemm_buffer_size,
                       rocsparse_handle          handle,
                       rocsparse_operation       trans_A,
                       rocsparse_operation       trans_B,
@@ -986,7 +987,7 @@ REAL_COMPLEX_TEMPLATE(csrgemm_buffer_size,
                       rocsparse_mat_info        info_C,
                       size_t*                   buffer_size);
 
-REAL_COMPLEX_TEMPLATE(csrgemm,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csrgemm,
                       rocsparse_handle          handle,
                       rocsparse_operation       trans_A,
                       rocsparse_operation       trans_B,
@@ -1017,7 +1018,7 @@ REAL_COMPLEX_TEMPLATE(csrgemm,
                       const rocsparse_mat_info  info_C,
                       void*                     temp_buffer);
 
-REAL_COMPLEX_TEMPLATE(csrgemm_numeric,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csrgemm_numeric,
                       rocsparse_handle          handle,
                       rocsparse_operation       trans_A,
                       rocsparse_operation       trans_B,
@@ -1056,7 +1057,7 @@ REAL_COMPLEX_TEMPLATE(csrgemm_numeric,
  */
 
 // bsric0
-REAL_COMPLEX_TEMPLATE(bsric0_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsric0_buffer_size,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_int             mb,
@@ -1069,7 +1070,7 @@ REAL_COMPLEX_TEMPLATE(bsric0_buffer_size,
                       rocsparse_mat_info        info,
                       size_t*                   buffer_size);
 
-REAL_COMPLEX_TEMPLATE(bsric0_analysis,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsric0_analysis,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_int             mb,
@@ -1084,7 +1085,7 @@ REAL_COMPLEX_TEMPLATE(bsric0_analysis,
                       rocsparse_solve_policy    solve,
                       void*                     temp_buffer);
 
-REAL_COMPLEX_TEMPLATE(bsric0,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsric0,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_int             mb,
@@ -1099,7 +1100,7 @@ REAL_COMPLEX_TEMPLATE(bsric0,
                       void*                     temp_buffer);
 
 // bsrilu0
-REAL_COMPLEX_TEMPLATE(bsrilu0_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsrilu0_buffer_size,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_int             mb,
@@ -1112,14 +1113,14 @@ REAL_COMPLEX_TEMPLATE(bsrilu0_buffer_size,
                       rocsparse_mat_info        info,
                       size_t*                   buffer_size);
 
-REAL_COMPLEX_TEMPLATE(bsrilu0_numeric_boost,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsrilu0_numeric_boost,
                       rocsparse_handle          handle,
                       rocsparse_mat_info        info,
                       int                       enable_boost,
                       const floating_data_t<T>* boost_tol,
                       const T*                  boost_val);
 
-REAL_COMPLEX_TEMPLATE(bsrilu0_analysis,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsrilu0_analysis,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_int             mb,
@@ -1134,7 +1135,7 @@ REAL_COMPLEX_TEMPLATE(bsrilu0_analysis,
                       rocsparse_solve_policy    solve,
                       void*                     temp_buffer);
 
-REAL_COMPLEX_TEMPLATE(bsrilu0,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsrilu0,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_int             mb,
@@ -1149,7 +1150,7 @@ REAL_COMPLEX_TEMPLATE(bsrilu0,
                       void*                     temp_buffer);
 
 // csric0
-REAL_COMPLEX_TEMPLATE(csric0_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csric0_buffer_size,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       rocsparse_int             nnz,
@@ -1160,7 +1161,7 @@ REAL_COMPLEX_TEMPLATE(csric0_buffer_size,
                       rocsparse_mat_info        info,
                       size_t*                   buffer_size);
 
-REAL_COMPLEX_TEMPLATE(csric0_analysis,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csric0_analysis,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       rocsparse_int             nnz,
@@ -1173,7 +1174,7 @@ REAL_COMPLEX_TEMPLATE(csric0_analysis,
                       rocsparse_solve_policy    solve,
                       void*                     temp_buffer);
 
-REAL_COMPLEX_TEMPLATE(csric0,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csric0,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       rocsparse_int             nnz,
@@ -1186,7 +1187,7 @@ REAL_COMPLEX_TEMPLATE(csric0,
                       void*                     temp_buffer);
 
 // csritilu0_compute_ex
-REAL_COMPLEX_TEMPLATE(csritilu0_compute_ex,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csritilu0_compute_ex,
                       rocsparse_handle     handle,
                       rocsparse_itilu0_alg alg,
                       rocsparse_int        options,
@@ -1204,7 +1205,7 @@ REAL_COMPLEX_TEMPLATE(csritilu0_compute_ex,
                       void*                buffer);
 
 // csritilu0_compute
-REAL_COMPLEX_TEMPLATE(csritilu0_compute,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csritilu0_compute,
                       rocsparse_handle     handle,
                       rocsparse_itilu0_alg alg,
                       rocsparse_int        options,
@@ -1221,7 +1222,7 @@ REAL_COMPLEX_TEMPLATE(csritilu0_compute,
                       void*                buffer);
 
 // csritilu0_update
-REAL_COMPLEX_TEMPLATE(csritilu0_history,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csritilu0_history,
                       rocsparse_handle     handle,
                       rocsparse_itilu0_alg alg,
                       rocsparse_int*       niter,
@@ -1230,7 +1231,7 @@ REAL_COMPLEX_TEMPLATE(csritilu0_history,
                       void*                buffer);
 
 // csrilu0
-REAL_COMPLEX_TEMPLATE(csrilu0_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csrilu0_buffer_size,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       rocsparse_int             nnz,
@@ -1241,14 +1242,14 @@ REAL_COMPLEX_TEMPLATE(csrilu0_buffer_size,
                       rocsparse_mat_info        info,
                       size_t*                   buffer_size);
 
-REAL_COMPLEX_TEMPLATE(csrilu0_numeric_boost,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csrilu0_numeric_boost,
                       rocsparse_handle          handle,
                       rocsparse_mat_info        info,
                       int                       enable_boost,
                       const floating_data_t<T>* boost_tol,
                       const T*                  boost_val);
 
-REAL_COMPLEX_TEMPLATE(csrilu0_analysis,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csrilu0_analysis,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       rocsparse_int             nnz,
@@ -1261,7 +1262,7 @@ REAL_COMPLEX_TEMPLATE(csrilu0_analysis,
                       rocsparse_solve_policy    solve,
                       void*                     temp_buffer);
 
-REAL_COMPLEX_TEMPLATE(csrilu0,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csrilu0,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       rocsparse_int             nnz,
@@ -1273,7 +1274,7 @@ REAL_COMPLEX_TEMPLATE(csrilu0,
                       rocsparse_solve_policy    policy,
                       void*                     temp_buffer);
 
-REAL_COMPLEX_TEMPLATE(gtsv_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gtsv_buffer_size,
                       rocsparse_handle handle,
                       rocsparse_int    m,
                       rocsparse_int    n,
@@ -1284,7 +1285,7 @@ REAL_COMPLEX_TEMPLATE(gtsv_buffer_size,
                       rocsparse_int    ldb,
                       size_t*          buffer_size);
 
-REAL_COMPLEX_TEMPLATE(gtsv,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gtsv,
                       rocsparse_handle handle,
                       rocsparse_int    m,
                       rocsparse_int    n,
@@ -1296,7 +1297,7 @@ REAL_COMPLEX_TEMPLATE(gtsv,
                       void*            temp_buffer);
 
 // gtsv_no_pivot
-REAL_COMPLEX_TEMPLATE(gtsv_no_pivot_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gtsv_no_pivot_buffer_size,
                       rocsparse_handle handle,
                       rocsparse_int    m,
                       rocsparse_int    n,
@@ -1307,7 +1308,7 @@ REAL_COMPLEX_TEMPLATE(gtsv_no_pivot_buffer_size,
                       rocsparse_int    ldb,
                       size_t*          buffer_size);
 
-REAL_COMPLEX_TEMPLATE(gtsv_no_pivot,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gtsv_no_pivot,
                       rocsparse_handle handle,
                       rocsparse_int    m,
                       rocsparse_int    n,
@@ -1319,7 +1320,7 @@ REAL_COMPLEX_TEMPLATE(gtsv_no_pivot,
                       void*            temp_buffer);
 
 // gtsv_no_pivot_strided_batch
-REAL_COMPLEX_TEMPLATE(gtsv_no_pivot_strided_batch_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gtsv_no_pivot_strided_batch_buffer_size,
                       rocsparse_handle handle,
                       rocsparse_int    m,
                       const T*         dl,
@@ -1330,7 +1331,7 @@ REAL_COMPLEX_TEMPLATE(gtsv_no_pivot_strided_batch_buffer_size,
                       rocsparse_int    batch_stride,
                       size_t*          buffer_size);
 
-REAL_COMPLEX_TEMPLATE(gtsv_no_pivot_strided_batch,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gtsv_no_pivot_strided_batch,
                       rocsparse_handle handle,
                       rocsparse_int    m,
                       const T*         dl,
@@ -1342,7 +1343,7 @@ REAL_COMPLEX_TEMPLATE(gtsv_no_pivot_strided_batch,
                       void*            temp_buffer);
 
 // gtsv_interleaved_batch
-REAL_COMPLEX_TEMPLATE(gtsv_interleaved_batch_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gtsv_interleaved_batch_buffer_size,
                       rocsparse_handle               handle,
                       rocsparse_gtsv_interleaved_alg alg,
                       rocsparse_int                  m,
@@ -1354,7 +1355,7 @@ REAL_COMPLEX_TEMPLATE(gtsv_interleaved_batch_buffer_size,
                       rocsparse_int                  batch_stride,
                       size_t*                        buffer_size);
 
-REAL_COMPLEX_TEMPLATE(gtsv_interleaved_batch,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gtsv_interleaved_batch,
                       rocsparse_handle               handle,
                       rocsparse_gtsv_interleaved_alg alg,
                       rocsparse_int                  m,
@@ -1367,7 +1368,7 @@ REAL_COMPLEX_TEMPLATE(gtsv_interleaved_batch,
                       void*                          temp_buffer);
 
 // gpsv_interleaved_batch
-REAL_COMPLEX_TEMPLATE(gpsv_interleaved_batch_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gpsv_interleaved_batch_buffer_size,
                       rocsparse_handle               handle,
                       rocsparse_gpsv_interleaved_alg alg,
                       rocsparse_int                  m,
@@ -1381,7 +1382,7 @@ REAL_COMPLEX_TEMPLATE(gpsv_interleaved_batch_buffer_size,
                       rocsparse_int                  batch_stride,
                       size_t*                        buffer_size);
 
-REAL_COMPLEX_TEMPLATE(gpsv_interleaved_batch,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gpsv_interleaved_batch,
                       rocsparse_handle               handle,
                       rocsparse_gpsv_interleaved_alg alg,
                       rocsparse_int                  m,
@@ -1402,7 +1403,7 @@ REAL_COMPLEX_TEMPLATE(gpsv_interleaved_batch,
  */
 
 // nnz
-REAL_COMPLEX_TEMPLATE(nnz,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(nnz,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_int             m,
@@ -1414,7 +1415,7 @@ REAL_COMPLEX_TEMPLATE(nnz,
                       rocsparse_int*            nnz_total_dev_host_ptr);
 
 // nnz_compress
-REAL_COMPLEX_TEMPLATE(nnz_compress,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(nnz_compress,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       const rocsparse_mat_descr descr_A,
@@ -1425,7 +1426,7 @@ REAL_COMPLEX_TEMPLATE(nnz_compress,
                       T                         tol);
 
 // dense2csr
-REAL_COMPLEX_TEMPLATE(dense2csr,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(dense2csr,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       rocsparse_int             n,
@@ -1438,7 +1439,7 @@ REAL_COMPLEX_TEMPLATE(dense2csr,
                       rocsparse_int*            csr_col_ind);
 
 // dense2coo
-REAL_COMPLEX_TEMPLATE(dense2coo,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(dense2coo,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       rocsparse_int             n,
@@ -1451,7 +1452,7 @@ REAL_COMPLEX_TEMPLATE(dense2coo,
                       rocsparse_int*            coo_col_ind);
 
 // prune_dense2csr_buffer_size
-REAL_TEMPLATE(prune_dense2csr_buffer_size,
+REAL_TEMPLATE_SPECIALIZATION(prune_dense2csr_buffer_size,
               rocsparse_handle          handle,
               rocsparse_int             m,
               rocsparse_int             n,
@@ -1465,7 +1466,7 @@ REAL_TEMPLATE(prune_dense2csr_buffer_size,
               size_t*                   buffer_size);
 
 // prune_dense2csr_nnz
-REAL_TEMPLATE(prune_dense2csr_nnz,
+REAL_TEMPLATE_SPECIALIZATION(prune_dense2csr_nnz,
               rocsparse_handle          handle,
               rocsparse_int             m,
               rocsparse_int             n,
@@ -1478,7 +1479,7 @@ REAL_TEMPLATE(prune_dense2csr_nnz,
               void*                     temp_buffer);
 
 // prune_dense2csr
-REAL_TEMPLATE(prune_dense2csr,
+REAL_TEMPLATE_SPECIALIZATION(prune_dense2csr,
               rocsparse_handle          handle,
               rocsparse_int             m,
               rocsparse_int             n,
@@ -1492,7 +1493,7 @@ REAL_TEMPLATE(prune_dense2csr,
               void*                     temp_buffer);
 
 // prune_dense2csr_by_percentage_buffer_size
-REAL_TEMPLATE(prune_dense2csr_by_percentage_buffer_size,
+REAL_TEMPLATE_SPECIALIZATION(prune_dense2csr_by_percentage_buffer_size,
               rocsparse_handle          handle,
               rocsparse_int             m,
               rocsparse_int             n,
@@ -1507,7 +1508,7 @@ REAL_TEMPLATE(prune_dense2csr_by_percentage_buffer_size,
               size_t*                   buffer_size);
 
 // prune_dense2csr_nnz_by_percentage
-REAL_TEMPLATE(prune_dense2csr_nnz_by_percentage,
+REAL_TEMPLATE_SPECIALIZATION(prune_dense2csr_nnz_by_percentage,
               rocsparse_handle          handle,
               rocsparse_int             m,
               rocsparse_int             n,
@@ -1521,7 +1522,7 @@ REAL_TEMPLATE(prune_dense2csr_nnz_by_percentage,
               void*                     temp_buffer);
 
 // prune_dense2csr_by_percentage
-REAL_TEMPLATE(prune_dense2csr_by_percentage,
+REAL_TEMPLATE_SPECIALIZATION(prune_dense2csr_by_percentage,
               rocsparse_handle          handle,
               rocsparse_int             m,
               rocsparse_int             n,
@@ -1536,7 +1537,7 @@ REAL_TEMPLATE(prune_dense2csr_by_percentage,
               void*                     temp_buffer);
 
 // dense2csc
-REAL_COMPLEX_TEMPLATE(dense2csc,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(dense2csc,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       rocsparse_int             n,
@@ -1549,7 +1550,7 @@ REAL_COMPLEX_TEMPLATE(dense2csc,
                       rocsparse_int*            csc_row_ind);
 
 // csr2dense
-REAL_COMPLEX_TEMPLATE(csr2dense,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csr2dense,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       rocsparse_int             n,
@@ -1561,7 +1562,7 @@ REAL_COMPLEX_TEMPLATE(csr2dense,
                       rocsparse_int             lda);
 
 // csc2dense
-REAL_COMPLEX_TEMPLATE(csc2dense,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csc2dense,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       rocsparse_int             n,
@@ -1573,7 +1574,7 @@ REAL_COMPLEX_TEMPLATE(csc2dense,
                       rocsparse_int             lda);
 
 // coo2dense
-REAL_COMPLEX_TEMPLATE(coo2dense,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(coo2dense,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       rocsparse_int             n,
@@ -1586,7 +1587,7 @@ REAL_COMPLEX_TEMPLATE(coo2dense,
                       rocsparse_int             lda);
 
 // csr2csc
-REAL_COMPLEX_TEMPLATE(csr2csc,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csr2csc,
                       rocsparse_handle     handle,
                       rocsparse_int        m,
                       rocsparse_int        n,
@@ -1601,7 +1602,7 @@ REAL_COMPLEX_TEMPLATE(csr2csc,
                       rocsparse_index_base idx_base,
                       void*                temp_buffer);
 // gebsr2gebsc
-REAL_COMPLEX_TEMPLATE(gebsr2gebsc_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gebsr2gebsc_buffer_size,
                       rocsparse_handle     handle,
                       rocsparse_int        mb,
                       rocsparse_int        nb,
@@ -1613,7 +1614,7 @@ REAL_COMPLEX_TEMPLATE(gebsr2gebsc_buffer_size,
                       rocsparse_int        col_block_dim,
                       size_t*              p_buffer_size);
 
-REAL_COMPLEX_TEMPLATE(gebsr2gebsc,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gebsr2gebsc,
                       rocsparse_handle     handle,
                       rocsparse_int        mb,
                       rocsparse_int        nb,
@@ -1631,7 +1632,7 @@ REAL_COMPLEX_TEMPLATE(gebsr2gebsc,
                       void*                temp_buffer);
 
 // csr2ell
-REAL_COMPLEX_TEMPLATE(csr2ell,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csr2ell,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       const rocsparse_mat_descr csr_descr,
@@ -1644,7 +1645,7 @@ REAL_COMPLEX_TEMPLATE(csr2ell,
                       rocsparse_int*            ell_col_ind);
 
 // csr2hyb
-REAL_COMPLEX_TEMPLATE(csr2hyb,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csr2hyb,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       rocsparse_int             n,
@@ -1657,7 +1658,7 @@ REAL_COMPLEX_TEMPLATE(csr2hyb,
                       rocsparse_hyb_partition   partition_type);
 
 // csr2bsr
-REAL_COMPLEX_TEMPLATE(csr2bsr,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csr2bsr,
                       rocsparse_handle          handle,
                       rocsparse_direction       direction,
                       rocsparse_int             m,
@@ -1673,7 +1674,7 @@ REAL_COMPLEX_TEMPLATE(csr2bsr,
                       rocsparse_int*            bsr_col_ind);
 
 // bsrpad_value
-REAL_COMPLEX_TEMPLATE(bsrpad_value,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsrpad_value,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       rocsparse_int             mb,
@@ -1686,7 +1687,7 @@ REAL_COMPLEX_TEMPLATE(bsrpad_value,
                       rocsparse_int*            bsr_col_ind);
 
 // csr2gebsr_buffer_size
-REAL_COMPLEX_TEMPLATE(csr2gebsr_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csr2gebsr_buffer_size,
                       rocsparse_handle          handle,
                       rocsparse_direction       direction,
                       rocsparse_int             m,
@@ -1700,7 +1701,7 @@ REAL_COMPLEX_TEMPLATE(csr2gebsr_buffer_size,
                       size_t*                   p_buffer_size);
 
 // csr2gebsr
-REAL_COMPLEX_TEMPLATE(csr2gebsr,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csr2gebsr,
                       rocsparse_handle          handle,
                       rocsparse_direction       direction,
                       rocsparse_int             m,
@@ -1718,7 +1719,7 @@ REAL_COMPLEX_TEMPLATE(csr2gebsr,
                       void*                     p_buffer);
 
 // ell2csr
-REAL_COMPLEX_TEMPLATE(ell2csr,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(ell2csr,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       rocsparse_int             n,
@@ -1732,7 +1733,7 @@ REAL_COMPLEX_TEMPLATE(ell2csr,
                       rocsparse_int*            csr_col_ind);
 
 // hyb2csr
-REAL_COMPLEX_TEMPLATE(hyb2csr,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(hyb2csr,
                       rocsparse_handle          handle,
                       const rocsparse_mat_descr descr,
                       const rocsparse_hyb_mat   hyb,
@@ -1742,7 +1743,7 @@ REAL_COMPLEX_TEMPLATE(hyb2csr,
                       void*                     temp_buffer);
 
 // bsr2csr
-REAL_COMPLEX_TEMPLATE(bsr2csr,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(bsr2csr,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_int             mb,
@@ -1758,7 +1759,7 @@ REAL_COMPLEX_TEMPLATE(bsr2csr,
                       rocsparse_int*            csr_col_ind);
 
 // gebsr2csr
-REAL_COMPLEX_TEMPLATE(gebsr2csr,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gebsr2csr,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_int             mb,
@@ -1775,7 +1776,7 @@ REAL_COMPLEX_TEMPLATE(gebsr2csr,
                       rocsparse_int*            csr_col_ind);
 
 // gebsr2csr_buffer_size
-REAL_COMPLEX_TEMPLATE(gebsr2gebsr_buffer_size,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gebsr2gebsr_buffer_size,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_int             mb,
@@ -1792,7 +1793,7 @@ REAL_COMPLEX_TEMPLATE(gebsr2gebsr_buffer_size,
                       size_t*                   buffer_size);
 
 // gebsr2gebsr
-REAL_COMPLEX_TEMPLATE(gebsr2gebsr,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(gebsr2gebsr,
                       rocsparse_handle          handle,
                       rocsparse_direction       dir,
                       rocsparse_int             mb,
@@ -1813,7 +1814,7 @@ REAL_COMPLEX_TEMPLATE(gebsr2gebsr,
                       void*                     temp_buffer);
 
 // csr2csr_compress
-REAL_COMPLEX_TEMPLATE(csr2csr_compress,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csr2csr_compress,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       rocsparse_int             n,
@@ -1829,7 +1830,7 @@ REAL_COMPLEX_TEMPLATE(csr2csr_compress,
                       T                         tol);
 
 // prune_csr2csr_buffer_size
-REAL_TEMPLATE(prune_csr2csr_buffer_size,
+REAL_TEMPLATE_SPECIALIZATION(prune_csr2csr_buffer_size,
               rocsparse_handle          handle,
               rocsparse_int             m,
               rocsparse_int             n,
@@ -1846,7 +1847,7 @@ REAL_TEMPLATE(prune_csr2csr_buffer_size,
               size_t*                   buffer_size);
 
 // prune_csr2csr_nnz
-REAL_TEMPLATE(prune_csr2csr_nnz,
+REAL_TEMPLATE_SPECIALIZATION(prune_csr2csr_nnz,
               rocsparse_handle          handle,
               rocsparse_int             m,
               rocsparse_int             n,
@@ -1862,7 +1863,7 @@ REAL_TEMPLATE(prune_csr2csr_nnz,
               void*                     buffer);
 
 // prune_csr2csr
-REAL_TEMPLATE(prune_csr2csr,
+REAL_TEMPLATE_SPECIALIZATION(prune_csr2csr,
               rocsparse_handle          handle,
               rocsparse_int             m,
               rocsparse_int             n,
@@ -1879,7 +1880,7 @@ REAL_TEMPLATE(prune_csr2csr,
               void*                     buffer);
 
 // prune_csr2csr_by_percentage_buffer_size
-REAL_TEMPLATE(prune_csr2csr_by_percentage_buffer_size,
+REAL_TEMPLATE_SPECIALIZATION(prune_csr2csr_by_percentage_buffer_size,
               rocsparse_handle          handle,
               rocsparse_int             m,
               rocsparse_int             n,
@@ -1897,7 +1898,7 @@ REAL_TEMPLATE(prune_csr2csr_by_percentage_buffer_size,
               size_t*                   buffer_size);
 
 // prune_csr2csr_nnz_by_percentage
-REAL_TEMPLATE(prune_csr2csr_nnz_by_percentage,
+REAL_TEMPLATE_SPECIALIZATION(prune_csr2csr_nnz_by_percentage,
               rocsparse_handle          handle,
               rocsparse_int             m,
               rocsparse_int             n,
@@ -1914,7 +1915,7 @@ REAL_TEMPLATE(prune_csr2csr_nnz_by_percentage,
               void*                     buffer);
 
 // prune_csr2csr_by_percentage
-REAL_TEMPLATE(prune_csr2csr_by_percentage,
+REAL_TEMPLATE_SPECIALIZATION(prune_csr2csr_by_percentage,
               rocsparse_handle          handle,
               rocsparse_int             m,
               rocsparse_int             n,
@@ -1938,7 +1939,7 @@ REAL_TEMPLATE(prune_csr2csr_by_percentage,
  */
 
 // csrcolor
-REAL_COMPLEX_TEMPLATE(csrcolor,
+REAL_COMPLEX_TEMPLATE_SPECIALIZATION(csrcolor,
                       rocsparse_handle          handle,
                       rocsparse_int             m,
                       rocsparse_int             nnz,
@@ -1951,5 +1952,3 @@ REAL_COMPLEX_TEMPLATE(csrcolor,
                       rocsparse_int*            coloring,
                       rocsparse_int*            reordering,
                       rocsparse_mat_info        info);
-
-#endif // ROCSPARSE_HPP
