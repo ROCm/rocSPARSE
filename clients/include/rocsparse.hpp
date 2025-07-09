@@ -34,16 +34,16 @@
 #include "rocsparse.h"
 #include "rocsparse_traits.hpp"
 
-#define REAL_TEMPLATE(NAME_, ...)                              \
-    template <typename T>                                      \
+#define REAL_TEMPLATE(NAME_, ...) \
+    template <typename T>         \
     rocsparse_status (*rocsparse_##NAME_)(__VA_ARGS__);
 
-#define COMPLEX_TEMPLATE(NAME_, ...)                                             \
-    template <typename T>                                                        \
+#define COMPLEX_TEMPLATE(NAME_, ...) \
+    template <typename T>            \
     rocsparse_status (*rocsparse_##NAME_)(__VA_ARGS__);
 
-#define REAL_COMPLEX_TEMPLATE(NAME_, ...)                                        \
-    template <typename T>                                                        \
+#define REAL_COMPLEX_TEMPLATE(NAME_, ...) \
+    template <typename T>                 \
     rocsparse_status (*rocsparse_##NAME_)(__VA_ARGS__);
 
 /*
