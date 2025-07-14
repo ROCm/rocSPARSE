@@ -1,5 +1,8 @@
 # rocSPARSE
 
+> [!CAUTION]
+> The rocSPARSE repository is retired, please use the [ROCm/rocm-libraries](https://github.com/ROCm/rocm-libraries) repository
+
 rocSPARSE exposes a common interface that provides Basic Linear Algebra Subroutines (BLAS) for
 sparse computation. It's implemented on top of AMD
 [ROCm](https://github.com/ROCm/ROCm) runtime and toolchains. rocSPARSE is
