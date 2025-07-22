@@ -366,7 +366,8 @@ Clients
 =======
 
 rocSPARSE clients host a variety of different examples as well as a unit test and benchmarking package.
-For detailed instructions on how to build rocSPARSE with clients, see :ref:`rocsparse_building`.
+For detailed instructions on how to build rocSPARSE with clients, see the :doc:`Linux Install <../install/Linux_Install_Guide>`
+or :doc:`Windows Install <../install/Windows_Install_Guide>` guides.
 
 Samples
 -------
