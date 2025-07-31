@@ -74,7 +74,7 @@ Additionally, when adding new routines, these routines must offer enough value t
 Code structure
 ==============
 
-The following is the structure of the rocSPARSE library in the GitHub repository. A more detailed description of the directory structure can be found in the :doc:`rocSPARSE documentation <rocsparse:how-to/design>`.
+The following is the structure of the rocSPARSE library in the GitHub repository. A more detailed description of the directory structure can be found in the :doc:`rocSPARSE design notes <../conceptual/rocsparse-design>`.
 
 The ``library/include/`` directory contains the rocsparse.h header (which itself includes headers defining the public API of rocSPARSE). The ``library/include/`` directory also contains the headers for all the rocSPARSE public types.
 
@@ -84,7 +84,7 @@ The ``clients/`` directory contains the testing and benchmarking code as well as
 
 The ``docs/`` directory contains all of the documentation files.
 
-The ``scripts/`` directory contains potentially useful python and shell scripts for downloading test matrices (see ``scripts/performance/matrices/``) as well as plotting tools. See :doc:`rocSPARSE documentation <rocsparse:how-to/design>` for more details.
+The ``scripts/`` directory contains potentially useful python and shell scripts for downloading test matrices (see ``scripts/performance/matrices/``) as well as plotting tools. See :doc:`rocSPARSE design notes <../conceptual/rocsparse-design>` for more details.
 
 Coding style
 ============
