@@ -22,7 +22,7 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_csrmm.hpp"
+#include "rocsparse_cscmm.hpp"
 #include "rocsparse_enum_utils.hpp"
 #include "rocsparse_utility.hpp"
 
@@ -31,7 +31,7 @@
 
 namespace rocsparse
 {
-    typedef rocsparse_status (*csrmm_buffer_size_t)(rocsparse_handle          handle,
+    typedef rocsparse_status (*cscmm_buffer_size_t)(rocsparse_handle          handle,
                                                     rocsparse_operation       trans_A,
                                                     rocsparse_csrmm_alg       alg,
                                                     int64_t                   m,
@@ -39,158 +39,158 @@ namespace rocsparse
                                                     int64_t                   k,
                                                     int64_t                   nnz,
                                                     const rocsparse_mat_descr descr,
-                                                    const void*               csr_val,
-                                                    const void*               csr_row_ptr,
-                                                    const void*               csr_col_ind,
+                                                    const void*               csc_val,
+                                                    const void*               csc_col_ptr,
+                                                    const void*               csc_row_ind,
                                                     size_t*                   buffer_size);
 
-    using csrmm_buffer_size_tuple = std::
+    using cscmm_buffer_size_tuple = std::
         tuple<rocsparse_datatype, rocsparse_indextype, rocsparse_indextype, rocsparse_datatype>;
 
     // clang-format off
-#define CSRMM_BUFFER_SIZE_CONFIG(T, I, J, A)                                      \
+#define CSCMM_BUFFER_SIZE_CONFIG(T, I, J, A)                                      \
     {                                                                       \
-        csrmm_buffer_size_tuple(T, I, J, A),                                      \
-            csrmm_buffer_size_template<typename rocsparse::datatype_traits<T>::type_t,  \
+        cscmm_buffer_size_tuple(T, I, J, A),                                      \
+            cscmm_buffer_size_template<typename rocsparse::datatype_traits<T>::type_t,  \
                            typename rocsparse::indextype_traits<I>::type_t, \
                            typename rocsparse::indextype_traits<J>::type_t, \
                            typename rocsparse::datatype_traits<A>::type_t>  \
     }
     // clang-format on
 
-    static const std::map<csrmm_buffer_size_tuple, csrmm_buffer_size_t>
-        s_csrmm_buffer_size_dispatch{{// Uniform precisions
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
+    static const std::map<cscmm_buffer_size_tuple, cscmm_buffer_size_t>
+        s_cscmm_buffer_size_dispatch{{// Uniform precisions
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_datatype_f32_r),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_datatype_f32_r),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_datatype_f32_r),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f64_r,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f64_r,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_datatype_f64_r),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f64_r,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f64_r,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_datatype_f64_r),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f64_r,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f64_r,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_datatype_f64_r),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_c,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_c,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_datatype_f32_c),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_c,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_c,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_datatype_f32_c),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_c,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_c,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_datatype_f32_c),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f64_c,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f64_c,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_datatype_f64_c),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f64_c,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f64_c,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_datatype_f64_c),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f64_c,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f64_c,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_datatype_f64_c),
 
                                       // Mixed precisions
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_i32_r,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_i32_r,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_datatype_i8_r),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_i32_r,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_i32_r,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_datatype_i8_r),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_i32_r,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_i32_r,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_datatype_i8_r),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_datatype_f16_r),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_datatype_f16_r),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_datatype_f16_r),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_datatype_i8_r),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_datatype_i8_r),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_datatype_i8_r),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_datatype_bf16_r),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_indextype_i32,
                                                                rocsparse_datatype_bf16_r),
 
-                                      CSRMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
+                                      CSCMM_BUFFER_SIZE_CONFIG(rocsparse_datatype_f32_r,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_indextype_i64,
                                                                rocsparse_datatype_bf16_r)}};
 
-    static rocsparse_status csrmm_buffer_size_find(csrmm_buffer_size_t* function_,
+    static rocsparse_status cscmm_buffer_size_find(cscmm_buffer_size_t* function_,
                                                    rocsparse_datatype   t_type_,
                                                    rocsparse_indextype  i_type_,
                                                    rocsparse_indextype  j_type_,
                                                    rocsparse_datatype   a_type_)
     {
-        const auto& it = rocsparse::s_csrmm_buffer_size_dispatch.find(
-            rocsparse::csrmm_buffer_size_tuple(t_type_, i_type_, j_type_, a_type_));
+        const auto& it = rocsparse::s_cscmm_buffer_size_dispatch.find(
+            rocsparse::cscmm_buffer_size_tuple(t_type_, i_type_, j_type_, a_type_));
 
-        if(it != rocsparse::s_csrmm_buffer_size_dispatch.end())
+        if(it != rocsparse::s_cscmm_buffer_size_dispatch.end())
         {
             function_[0] = it->second;
         }
@@ -205,7 +205,7 @@ namespace rocsparse
                       << ", a_type: " << rocsparse::enum_utils::to_string(a_type_) << std::endl;
 
             std::cout << "available configuration are: " << std::endl;
-            for(const auto& p : rocsparse::s_csrmm_buffer_size_dispatch)
+            for(const auto& p : rocsparse::s_cscmm_buffer_size_dispatch)
             {
                 const auto& t      = p.first;
                 const auto  t_type = std::get<0>(t);
@@ -237,7 +237,7 @@ namespace rocsparse
     }
 }
 
-rocsparse_status rocsparse::csrmm_buffer_size(rocsparse_handle          handle,
+rocsparse_status rocsparse::cscmm_buffer_size(rocsparse_handle          handle,
                                               rocsparse_operation       trans_A,
                                               rocsparse_csrmm_alg       alg,
                                               int64_t                   m,
@@ -246,22 +246,22 @@ rocsparse_status rocsparse::csrmm_buffer_size(rocsparse_handle          handle,
                                               int64_t                   nnz,
                                               const rocsparse_mat_descr descr,
                                               rocsparse_datatype        compute_datatype,
-                                              rocsparse_datatype        csr_val_datatype,
-                                              const void*               csr_val,
-                                              rocsparse_indextype       csr_row_ptr_indextype,
-                                              const void*               csr_row_ptr,
-                                              rocsparse_indextype       csr_col_ind_indextype,
-                                              const void*               csr_col_ind,
+                                              rocsparse_datatype        csc_val_datatype,
+                                              const void*               csc_val,
+                                              rocsparse_indextype       csc_col_ptr_indextype,
+                                              const void*               csc_col_ptr,
+                                              rocsparse_indextype       csc_row_ind_indextype,
+                                              const void*               csc_row_ind,
                                               size_t*                   buffer_size)
 {
 
     ROCSPARSE_ROUTINE_TRACE;
-    rocsparse::csrmm_buffer_size_t f;
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse::csrmm_buffer_size_find(
-        &f, compute_datatype, csr_row_ptr_indextype, csr_col_ind_indextype, csr_val_datatype));
+    rocsparse::cscmm_buffer_size_t f;
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse::cscmm_buffer_size_find(
+        &f, compute_datatype, csc_col_ptr_indextype, csc_row_ind_indextype, csc_val_datatype));
 
     RETURN_IF_ROCSPARSE_ERROR(f(
-        handle, trans_A, alg, m, n, k, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, buffer_size));
+        handle, trans_A, alg, m, n, k, nnz, descr, csc_val, csc_col_ptr, csc_row_ind, buffer_size));
 
     return rocsparse_status_success;
 }
