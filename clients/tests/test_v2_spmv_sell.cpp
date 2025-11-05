@@ -1,4 +1,3 @@
-/*! \file */
 /* ************************************************************************
  * Copyright (C) 2025 Advanced Micro Devices, Inc. All rights Reserved.
  *
@@ -22,49 +21,23 @@
  *
  * ************************************************************************ */
 
-#pragma once
+#include "test.hpp"
 
-#include "rocsparse-types.h"
+#include "testing_v2_spmv_sell.hpp"
 
-struct _rocsparse_spmat_descr
-{
-    bool init{};
-
-    mutable bool analysed{};
-
-    int64_t rows{};
-    int64_t cols{};
-    int64_t nnz{};
-
-    void* row_data{};
-    void* col_data{};
-    void* ind_data{};
-    void* val_data{};
-
-    const void* const_row_data{};
-    const void* const_col_data{};
-    const void* const_ind_data{};
-    const void* const_val_data{};
-
-    rocsparse_indextype row_type{};
-    rocsparse_indextype col_type{};
-    rocsparse_datatype  data_type{};
-
-    rocsparse_index_base idx_base{};
-    rocsparse_format     format{};
-
-    rocsparse_mat_descr descr{};
-    rocsparse_mat_info  info{};
-
-    rocsparse_direction block_dir{};
-    int64_t             block_dim{};
-    int64_t             ell_cols{};
-    int64_t             ell_width{};
-    int64_t             sell_slice_size{};
-    int64_t             sell_colval_size{};
-
-    int64_t batch_count{};
-    int64_t batch_stride{};
-    int64_t offsets_batch_stride{};
-    int64_t columns_values_batch_stride{};
-};
+TEST_ROUTINE_WITH_CONFIG(v2_spmv_sell,
+                         level2,
+                         rocsparse_test_config_ijaxyt,
+                         arg.M,
+                         arg.N,
+                         arg.sell_slice_size,
+                         arg.alpha,
+                         arg.alphai,
+                         arg.beta,
+                         arg.betai,
+                         arg.transA,
+                         arg.baseA,
+                         arg.spmv_alg,
+                         arg.matrix_type,
+                         arg.matrix,
+                         arg.graph_test);
